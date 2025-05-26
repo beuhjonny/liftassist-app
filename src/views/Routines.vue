@@ -151,7 +151,13 @@ import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, type DocumentData } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import useAuth from '../composables/useAuth';
-import { type ExerciseProgress } from './WorkoutActive.vue'; // Assuming type export
+import {
+  type ExerciseProgress,
+  type ExerciseConfig,
+  type ExerciseConfigForDisplay, // If you use this for display arrays
+  type WorkoutDay,
+  type TrainingProgram
+} from '../types'; // Assuming type export
 
 // --- Interface Definitions ---
 interface ExerciseConfig {
@@ -462,11 +468,18 @@ const addOrUpdateExercise = async (dayId: string) => {
   if (typeof repStep !== 'number' || repStep < 1) { error.value = "Rep step must be >= 1."; return; }
   if (typeof weightInc !== 'number' || weightInc <= 0) { error.value = "Weight increment must be > 0."; return; }
 
-  let customRestForSave: number | null = null;
-  if (formCustomRest !== null && formCustomRest !== undefined && formCustomRest !== '') {
-    const restValue = Number(formCustomRest);
-    if (!isNaN(restValue) && restValue >= 10) { customRestForSave = restValue; }
-    else { error.value = "Custom rest must be a number >= 10, or blank."; isSaving.value = false; return; }
+   let customRestForSave: number | null = null;
+  // formCustomRest is editingExercise.customRestSeconds, which v-model.number makes null if empty
+  if (formCustomRest !== null && formCustomRest !== undefined) { // Check if it has a value (not blank)
+    const restValue = Number(formCustomRest); // Ensure it's treated as a number
+    if (!isNaN(restValue) && restValue >= 10) { // Check if it's a valid number and meets criteria
+      customRestForSave = restValue;
+    } else {
+      // Value is present but it's not a valid number or it's < 10
+      error.value = "Custom rest time must be a number and at least 10 seconds if specified. Leave blank for default.";
+      isSaving.value = false;
+      return;
+    }
   }
 
   if (!editingExercise.id) {
@@ -548,14 +561,16 @@ const addOrUpdateExercise = async (dayId: string) => {
   if (!editingExercise.id) {
     const exerciseProgressSnap = await getDoc(exerciseProgressRef);
     if (!exerciseProgressSnap.exists()) {
-      let actualStartingWeight = 45;
+      let actualStartingWeight = 45; // Default if formStartingWeight is null/undefined
+      // const formStartingWeight = editingExercise.startingWeight; // Already defined at the top of the function
       if (formStartingWeight !== null && formStartingWeight !== undefined && formStartingWeight >= 0) {
         actualStartingWeight = formStartingWeight;
       }
       const initialProgressData: ExerciseProgress = {
-        exerciseName: exerciseDataToSaveForRoutine.exerciseName, currentWeightToAttempt: actualStartingWeight,
-        repsToAttemptNext: exerciseDataToSaveForRoutine.minReps, lastWorkoutAllSetsSuccessfulAtCurrentWeight: false,
-        consecutiveFailedWorkoutsAtCurrentWeightAndReps: 0, lastPerformedDate: null,
+        exerciseName: exerciseDataToSaveForRoutine.exerciseName,
+        currentWeightToAttempt: actualStartingWeight, // Use actualStartingWeight from form
+        repsToAttemptNext: exerciseDataToSaveForRoutine.minReps,
+        // ... rest of initialProgressData
       };
       batch.set(exerciseProgressRef, initialProgressData);
     }
