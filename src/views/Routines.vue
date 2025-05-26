@@ -43,6 +43,7 @@
         <div class="form-group"><label for="editProgramDescription">Description (Optional):</label><textarea id="editProgramDescription" v-model="editableProgramDetails.description"></textarea></div>
         <div class="form-actions">
             <button type="submit" :disabled="isSaving" class="button-primary small">{{ isSaving ? 'Saving...' : 'Save Details' }}</button>
+            {/* Cancel for this form is handled by "Done Editing" top button */}
         </div>
       </form>
 
@@ -151,43 +152,14 @@ import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, type DocumentData } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import useAuth from '../composables/useAuth';
+// Correctly import types from your central types file
 import {
   type ExerciseProgress,
   type ExerciseConfig,
-  type ExerciseConfigForDisplay, // If you use this for display arrays
+  type ExerciseConfigForDisplay,
   type WorkoutDay,
   type TrainingProgram
-} from '../types'; // Assuming type export
-
-// --- Interface Definitions ---
-interface ExerciseConfig {
-  id: string;
-  exerciseName: string;
-  targetSets: number;
-  minReps: number;
-  maxReps: number;
-  repOverloadStep: number;
-  weightIncrement: number;
-  customRestSeconds?: number | null;
-  notesForExercise?: string | null;
-  enableProgression?: boolean;
-}
-interface ExerciseConfigForDisplay extends ExerciseConfig {
-    currentPrescribedWeight?: number;
-    currentPrescribedReps?: number;
-}
-interface WorkoutDay {
-  id: string;
-  dayName: string;
-  order: number;
-  exercises: ExerciseConfigForDisplay[]; // Corrected: Single semicolon
-}
-interface TrainingProgram {
-  id: string | null;
-  programName: string;
-  description: string;
-  workoutDays: WorkoutDay[];
-}
+} from '../types'; // Assuming types.ts is in src/
 
 // --- Core State ---
 const { user } = useAuth();
@@ -248,7 +220,7 @@ const loadActiveProgram = async () => {
     const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
     const programSnap = await getDoc(programDocRef);
     if (programSnap.exists()) {
-      const programDataFromDb = programSnap.data() as Omit<TrainingProgram, 'id' | 'workoutDays'> & { workoutDays: WorkoutDay[] }; // Expect WorkoutDay from DB
+      const programDataFromDb = programSnap.data() as Omit<TrainingProgram, 'id' | 'workoutDays'> & { workoutDays: WorkoutDay[] };
       activeProgram.id = programSnap.id;
       activeProgram.programName = programDataFromDb.programName || '';
       activeProgram.description = programDataFromDb.description || '';
@@ -257,7 +229,7 @@ const loadActiveProgram = async () => {
         for (const dayConfig of programDataFromDb.workoutDays) {
           const exercisesForDisplay: ExerciseConfigForDisplay[] = [];
           if (Array.isArray(dayConfig.exercises)) {
-            for (const exConfig of dayConfig.exercises) { // exConfig is ExerciseConfig from DB
+            for (const exConfig of dayConfig.exercises) {
               let currentPrescribedWeightVal: number | undefined = undefined;
               let currentPrescribedRepsVal: number | undefined = exConfig.minReps;
               const progressKey = exConfig.exerciseName.toLowerCase().replace(/\s+/g, '_');
@@ -271,11 +243,14 @@ const loadActiveProgram = async () => {
                 } else {
                   currentPrescribedWeightVal = (exConfig as any).startingWeight ?? 0;
                 }
-              } catch (progressError) { console.warn(`Could not fetch progress for ${exConfig.exerciseName}:`, progressError); currentPrescribedWeightVal = (exConfig as any).startingWeight ?? 0;}
+              } catch (progressError) {
+                console.warn(`Could not fetch progress for ${exConfig.exerciseName}:`, progressError);
+                currentPrescribedWeightVal = (exConfig as any).startingWeight ?? 0;
+              }
               exercisesForDisplay.push({ ...exConfig, currentPrescribedWeight: currentPrescribedWeightVal, currentPrescribedReps: currentPrescribedRepsVal });
             }
           }
-          tempWorkoutDays.push({ ...dayConfig, exercises: exercisesForDisplay });
+          tempWorkoutDays.push({ ...dayConfig, exercises: exercisesForDisplay } as WorkoutDay);
         }
       }
       activeProgram.workoutDays = tempWorkoutDays;
@@ -305,7 +280,7 @@ const saveActiveProgramBaseDetails = async () => {
     const dataToSave: any = {
       programName: editableProgramDetails.programName,
       description: editableProgramDetails.description,
-      workoutDays: workoutDaysToSave, // Save the stripped version
+      workoutDays: workoutDaysToSave,
       updatedAt: serverTimestamp(),
     };
     if (!activeProgram.id) {
@@ -317,7 +292,6 @@ const saveActiveProgramBaseDetails = async () => {
     }
     activeProgram.programName = editableProgramDetails.programName;
     activeProgram.description = editableProgramDetails.description;
-    // After saving, reload to ensure local `activeProgram.workoutDays` has correct display fields
     await loadActiveProgram();
   } catch (e: any) { error.value = "Failed to save routine details. " + e.message; }
   finally { isSaving.value = false; }
@@ -428,6 +402,7 @@ const startEditExercise = async (dayId: string, exerciseToEdit: ExerciseConfigFo
   // Fallback fetch if display values were missing (should be rare with current loadActiveProgram)
   if ((editingExercise.currentWeightToDisplayOrEdit === undefined || editingExercise.currentRepsToDisplayOrEdit === undefined) &&
       user.value && user.value.uid && exerciseToEdit.exerciseName) {
+    console.warn(`Re-fetching progress for ${exerciseToEdit.exerciseName} as display values were missing.`);
     const progressKey = exerciseToEdit.exerciseName.toLowerCase().replace(/\s+/g, '_');
     const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
     try {
@@ -468,18 +443,11 @@ const addOrUpdateExercise = async (dayId: string) => {
   if (typeof repStep !== 'number' || repStep < 1) { error.value = "Rep step must be >= 1."; return; }
   if (typeof weightInc !== 'number' || weightInc <= 0) { error.value = "Weight increment must be > 0."; return; }
 
-   let customRestForSave: number | null = null;
-  // formCustomRest is editingExercise.customRestSeconds, which v-model.number makes null if empty
-  if (formCustomRest !== null && formCustomRest !== undefined) { // Check if it has a value (not blank)
-    const restValue = Number(formCustomRest); // Ensure it's treated as a number
-    if (!isNaN(restValue) && restValue >= 10) { // Check if it's a valid number and meets criteria
-      customRestForSave = restValue;
-    } else {
-      // Value is present but it's not a valid number or it's < 10
-      error.value = "Custom rest time must be a number and at least 10 seconds if specified. Leave blank for default.";
-      isSaving.value = false;
-      return;
-    }
+  let customRestForSave: number | null = null;
+  if (formCustomRest !== null && formCustomRest !== undefined) {
+    const restValue = Number(formCustomRest);
+    if (!isNaN(restValue) && restValue >= 10) { customRestForSave = restValue; }
+    else { error.value = "Custom rest must be a number >= 10, or blank."; isSaving.value = false; return; }
   }
 
   if (!editingExercise.id) {
@@ -512,30 +480,44 @@ const addOrUpdateExercise = async (dayId: string) => {
   if (editingExercise.id) {
     const existingEx = activeProgram.workoutDays[dayIndex].exercises.find(ex => ex.id === editingExercise.id);
     if (!existingEx) { error.value = "Original exercise not found for update."; isSaving.value = false; return; }
-    exerciseDataToSaveForRoutine = { ...existingEx, ...baseDataForRoutine };
+    // When updating, ensure we are only passing ExerciseConfig fields to Firestore for the routine
+    exerciseDataToSaveForRoutine = {
+        id: existingEx.id, // Keep existing ID
+        exerciseName: baseDataForRoutine.exerciseName,
+        targetSets: baseDataForRoutine.targetSets,
+        minReps: baseDataForRoutine.minReps,
+        maxReps: baseDataForRoutine.maxReps,
+        repOverloadStep: baseDataForRoutine.repOverloadStep,
+        weightIncrement: baseDataForRoutine.weightIncrement,
+        enableProgression: baseDataForRoutine.enableProgression,
+        customRestSeconds: baseDataForRoutine.customRestSeconds,
+        notesForExercise: baseDataForRoutine.notesForExercise,
+    };
   } else {
     exerciseDataToSaveForRoutine = { id: doc(collection(db, '_')).id, ...baseDataForRoutine };
   }
 
+  // This newWorkoutDaysArrayForDisplay should reflect the changes for immediate UI update
   const newWorkoutDaysArrayForDisplay = activeProgram.workoutDays.map(day => {
     if (day.id === dayId) {
       let newExercisesForDayDisplay: ExerciseConfigForDisplay[];
       if (editingExercise.id) {
         newExercisesForDayDisplay = day.exercises.map(ex => {
             if (ex.id === exerciseDataToSaveForRoutine.id) {
-                return {
-                    ...exerciseDataToSaveForRoutine,
+                return { // This is the crucial part for updating the display object
+                    ...exerciseDataToSaveForRoutine, // Contains updated routine config
+                    // Carry over or update current prescribed values for display
                     currentPrescribedWeight: editingExercise.currentWeightToDisplayOrEdit ?? ex.currentPrescribedWeight,
                     currentPrescribedReps: editingExercise.currentRepsToDisplayOrEdit ?? ex.currentPrescribedReps
                 };
             }
             return ex;
         });
-      } else {
+      } else { // Adding new exercise
         newExercisesForDayDisplay = [...day.exercises, {
             ...exerciseDataToSaveForRoutine,
-            currentPrescribedWeight: editingExercise.startingWeight ?? 0,
-            currentPrescribedReps: exerciseDataToSaveForRoutine.minReps
+            currentPrescribedWeight: editingExercise.startingWeight ?? 0, // Use form starting weight for initial display
+            currentPrescribedReps: exerciseDataToSaveForRoutine.minReps // Use minReps for initial display
         }];
       }
       return { ...day, exercises: newExercisesForDayDisplay };
@@ -543,6 +525,7 @@ const addOrUpdateExercise = async (dayId: string) => {
     return day;
   });
 
+  // This is what gets saved to Firestore - only the ExerciseConfig, no display fields
   const workoutDaysToSaveForFirestore = newWorkoutDaysArrayForDisplay.map(d => ({
       ...d,
       exercises: d.exercises.map(exDisp => {
@@ -558,25 +541,24 @@ const addOrUpdateExercise = async (dayId: string) => {
   const exerciseProgressKey = exerciseDataToSaveForRoutine.exerciseName.toLowerCase().replace(/\s+/g, '_');
   const exerciseProgressRef = doc(db, 'users', user.value.uid, 'exerciseProgress', exerciseProgressKey);
 
-  if (!editingExercise.id) {
+  if (!editingExercise.id) { // New exercise in routine, initialize its progress if it doesn't exist
     const exerciseProgressSnap = await getDoc(exerciseProgressRef);
     if (!exerciseProgressSnap.exists()) {
-      let actualStartingWeight = 45; // Default if formStartingWeight is null/undefined
-      // const formStartingWeight = editingExercise.startingWeight; // Already defined at the top of the function
+      let actualStartingWeight = 45; // Default
       if (formStartingWeight !== null && formStartingWeight !== undefined && formStartingWeight >= 0) {
         actualStartingWeight = formStartingWeight;
       }
       const initialProgressData: ExerciseProgress = {
-        exerciseName: exerciseDataToSaveForRoutine.exerciseName,
-        currentWeightToAttempt: actualStartingWeight, // Use actualStartingWeight from form
-        repsToAttemptNext: exerciseDataToSaveForRoutine.minReps,
-        // ... rest of initialProgressData
+        exerciseName: exerciseDataToSaveForRoutine.exerciseName, currentWeightToAttempt: actualStartingWeight,
+        repsToAttemptNext: exerciseDataToSaveForRoutine.minReps, lastWorkoutAllSetsSuccessfulAtCurrentWeight: false,
+        consecutiveFailedWorkoutsAtCurrentWeightAndReps: 0, lastPerformedDate: null,
       };
       batch.set(exerciseProgressRef, initialProgressData);
     }
-  } else {
+  } else { // Existing exercise in routine being edited, update its progress document if form values changed
     const progressUpdates: Partial<ExerciseProgress> = {};
     let needsProgressDocUpdate = false;
+
     if (formCurrentWeight !== null && formCurrentWeight !== undefined && typeof formCurrentWeight === 'number' && formCurrentWeight >= 0) {
         progressUpdates.currentWeightToAttempt = formCurrentWeight;
         needsProgressDocUpdate = true;
@@ -585,6 +567,7 @@ const addOrUpdateExercise = async (dayId: string) => {
         progressUpdates.repsToAttemptNext = formCurrentReps;
         needsProgressDocUpdate = true;
     }
+
     if (needsProgressDocUpdate) {
         const progressSnap = await getDoc(exerciseProgressRef);
         if (progressSnap.exists()) {
@@ -600,7 +583,8 @@ const addOrUpdateExercise = async (dayId: string) => {
                  batch.update(exerciseProgressRef, finalProgressUpdates);
             }
         } else {
-            const initWeight = (typeof formCurrentWeight === 'number' && formCurrentWeight >=0) ? formCurrentWeight : (exerciseDataToSaveForRoutine.startingWeight ?? 45);
+            // If progress doc doesn't exist for an edited exercise, create it
+            const initWeight = (typeof formCurrentWeight === 'number' && formCurrentWeight >=0) ? formCurrentWeight : 45; // Default
             const initReps = (typeof formCurrentReps === 'number' && formCurrentReps >=1) ? formCurrentReps : exerciseDataToSaveForRoutine.minReps;
             const initialProgressData: ExerciseProgress = {
                 exerciseName: exerciseDataToSaveForRoutine.exerciseName, currentWeightToAttempt: initWeight,
@@ -608,19 +592,39 @@ const addOrUpdateExercise = async (dayId: string) => {
                 consecutiveFailedWorkoutsAtCurrentWeightAndReps: 0, lastPerformedDate: null,
             };
             batch.set(exerciseProgressRef, initialProgressData);
+            console.warn(`Progress doc for ${exerciseDataToSaveForRoutine.exerciseName} created during edit as it was missing.`);
         }
     }
   }
 
   try {
     await batch.commit();
-    await loadActiveProgram(); // Re-fetch to get updated display values
+    activeProgram.workoutDays = newWorkoutDaysArrayForDisplay; // Update local state with display data
     cancelAddOrEditExercise();
-  } catch (e: any) { error.value = "Failed to save exercise. Firestore error: " + e.message; console.error("Error committing batch:", e); }
+  } catch (e: any) { error.value = "Failed to save exercise. Firestore error: " + e.message; console.error("Error committing batch for exercise save:", e); }
   finally { isSaving.value = false; }
 };
 
-const removeExerciseFromDay = async (dayId: string, exerciseIdToRemove: string) => { /* ... (same as before, ensure it saves stripped workoutDays) ... */};
+const removeExerciseFromDay = async (dayId: string, exerciseIdToRemove: string) => {
+  if (!user.value || !user.value.uid || !activeProgram.id) return;
+  if (!confirm(`Remove this exercise from ${activeProgram.workoutDays.find(d=>d.id===dayId)?.dayName || 'this day'}? Progress for this exercise won't be deleted.`)) return;
+  isSaving.value = true; error.value = null;
+  const dayIndex = activeProgram.workoutDays.findIndex(d => d.id === dayId);
+  if (dayIndex === -1) { isSaving.value = false; return; }
+  const updatedExercises = activeProgram.workoutDays[dayIndex].exercises.filter(ex => ex.id !== exerciseIdToRemove);
+  const newWorkoutDaysArray = activeProgram.workoutDays.map(d => d.id === dayId ? { ...d, exercises: updatedExercises } : d);
+  try {
+    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
+    const workoutDaysToSave = newWorkoutDaysArray.map(day => ({
+      ...day, exercises: day.exercises.map(ex => {
+        const { currentPrescribedReps, currentPrescribedWeight, ...config } = ex; return config as ExerciseConfig;
+      })
+    }));
+    await updateDoc(programDocRef, { workoutDays: workoutDaysToSave, updatedAt: serverTimestamp() });
+    activeProgram.workoutDays = newWorkoutDaysArray; // Keep display fields in local reactive state
+  } catch (e: any) { error.value = "Failed to remove exercise. " + e.message; }
+  finally { isSaving.value = false; }
+};
 
 // --- Lifecycle Hooks ---
 let userWatcherUnsubscribe: (() => void) | null = null;
@@ -654,7 +658,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ... (All the styles from your last version should be here) ... */
+/* ... (All your existing styles from the previous version should be here) ... */
 .routines-view { padding: 20px; max-width: 800px; margin: 20px auto; background-color: #fdfdfd; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 .routine-actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom:15px; border-bottom: 1px solid #eee;}
 .routine-actions-header h1 { margin: 0; font-size: 1.8em; }
@@ -716,5 +720,4 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 .error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-top: 15px; }
 .checkbox-label { display: flex; align-items: center; font-weight: normal; color: #555; font-size: 0.9em; }
 .checkbox-label input[type="checkbox"] { width: auto; margin-right: 8px; }
-/* Removed .debug-info-summary style as the div is removed */
 </style>

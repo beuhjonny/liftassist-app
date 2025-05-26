@@ -1,5 +1,5 @@
 // src/types.ts
-import { type Timestamp } from 'firebase/firestore'; // If you use Firestore Timestamp directly
+import { type Timestamp } from 'firebase/firestore';
 
 export interface ExerciseProgress {
   exerciseName: string;
@@ -21,39 +21,28 @@ export interface ExerciseConfig {
   customRestSeconds?: number | null;
   notesForExercise?: string | null;
   enableProgression?: boolean;
-  // startingWeight is not stored here, it's a form model property in Routines.vue
+  // startingWeight is only in the form model for new exercises, not stored in ExerciseConfig
 }
 
 export interface ExerciseConfigForDisplay extends ExerciseConfig {
-  currentPrescribedWeight?: number;
-  currentPrescribedReps?: number;
+    currentPrescribedWeight?: number;
+    currentPrescribedReps?: number;
 }
 
 export interface WorkoutDay {
   id: string;
   dayName: string;
   order: number;
-  exercises: ExerciseConfigForDisplay[]; // Used in Routines.vue for display
+  exercises: ExerciseConfigForDisplay[]; // Uses the display version
 }
-
-// This might be a slightly different version for what's stored in Firestore for a program
-export interface WorkoutDayInRoutineConfig {
-  id: string;
-  dayName: string;
-  order: number;
-  exercises: ExerciseConfig[]; // Stores pure ExerciseConfig
-}
-
 
 export interface TrainingProgram {
   id: string | null;
   programName: string;
   description: string;
-  // workoutDays could be WorkoutDay[] or WorkoutDayInRoutineConfig[] depending on context
-  // For Routines.vue's activeProgram, it's WorkoutDay[] (with display fields)
-  // For saving to Firestore, it should be stripped down to store objects matching ExerciseConfig
   workoutDays: WorkoutDay[];
 }
+
 
 
 export interface SessionExercise extends ExerciseConfig { // Used in WorkoutActive.vue
