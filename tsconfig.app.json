@@ -1,0 +1,16 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json", // Or similar base config
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"], // Make sure 'env.d.ts' or 'src/**/*.d.ts' is covered
+  "exclude": ["src/**/__tests__/*"],
+  "compilerOptions": {
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["vite/client"] // <--- ENSURE "vite/client" IS HERE if you explicitly define 'types'
+    // If the "types" array is NOT present at all, TypeScript usually infers types correctly,
+    // especially with the /// <reference ... /> directive in env.d.ts.
+    // Only add "vite/client" to an existing "types" array, or create the "types" array if specifically needed.
+  }
+}
