@@ -56,12 +56,15 @@
         <p v-if="currentExercise.notesForExercise" class="exercise-notes">
           <em>Notes: {{ currentExercise.notesForExercise }}</em>
         </p>
-        <div class="current-set-info card-inset">
-          <h3>Set {{ currentSetNumber }} of {{ currentExercise.targetSets }}</h3>
-          <p class="prescription">
-            Aim for: <strong>{{ currentExercise.prescribedReps }} reps</strong> @ <strong>{{ currentExercise.prescribedWeight }} lbs</strong>
-          </p>
-        </div>
+       <div class="current-set-info card-inset">
+  <h3>Set {{ currentSetNumber }} of {{ currentExercise.targetSets }}</h3>
+  <div class="prescription-details">
+    <span class="prescription-reps">{{ currentExercise.prescribedReps }} reps</span>
+    <span class="prescription-separator">@</span>
+    <span class="prescription-weight">{{ currentExercise.prescribedWeight }} lbs</span>
+  </div>
+</div>
+
         <div class="set-actions">
           <button @click="logSet('done')" class="button-done">DONE</button>
           <button @click="logSet('failed')" class="button-fail">FAIL</button>
@@ -425,10 +428,18 @@ const startRestTimer = () => {
     restDurationToUse.value = DEFAULT_REST_SECONDS;
   }
   restCountdown.value = restDurationToUse.value;
-  if (timerInterval) clearInterval(timerInterval);
+
+  if (timerInterval) clearInterval(timerInterval); // Clear any existing timer before starting a new one
+
   timerInterval = setInterval(() => {
-    if (restCountdown.value > 0) { restCountdown.value--; }
-    else { clearInterval(timerInterval); timerInterval = undefined; playTimerSound(); }
+    if (restCountdown.value > 0) {
+      restCountdown.value--;
+    } else {
+      clearInterval(timerInterval);
+      timerInterval = undefined;
+      playTimerSound();
+      proceedToNextSet(); // <-- ADD THIS LINE TO AUTO-ADVANCE
+    }
   }, 1000);
 };
 
@@ -655,4 +666,43 @@ onUnmounted(() => { if (userWatcherUnsubscribe) userWatcherUnsubscribe(); if (ti
 .button-primary:hover:not(:disabled) { background-color: #0056b3; }
 .loading-message, .no-items-message, .login-prompt { color: #6c757d; text-align: center; padding: 20px; }
 .error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-top: 15px; }
+.current-set-info {
+  background-color: #f8f9fa;
+  padding: 20px; /* Increased padding for more space */
+  border-radius: 6px;
+  margin-bottom: 25px; /* More space below */
+  border: 1px solid #e9ecef;
+  text-align: center; /* Center the content of this box */
+}
+
+.current-set-info h3 {
+  margin-top: 0;
+  margin-bottom: 15px; /* More space after "Set X of Y" */
+  font-size: 1.5em; /* Larger "Set X of Y" */
+  color: #495057; /* Slightly softer color */
+  font-weight: 600;
+}
+
+.prescription-details {
+  display: flex;
+  flex-direction: column; /* Stack reps and weight for larger text */
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2; /* Adjust line height for stacked elements */
+}
+
+.prescription-reps,
+.prescription-weight {
+  font-size: 2.0em; /* Significantly larger font for reps and weight */
+  font-weight: bold;
+  color: #007bff; /* Primary color for emphasis */
+  display: block; /* Ensure they take their own line if needed or for spacing */
+}
+
+.prescription-separator {
+  font-size: 1.6em; /* Larger "@" symbol */
+  font-weight: normal;
+  color: #6c757d; /* Gray for the separator */
+  margin: 5px 0; /* Add some vertical spacing */
+}
 </style>
