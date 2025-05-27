@@ -19,7 +19,7 @@
       <h2>{{ activeProgram.programName }}</h2>
       <p class="routine-description"><em>{{ activeProgram.description || 'Time to train!' }}</em></p>
 
-      <h3>Choose a Workout Day to Start:</h3>
+      <h3>Choose a Workout to Start:</h3>
       <div v-if="sortedWorkoutDays.length > 0" class="workout-day-selection">
         <button
           v-for="day in sortedWorkoutDays"

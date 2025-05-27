@@ -16,20 +16,39 @@
 
     <div v-if="!activeProgram.id && !isLoading && !error && user" class="create-routine-section card">
       <h2>No Active Routine Found</h2>
-      <p>Let's set up your primary training routine.</p>
-      <form @submit.prevent="saveActiveProgramBaseDetails">
-        <div class="form-group">
-          <label for="programName">Routine Name (e.g., My PPL):</label>
-          <input type="text" id="programName" v-model="editableProgramDetails.programName" required />
-        </div>
-        <div class="form-group">
-          <label for="programDescription">Description (Optional):</label>
-          <textarea id="programDescription" v-model="editableProgramDetails.description"></textarea>
-        </div>
-        <button type="submit" :disabled="isSaving" class="button-primary">
-          {{ isSaving ? 'Saving...' : 'Create Routine Base' }}
-        </button>
-      </form>
+
+      <div class="import-routine-section card-inset">
+        <h4>Have a Routine Code/Text?</h4>
+        <p>Paste your routine data (JSON format) below and click import.</p>
+        <form @submit.prevent="importPastedRoutine">
+          <div class="form-group">
+            <label for="routineJsonData">Routine Data (JSON):</label>
+            <textarea id="routineJsonData" v-model="pastedRoutineJson" rows="10" placeholder="Paste your routine JSON here..."></textarea>
+          </div>
+          <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary">
+            {{ isSaving ? 'Importing...' : 'Import Pasted Routine' }}
+          </button>
+        </form>
+      </div>
+
+      <hr class="section-divider">
+
+      <div class="manual-create-section">
+        <h4>Or, Create a New Routine Manually:</h4>
+        <form @submit.prevent="saveActiveProgramBaseDetails">
+          <div class="form-group">
+            <label for="programName">Routine Name (e.g., My PPL):</label>
+            <input type="text" id="programName" v-model="editableProgramDetails.programName" required />
+          </div>
+          <div class="form-group">
+            <label for="programDescription">Description (Optional):</label>
+            <textarea id="programDescription" v-model="editableProgramDetails.description"></textarea>
+          </div>
+          <button type="submit" :disabled="isSaving" class="button-primary">
+            {{ isSaving ? 'Saving...' : 'Create Routine Base Manually' }}
+          </button>
+        </form>
+      </div>
     </div>
 
     <div v-if="activeProgram.id && !isLoading && !error && user" class="active-routine-display card">
@@ -126,18 +145,27 @@
             + Add Exercise to {{day.dayName}}
           </button>
         </div>
-
-        <div v-if="isInOverallEditMode" class="add-day-controls card-inset">
-            <button v-if="!addingNewDay" @click="addingNewDay = true" class="button-primary-outline">Add New Workout Day</button>
-            <form v-if="addingNewDay" @submit.prevent="addWorkoutDayToList" class="add-day-form-inline">
-              <input type="text" v-model="newWorkoutDayName" placeholder="New Day Name (e.g., Full Body)" required />
-              <div class="form-actions">
-                <button type="submit" :disabled="isSaving" class="button-primary small">Save Day</button>
-                <button type="button" @click="addingNewDay = false" class="button-secondary small">Cancel</button>
-              </div>
-            </form>
-        </div>
       </div>
+
+      <div v-if="isInOverallEditMode" class="add-day-controls card-inset">
+          <button v-if="!addingNewDay" @click="addingNewDay = true" class="button-primary-outline">Add New Workout Day</button>
+          <form v-if="addingNewDay" @submit.prevent="addWorkoutDayToList" class="add-day-form-inline">
+            <input type="text" v-model="newWorkoutDayName" placeholder="New Day Name (e.g., Full Body)" required />
+            <div class="form-actions">
+              <button type="submit" :disabled="isSaving" class="button-primary small">Save Day</button>
+              <button type="button" @click="addingNewDay = false" class="button-secondary small">Cancel</button>
+            </div>
+          </form>
+      </div>
+
+      <div v-if="isInOverallEditMode" class="routine-level-actions card-inset">
+        <h4>Routine Danger Zone</h4>
+        <button @click="confirmAndDeleteActiveProgram" :disabled="isSaving" class="button-danger full-width">
+          {{ isSaving ? 'Deleting...' : 'Delete Entire Routine' }}
+        </button>
+        <p class="small-text warning-text">This action will remove the current routine program. Exercise progress data will remain.</p>
+      </div>
+
     </div>
 
     <div v-if="!user && !isLoading && !error" class="login-prompt card">
@@ -148,8 +176,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
-import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, type DocumentData } from 'firebase/firestore';
-import { db } from '../firebase.js';
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, deleteDoc, type DocumentData } from 'firebase/firestore'; // Added deleteDoc
+import { db } from '../firebase.js'; // Assuming firebase.js is in src/
 import useAuth from '../composables/useAuth';
 // Correctly import types from your central types file
 import {
@@ -167,6 +195,9 @@ const isSaving = ref(false);
 const error = ref<string | null>(null);
 const ACTIVE_PROGRAM_ID = 'user_active_main_program';
 const activeProgram = reactive<TrainingProgram>({ id: null, programName: '', description: '', workoutDays: [] });
+
+// --- Import Routine State ---
+const pastedRoutineJson = ref('');
 
 // --- Overall Edit Mode State ---
 const isInOverallEditMode = ref(false);
@@ -211,56 +242,98 @@ const toggleOverallEditMode = () => {
     addingNewDay.value = false;
   }
 };
+// This is the entire loadActiveProgram function, modified for Promise.all()
 
 const loadActiveProgram = async () => {
-  if (!user.value || !user.value.uid) { error.value = 'User not available.'; isLoading.value = false; return; }
-  isLoading.value = true; error.value = null;
+  if (!user.value || !user.value.uid) { // Initial check for user
+    error.value = 'User not available.'; 
+    isLoading.value = false; 
+    return; 
+  }
+  isLoading.value = true; 
+  error.value = null;
+  
   try {
     const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
     const programSnap = await getDoc(programDocRef);
+
     if (programSnap.exists()) {
       const programDataFromDb = programSnap.data() as Omit<TrainingProgram, 'id' | 'workoutDays'> & { workoutDays: WorkoutDay[] };
       activeProgram.id = programSnap.id;
       activeProgram.programName = programDataFromDb.programName || '';
       activeProgram.description = programDataFromDb.description || '';
       const tempWorkoutDays: WorkoutDay[] = [];
+
       if (Array.isArray(programDataFromDb.workoutDays)) {
         for (const dayConfig of programDataFromDb.workoutDays) {
-          const exercisesForDisplay: ExerciseConfigForDisplay[] = [];
-          if (Array.isArray(dayConfig.exercises)) {
-            for (const exConfig of dayConfig.exercises) {
+          // --- START OF MODIFIED SECTION FOR PROMISE.ALL() ---
+          let exercisesForDisplay: ExerciseConfigForDisplay[] = [];
+
+          if (Array.isArray(dayConfig.exercises) && dayConfig.exercises.length > 0) {
+            const exerciseProgressPromises = dayConfig.exercises.map(async (exConfig) => {
               let currentPrescribedWeightVal: number | undefined = undefined;
-              let currentPrescribedRepsVal: number | undefined = exConfig.minReps;
-              const progressKey = exConfig.exerciseName.toLowerCase().replace(/\s+/g, '_');
-              const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
-              try {
-                const progressSnap = await getDoc(progressDocRef);
-                if (progressSnap.exists()) {
-                  const progressData = progressSnap.data() as ExerciseProgress;
-                  currentPrescribedWeightVal = progressData?.currentWeightToAttempt;
-                  currentPrescribedRepsVal = progressData?.repsToAttemptNext;
-                } else {
+              let currentPrescribedRepsVal: number | undefined = exConfig.minReps; // Default to minReps
+
+              // Ensure exConfig.exerciseName is valid before creating a key
+              // user.value.uid is confirmed non-null by the check at the start of this function
+              if (typeof exConfig.exerciseName === 'string' && exConfig.exerciseName.trim() !== '') {
+                const progressKey = exConfig.exerciseName.toLowerCase().replace(/\s+/g, '_');
+                const progressDocRef = doc(db, 'users', user.value!.uid, 'exerciseProgress', progressKey);
+                
+                try {
+                  const progressSnap = await getDoc(progressDocRef);
+                  if (progressSnap.exists()) {
+                    const progressData = progressSnap.data() as ExerciseProgress;
+                    currentPrescribedWeightVal = progressData?.currentWeightToAttempt;
+                    currentPrescribedRepsVal = progressData?.repsToAttemptNext;
+                  } else {
+                    currentPrescribedWeightVal = (exConfig as any).startingWeight ?? 0; 
+                  }
+                } catch (progressError) {
+                  console.warn(`Could not fetch progress for ${exConfig.exerciseName}:`, progressError);
                   currentPrescribedWeightVal = (exConfig as any).startingWeight ?? 0;
                 }
-              } catch (progressError) {
-                console.warn(`Could not fetch progress for ${exConfig.exerciseName}:`, progressError);
+              } else {
+                console.warn('Exercise encountered with missing or invalid name:', exConfig);
                 currentPrescribedWeightVal = (exConfig as any).startingWeight ?? 0;
               }
-              exercisesForDisplay.push({ ...exConfig, currentPrescribedWeight: currentPrescribedWeightVal, currentPrescribedReps: currentPrescribedRepsVal });
-            }
+              
+              return { 
+                ...exConfig, 
+                currentPrescribedWeight: currentPrescribedWeightVal, 
+                currentPrescribedReps: currentPrescribedRepsVal 
+              };
+            });
+
+            exercisesForDisplay = await Promise.all(exerciseProgressPromises);
+          } else {
+            // If dayConfig.exercises is not an array or is empty, initialize as empty
+            exercisesForDisplay = [];
           }
-          tempWorkoutDays.push({ ...dayConfig, exercises: exercisesForDisplay } as WorkoutDay);
+          // --- END OF MODIFIED SECTION FOR PROMISE.ALL() ---
+          
+          tempWorkoutDays.push({ ...dayConfig, exercises: exercisesForDisplay });
         }
       }
       activeProgram.workoutDays = tempWorkoutDays;
       editableProgramDetails.programName = activeProgram.programName;
       editableProgramDetails.description = activeProgram.description;
     } else {
-      activeProgram.id = null; activeProgram.programName = ''; activeProgram.description = '';
-      activeProgram.workoutDays = []; editableProgramDetails.programName = ''; editableProgramDetails.description = '';
+      // Handle case where no active program exists
+      activeProgram.id = null; 
+      activeProgram.programName = ''; 
+      activeProgram.description = '';
+      activeProgram.workoutDays = []; 
+      editableProgramDetails.programName = ''; 
+      editableProgramDetails.description = '';
     }
-  } catch (e: any) { error.value = "Failed to load routine data. " + e.message; console.error("Error in loadActiveProgram:", e); }
-  finally { isLoading.value = false; }
+  } catch (e: any) {
+    error.value = "Failed to load routine data. " + e.message; 
+    console.error("Error in loadActiveProgram:", e); 
+  }
+  finally { 
+    isLoading.value = false; 
+  }
 };
 
 const saveActiveProgramBaseDetails = async () => {
@@ -279,22 +352,135 @@ const saveActiveProgramBaseDetails = async () => {
     const dataToSave: any = {
       programName: editableProgramDetails.programName,
       description: editableProgramDetails.description,
-      workoutDays: workoutDaysToSave,
       updatedAt: serverTimestamp(),
     };
-    if (!activeProgram.id) {
+    if (!activeProgram.id) { 
       dataToSave.createdAt = serverTimestamp();
+      dataToSave.workoutDays = []; // Start with empty workout days for a new manual routine
       await setDoc(programDocRef, dataToSave);
-      activeProgram.id = ACTIVE_PROGRAM_ID;
-    } else {
+      activeProgram.id = ACTIVE_PROGRAM_ID; 
+    } else { 
+      dataToSave.workoutDays = workoutDaysToSave; // Keep existing days if just editing details
       await updateDoc(programDocRef, dataToSave);
     }
     activeProgram.programName = editableProgramDetails.programName;
     activeProgram.description = editableProgramDetails.description;
-    await loadActiveProgram();
+    await loadActiveProgram(); // Reload to ensure consistency
   } catch (e: any) { error.value = "Failed to save routine details. " + e.message; }
   finally { isSaving.value = false; }
 };
+
+const importPastedRoutine = async () => {
+  if (!user.value || !user.value.uid) {
+    error.value = "You must be logged in to import a routine.";
+    return;
+  }
+  if (!pastedRoutineJson.value.trim()) {
+    error.value = "Please paste routine data into the text area.";
+    return;
+  }
+
+  isSaving.value = true;
+  error.value = null;
+
+  try {
+    console.log("Attempting to parse JSON:", pastedRoutineJson.value);
+    const importedData = JSON.parse(pastedRoutineJson.value);
+    console.log("Parsed data:", importedData);
+
+    if (!importedData || !importedData.programName || !Array.isArray(importedData.workoutDays)) {
+        throw new Error("Invalid routine data structure. Missing programName or workoutDays array.");
+    }
+
+    // Prepare data for saving, this structure is what programToSave will look like
+    // but it will have startingWeight on exercises temporarily
+    const programToSaveTemp: any = {
+        programName: importedData.programName,
+        description: importedData.description || "",
+        workoutDays: importedData.workoutDays.map((day: any) => ({
+            id: day.id || doc(collection(db, '_')).id,
+            dayName: day.dayName || "Unnamed Day",
+            order: typeof day.order === 'number' ? day.order : 0,
+            exercises: Array.isArray(day.exercises) ? day.exercises.map((ex: any) => ({
+                id: ex.id || doc(collection(db, '_')).id,
+                exerciseName: ex.exerciseName || "Unnamed Exercise",
+                targetSets: ex.targetSets || 3,
+                minReps: ex.minReps || 8,
+                maxReps: ex.maxReps || 12,
+                repOverloadStep: ex.repOverloadStep || 1,
+                weightIncrement: ex.weightIncrement || 5,
+                customRestSeconds: (ex.customRestSeconds !== null && ex.customRestSeconds !== undefined && ex.customRestSeconds >=10) ? ex.customRestSeconds : null,
+                notesForExercise: ex.notesForExercise || null,
+                enableProgression: typeof ex.enableProgression === 'boolean' ? ex.enableProgression : true,
+                // Capture startingWeight if present, used only for progress init
+                startingWeight: (ex.startingWeight !== null && ex.startingWeight !== undefined && typeof ex.startingWeight === 'number' && ex.startingWeight >=0) ? ex.startingWeight : undefined,
+            })) : [],
+        })).sort((a: WorkoutDay, b: WorkoutDay) => a.order - b.order),
+    };
+    programToSaveTemp.workoutDays.forEach((day: WorkoutDay, index: number) => day.order = index + 1);
+
+    // Now, create the actual data to save to Firestore, removing startingWeight from the program exercises
+    const finalProgramDataToSave: Omit<TrainingProgram, 'id' | 'createdAt' | 'updatedAt'> = {
+        programName: programToSaveTemp.programName,
+        description: programToSaveTemp.description,
+        workoutDays: programToSaveTemp.workoutDays.map((day: any) => ({
+            ...day,
+            exercises: day.exercises.map((ex: any) => {
+                const { startingWeight, ...exerciseConfig } = ex; // Destructure to remove startingWeight
+                return exerciseConfig as ExerciseConfig;
+            })
+        }))
+    };
+
+    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
+    const fullSaveData: any = { ...finalProgramDataToSave, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
+
+    const batch = writeBatch(db);
+    batch.set(programDocRef, fullSaveData);
+
+    // Initialize exerciseProgress using the original importedData which contains startingWeight
+    for (const day of importedData.workoutDays) {
+      if (Array.isArray(day.exercises)) {
+        for (const exConfig of day.exercises) {
+            if (!exConfig.exerciseName) continue; // Skip if no exercise name
+            const exerciseProgressKey = (exConfig.exerciseName as string).toLowerCase().replace(/\s+/g, '_');
+            const exerciseProgressRef = doc(db, 'users', user.value.uid, 'exerciseProgress', exerciseProgressKey);
+            
+            const progressSnap = await getDoc(exerciseProgressRef);
+            if (!progressSnap.exists()) {
+                let actualStartingWeight = 45; // Default
+                const importedStartingWeight = (exConfig as any).startingWeight;
+                if (importedStartingWeight !== null && importedStartingWeight !== undefined && typeof importedStartingWeight === 'number' && importedStartingWeight >= 0) {
+                    actualStartingWeight = importedStartingWeight;
+                }
+
+                const initialProgressData: ExerciseProgress = {
+                    exerciseName: exConfig.exerciseName,
+                    currentWeightToAttempt: actualStartingWeight,
+                    repsToAttemptNext: exConfig.minReps || 8,
+                    lastWorkoutAllSetsSuccessfulAtCurrentWeight: false,
+                    consecutiveFailedWorkoutsAtCurrentWeightAndReps: 0,
+                    lastPerformedDate: null,
+                };
+                batch.set(exerciseProgressRef, initialProgressData);
+            }
+        }
+      }
+    }
+
+    await batch.commit();
+    alert('Routine imported successfully!');
+    pastedRoutineJson.value = '';
+    await loadActiveProgram();
+
+  } catch (e: any) {
+    console.error("Error importing routine:", e);
+    error.value = "Failed to import routine. Ensure data is valid JSON and matches expected structure. " + e.message;
+  } finally {
+    isSaving.value = false;
+  }
+};
+
 
 const addWorkoutDayToList = async () => {
   if (!user.value || !user.value.uid || !activeProgram.id) { error.value = 'No active routine or user.'; return; }
@@ -398,7 +584,6 @@ const startEditExercise = async (dayId: string, exerciseToEdit: ExerciseConfigFo
   editingExercise.currentWeightToDisplayOrEdit = exerciseToEdit.currentPrescribedWeight;
   editingExercise.currentRepsToDisplayOrEdit = exerciseToEdit.currentPrescribedReps;
 
-  // Fallback fetch if display values were missing (should be rare with current loadActiveProgram)
   if ((editingExercise.currentWeightToDisplayOrEdit === undefined || editingExercise.currentRepsToDisplayOrEdit === undefined) &&
       user.value && user.value.uid && exerciseToEdit.exerciseName) {
     console.warn(`Re-fetching progress for ${exerciseToEdit.exerciseName} as display values were missing.`);
@@ -479,9 +664,8 @@ const addOrUpdateExercise = async (dayId: string) => {
   if (editingExercise.id) {
     const existingEx = activeProgram.workoutDays[dayIndex].exercises.find(ex => ex.id === editingExercise.id);
     if (!existingEx) { error.value = "Original exercise not found for update."; isSaving.value = false; return; }
-    // When updating, ensure we are only passing ExerciseConfig fields to Firestore for the routine
     exerciseDataToSaveForRoutine = {
-        id: existingEx.id, // Keep existing ID
+        id: existingEx.id,
         exerciseName: baseDataForRoutine.exerciseName,
         targetSets: baseDataForRoutine.targetSets,
         minReps: baseDataForRoutine.minReps,
@@ -496,27 +680,25 @@ const addOrUpdateExercise = async (dayId: string) => {
     exerciseDataToSaveForRoutine = { id: doc(collection(db, '_')).id, ...baseDataForRoutine };
   }
 
-  // This newWorkoutDaysArrayForDisplay should reflect the changes for immediate UI update
   const newWorkoutDaysArrayForDisplay = activeProgram.workoutDays.map(day => {
     if (day.id === dayId) {
       let newExercisesForDayDisplay: ExerciseConfigForDisplay[];
       if (editingExercise.id) {
         newExercisesForDayDisplay = day.exercises.map(ex => {
             if (ex.id === exerciseDataToSaveForRoutine.id) {
-                return { // This is the crucial part for updating the display object
-                    ...exerciseDataToSaveForRoutine, // Contains updated routine config
-                    // Carry over or update current prescribed values for display
+                return {
+                    ...exerciseDataToSaveForRoutine,
                     currentPrescribedWeight: editingExercise.currentWeightToDisplayOrEdit ?? ex.currentPrescribedWeight,
                     currentPrescribedReps: editingExercise.currentRepsToDisplayOrEdit ?? ex.currentPrescribedReps
                 };
             }
             return ex;
         });
-      } else { // Adding new exercise
+      } else {
         newExercisesForDayDisplay = [...day.exercises, {
             ...exerciseDataToSaveForRoutine,
-            currentPrescribedWeight: editingExercise.startingWeight ?? 0, // Use form starting weight for initial display
-            currentPrescribedReps: exerciseDataToSaveForRoutine.minReps // Use minReps for initial display
+            currentPrescribedWeight: editingExercise.startingWeight ?? 0,
+            currentPrescribedReps: exerciseDataToSaveForRoutine.minReps
         }];
       }
       return { ...day, exercises: newExercisesForDayDisplay };
@@ -524,7 +706,6 @@ const addOrUpdateExercise = async (dayId: string) => {
     return day;
   });
 
-  // This is what gets saved to Firestore - only the ExerciseConfig, no display fields
   const workoutDaysToSaveForFirestore = newWorkoutDaysArrayForDisplay.map(d => ({
       ...d,
       exercises: d.exercises.map(exDisp => {
@@ -540,10 +721,10 @@ const addOrUpdateExercise = async (dayId: string) => {
   const exerciseProgressKey = exerciseDataToSaveForRoutine.exerciseName.toLowerCase().replace(/\s+/g, '_');
   const exerciseProgressRef = doc(db, 'users', user.value.uid, 'exerciseProgress', exerciseProgressKey);
 
-  if (!editingExercise.id) { // New exercise in routine, initialize its progress if it doesn't exist
+  if (!editingExercise.id) {
     const exerciseProgressSnap = await getDoc(exerciseProgressRef);
     if (!exerciseProgressSnap.exists()) {
-      let actualStartingWeight = 45; // Default
+      let actualStartingWeight = 45;
       if (formStartingWeight !== null && formStartingWeight !== undefined && formStartingWeight >= 0) {
         actualStartingWeight = formStartingWeight;
       }
@@ -554,7 +735,7 @@ const addOrUpdateExercise = async (dayId: string) => {
       };
       batch.set(exerciseProgressRef, initialProgressData);
     }
-  } else { // Existing exercise in routine being edited, update its progress document if form values changed
+  } else {
     const progressUpdates: Partial<ExerciseProgress> = {};
     let needsProgressDocUpdate = false;
 
@@ -582,8 +763,7 @@ const addOrUpdateExercise = async (dayId: string) => {
                  batch.update(exerciseProgressRef, finalProgressUpdates);
             }
         } else {
-            // If progress doc doesn't exist for an edited exercise, create it
-            const initWeight = (typeof formCurrentWeight === 'number' && formCurrentWeight >=0) ? formCurrentWeight : 45; // Default
+            const initWeight = (typeof formCurrentWeight === 'number' && formCurrentWeight >=0) ? formCurrentWeight : 45;
             const initReps = (typeof formCurrentReps === 'number' && formCurrentReps >=1) ? formCurrentReps : exerciseDataToSaveForRoutine.minReps;
             const initialProgressData: ExerciseProgress = {
                 exerciseName: exerciseDataToSaveForRoutine.exerciseName, currentWeightToAttempt: initWeight,
@@ -598,7 +778,7 @@ const addOrUpdateExercise = async (dayId: string) => {
 
   try {
     await batch.commit();
-    activeProgram.workoutDays = newWorkoutDaysArrayForDisplay; // Update local state with display data
+    activeProgram.workoutDays = newWorkoutDaysArrayForDisplay;
     cancelAddOrEditExercise();
   } catch (e: any) { error.value = "Failed to save exercise. Firestore error: " + e.message; console.error("Error committing batch for exercise save:", e); }
   finally { isSaving.value = false; }
@@ -620,9 +800,58 @@ const removeExerciseFromDay = async (dayId: string, exerciseIdToRemove: string) 
       })
     }));
     await updateDoc(programDocRef, { workoutDays: workoutDaysToSave, updatedAt: serverTimestamp() });
-    activeProgram.workoutDays = newWorkoutDaysArray; // Keep display fields in local reactive state
+    activeProgram.workoutDays = newWorkoutDaysArray;
   } catch (e: any) { error.value = "Failed to remove exercise. " + e.message; }
   finally { isSaving.value = false; }
+};
+
+const confirmAndDeleteActiveProgram = () => {
+  if (!activeProgram.id) return; 
+
+  if (confirm(`Are you sure you want to delete the entire routine "${activeProgram.programName}"? This action cannot be undone.`)) {
+    deleteActiveProgramFromFirestore();
+  }
+};
+
+const deleteActiveProgramFromFirestore = async () => {
+  if (!user.value || !user.value.uid) {
+    error.value = "User not logged in.";
+    return;
+  }
+  if (!activeProgram.id) {
+    error.value = "No active routine to delete.";
+    return;
+  }
+
+  isSaving.value = true; 
+  error.value = null;
+
+  try {
+    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
+    await deleteDoc(programDocRef);
+
+    activeProgram.id = null;
+    activeProgram.programName = '';
+    activeProgram.description = '';
+    activeProgram.workoutDays = [];
+    
+    editableProgramDetails.programName = ''; 
+    editableProgramDetails.description = '';
+    
+    isInOverallEditMode.value = false; 
+    showEditProgramDetailsForm.value = false;
+    cancelEditWorkoutDayName();
+    cancelAddOrEditExercise();
+    addingNewDay.value = false;
+
+    alert('Routine deleted successfully.');
+
+  } catch (e: any) {
+    console.error("Error deleting routine:", e);
+    error.value = "Failed to delete routine. " + e.message;
+  } finally {
+    isSaving.value = false;
+  }
 };
 
 // --- Lifecycle Hooks ---
@@ -641,7 +870,7 @@ onMounted(() => {
       isLoading.value = false;
       activeProgram.id = null; activeProgram.programName = '';
       activeProgram.description = ''; activeProgram.workoutDays = [];
-      if (currentUser === null) {
+      if (currentUser === null) { 
           error.value = 'You must be logged in to manage routines.';
       }
     }
@@ -657,7 +886,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* ... (All your existing styles from the previous version should be here) ... */
 .routines-view { padding: 20px; max-width: 800px; margin: 20px auto; background-color: #fdfdfd; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
 .routine-actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom:15px; border-bottom: 1px solid #eee;}
 .routine-actions-header h1 { margin: 0; font-size: 1.8em; }
@@ -719,4 +947,69 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 .error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-top: 15px; }
 .checkbox-label { display: flex; align-items: center; font-weight: normal; color: #555; font-size: 0.9em; }
 .checkbox-label input[type="checkbox"] { width: auto; margin-right: 8px; }
+
+.import-routine-section {
+  margin-bottom: 20px;
+}
+.import-routine-section h4, .manual-create-section h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+.import-routine-section textarea {
+  width: 100%;
+  min-height: 150px; 
+  font-family: monospace; 
+  font-size: 0.9em;
+}
+.section-divider {
+  margin: 30px 0;
+  border: 0;
+  border-top: 1px solid #eee;
+}
+
+.button-danger {
+  padding: 10px 15px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+  box-sizing: border-box;
+}
+.button-danger:hover:not(:disabled) {
+  background-color: #c82333;
+}
+.button-danger:disabled {
+  background-color: #f8d7da;
+  color: #721c24;
+  cursor: not-allowed;
+}
+
+.full-width {
+  width: 100%;
+  display: block; 
+}
+
+.routine-level-actions {
+  margin-top: 25px; 
+  padding: 20px;
+  border: 1px solid #f5c6cb; 
+  background-color: #fdf2f2; 
+  border-radius: 6px;
+}
+.routine-level-actions h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #721c24; 
+}
+.warning-text {
+    color: #721c24;
+    margin-top: 10px;
+    font-size: 0.85em;
+}
+.small-text { 
+    font-size: 0.9em;
+}
 </style>
