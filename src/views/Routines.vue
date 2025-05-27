@@ -43,7 +43,6 @@
         <div class="form-group"><label for="editProgramDescription">Description (Optional):</label><textarea id="editProgramDescription" v-model="editableProgramDetails.description"></textarea></div>
         <div class="form-actions">
             <button type="submit" :disabled="isSaving" class="button-primary small">{{ isSaving ? 'Saving...' : 'Save Details' }}</button>
-            {/* Cancel for this form is handled by "Done Editing" top button */}
         </div>
       </form>
 
