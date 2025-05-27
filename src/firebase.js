@@ -3,12 +3,12 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAZCEIkoWKqMBG0h3rAiWN_wak2837PZ5w",
-  authDomain: "lift-assist-progression-app.firebaseapp.com",
-  projectId: "lift-assist-progression-app",
-  storageBucket: "lift-assist-progression-app.firebasestorage.app",
-  messagingSenderId: "573110456508",
-  appId: "1:573110456508:web:691e2e62fde6cd17d640b9"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 const app = initializeApp(firebaseConfig);
