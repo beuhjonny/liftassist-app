@@ -17,6 +17,15 @@ a,
   padding: 3px;
 }
 
+.card {
+  /* This would be a global default for all .card elements */
+  background-color: #fff !important; /* Ensure it's white, potentially overriding others */
+  color: #333 !important;         /* Default dark text for all cards */
+  /* You might also put other common card properties here like padding, border-radius, box-shadow,
+     and then remove them from the scoped component styles to avoid duplication,
+     but that's a bigger refactor. */
+}
+
 @media (hover: hover) {
   a:hover {
     background-color: hsla(160, 100%, 37%, 0.2);

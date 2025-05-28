@@ -75,7 +75,7 @@
         </div>
       </form>
 
-      <div class="workout-days-list">
+<div class="workout-days-list">
         <div v-for="day in sortedWorkoutDays" :key="day.id" class="workout-day-entry card-inset">
           <div class="workout-day-entry-header">
             <h4 v-if="!(isInOverallEditMode && editingDayNameId === day.id)" class="day-name-display">{{ day.dayName }}</h4>
@@ -91,71 +91,136 @@
           </div>
 
           <ul v-if="day.exercises && day.exercises.length > 0" class="exercise-list-display">
-            <li v-for="exercise in day.exercises" :key="exercise.id" class="exercise-item-display">
-              <div class="exercise-info-text">
-                <span class="ex-name">{{ exercise.exerciseName }}</span>
-                <span class="ex-details">
-                  : {{ exercise.targetSets }} sets, {{ exercise.currentPrescribedReps ?? exercise.minReps }} reps, {{ exercise.currentPrescribedWeight ?? 'N/A' }} lbs
-                  <span v-if="exercise.customRestSeconds">, {{ exercise.customRestSeconds }}s rest</span>
-                  <span v-else-if="isInOverallEditMode && (exercise.customRestSeconds === null || exercise.customRestSeconds === undefined)">, (Default Rest)</span>
-                  <span v-if="exercise.enableProgression === false" class="no-progression-note"> (No Auto-Progression)</span>
-                </span>
+            <li v-for="exercise in day.exercises" :key="exercise.id" class="exercise-item-with-inline-form">
+              <div class="exercise-item-display">
+                <div class="exercise-info-text">
+                  <span class="ex-name">{{ exercise.exerciseName }}</span>
+                  <span class="ex-details">
+                    : {{ exercise.targetSets }} sets, {{ exercise.currentPrescribedReps ?? exercise.minReps }} reps, {{ exercise.currentPrescribedWeight ?? 'N/A' }} lbs
+                    <span v-if="exercise.customRestSeconds">, {{ exercise.customRestSeconds }}s rest</span>
+                    <span v-else-if="isInOverallEditMode && (exercise.customRestSeconds === null || exercise.customRestSeconds === undefined)">, (Default Rest)</span>
+                    <span v-if="exercise.enableProgression === false" class="no-progression-note"> (No Auto-Progression)</span>
+                  </span>
+                </div>
+                <div v-if="isInOverallEditMode" class="exercise-item-actions">
+                  <button @click="startEditExercise(day.id, exercise)" class="button-icon extra-small" title="Edit Exercise">✏️</button>
+                  <button @click="removeExerciseFromDay(day.id, exercise.id)" :disabled="isSaving" class="button-icon extra-small danger" title="Remove Exercise">🗑️</button>
+                </div>
               </div>
-              <div v-if="isInOverallEditMode" class="exercise-item-actions">
-                <button @click="startEditExercise(day.id, exercise)" class="button-icon extra-small" title="Edit Exercise">✏️</button>
-                <button @click="removeExerciseFromDay(day.id, exercise.id)" :disabled="isSaving" class="button-icon extra-small danger" title="Remove Exercise">🗑️</button>
+
+              <div v-if="isInOverallEditMode && editingExerciseDayId === day.id && editingExercise.id === exercise.id" 
+                   class="exercise-form-container edit-exercise-form-inline" 
+                   style="margin-top: 10px; padding-top:10px; border-top: 1px dashed #ddd; margin-bottom: 10px; padding-bottom:10px; border-bottom: 1px dashed #ddd;">
+                <form @submit.prevent="addOrUpdateExercise(day.id)" class="add-exercise-form">
+                  <h5>{{ 'Edit Exercise: ' + editingExercise.exerciseName }}</h5>
+                  <div class="form-group"><label>Name:</label><input type="text" v-model="editingExercise.exerciseName" required /></div>
+                  
+                  <div class="form-group form-group-inline" v-if="editingExercise.id">
+                    <div>
+                        <label>Current Weight to Attempt Next (lbs):</label>
+                        <input type="number" v-model.number="editingExercise.currentWeightToDisplayOrEdit" step="0.1" />
+                    </div>
+                    <div>
+                        <label>Current Reps to Attempt Next:</label>
+                        <input type="number" v-model.number="editingExercise.currentRepsToDisplayOrEdit" step="1" min="1" />
+                    </div>
+                  </div>
+
+                  <div class="form-group form-group-inline">
+                    <div><label>Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
+                    <div><label>Rest (s):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" placeholder="Default (90s)" /></div>
+                  </div>
+                  <div class="form-group form-group-inline">
+                    <div><label>Min Reps:</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
+                    <div><label>Max Reps:</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label class="checkbox-label">
+                      <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?
+                    </label>
+                  </div>
+
+                  <div class="form-group form-group-inline">
+                    <div>
+                      <label>Reps to Add on Progression:</label>
+                      <input type="number" v-model.number="editingExercise.repOverloadStep" min="1" required :disabled="!editingExercise.enableProgression" />
+                    </div>
+                    <div>
+                      <label>Weight to Add on Progression (lbs):</label>
+                      <input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required :disabled="!editingExercise.enableProgression" />
+                    </div>
+                  </div>
+                  
+                  <div class="form-group"><label>Notes (Optional):</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
+                  <div class="form-actions">
+                    <button type="submit" :disabled="isSaving" class="button-primary small">Update Exercise</button>
+                    <button type="button" @click="cancelAddOrEditExercise" class="button-secondary small">Cancel</button>
+                  </div>
+                </form>
               </div>
             </li>
           </ul>
           <p v-if="(!day.exercises || day.exercises.length === 0) && !isInOverallEditMode" class="no-items-message small-text">
             No exercises defined for this day. Click "Edit Routine" to add some.
           </p>
+           <p v-if="isInOverallEditMode && (!day.exercises || day.exercises.length === 0) && !(addingExerciseToDayId === day.id && !editingExercise.id)" class="no-items-message small-text" style="margin-top:10px;">
+            No exercises yet for this day. Use the button below to add one.
+          </p>
 
-          <div v-if="isInOverallEditMode && (editingExerciseDayId === day.id || (addingExerciseToDayId === day.id && !editingExercise.id))" class="exercise-form-container">
+          <div v-if="isInOverallEditMode && addingExerciseToDayId === day.id && !editingExercise.id" class="exercise-form-container add-new-exercise-to-day-form" style="margin-top: 15px; padding-top:15px; border-top:1px dashed #ccc;">
             <form @submit.prevent="addOrUpdateExercise(day.id)" class="add-exercise-form">
-              <h5>{{ editingExercise.id ? 'Edit Exercise in ' + day.dayName : `Add New Exercise to ${day.dayName}` }}</h5>
+              <h5>{{ `Add New Exercise to ${day.dayName}` }}</h5>
               <div class="form-group"><label>Name:</label><input type="text" v-model="editingExercise.exerciseName" required /></div>
-              <div class="form-group" v-if="editingExercise.id">
-                <label>Current Weight to Attempt Next (lbs):</label>
-                <input type="number" v-model.number="editingExercise.currentWeightToDisplayOrEdit" step="0.1" />
-              </div>
-              <div class="form-group" v-if="editingExercise.id">
-                <label>Current Reps to Attempt Next:</label>
-                <input type="number" v-model.number="editingExercise.currentRepsToDisplayOrEdit" step="1" min="1" />
-              </div>
+              
               <div class="form-group form-group-inline">
                 <div><label>Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
-                <div><label>Min Reps:</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
-              </div>
-              <div class="form-group form-group-inline">
-                <div><label>Max Reps:</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
-                <div><label>Reps to Add on Progression:</label><input type="number" v-model.number="editingExercise.repOverloadStep" min="1" required /></div>
-              </div>
-              <div class="form-group form-group-inline">
-                <div><label>Weight to Add on Progression (lbs):</label><input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required /></div>
                 <div><label>Rest (s):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" placeholder="Default (90s)" /></div>
               </div>
+              <div class="form-group form-group-inline">
+                <div><label>Min Reps:</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
+                <div><label>Max Reps:</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
+              </div>
+
               <div class="form-group">
                 <label class="checkbox-label">
                   <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?
                 </label>
               </div>
+
+              <div class="form-group form-group-inline">
+                <div>
+                  <label>Reps to Add on Progression:</label>
+                  <input type="number" v-model.number="editingExercise.repOverloadStep" min="1" required :disabled="!editingExercise.enableProgression" />
+                </div>
+                <div>
+                  <label>Weight to Add on Progression (lbs):</label>
+                  <input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required :disabled="!editingExercise.enableProgression" />
+                </div>
+              </div>
+              
               <div class="form-group" v-if="!editingExercise.id && addingExerciseToDayId === day.id">
-                  <label>Starting Wt (lbs, for new exercise's progress):</label>
-                  <input type="number" v-model.number="editingExercise.startingWeight" step="0.1" placeholder="e.g., 45" />
+                <label>Starting Wt (lbs, for new exercise's progress):</label>
+                <input type="number" v-model.number="editingExercise.startingWeight" step="0.1" placeholder="e.g., 45" />
               </div>
               <div class="form-group"><label>Notes (Optional):</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
               <div class="form-actions">
-                  <button type="submit" :disabled="isSaving" class="button-primary small">{{ editingExercise.id ? 'Update Exercise' : 'Add Exercise' }}</button>
-                  <button type="button" @click="cancelAddOrEditExercise" class="button-secondary small">Cancel</button>
+                <button type="submit" :disabled="isSaving" class="button-primary small">Add Exercise</button>
+                <button type="button" @click="cancelAddOrEditExercise" class="button-secondary small">Cancel</button>
               </div>
             </form>
           </div>
-          <button v-if="isInOverallEditMode && editingExerciseDayId !== day.id && addingExerciseToDayId !== day.id" @click="prepareAddExerciseToDay(day.id)" class="button-primary-outline small add-exercise-btn">
+
+          <button
+            v-if="isInOverallEditMode && !(editingExerciseDayId === day.id && editingExercise.id) && !(addingExerciseToDayId === day.id && !editingExercise.id)"
+            @click="prepareAddExerciseToDay(day.id)"
+            class="button-primary-outline small add-exercise-btn"
+            style="margin-top:15px;">
             + Add Exercise to {{day.dayName}}
           </button>
         </div>
       </div>
+
 
       <div v-if="isInOverallEditMode" class="add-day-controls card-inset">
           <button v-if="!addingNewDay" @click="addingNewDay = true" class="button-primary-outline">Add New Workout Day</button>
@@ -214,18 +279,18 @@ For each exercise I provide for a given day, create an object with these fields:
 - `exerciseName`: (String) **Crucial.** The exact name of the exercise.
 - `targetSets`: (Number) The number of sets I do. If I provide logs, count the sets. If I just list exercises, assume 3 sets unless I specify otherwise.
 - `minReps`: (Number) The minimum target repetitions.
-    - If I provide logs (like screenshots): Use the rep count from the *first logged set* for this exercise.
-    - If I give a single rep target (e.g., "6 reps"): Use that number.
-    - If unclear, assume 6.
+  - If I provide logs (like screenshots): Use the rep count from the *first logged set* for this exercise.
+  - If I give a single rep target (e.g., "6 reps"): Use that number.
+  - If unclear, assume 6.
 - `maxReps`: (Number) The maximum target repetitions.
-    - If `minReps` (derived as above) is less than 10, set `maxReps` to 12.
-    - If `minReps` is 10 or more, set `maxReps` to `minReps + 2` (e.g., if `minReps` is 10, `maxReps` is 12; if `minReps` is 12, `maxReps` is 14).
+  - If `minReps` (derived as above) is less than 10, set `maxReps` to 12.
+  - If `minReps` is 10 or more, set `maxReps` to `minReps + 2` (e.g., if `minReps` is 10, `maxReps` is 12; if `minReps` is 12, `maxReps` is 14).
 - `repOverloadStep`: (Number) Default to `1`.
 - `weightIncrement`: (Number) Use a sensible default based on the exercise type if I don't specify (e.g., 10 for Deadlifts/Squats, 5 for Bench/OHP/Rows, 2.5 for isolation/dumbbell work).
 - `startingWeight`: (Number) The weight I currently use or want to start with.
-    - If I provide logs: Use the weight from the *first logged set*.
-    - If I specify a starting weight, use that.
-    - If unclear, make a conservative common starting guess (e.g., 45 for an empty barbell, appropriate dumbbell weights). **Please state if you're guessing this value.**
+  - If I provide logs: Use the weight from the *first logged set*.
+  - If I specify a starting weight, use that.
+  - If unclear, make a conservative common starting guess (e.g., 45 for an empty barbell, appropriate dumbbell weights). **Please state if you're guessing this value.**
 - `customRestSeconds`: (Number or `null`) My target rest time in seconds. If I specify (e.g., "90s rest"), convert it. Otherwise, use `null`.
 - `enableProgression`: (Boolean) Default to `true`. Only set to `false` if I explicitly state the exercise should not auto-progress.
 - `notesForExercise`: (String or `null`) Any specific notes I have for the exercise. If none, use `null`.
@@ -706,39 +771,73 @@ const prepareAddExerciseToDay = (dayId: string) => {
 };
 
 const startEditExercise = async (dayId: string, exerciseToEdit: ExerciseConfigForDisplay) => {
-  cancelAddOrEditExercise(); cancelEditWorkoutDayName();
-  editingExerciseDayId.value = dayId;
+  const isCurrentlyEditingThis = editingExerciseDayId.value === dayId && editingExercise.id === exerciseToEdit.id;
 
-  editingExercise.id = exerciseToEdit.id;
-  editingExercise.exerciseName = exerciseToEdit.exerciseName || '';
-  editingExercise.targetSets = exerciseToEdit.targetSets || 3;
-  editingExercise.minReps = exerciseToEdit.minReps || 8;
-  editingExercise.maxReps = exerciseToEdit.maxReps || 12;
-  editingExercise.repOverloadStep = exerciseToEdit.repOverloadStep || 1;
-  editingExercise.weightIncrement = exerciseToEdit.weightIncrement || 5;
-  editingExercise.customRestSeconds = exerciseToEdit.customRestSeconds ?? undefined;
-  editingExercise.notesForExercise = exerciseToEdit.notesForExercise || '';
-  editingExercise.enableProgression = typeof exerciseToEdit.enableProgression === 'boolean' ? exerciseToEdit.enableProgression : true;
-  editingExercise.startingWeight = undefined; 
-  editingExercise.currentWeightToDisplayOrEdit = exerciseToEdit.currentPrescribedWeight;
-  editingExercise.currentRepsToDisplayOrEdit = exerciseToEdit.currentPrescribedReps;
+  if (isCurrentlyEditingThis) {
+    cancelAddOrEditExercise(); // This will clear editingExercise.id, thus closing the form
+    // You might optionally call cancelEditWorkoutDayName() here if you want to ensure
+    // day name editing also cancels, though it's likely not what's active.
+  } else {
+    // If a different exercise is being edited, or "add new" is open, or day name is being edited, cancel them.
+    cancelAddOrEditExercise();
+    cancelEditWorkoutDayName();
 
-  if ((editingExercise.currentWeightToDisplayOrEdit === undefined || editingExercise.currentRepsToDisplayOrEdit === undefined) &&
-      user.value && user.value.uid && exerciseToEdit.exerciseName) {
-    const progressKey = exerciseToEdit.exerciseName.toLowerCase().replace(/\s+/g, '_');
-    const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
-    try {
-      const progressSnap = await getDoc(progressDocRef);
-      if (progressSnap.exists()) {
-        const progressData = progressSnap.data() as ExerciseProgress;
-        editingExercise.currentWeightToDisplayOrEdit = progressData?.currentWeightToAttempt;
-        editingExercise.currentRepsToDisplayOrEdit = progressData?.repsToAttemptNext;
-      } else {
-         editingExercise.currentRepsToDisplayOrEdit = editingExercise.minReps;
+    // Proceed to open/populate the form for the clicked exercise
+    editingExerciseDayId.value = dayId;
+    editingExercise.id = exerciseToEdit.id; // This ID makes it an "edit" context
+    editingExercise.exerciseName = exerciseToEdit.exerciseName || '';
+    editingExercise.targetSets = exerciseToEdit.targetSets || 3;
+    editingExercise.minReps = exerciseToEdit.minReps || 8;
+    editingExercise.maxReps = exerciseToEdit.maxReps || 12;
+    editingExercise.repOverloadStep = exerciseToEdit.repOverloadStep || 1;
+    editingExercise.weightIncrement = exerciseToEdit.weightIncrement || 5;
+    editingExercise.customRestSeconds = exerciseToEdit.customRestSeconds ?? undefined; // Use ?? for null/undefined
+    editingExercise.notesForExercise = exerciseToEdit.notesForExercise || '';
+    editingExercise.enableProgression = typeof exerciseToEdit.enableProgression === 'boolean' ? exerciseToEdit.enableProgression : true;
+    
+    // These are specific to editing an existing exercise and its current progress state
+    editingExercise.currentWeightToDisplayOrEdit = exerciseToEdit.currentPrescribedWeight;
+    editingExercise.currentRepsToDisplayOrEdit = exerciseToEdit.currentPrescribedReps;
+    editingExercise.startingWeight = undefined; // Not used when editing an existing exercise's config
+
+    // Fallback for fetching progress data if not available on exerciseToEdit or needs refresh
+    if ((editingExercise.currentWeightToDisplayOrEdit === undefined || editingExercise.currentRepsToDisplayOrEdit === undefined) &&
+        user.value && user.value.uid && exerciseToEdit.exerciseName) {
+      const progressKey = exerciseToEdit.exerciseName.toLowerCase().replace(/\s+/g, '_');
+      const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
+      try {
+        const progressSnap = await getDoc(progressDocRef);
+        if (progressSnap.exists()) {
+          const progressData = progressSnap.data() as ExerciseProgress;
+          // Only update if the form values are still undefined from exerciseToEdit
+          if (editingExercise.currentWeightToDisplayOrEdit === undefined) {
+               editingExercise.currentWeightToDisplayOrEdit = progressData?.currentWeightToAttempt;
+          }
+          if (editingExercise.currentRepsToDisplayOrEdit === undefined) {
+              editingExercise.currentRepsToDisplayOrEdit = progressData?.repsToAttemptNext;
+          }
+        } else {
+           // If no progress doc, and currentRepsToDisplayOrEdit is still undefined, default to minReps from config
+           if (editingExercise.currentRepsToDisplayOrEdit === undefined) {
+              editingExercise.currentRepsToDisplayOrEdit = editingExercise.minReps;
+           }
+        }
+      } catch (e) { 
+        console.error("Fallback fetch progress error for " + exerciseToEdit.exerciseName + ":", e); 
+        // If error and still undefined, ensure reps default to minReps
+        if (editingExercise.currentRepsToDisplayOrEdit === undefined && editingExercise.minReps) {
+            editingExercise.currentRepsToDisplayOrEdit = editingExercise.minReps;
+        }
       }
-    } catch (e) { console.error("Fallback fetch progress error:", e); }
+    }
+    
+    // Final safety net for reps if it's still undefined
+    if (editingExercise.currentRepsToDisplayOrEdit === undefined && editingExercise.minReps) {
+        editingExercise.currentRepsToDisplayOrEdit = editingExercise.minReps;
+    }
+
+    addingExerciseToDayId.value = null; // Ensure we are not in "add new exercise" mode for this day
   }
-  addingExerciseToDayId.value = null;
 };
 
 const cancelAddOrEditExercise = () => {
@@ -979,7 +1078,7 @@ onUnmounted(() => {
   margin-bottom: 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   text-align: left;
-  border: 1px solid var(--color-border); }
+  border: 1px solid var(--color-border); color: #333;  }
 .card-inset { background-color: #f9f9f9; padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom:15px; border: 1px solid #e9ecef;}
 .active-routine-display h2, .active-routine-display h3, .active-routine-display h4, .active-routine-display h5 { text-align:left; margin-bottom: 0.5em; }
 .active-routine-display h3 { margin-top: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid #eee; }

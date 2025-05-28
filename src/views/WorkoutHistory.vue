@@ -242,6 +242,7 @@ onUnmounted(() => {
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
   border: 1px solid var(--color-border);
+    color: #333;
 }
 .history-item-header {
   border-bottom: 1px solid #eee;
