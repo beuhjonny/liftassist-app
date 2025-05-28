@@ -41,14 +41,22 @@
               :class="{
                 'completed-done': index < workoutLog.length && workoutLog[index]?.status === 'done',
                 'completed-failed': index < workoutLog.length && workoutLog[index]?.status === 'failed',
-                'active': index === workoutLog.length
+                'active': index === workoutLog.length,
+                'tooltip-active': showMobileTooltipForIndex === index
               }"
               :title="`${set.exerciseName} - Set ${set.setNumberWithinExercise}`"
+              @click="toggleProgressDotTooltip(index, `${set.exerciseName} - Set ${set.setNumberWithinExercise}`)"
             ></span>
-            <span v-if="(index + 1) % 3 === 0 && (index + 1) < totalSessionSets" class="progress-separator"></span>
+            <span
+              v-if="index < allSetsInSessionForTimeline.length - 1 && set.exerciseName !== allSetsInSessionForTimeline[index + 1].exerciseName"
+              class="progress-separator"
+            ></span>
           </template>
         </div>
+         <div v-if="showMobileTooltipForIndex !== null && workoutPhase === 'activeSet'" class="mobile-progress-tooltip">
+            {{ mobileTooltipText }}
         </div>
+      </div>
 
       <div class="current-exercise-block">
         <div class="active-set-timer-display">Set Timer: {{ formattedActiveSetTime }}</div>
@@ -56,14 +64,14 @@
         <p v-if="currentExercise.notesForExercise" class="exercise-notes">
           <em>Notes: {{ currentExercise.notesForExercise }}</em>
         </p>
-       <div class="current-set-info card-inset">
-  <h3>Set {{ currentSetNumber }} of {{ currentExercise.targetSets }}</h3>
-  <div class="prescription-details">
-    <span class="prescription-reps">{{ currentExercise.prescribedReps }} reps</span>
-    <span class="prescription-separator">@</span>
-    <span class="prescription-weight">{{ currentExercise.prescribedWeight }} lbs</span>
-  </div>
-</div>
+        <div class="current-set-info card-inset">
+          <h3>Set {{ currentSetNumber }} of {{ currentExercise.targetSets }}</h3>
+          <div class="prescription-details">
+            <span class="prescription-reps">{{ currentExercise.prescribedReps }} reps</span>
+            <span class="prescription-separator">@</span>
+            <span class="prescription-weight">{{ currentExercise.prescribedWeight }} lbs</span>
+          </div>
+        </div>
 
         <div class="set-actions">
           <button @click="logSet('done')" class="button-done">DONE</button>
@@ -76,20 +84,28 @@
       <h1 class="workout-day-title">{{ currentWorkoutDayDetails?.dayName }}</h1>
       <div v-if="totalSessionSets > 0" class="workout-progress-indicator">
         <div class="workout-progress-timeline">
-           <template v-for="(set, index) in allSetsInSessionForTimeline" :key="`progress-rest-${index}`">
+            <template v-for="(set, index) in allSetsInSessionForTimeline" :key="`progress-rest-${index}`">
             <span
               class="progress-dot"
               :class="{
                 'completed-done': index < workoutLog.length && workoutLog[index]?.status === 'done',
                 'completed-failed': index < workoutLog.length && workoutLog[index]?.status === 'failed',
-                'active': index === workoutLog.length
+                'active': index === workoutLog.length,
+                'tooltip-active': showMobileTooltipForIndex === index
               }"
               :title="`${set.exerciseName} - Set ${set.setNumberWithinExercise}`"
+              @click="toggleProgressDotTooltip(index, `${set.exerciseName} - Set ${set.setNumberWithinExercise}`)"
             ></span>
-            <span v-if="(index + 1) % 3 === 0 && (index + 1) < totalSessionSets" class="progress-separator"></span>
-          </template>
+            <span
+              v-if="index < allSetsInSessionForTimeline.length - 1 && set.exerciseName !== allSetsInSessionForTimeline[index + 1].exerciseName"
+              class="progress-separator"
+            ></span>
+            </template>
         </div>
+        <div v-if="showMobileTooltipForIndex !== null && workoutPhase === 'resting'" class="mobile-progress-tooltip">
+            {{ mobileTooltipText }}
         </div>
+      </div>
       <h2>RESTING...</h2>
       <div class="timer-display">{{ formattedRestTime }}</div>
       <div class="timer-bar-container">
@@ -141,7 +157,7 @@
         <p>Could not load workout day details. Please try again or check your routine setup.</p>
         <router-link to="/" class="button-secondary">Back to Home</router-link>
     </div>
-     <div v-if="!user && !isLoading && !error">
+      <div v-if="!user && !isLoading && !error">
         <p>Please <router-link to="/login">log in</router-link> to view workouts.</p>
     </div>
 
@@ -158,18 +174,14 @@ import { doc, getDoc, setDoc, updateDoc, collection, writeBatch, serverTimestamp
 import { db } from '../firebase.js';
 import useAuth from '../composables/useAuth';
 import { useRouter } from 'vue-router';
-// Assuming ExerciseProgress might be defined in a shared types file or here if not already
-// For example:
+
 interface ExerciseProgress {
   exerciseName: string; currentWeightToAttempt: number; repsToAttemptNext: number;
   lastWorkoutAllSetsSuccessfulAtCurrentWeight?: boolean;
   consecutiveFailedWorkoutsAtCurrentWeightAndReps?: number;
   lastPerformedDate?: any; // Firestore Timestamp or null
 }
-// import { type ExerciseProgress } from '../types';
 
-
-// --- Type Definitions ---
 type WorkoutPhase = 'overview' | 'activeSet' | 'resting' | 'complete';
 
 interface ExerciseConfigInRoutine {
@@ -232,6 +244,10 @@ const workoutEndTime = ref<Date | null>(null);
 
 const activeSetTimeElapsed = ref(0);
 let activeSetTimerInterval: number | undefined = undefined;
+
+// --- Mobile Tooltip State ---
+const showMobileTooltipForIndex = ref<number | null>(null);
+const mobileTooltipText = ref<string>('');
 
 // --- Computed Properties ---
 const totalSessionSets = computed(() => {
@@ -350,6 +366,17 @@ const formattedActiveSetTime = computed(() => {
 });
 
 // --- Functions ---
+
+const toggleProgressDotTooltip = (index: number, text: string) => {
+  if (showMobileTooltipForIndex.value === index) {
+    showMobileTooltipForIndex.value = null; // Hide if clicking the same dot
+    mobileTooltipText.value = '';
+  } else {
+    showMobileTooltipForIndex.value = index;
+    mobileTooltipText.value = text;
+  }
+};
+
 const startActivitySetTimer = () => {
   activeSetTimeElapsed.value = 0;
   if (activeSetTimerInterval) clearInterval(activeSetTimerInterval);
@@ -373,7 +400,8 @@ const fetchWorkoutData = async () => {
   sessionExercises.length = 0; workoutLog.length = 0;
   currentExerciseIndex.value = 0; currentSetNumber.value = 1;
   workoutPhase.value = 'overview'; workoutStartTime.value = null; workoutEndTime.value = null;
-  showActualRepsInputForFail.value = false; activeSetTimeElapsed.value = 0; // Reset active set timer
+  showActualRepsInputForFail.value = false; activeSetTimeElapsed.value = 0;
+  showMobileTooltipForIndex.value = null; mobileTooltipText.value = ''; // Reset tooltip
 
   try {
     const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', props.programId);
@@ -417,6 +445,7 @@ const beginActiveWorkout = () => {
   workoutStartTime.value = new Date();
   workoutPhase.value = 'activeSet';
   startActivitySetTimer();
+  showMobileTooltipForIndex.value = null; // Ensure tooltip is hidden when workout starts
 };
 
 const playTimerSound = () => { if (timerAudioPlayer.value) { timerAudioPlayer.value.currentTime = 0; timerAudioPlayer.value.play().catch(e => console.warn("Audio play failed:", e)); } };
@@ -428,8 +457,9 @@ const startRestTimer = () => {
     restDurationToUse.value = DEFAULT_REST_SECONDS;
   }
   restCountdown.value = restDurationToUse.value;
+  showMobileTooltipForIndex.value = null; // Hide tooltip when rest starts
 
-  if (timerInterval) clearInterval(timerInterval); // Clear any existing timer before starting a new one
+  if (timerInterval) clearInterval(timerInterval);
 
   timerInterval = setInterval(() => {
     if (restCountdown.value > 0) {
@@ -438,7 +468,7 @@ const startRestTimer = () => {
       clearInterval(timerInterval);
       timerInterval = undefined;
       playTimerSound();
-      proceedToNextSet(); // <-- ADD THIS LINE TO AUTO-ADVANCE
+      proceedToNextSet();
     }
   }, 1000);
 };
@@ -466,6 +496,7 @@ const logSet = (status: 'done' | 'failed') => {
     currentExerciseIndex.value++;
     workoutPhase.value = 'complete';
     workoutEndTime.value = new Date();
+    showMobileTooltipForIndex.value = null; // Hide tooltip on completion
   } else {
     workoutPhase.value = 'resting';
     startRestTimer();
@@ -481,6 +512,7 @@ const proceedToNextSet = () => {
   }
   showActualRepsInputForFail.value = false;
   actualRepsForFailedSet.value = null;
+  showMobileTooltipForIndex.value = null; // Hide tooltip when proceeding
 
   if (currentExercise.value) {
     if (currentSetNumber.value < currentExercise.value.targetSets) {
@@ -574,6 +606,7 @@ const finishWorkoutAndSave = async () => {
     alert("Workout saved and progress updated!");
     workoutLog.length = 0; currentExerciseIndex.value = 0; currentSetNumber.value = 1;
     workoutPhase.value = 'overview'; showActualRepsInputForFail.value = false;
+    showMobileTooltipForIndex.value = null; mobileTooltipText.value = ''; // Reset tooltip
     router.push('/');
   } catch (e: any) { console.error("Error finishing workout:", e); error.value = "Failed to save. " + e.message; }
   finally { isSaving.value = false; }
@@ -594,6 +627,7 @@ onMounted(() => {
     } else {
       isLoading.value = false; activeProgramName.value = null; currentWorkoutDayDetails.value = null;
       sessionExercises.length = 0; workoutLog.length = 0; workoutPhase.value = 'overview';
+      showMobileTooltipForIndex.value = null; mobileTooltipText.value = ''; // Reset tooltip
       if (currentUser === null) { error.value = "Please log in."; }
     }
     previousUserRef.value = currentUser;
@@ -601,6 +635,14 @@ onMounted(() => {
   if (timerAudioPlayer.value) { timerAudioPlayer.value.load(); }
 });
 onUnmounted(() => { if (userWatcherUnsubscribe) userWatcherUnsubscribe(); if (timerInterval) clearInterval(timerInterval); if (activeSetTimerInterval) clearInterval(activeSetTimerInterval); });
+
+watch(workoutPhase, (newPhase, oldPhase) => {
+    // If the phase changes, hide any active mobile tooltip
+    if (newPhase !== oldPhase) {
+        showMobileTooltipForIndex.value = null;
+        mobileTooltipText.value = '';
+    }
+});
 
 </script>
 
@@ -621,15 +663,27 @@ onUnmounted(() => { if (userWatcherUnsubscribe) userWatcherUnsubscribe(); if (ti
 .overview-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px;}
 .button-begin-workout { width: 100%; padding: 15px; font-size: 1.2em; }
 
-.workout-progress-indicator { margin-bottom: 20px; }
+.workout-progress-indicator { margin-bottom: 20px; text-align: center; /* For the tooltip */ }
 .workout-progress-timeline { display: flex; justify-content: center; align-items: center; gap: 4px; margin-bottom: 5px; padding: 5px 0; flex-wrap: wrap; }
-.progress-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #e0e0e0; transition: background-color 0.3s ease, transform 0.2s ease; }
+.progress-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #e0e0e0; transition: background-color 0.3s ease, transform 0.2s ease; cursor: pointer; }
 .progress-dot.completed-done { background-color: #28a745; }
 .progress-dot.completed-failed { background-color: #ffc107; }
-.progress-dot.active { background-color: #007bff; transform: scale(1.2); }
+.progress-dot.active { background-color: #007bff; transform: scale(1.3); }
+.progress-dot.tooltip-active { outline: 2px solid #007bff; outline-offset: 1px; transform: scale(1.3); }
+.progress-dot[title]:hover { outline: 2px solid #007bff; transform: scale(1.2); }
 .progress-separator { width: 6px; height: 10px; background-color: #bbb; margin: 0 3px; border-radius: 2px; align-self: center; }
-.progress-dot[title]:hover { outline: 2px solid #007bff; }
-/* .progress-text was removed from template */
+
+.mobile-progress-tooltip {
+  display: inline-block; /* Allows it to be centered if parent is text-align: center */
+  background-color: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  margin-top: 10px;
+  max-width: 90%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
 
 .current-exercise-block h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.6em; color: #2c3e50; border-bottom: 2px solid #007bff; padding-bottom: 10px;}
 .active-set-timer-display { text-align: right; font-size: 0.9em; color: #555; margin-bottom: 15px; padding-right: 5px; }
