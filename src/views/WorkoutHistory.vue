@@ -27,33 +27,38 @@
         </div>
 
         <div class="workout-summary card-inset">
-            <h4>Session Summary:</h4>
-            <p><strong>Workout Time:</strong> {{ formatDuration(workout.durationMinutes) }}</p>
-            <p><strong>Total Volume:</strong> {{ calculateTotalVolume(workout.performedExercises).toLocaleString() }} lbs</p>
-            <p><strong>Total Sets Logged:</strong> {{ getTotalSetsLogged(workout.performedExercises) }}</p>
-            <p><strong>Sets "DONE":</strong> {{ getSetsByStatus(workout.performedExercises, 'done') }}</p>
-            <p><strong>Sets "FAIL":</strong> {{ getSetsByStatus(workout.performedExercises, 'failed') }}</p>
+          <h4>Session Summary:</h4>
+          <p><strong>Workout Time:</strong> {{ formatDuration(workout.durationMinutes) }}</p>
+          <p><strong>Total Volume:</strong> {{ calculateTotalVolume(workout.performedExercises).toLocaleString() }} lbs</p>
+          <p><strong>Total Sets:</strong> {{ getConsolidatedSetsInfo(workout.performedExercises) }}</p>
 
-            <h5 v-if="workout.performedExercises && workout.performedExercises.length > 0">Exercise Breakdown:</h5>
-            <ul class="exercise-summary-list" v-if="workout.performedExercises && workout.performedExercises.length > 0">
-                <li v-for="ex in workout.performedExercises" :key="ex.exerciseId || ex.exerciseName">
-                    <strong>{{ ex.exerciseName }}</strong>
-                    <span v-if="ex.isPR" title="Personal Record!"> 🏅</span>
-                    : {{ getExerciseStatusForHistory(ex) }}
-                    <ul v-if="expandedExercises[workout.id + '-' + ex.exerciseId]" class="set-details-list">
-                        <li v-for="(set, setIndex) in ex.sets" :key="setIndex">
-                           Set {{ set.setNumber }}: {{ set.actualWeight }} lbs x {{ set.actualReps }} reps ({{set.status}})
-                        </li>
-                    </ul>
-                    <button class="button-link toggle-set-details" @click="toggleExerciseDetails(workout.id, ex.exerciseId)">
-                        {{ expandedExercises[workout.id + '-' + ex.exerciseId] ? 'Hide Sets' : 'Show Sets' }}
-                    </button>
+          <div class="exercise-breakdown-header" v-if="workout.performedExercises && workout.performedExercises.length > 0">
+            <h5>Exercise Breakdown:</h5>
+            <button @click="toggleAllDetailsForWorkout(workout.id)" class="button-link">
+              {{ allDetailsExpandedForWorkout[workout.id] ? 'Hide Set Details' : 'Show Set Details' }}
+            </button>
+          </div>
+
+          <ul class="exercise-summary-list" v-if="workout.performedExercises && workout.performedExercises.length > 0">
+            <li v-for="ex in workout.performedExercises" :key="ex.exerciseId || ex.exerciseName">
+              <strong>{{ ex.exerciseName }}</strong>
+              <span v-if="ex.isPR" title="Personal Record!"> 🏅</span>
+              <span>: {{ getExerciseStatusForHistory(ex) }}</span>
+              <span class="representative-set-info" v-if="ex.sets && ex.sets.length > 0">
+                , {{ getRepresentativeSetInfo(ex.sets) }}
+              </span>
+              <ul v-if="allDetailsExpandedForWorkout[workout.id] && ex.sets && ex.sets.length > 0" class="set-details-list">
+                <li v-for="(set, setIndex) in ex.sets" :key="setIndex">
+                  Set {{ set.setNumber }}: {{ set.actualWeight }} lbs x {{ set.actualReps }} reps ({{set.status}})
                 </li>
-            </ul>
-            <div v-if="workout.overallSessionNotes" class="session-notes-history">
-              <strong>Overall Session Notes:</strong>
-              <p>{{ workout.overallSessionNotes }}</p>
-            </div>
+              </ul>
+            </li>
+          </ul>
+
+          <div v-if="workout.overallSessionNotes" class="session-notes-history">
+            <strong>Overall Session Notes:</strong>
+            <p>{{ workout.overallSessionNotes }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -67,11 +72,11 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, watch } from 'vue';
 import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
-import { db } from '../firebase.js';
-import useAuth from '../composables/useAuth';
+import { db } from '../firebase.js'; // Ensure this path is correct
+import useAuth from '../composables/useAuth'; // Ensure this path is correct
 
 // --- Interfaces (should match what's saved) ---
-interface LoggedSetData { // Full structure from WorkoutActive
+interface LoggedSetData {
   exerciseId: string;
   exerciseName: string;
   setNumber: number;
@@ -87,7 +92,7 @@ interface PerformedExerciseInLog {
   exerciseId: string;
   exerciseName: string;
   sets: LoggedSetData[];
-  isPR?: boolean; // Expect this from new logs
+  isPR?: boolean;
 }
 
 interface LoggedWorkout {
@@ -109,17 +114,18 @@ const { user } = useAuth();
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 const loggedWorkouts = reactive<LoggedWorkout[]>([]);
-const expandedExercises = reactive<Record<string, boolean>>({}); // For toggling set details
+const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
 
 const fetchWorkoutHistory = async () => {
   if (!user.value || !user.value.uid) {
     error.value = "User not available.";
     isLoading.value = false;
+    loggedWorkouts.length = 0; // Clear workouts if no user
     return;
   }
   isLoading.value = true;
   error.value = null;
-  loggedWorkouts.length = 0;
+  loggedWorkouts.length = 0; // Clear previous results before fetching new ones
 
   try {
     const historyCollectionRef = collection(db, 'users', user.value.uid, 'loggedWorkouts');
@@ -150,7 +156,7 @@ const formatDuration = (minutes: number | undefined): string => {
   const m = minutes % 60;
   let formatted = '';
   if (h > 0) formatted += `${h}h `;
-  if (m > 0 || h === 0) formatted += `${m}m`; // Show 0m if duration is less than 1 minute but non-zero seconds (though we only have minutes)
+  if (m > 0 || h === 0) formatted += `${m}m`;
   return formatted.trim();
 };
 
@@ -179,28 +185,68 @@ const getSetsByStatus = (performedExercises: PerformedExerciseInLog[] | undefine
   }, 0);
 };
 
+const getConsolidatedSetsInfo = (performedExercises: PerformedExerciseInLog[] | undefined): string => {
+  if (!performedExercises) return 'N/A';
+  const total = getTotalSetsLogged(performedExercises);
+  const done = getSetsByStatus(performedExercises, 'done');
+  const failed = getSetsByStatus(performedExercises, 'failed');
+  return `${total} (Done: ${done}, Failed: ${failed})`;
+};
+
+const getRepresentativeSetInfo = (sets: LoggedSetData[]): string => {
+  if (!sets || sets.length === 0) return 'No sets recorded';
+  let representativeSet: LoggedSetData | null = null;
+  let maxWeight = -1;
+
+  for (const set of sets) {
+    if (set.status === 'done' && set.actualReps > 0 && typeof set.actualWeight === 'number' && set.actualWeight >= 0) {
+      if (set.actualWeight > maxWeight) {
+        maxWeight = set.actualWeight;
+        representativeSet = set;
+      } else if (set.actualWeight === maxWeight && representativeSet && set.actualReps > representativeSet.actualReps) {
+        representativeSet = set;
+      }
+    }
+  }
+  
+  if (!representativeSet) {
+    representativeSet = sets.find(s => s.actualReps > 0 && typeof s.actualWeight === 'number' && s.actualWeight >=0) || (sets.length > 0 ? sets[0] : null);
+  }
+
+  if (representativeSet && typeof representativeSet.actualWeight === 'number' && typeof representativeSet.actualReps === 'number') {
+    return `${representativeSet.actualWeight} lbs x ${representativeSet.actualReps} reps`;
+  }
+  return 'Set data N/A';
+};
+
 const getExerciseStatusForHistory = (exercise: PerformedExerciseInLog): string => {
   const doneSets = exercise.sets.filter(s => s.status === 'done').length;
   const totalPerformed = exercise.sets.length;
-  // Note: We don't have targetSets from the routine here, so status is simpler.
   if (totalPerformed === 0) return "No sets recorded.";
   return `${doneSets}/${totalPerformed} sets done.`;
 };
 
-const toggleExerciseDetails = (workoutId: string, exerciseId: string) => {
-    const key = `${workoutId}-${exerciseId}`;
-    expandedExercises[key] = !expandedExercises[key];
+const toggleAllDetailsForWorkout = (workoutId: string) => {
+  allDetailsExpandedForWorkout[workoutId] = !allDetailsExpandedForWorkout[workoutId];
 };
 
 let userWatcherUnsubscribe: (() => void) | null = null;
 onMounted(() => {
-  isLoading.value = true;
-  userWatcherUnsubscribe = watch(user, (currentUser) => {
+  isLoading.value = true; 
+  userWatcherUnsubscribe = watch(user, (currentUser, previousUser) => {
     if (currentUser && currentUser.uid) {
-      fetchWorkoutHistory();
+      // Fetch only if user changed or if workouts haven't been loaded for current user
+      if (!previousUser || currentUser.uid !== previousUser.uid || loggedWorkouts.length === 0 && !error.value) {
+        fetchWorkoutHistory();
+      } else {
+        isLoading.value = false; // Data likely already loaded for this user
+      }
     } else {
       isLoading.value = false;
       loggedWorkouts.length = 0;
+      for (const key in allDetailsExpandedForWorkout) { // Clear expansion state on logout
+        delete allDetailsExpandedForWorkout[key];
+      }
     }
   }, { immediate: true });
 });
@@ -214,45 +260,49 @@ onUnmounted(() => {
 
 <style scoped>
 .history-view {
-  /* padding: 20px; */ /* Remove horizontal padding */
-  padding-top: 20px; /* Keep vertical padding if desired */
+  padding-top: 20px;
   padding-bottom: 20px;
-  max-width: 800px; /* Content max width */
-  margin: 0 auto;   /* Center content area */
+  max-width: 800px;
+  margin: 0 auto;
 }
 .history-view h1 {
   text-align: center;
   margin-bottom: 30px;
+  /* Assuming this should use theme color for dark mode */
+  color: var(--color-heading);
 }
-.card { /* Keep general card style if used for error/loading messages */
+
+/* General card style for loading/error/no-history messages */
+.card {
   background-color: #fff;
   padding: 20px 25px;
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
+  color: #333; /* Default dark text for these general cards */
 }
 
-/* New styles for history item to match summary */
 .history-item-card {
-  background-color: #fff;
+  background-color: #fff; /* Main card for each workout log */
   padding: 20px 25px;
   border-radius: 8px;
   margin-bottom: 25px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
   border: 1px solid var(--color-border);
-    color: #333;
+  color: #333; /* Default dark text for content directly in this card */
 }
+
 .history-item-header {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #e0e0e0; /* Softer border */
   padding-bottom: 15px;
   margin-bottom: 15px;
 }
 .history-item-header h2 {
   margin-top: 0;
   margin-bottom: 5px;
-  color: #333; /* Match WorkoutActive title */
+  color: #333;
   font-size: 1.5em;
 }
 .workout-date {
@@ -266,45 +316,86 @@ onUnmounted(() => {
   font-style: italic;
 }
 
-.workout-summary { /* Re-using class from WorkoutActive for consistency */
+.workout-summary { /* This is the light grey inset card: class="workout-summary card-inset" */
   background-color: #f8f9fa;
-  padding: 15px;
+  padding: 20px;
   border-radius: 6px;
-  margin-top: 15px;
-  border: 1px solid #e9ecef;
+  margin-top: 20px;
+  border: 1px solid #e0e0e0;
+  color: #333; /* Default dark text for this light inset area */
 }
-.workout-summary h4 { margin-top: 0; margin-bottom: 10px; }
-.workout-summary p { margin: 5px 0; font-size: 1em; }
-.workout-summary h5 { margin-top: 15px; margin-bottom: 5px; font-size: 1.05em; color: #333; }
 
-.exercise-summary-list { list-style-type: none; padding-left: 0; }
+.workout-summary h4 { /* "Session Summary:" */
+  font-size: 1.2em;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+.workout-summary p { /* Sub-items like Workout Time, Volume */
+  margin: 8px 0 8px 15px; /* Indent and adjust vertical spacing */
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+.workout-summary p strong {
+  font-weight: 500; /* Or 600 if you want labels bolder */
+}
+
+.exercise-breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #d0d0d0; /* Differentiator line */
+}
+
+.workout-summary h5 { /* "Exercise Breakdown:" */
+  font-size: 1.15em;
+  font-weight: 600;
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+.exercise-breakdown-header .button-link {
+  font-size: 0.85em;
+  font-weight: normal;
+}
+
+.exercise-summary-list {
+  list-style-type: none;
+  padding-left: 0;
+}
 .exercise-summary-list li {
   font-size: 0.95em;
-  margin-bottom: 8px;
-  padding-bottom: 8px;
-  border-bottom: 1px dashed #eee;
+  padding: 10px 0;
+  margin-bottom: 0;
+  border-bottom: 1px dashed #e0e0e0; /* Subtle separator for exercises */
 }
 .exercise-summary-list li:last-child {
-    border-bottom: none;
+  border-bottom: none;
+}
+.exercise-summary-list li strong { /* Exercise Name */
+  font-weight: 500;
+}
+
+.representative-set-info {
+  color: #555;
+  font-size: 0.9em; /* Relative to li font-size */
+  margin-left: 5px;
 }
 
 .set-details-list {
-    list-style-type: circle;
-    padding-left: 20px;
-    margin-top: 5px;
-    font-size: 0.9em;
-    color: #555;
+  list-style-type: none; /* Cleaner look */
+  padding-left: 20px; /* Indentation */
+  margin-top: 8px;
+  font-size: 0.9em; /* Relative to li font-size */
+  color: #555;
 }
 .set-details-list li {
-    border-bottom: none;
-    padding-bottom: 2px;
-    margin-bottom: 2px;
+  padding: 3px 0;
+  border-bottom: none;
 }
 
-.toggle-set-details {
-    margin-left: 10px;
-    font-size: 0.8em;
-}
 .button-link {
   background: none;
   border: none;
@@ -312,42 +403,63 @@ onUnmounted(() => {
   text-decoration: underline;
   cursor: pointer;
   padding: 0;
-  font-size: inherit;
+  font-size: inherit; /* Inherit size, or specific size if needed */
 }
 .button-link:hover {
   color: #0056b3;
 }
 
 .session-notes-history {
-  margin-top: 15px;
-  padding-top: 10px;
-  border-top: 1px solid #eee;
+  margin-top: 20px; /* More space above notes */
+  padding-top: 15px;
+  border-top: 1px solid #d0d0d0; /* Separator line */
 }
 .session-notes-history strong {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px; /* More space after "Overall Session Notes:" */
+  font-weight: 600;
 }
 .session-notes-history p {
-  white-space: pre-wrap; /* Respect line breaks in notes */
+  white-space: pre-wrap;
   font-size: 0.9em;
   color: #444;
+  line-height: 1.6;
 }
 
 .button-primary {
-  padding: 10px 15px; background-color: #007bff; color: white;
-  border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;
-  text-decoration: none; display: inline-block; transition: background-color 0.2s;
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.2s;
 }
-.button-primary:hover:not(:disabled) { background-color: #0056b3; }
+.button-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
 
 .loading-message, .no-history, .login-prompt {
-  color: #6c757d;
+  color: var(--color-text); /* Use theme variable for better dark mode compatibility */
   text-align: center;
   padding: 20px;
 }
-.no-history { padding: 30px; }
-.error-message {
-  color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb;
-  padding: 10px; border-radius: 4px; margin-top: 15px;
+.no-history {
+  padding: 30px; /* Keep extra padding for this specific message card */
 }
+.error-message { /* This is usually a card with its own background */
+  color: #721c24; /* Dark red text for errors */
+  background-color: #f8d7da; /* Light red background */
+  border: 1px solid #f5c6cb; /* Reddish border */
+}
+.login-prompt p {
+    /* Text color will be inherited from .login-prompt which uses var(--color-text) */
+}
+.login-prompt a {
+    color: #007bff; /* Or use var(--green) for consistency with other links */
+}
+
 </style>
