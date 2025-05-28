@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Home from '../views/Home.vue';
-import Routines from '../views/Routines.vue';
-import WorkoutActive from '../views/WorkoutActive.vue'; // Make sure this is the component for the active workout screen
-import WorkoutHistory from '../views/WorkoutHistory.vue'; // Or 'History.vue' if that's the name
-import Profile from '../views/Profile.vue';
-import Login from '../views/Login.vue';
+// import Home from '../views/Home.vue';
+// import Routines from '../views/Routines.vue';
+// import WorkoutActive from '../views/WorkoutActive.vue'; // Make sure this is the component for the active workout screen
+// import WorkoutHistory from '../views/WorkoutHistory.vue'; // Or 'History.vue' if that's the name
+// import Profile from '../views/Profile.vue';
+// import Login from '../views/Login.vue';
 
 // Firebase auth imports remain the same
 import { getAuth, onAuthStateChanged, type User } from 'firebase/auth';
@@ -36,41 +36,40 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home,
+    component: () => import('../views/Home.vue') // Dynamic import
   },
   {
     path: '/routines',
     name: 'Routines',
-    component: Routines,
-    meta: { requiresAuth: true },
+    component: () => import('../views/Routines.vue'), // Dynamic import
+    meta: { requiresAuth: true }
   },
   {
-    path: '/workout-active/:programId/:dayId', // This is the one we want for active workouts
+    path: '/workout-active/:programId/:dayId',
     name: 'WorkoutActive',
-    component: WorkoutActive,
+    component: () => import('../views/WorkoutActive.vue'), // Dynamic import
     meta: { requiresAuth: true },
-    props: true // Allows route params to be passed as props
+    props: true
   },
-  // Note: If you had an older '/workout' route without params, decide if you still need it or if
-  // the one above replaces it. For now, I'm assuming the parameterized one is the target.
   {
     path: '/history',
-    name: 'History', // Using 'History' as the consistent name
-    component: WorkoutHistory, // Assuming WorkoutHistory is your component for this
-    meta: { requiresAuth: true },
+    name: 'History',
+    component: () => import('../views/WorkoutHistory.vue'), // Dynamic import
+    meta: { requiresAuth: true }
   },
   {
     path: '/profile',
     name: 'Profile',
-    component: Profile,
-    meta: { requiresAuth: true },
+    component: () => import('../views/Profile.vue'), // Dynamic import
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
     name: 'Login',
-    component: Login,
+    component: () => import('../views/Login.vue') // Dynamic import
   }
 ];
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

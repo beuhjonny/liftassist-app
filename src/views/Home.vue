@@ -421,12 +421,12 @@ const closeManifestoModal = () => { showManifestoModal.value = false; };
 <style scoped>
 /* Main layout and structure */
 .home-view {
-  padding: 20px;
-  max-width: 800px;
-  margin: 20px auto;
+  padding: 10px;
+  max-width: 1200px;
+  margin: 10px auto;
 }
 .card {
-  background-color: #fff; padding: 25px; border-radius: 8px;
+  background-color: #fff; padding: 10px; border-radius: 8px;
   margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
 }
