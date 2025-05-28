@@ -778,8 +778,19 @@ watch(workoutPhase, (newPhase, oldPhase) => {
 
 <style scoped>
 /* Styles remain the same as the previous full version you provided */
-.workout-active-view { padding: 20px; max-width: 750px; margin: 20px auto; }
-.card { background-color: #fff; padding: 20px 25px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); text-align: left; }
+.workout-active-view {
+  /* padding: 20px; */ /* Remove horizontal padding to use space up to #app's padding */
+  padding-top: 10px; /* Example: keep some vertical padding if needed */
+  padding-bottom: 10px;
+  max-width: 750px; /* Content will be max 750px wide, centered by margin */
+  margin: 0 auto;   /* Center the content area */
+}
+.card { background-color: #fff;   padding: 20px 25px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  text-align: left;
+  border: 1px solid var(--color-border);}
 .card-inset { background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom: 15px; border: 1px solid #e9ecef;}
 .workout-overview-content h1, .workout-content h1.workout-day-title, .rest-screen-content h1.workout-day-title { text-align: center; margin-bottom: 5px; font-size: 1.8em; color: #333; }
 .routine-name { text-align: center; margin-top: 0; margin-bottom: 25px; color: #555; font-size: 0.9em; }
@@ -853,11 +864,14 @@ watch(workoutPhase, (newPhase, oldPhase) => {
 .error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-top: 15px; }
 .current-set-info {
   background-color: #f8f9fa;
-  padding: 20px;
-  border-radius: 6px;
+    padding: 20px; /* Internal padding for the card content */
+  border-radius: 8px;
   margin-bottom: 25px;
-  border: 1px solid #e9ecef;
+  /* margin-left: 0; /* Ensure it uses full width of .workout-active-view if needed */
+  /* margin-right: 0; */
+  border: 1px solid var(--color-border);
   text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
 
 .current-set-info h3 {

@@ -247,9 +247,7 @@ watch(user, (newUser) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
-  max-width: 1200px; /* Max width for the profile content */
-  margin: 20px auto;
+ width: 100%;
 }
 
 .profile-view h1 {
@@ -258,10 +256,12 @@ watch(user, (newUser) => {
 }
 
 .user-details-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 25px; /* Space between cards */
+  width: 100%;
+  max-width: 800px; /* Or your preferred max-width for profile content cards */
+  margin: 20px auto; /* Centers this container and adds vertical spacing */
+  display: flex;
+  flex-direction: column;
+  gap: 25px; /* Space between cards */
 }
 
 .card { /* General card styling */
@@ -270,8 +270,9 @@ watch(user, (newUser) => {
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
-  width: 100%; /* Make cards take full width of container */
+  width: 100%; /* Make cards take full width of .user-details-container */
   box-sizing: border-box;
+  border: 1px solid var(--color-border);
 }
 
 .user-details {
@@ -285,8 +286,9 @@ watch(user, (newUser) => {
 }
 .user-details p strong {
     color: #555;
-    min-width: 70px; /* Align values a bit */
-    display: inline-block;
+  min-width: 80px; /* Adjusted slightly */
+  display: inline-block;
+
 }
 
 .user-photo {
@@ -336,9 +338,9 @@ watch(user, (newUser) => {
   display: flex;
   align-items: center;
   font-size: 1em;
-  color: #454545;
-  padding: 12px 5px; /* Added some horizontal padding */
-  border-bottom: 1px solid #f0f0f0;
+  color: var(--color-text);
+  padding: 12px 5px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .lifetime-stats-card li:last-child {
@@ -357,15 +359,19 @@ watch(user, (newUser) => {
   font-weight: 500;
   margin-right: 8px;
   color: #333;
-  flex-shrink: 0; /* Prevent label from shrinking if value is long */
+  flex-shrink: 0; /* Prevent label from shrinking */
 }
 
 .stat-value {
-  font-weight: bold;
-  color: #28a745; /* Green for positive stats */
-  margin-left: auto;
+font-weight: bold;
+  color: #28a745; /* Or a CSS variable */
+  margin-left: auto; /* Pushes value to the right */
   text-align: right;
-  white-space: nowrap; /* Prevent wrapping for consistency */
+  white-space: nowrap; /* Keep on one line */
+  overflow: hidden;    /* Hide overflow */
+  text-overflow: ellipsis; /* Show ... if too long */
+  min-width: 0; /* Crucial for text-overflow to work reliably in flex children */
+  /* max-width: 180px; /* Optional: if you need to cap it even if space is available */
 }
 
 .no-stats,

@@ -965,10 +965,21 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.routines-view { padding: 20px; max-width: 800px; margin: 20px auto; background-color: #fdfdfd; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+.routines-view {   padding: 20px; /* This is internal padding since the view itself is a card */
+  max-width: 800px;
+  margin: 20px auto; /* Includes vertical margin for spacing from nav/header */
+  background-color: var(--color-background-soft); /* Using CSS var */
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  border: 1px solid var(--color-border); }
 .routine-actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom:15px; border-bottom: 1px solid #eee;}
 .routine-actions-header h1 { margin: 0; font-size: 1.8em; }
-.card { background-color: #fff; padding: 20px 25px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: left; }
+.card { background-color: #fff;   padding: 20px 25px;
+  border-radius: 6px; /* Slightly smaller radius for nested cards if desired */
+  margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  text-align: left;
+  border: 1px solid var(--color-border); }
 .card-inset { background-color: #f9f9f9; padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom:15px; border: 1px solid #e9ecef;}
 .active-routine-display h2, .active-routine-display h3, .active-routine-display h4, .active-routine-display h5 { text-align:left; margin-bottom: 0.5em; }
 .active-routine-display h3 { margin-top: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid #eee; }

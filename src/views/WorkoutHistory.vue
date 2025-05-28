@@ -214,9 +214,11 @@ onUnmounted(() => {
 
 <style scoped>
 .history-view {
-  padding: 20px;
-  max-width: 800px;
-  margin: 20px auto;
+  /* padding: 20px; */ /* Remove horizontal padding */
+  padding-top: 20px; /* Keep vertical padding if desired */
+  padding-bottom: 20px;
+  max-width: 800px; /* Content max width */
+  margin: 0 auto;   /* Center content area */
 }
 .history-view h1 {
   text-align: center;
@@ -239,6 +241,7 @@ onUnmounted(() => {
   margin-bottom: 25px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
+  border: 1px solid var(--color-border);
 }
 .history-item-header {
   border-bottom: 1px solid #eee;

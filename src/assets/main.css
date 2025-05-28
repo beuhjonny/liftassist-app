@@ -1,10 +1,12 @@
 @import './base.css';
 
 #app {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+  max-width: 1200px; /* Overall max width of your application */
+  margin: 0 auto;    /* Centers #app on the page */
+  padding: 0.75rem;  /* Default padding (approx 12px) for mobile screens */
   font-weight: normal;
+  width: 100%;       /* Ensures #app uses the available width */
+  box-sizing: border-box; /* Includes padding and border in the element's total width and height */
 }
 
 a,
@@ -24,12 +26,12 @@ a,
 @media (min-width: 1024px) {
   body {
     display: flex;
-    place-items: center;
+    place-items: center; /* Vertically centers #app if body has sufficient height (e.g., min-height: 100vh) */
   }
 
   #app {
-   /* display: grid; */
-   /* grid-template-columns: 1fr 1fr; */
-    padding: 0 2rem;
+    padding: 2rem; /* Larger padding (approx 32px) for desktop screens */
+    /* display: grid; */ /* Keep commented unless specifically needed */
+    /* grid-template-columns: 1fr 1fr; */ /* Keep commented unless specifically needed */
   }
 }
