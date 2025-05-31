@@ -2,7 +2,39 @@
   <div class="history-view">
     <h1>Workout History</h1>
 
-    <div v-if="isLoading" class="loading-message">
+    <div class="calendar-heatmap-container" v-if="calendarWeeks.length > 0" @click.self="hideTooltip" ref="calendarRef">
+      <div class="calendar-grid">
+        <div class="day-labels">
+          <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+        </div>
+        <div class="calendar-main-area">
+          <div class="calendar-week" v-for="(week, weekIndex) in calendarWeeks" :key="weekIndex">
+            <div
+              class="calendar-day-cell"
+              v-for="(day, dayIndex) in week"
+              :key="dayIndex"
+              :class="{
+                'workout-day-presence': day.isWorkoutDay && !day.isFuture, // Class to indicate presence, not for bg color
+                'future-day': day.isFuture,
+                'placeholder-day': day.isPlaceholder,
+                'today': day.date.toDateString() === new Date().toDateString() && !day.isFuture && !day.isPlaceholder
+              }"
+              :style="day.isWorkoutDay && day.workoutDayColor ? { backgroundColor: day.workoutDayColor } : {}"
+              @click.stop="handleDayCellClick(day, $event)"
+            >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="activeTooltip"
+           class="calendar-tooltip"
+           :style="{ top: (activeTooltip.event.clientY + 10) + 'px', left: (activeTooltip.event.clientX + 10) + 'px' }">
+        {{ activeTooltip.text }} - {{ activeTooltip.date }}
+      </div>
+    </div>
+
+    <div v-if="isLoading && loggedWorkouts.length === 0" class="loading-message">
       <p>Loading workout history...</p>
     </div>
     <div v-if="error && !isLoading" class="error-message card">
@@ -43,10 +75,8 @@
             <li v-for="ex in workout.performedExercises" :key="ex.exerciseId || ex.exerciseName">
               <strong>{{ ex.exerciseName }}</strong>
               <span v-if="ex.isPR" title="Personal Record!"> 🏅</span>
-              <span>: {{ getExerciseStatusForHistory(ex) }}</span>
-              <span class="representative-set-info" v-if="ex.sets && ex.sets.length > 0">
-                , {{ getRepresentativeSetInfo(ex.sets) }}
-              </span>
+              <span>: {{ getExerciseStatusForHistory(ex) }}{{ getExerciseLineSuffix(ex) }}</span>
+              
               <ul v-if="allDetailsExpandedForWorkout[workout.id] && ex.sets && ex.sets.length > 0" class="set-details-list">
                 <li v-for="(set, setIndex) in ex.sets" :key="setIndex">
                   Set {{ set.setNumber }}: {{ set.actualWeight }} lbs x {{ set.actualReps }} reps ({{set.status}})
@@ -70,12 +100,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, watch } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
 import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
-import { db } from '../firebase.js'; // Ensure this path is correct
-import useAuth from '../composables/useAuth'; // Ensure this path is correct
+import { db } from '../firebase.js'; 
+import useAuth from '../composables/useAuth';
 
-// --- Interfaces (should match what's saved) ---
+// --- Interfaces ---
 interface LoggedSetData {
   exerciseId: string;
   exerciseName: string;
@@ -85,7 +115,7 @@ interface LoggedSetData {
   actualWeight: number;
   actualReps: number;
   status: 'done' | 'failed';
-  timestamp: any; // or Date
+  timestamp: any; 
 }
 
 interface PerformedExerciseInLog {
@@ -105,9 +135,19 @@ interface LoggedWorkout {
   performedExercises: PerformedExerciseInLog[];
   trainingProgramNameUsed?: string;
   overallSessionNotes?: string;
-  startTime?: any; // or Date
-  endTime?: any; // or Date
+  startTime?: any; 
+  endTime?: any; 
   durationMinutes?: number;
+}
+
+interface CalendarDay {
+  date: Date;
+  isWorkoutDay: boolean;
+  workoutNameTooltip: string | null;
+  isFuture: boolean;
+  isPlaceholder: boolean;
+  dayOfMonth: number;
+  workoutDayColor?: string | null; // For dynamic coloring
 }
 
 const { user } = useAuth();
@@ -116,25 +156,159 @@ const error = ref<string | null>(null);
 const loggedWorkouts = reactive<LoggedWorkout[]>([]);
 const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
 
+const activeTooltip = ref<{ date: string; text: string; event: MouseEvent } | null>(null);
+const calendarRef = ref<HTMLElement | null>(null);
+
+// Palette for workout day sequence (up to 6 days, then default)
+const daySequenceColorPalette = [
+  '#EF9A9A', // Light Red - Day 1 type
+  '#A5D6A7', // Light Green - Day 2 type
+  '#90CAF9', // Light Blue - Day 3 type
+  '#FFF59D', // Light Yellow - Day 4 type
+  '#CE93D8', // Light Purple - Day 5 type
+  '#FFCC80', // Light Orange - Day 6 type
+];
+const defaultWorkoutColor = 'hsla(160, 100%, 37%, 0.8)'; // Default (e.g., Vue green)
+
+const calendarWeeks = computed<CalendarDay[][]>(() => {
+  return generateCalendarGridData(loggedWorkouts.slice(), 12); // Show last 12 weeks
+});
+
+const handleDayCellClick = (day: CalendarDay, event: MouseEvent) => {
+  if (day.isPlaceholder || day.isFuture) {
+    activeTooltip.value = null;
+    return;
+  }
+  const tooltipDateStr = day.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  if (day.isWorkoutDay && day.workoutNameTooltip) {
+    if (activeTooltip.value && activeTooltip.value.date === tooltipDateStr && activeTooltip.value.text === day.workoutNameTooltip) {
+      activeTooltip.value = null; 
+    } else {
+      activeTooltip.value = { date: tooltipDateStr, text: day.workoutNameTooltip, event: event };
+    }
+  } else {
+    if (activeTooltip.value && activeTooltip.value.date === tooltipDateStr && activeTooltip.value.text === "No workout") {
+        activeTooltip.value = null;
+    } else {
+        activeTooltip.value = { date: tooltipDateStr, text: "No workout", event: event };
+    }
+  }
+};
+
+const hideTooltip = () => {
+  activeTooltip.value = null;
+};
+
+const handleClickOutsideTooltip = (event: MouseEvent) => {
+  if (activeTooltip.value) {
+    const targetIsDayCell = (event.target as HTMLElement)?.closest('.calendar-day-cell');
+    if(!targetIsDayCell) hideTooltip();
+  }
+};
+
+const generateCalendarGridData = (
+  rawLoggedWorkouts: LoggedWorkout[],
+  numWeeksToShow: number
+): CalendarDay[][] => {
+  const weeksData: CalendarDay[][] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const calendarEndDate = new Date(today);
+  calendarEndDate.setDate(today.getDate() + (6 - today.getDay())); // End week on Saturday
+
+  const calendarStartDate = new Date(calendarEndDate);
+  calendarStartDate.setDate(calendarEndDate.getDate() - (numWeeksToShow * 7) + 1);
+  
+  const programDayTypeEncounterOrder: Record<string, Record<string, number>> = {};
+  const programNextAvailableColorIndex: Record<string, number> = {};
+  
+  // Sort workouts oldest to newest to establish encounter order for coloring
+  const sortedWorkoutsForColorLogic = [...rawLoggedWorkouts].sort((a, b) => {
+    const dateA = (a.date instanceof Timestamp) ? a.date.toMillis() : new Date(a.date).getTime();
+    const dateB = (b.date instanceof Timestamp) ? b.date.toMillis() : new Date(b.date).getTime();
+    return dateA - dateB;
+  });
+
+  const workoutsByDate: Record<string, { name: string; color: string }> = {};
+
+  for (const workout of sortedWorkoutsForColorLogic) {
+    const programId = workout.trainingProgramIdUsed || 'UNKNOWN_PROGRAM';
+    const dayName = workout.workoutDayNameUsed || 'Unknown Day';
+    const workoutDate = (workout.date instanceof Timestamp) ? workout.date.toDate() : new Date(workout.date);
+    workoutDate.setHours(0,0,0,0);
+    const dateString = workoutDate.toISOString().split('T')[0];
+
+    if (!programDayTypeEncounterOrder[programId]) {
+      programDayTypeEncounterOrder[programId] = {};
+      programNextAvailableColorIndex[programId] = 0;
+    }
+
+    if (programDayTypeEncounterOrder[programId][dayName] === undefined) {
+      const colorIndex = programNextAvailableColorIndex[programId];
+      programDayTypeEncounterOrder[programId][dayName] = colorIndex;
+      if (colorIndex < daySequenceColorPalette.length) { // Only increment if we used a palette color
+          programNextAvailableColorIndex[programId]++;
+      }
+    }
+    
+    const assignedOrderIndex = programDayTypeEncounterOrder[programId][dayName];
+    let color = defaultWorkoutColor;
+    if (assignedOrderIndex < daySequenceColorPalette.length) {
+      color = daySequenceColorPalette[assignedOrderIndex];
+    }
+
+    // Store the latest workout's info for a given day if multiple exist (though coloring is program-day specific)
+    workoutsByDate[dateString] = { name: dayName, color: color };
+  }
+  
+  let currentDayIter = new Date(calendarStartDate);
+  for (let w = 0; w < numWeeksToShow; w++) {
+    const week: CalendarDay[] = [];
+    for (let d = 0; d < 7; d++) {
+      const normalizedCurrentDayIter = new Date(currentDayIter);
+      normalizedCurrentDayIter.setHours(0,0,0,0);
+      const dateString = normalizedCurrentDayIter.toISOString().split('T')[0];
+      
+      const workoutInfo = workoutsByDate[dateString];
+      
+      week.push({
+        date: new Date(normalizedCurrentDayIter),
+        isWorkoutDay: !!workoutInfo,
+        workoutNameTooltip: workoutInfo ? workoutInfo.name : null,
+        workoutDayColor: workoutInfo ? workoutInfo.color : null,
+        isFuture: normalizedCurrentDayIter > today,
+        isPlaceholder: false, 
+        dayOfMonth: normalizedCurrentDayIter.getDate(),
+      });
+      currentDayIter.setDate(currentDayIter.getDate() + 1);
+    }
+    weeksData.push(week);
+  }
+  return weeksData;
+};
+
+
 const fetchWorkoutHistory = async () => {
   if (!user.value || !user.value.uid) {
     error.value = "User not available.";
     isLoading.value = false;
-    loggedWorkouts.length = 0; // Clear workouts if no user
+    loggedWorkouts.length = 0;
     return;
   }
-  isLoading.value = true;
   error.value = null;
-  loggedWorkouts.length = 0; // Clear previous results before fetching new ones
-
+  
   try {
     const historyCollectionRef = collection(db, 'users', user.value.uid, 'loggedWorkouts');
-    const q = query(historyCollectionRef, orderBy('date', 'desc'));
+    const q = query(historyCollectionRef, orderBy('date', 'desc')); // Fetch newest first for display list
 
     const querySnapshot = await getDocs(q);
+    const newWorkouts: LoggedWorkout[] = [];
     querySnapshot.forEach((docSnap) => {
-      loggedWorkouts.push({ id: docSnap.id, ...docSnap.data() } as LoggedWorkout);
+      newWorkouts.push({ id: docSnap.id, ...docSnap.data() } as LoggedWorkout);
     });
+    loggedWorkouts.splice(0, loggedWorkouts.length, ...newWorkouts);
+
   } catch (e: any) {
     console.error("Error fetching workout history:", e);
     error.value = "Failed to load workout history. " + e.message;
@@ -194,7 +368,7 @@ const getConsolidatedSetsInfo = (performedExercises: PerformedExerciseInLog[] | 
 };
 
 const getRepresentativeSetInfo = (sets: LoggedSetData[]): string => {
-  if (!sets || sets.length === 0) return 'No sets recorded';
+  if (!sets || sets.length === 0) return '';
   let representativeSet: LoggedSetData | null = null;
   let maxWeight = -1;
 
@@ -216,14 +390,23 @@ const getRepresentativeSetInfo = (sets: LoggedSetData[]): string => {
   if (representativeSet && typeof representativeSet.actualWeight === 'number' && typeof representativeSet.actualReps === 'number') {
     return `${representativeSet.actualWeight} lbs x ${representativeSet.actualReps} reps`;
   }
-  return 'Set data N/A';
+  return '';
 };
 
 const getExerciseStatusForHistory = (exercise: PerformedExerciseInLog): string => {
   const doneSets = exercise.sets.filter(s => s.status === 'done').length;
   const totalPerformed = exercise.sets.length;
-  if (totalPerformed === 0) return "No sets recorded.";
-  return `${doneSets}/${totalPerformed} sets done.`;
+  if (totalPerformed === 0) return "No sets recorded";
+  return `${doneSets}/${totalPerformed} sets done`;
+};
+
+const getExerciseLineSuffix = (performedExercise: PerformedExerciseInLog): string => {
+  if (!performedExercise.sets || performedExercise.sets.length === 0) return '';
+  const repInfo = getRepresentativeSetInfo(performedExercise.sets);
+  if (repInfo) {
+    return `, ${repInfo}`; 
+  }
+  return '';
 };
 
 const toggleAllDetailsForWorkout = (workoutId: string) => {
@@ -235,26 +418,29 @@ onMounted(() => {
   isLoading.value = true; 
   userWatcherUnsubscribe = watch(user, (currentUser, previousUser) => {
     if (currentUser && currentUser.uid) {
-      // Fetch only if user changed or if workouts haven't been loaded for current user
-      if (!previousUser || currentUser.uid !== previousUser.uid || loggedWorkouts.length === 0 && !error.value) {
+      if (!previousUser || currentUser.uid !== previousUser.uid || (loggedWorkouts.length === 0 && !error.value)) {
+        isLoading.value = true;
         fetchWorkoutHistory();
       } else {
-        isLoading.value = false; // Data likely already loaded for this user
+        isLoading.value = false; 
       }
     } else {
       isLoading.value = false;
       loggedWorkouts.length = 0;
-      for (const key in allDetailsExpandedForWorkout) { // Clear expansion state on logout
+      for (const key in allDetailsExpandedForWorkout) {
         delete allDetailsExpandedForWorkout[key];
       }
     }
   }, { immediate: true });
+
+  document.addEventListener('click', handleClickOutsideTooltip);
 });
 
 onUnmounted(() => {
   if (userWatcherUnsubscribe) {
     userWatcherUnsubscribe();
   }
+  document.removeEventListener('click', handleClickOutsideTooltip);
 });
 </script>
 
@@ -268,8 +454,98 @@ onUnmounted(() => {
 .history-view h1 {
   text-align: center;
   margin-bottom: 30px;
-  /* Assuming this should use theme color for dark mode */
   color: var(--color-heading);
+}
+
+/* Calendar Heatmap Styles */
+.calendar-heatmap-container {
+  margin-bottom: 30px;
+  padding: 15px;
+  background-color: var(--color-background-soft);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  position: relative; 
+  color: var(--color-text);
+}
+
+/* Month headers removed */
+
+.calendar-grid {
+  display: flex;
+  gap: 5px;
+}
+
+.day-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px; 
+  font-size: 0.65em;
+  color: var(--color-text);
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.day-labels span {
+  height: 15px; 
+  width: 15px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-main-area {
+  display: flex;
+  gap: 2px; 
+  overflow-x: auto; 
+  padding-bottom: 5px;
+}
+
+.calendar-week {
+  display: flex;
+  flex-direction: column; 
+  gap: 2px; 
+}
+
+.calendar-day-cell {
+  width: 15px; 
+  height: 15px;
+  background-color: var(--color-background-mute); 
+  border-radius: 3px;
+  cursor: pointer;
+  transition: transform 0.1s ease-out, background-color 0.2s;
+  border: 1px solid transparent; 
+}
+
+.calendar-day-cell:hover:not(.future-day):not(.placeholder-day) {
+  border-color: var(--color-text); 
+
+}
+
+.calendar-day-cell.future-day {
+  background-color: var(--color-background); 
+  opacity: 0.5;
+  cursor: default;
+}
+
+.calendar-day-cell.placeholder-day {
+  background-color: transparent; 
+  cursor: default;
+}
+
+.calendar-day-cell.today {
+  border: 1px solid var(--color-heading); 
+}
+
+.calendar-tooltip {
+  position: fixed; 
+  background-color: #282828; 
+  color: white;
+  padding: 6px 12px; 
+  border-radius: 5px;
+  font-size: 0.9em; 
+  z-index: 1000; 
+  pointer-events: none; 
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  white-space: nowrap;
 }
 
 /* General card style for loading/error/no-history messages */
@@ -280,22 +556,22 @@ onUnmounted(() => {
   margin-bottom: 20px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
-  color: #333; /* Default dark text for these general cards */
+  color: #333; 
 }
 
 .history-item-card {
-  background-color: #fff; /* Main card for each workout log */
+  background-color: #fff; 
   padding: 20px 25px;
   border-radius: 8px;
   margin-bottom: 25px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
   border: 1px solid var(--color-border);
-  color: #333; /* Default dark text for content directly in this card */
+  color: #333; 
 }
 
 .history-item-header {
-  border-bottom: 1px solid #e0e0e0; /* Softer border */
+  border-bottom: 1px solid #e0e0e0; 
   padding-bottom: 15px;
   margin-bottom: 15px;
 }
@@ -316,28 +592,28 @@ onUnmounted(() => {
   font-style: italic;
 }
 
-.workout-summary { /* This is the light grey inset card: class="workout-summary card-inset" */
+.workout-summary { 
   background-color: #f8f9fa;
   padding: 20px;
   border-radius: 6px;
   margin-top: 20px;
   border: 1px solid #e0e0e0;
-  color: #333; /* Default dark text for this light inset area */
+  color: #333; 
 }
 
-.workout-summary h4 { /* "Session Summary:" */
+.workout-summary h4 { 
   font-size: 1.2em;
   font-weight: 600;
   margin-top: 0;
   margin-bottom: 15px;
 }
-.workout-summary p { /* Sub-items like Workout Time, Volume */
-  margin: 8px 0 8px 15px; /* Indent and adjust vertical spacing */
+.workout-summary p { 
+  margin: 8px 0 8px 15px; 
   font-size: 0.95em;
   line-height: 1.5;
 }
 .workout-summary p strong {
-  font-weight: 500; /* Or 600 if you want labels bolder */
+  font-weight: 500; 
 }
 
 .exercise-breakdown-header {
@@ -346,10 +622,10 @@ onUnmounted(() => {
   align-items: center;
   margin-top: 25px;
   padding-top: 20px;
-  border-top: 1px solid #d0d0d0; /* Differentiator line */
+  border-top: 1px solid #d0d0d0; 
 }
 
-.workout-summary h5 { /* "Exercise Breakdown:" */
+.workout-summary h5 { 
   font-size: 1.15em;
   font-weight: 600;
   color: #333;
@@ -367,28 +643,22 @@ onUnmounted(() => {
 }
 .exercise-summary-list li {
   font-size: 0.95em;
-  padding: 10px 0;
+  padding: 10px 0 10px 15px; 
   margin-bottom: 0;
-  border-bottom: 1px dashed #e0e0e0; /* Subtle separator for exercises */
+  border-bottom: 1px dashed #e0e0e0; 
 }
 .exercise-summary-list li:last-child {
   border-bottom: none;
 }
-.exercise-summary-list li strong { /* Exercise Name */
+.exercise-summary-list li strong { 
   font-weight: 500;
 }
 
-.representative-set-info {
-  color: #555;
-  font-size: 0.9em; /* Relative to li font-size */
-  margin-left: 5px;
-}
-
 .set-details-list {
-  list-style-type: none; /* Cleaner look */
-  padding-left: 20px; /* Indentation */
+  list-style-type: none; 
+  padding-left: 20px; 
   margin-top: 8px;
-  font-size: 0.9em; /* Relative to li font-size */
+  font-size: 0.9em; 
   color: #555;
 }
 .set-details-list li {
@@ -403,20 +673,20 @@ onUnmounted(() => {
   text-decoration: underline;
   cursor: pointer;
   padding: 0;
-  font-size: inherit; /* Inherit size, or specific size if needed */
+  font-size: inherit; 
 }
 .button-link:hover {
   color: #0056b3;
 }
 
 .session-notes-history {
-  margin-top: 20px; /* More space above notes */
+  margin-top: 20px; 
   padding-top: 15px;
-  border-top: 1px solid #d0d0d0; /* Separator line */
+  border-top: 1px solid #d0d0d0; 
 }
 .session-notes-history strong {
   display: block;
-  margin-bottom: 8px; /* More space after "Overall Session Notes:" */
+  margin-bottom: 8px; 
   font-weight: 600;
 }
 .session-notes-history p {
@@ -443,23 +713,20 @@ onUnmounted(() => {
 }
 
 .loading-message, .no-history, .login-prompt {
-  color: var(--color-text); /* Use theme variable for better dark mode compatibility */
+  color: var(--color-text); 
   text-align: center;
   padding: 20px;
 }
 .no-history {
-  padding: 30px; /* Keep extra padding for this specific message card */
+  padding: 30px; 
 }
-.error-message { /* This is usually a card with its own background */
-  color: #721c24; /* Dark red text for errors */
-  background-color: #f8d7da; /* Light red background */
-  border: 1px solid #f5c6cb; /* Reddish border */
-}
-.login-prompt p {
-    /* Text color will be inherited from .login-prompt which uses var(--color-text) */
+.error-message { 
+  color: #721c24; 
+  background-color: #f8d7da; 
+  border: 1px solid #f5c6cb; 
 }
 .login-prompt a {
-    color: #007bff; /* Or use var(--green) for consistency with other links */
+    color: #007bff; 
 }
 
 </style>

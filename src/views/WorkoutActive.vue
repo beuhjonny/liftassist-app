@@ -54,7 +54,7 @@
           </template>
         </div>
          <div v-if="showMobileTooltipForIndex !== null && workoutPhase === 'activeSet'" class="mobile-progress-tooltip">
-            {{ mobileTooltipText }}
+          {{ mobileTooltipText }}
         </div>
       </div>
 
@@ -103,7 +103,7 @@
             </template>
         </div>
         <div v-if="showMobileTooltipForIndex !== null && workoutPhase === 'resting'" class="mobile-progress-tooltip">
-            {{ mobileTooltipText }}
+          {{ mobileTooltipText }}
         </div>
       </div>
       <h2>RESTING...</h2>
@@ -268,6 +268,9 @@ const mobileTooltipText = ref<string>('');
 const initialExerciseProgressData = reactive<Map<string, ExerciseProgress>>(new Map());
 const sessionOverallNotes = ref("");
 
+// --- Wake Lock ---
+const wakeLockSentinel = ref<WakeLockSentinel | null>(null);
+
 // --- Computed Properties ---
 const totalSessionSets = computed(() => {
   return sessionExercises.reduce((total, exercise) => total + (exercise.targetSets || 0), 0);
@@ -345,9 +348,9 @@ const exerciseSessionSummary = computed<ExerciseSummary[]>(() => {
               } else {
                   const nextRepsIfSuccessful = Math.min(initialProg.repsToAttemptNext + sessionEx.repOverloadStep, sessionEx.maxReps);
                   if (nextRepsIfSuccessful > initialProg.repsToAttemptNext) {
-                       isPR = true;
+                      isPR = true;
                   } else if (initialProg.repsToAttemptNext === sessionEx.maxReps) {
-                       isPR = true; 
+                      isPR = true; 
                   }
               }
             }
@@ -416,6 +419,52 @@ const formattedActiveSetTime = computed(() => {
   const seconds = activeSetTimeElapsed.value % 60;
   return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 });
+
+
+// --- Wake Lock Functions ---
+const requestWakeLock = async () => {
+  if ('wakeLock' in navigator && !wakeLockSentinel.value) {
+    try {
+      wakeLockSentinel.value = await navigator.wakeLock.request('screen');
+      wakeLockSentinel.value.addEventListener('release', () => {
+        // This happens if the lock is released by the system, e.g., tab hidden
+        console.log('Screen Wake Lock was released.');
+        wakeLockSentinel.value = null;
+        // If the tab becomes visible again, handleVisibilityChange will try to reacquire it
+      });
+      console.log('Screen Wake Lock is active.');
+    } catch (err: any) {
+      // Log an error, but don't block app functionality
+      console.warn(`Could not acquire screen wake lock: ${err.name}, ${err.message}. Your phone might lock during the workout.`);
+      wakeLockSentinel.value = null;
+    }
+  }
+};
+
+const releaseWakeLock = async () => {
+  if (wakeLockSentinel.value) {
+    try {
+      await wakeLockSentinel.value.release();
+      // The 'release' event listener on the sentinel will set wakeLockSentinel.value to null
+      // but we can also set it here for immediate effect in our state.
+      console.log('Screen Wake Lock released by component.');
+      wakeLockSentinel.value = null;
+    } catch (err: any) {
+      console.warn(`Failed to release wake lock: ${err.name}, ${err.message}`);
+      // Even on error, assume it's no longer reliably held by us
+      wakeLockSentinel.value = null;
+    }
+  }
+};
+
+const handleVisibilityChange = async () => {
+  if (!wakeLockSentinel.value &&
+      document.visibilityState === 'visible' &&
+      (workoutPhase.value === 'activeSet' || workoutPhase.value === 'resting')) {
+    console.log('Document became visible and workout is active, attempting to re-acquire wake lock.');
+    await requestWakeLock();
+  }
+};
 
 // --- Functions ---
 const toggleProgressDotTooltip = (index: number, text: string) => {
@@ -509,7 +558,7 @@ const beginActiveWorkout = () => {
     workoutPhase.value = 'overview'; return;
   }
   workoutStartTime.value = new Date();
-  workoutPhase.value = 'activeSet';
+  workoutPhase.value = 'activeSet'; // Watcher for workoutPhase will handle requestWakeLock
   startActivitySetTimer();
   showMobileTooltipForIndex.value = null;
 };
@@ -562,11 +611,11 @@ const logSet = (status: 'done' | 'failed') => {
 
   if (isLastExerciseInSession && isLastSetOfThisExercise) {
     currentExerciseIndex.value++;
-    workoutPhase.value = 'complete';
+    workoutPhase.value = 'complete'; // Watcher will handle releaseWakeLock
     workoutEndTime.value = new Date();
     showMobileTooltipForIndex.value = null;
   } else {
-    workoutPhase.value = 'resting';
+    workoutPhase.value = 'resting'; // Watcher will handle requestWakeLock (or ensure it's kept)
     startRestTimer();
   }
 };
@@ -591,11 +640,11 @@ const proceedToNextSet = () => {
     }
   }
   if (allExercisesComplete.value) { 
-    workoutPhase.value = 'complete'; 
+    workoutPhase.value = 'complete'; // Watcher will handle releaseWakeLock
     workoutEndTime.value = new Date(); 
     stopActivitySetTimer(); 
   } else { 
-    workoutPhase.value = 'activeSet'; 
+    workoutPhase.value = 'activeSet'; // Watcher will handle requestWakeLock
     startActivitySetTimer(); 
   }
 };
@@ -661,9 +710,9 @@ const finishWorkoutAndSave = async () => {
               } else {
                   const nextRepsIfSuccessful = Math.min(initialProg.repsToAttemptNext + exConfig.repOverloadStep, exConfig.maxReps); // Used exConfig
                   if (nextRepsIfSuccessful > initialProg.repsToAttemptNext) {
-                       isExercisePR = true;
+                      isExercisePR = true;
                   } else if (initialProg.repsToAttemptNext === exConfig.maxReps) { // Used exConfig
-                       isExercisePR = true; 
+                      isExercisePR = true; 
                   }
               }
             }
@@ -732,7 +781,8 @@ const finishWorkoutAndSave = async () => {
     await batch.commit();
     alert("Workout saved and progress updated!");
     workoutLog.length = 0; currentExerciseIndex.value = 0; currentSetNumber.value = 1;
-    workoutPhase.value = 'overview'; showActualRepsInputForFail.value = false;
+    workoutPhase.value = 'overview'; // Watcher will handle releaseWakeLock
+    showActualRepsInputForFail.value = false;
     sessionOverallNotes.value = ""; 
     showMobileTooltipForIndex.value = null; mobileTooltipText.value = ''; 
     router.push('/');
@@ -743,6 +793,7 @@ const finishWorkoutAndSave = async () => {
 // --- Lifecycle Hooks ---
 let userWatcherUnsubscribe: (() => void) | null = null;
 const previousUserRef = ref<typeof user.value | null>(null);
+
 onMounted(() => {
   isLoading.value = true;
   userWatcherUnsubscribe = watch(user, (currentUser) => {
@@ -761,18 +812,39 @@ onMounted(() => {
     }
     previousUserRef.value = currentUser;
   }, { immediate: true });
-  if (timerAudioPlayer.value) { timerAudioPlayer.value.load(); }
-});
-onUnmounted(() => { if (userWatcherUnsubscribe) userWatcherUnsubscribe(); if (timerInterval) clearInterval(timerInterval); if (activeSetTimerInterval) clearInterval(activeSetTimerInterval); });
 
-watch(workoutPhase, (newPhase, oldPhase) => {
-    if (newPhase !== oldPhase) {
-        showMobileTooltipForIndex.value = null;
-        mobileTooltipText.value = '';
-        if (oldPhase === 'complete' && newPhase !== 'complete') {
-            showActualRepsInputForFail.value = false; 
-        }
-    }
+  if (timerAudioPlayer.value) {
+    timerAudioPlayer.value.load();
+  }
+  // Add event listener for visibility changes for Wake Lock
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+});
+
+onUnmounted(() => {
+  if (userWatcherUnsubscribe) userWatcherUnsubscribe();
+  if (timerInterval) clearInterval(timerInterval);
+  if (activeSetTimerInterval) clearInterval(activeSetTimerInterval);
+
+  // Release the wake lock when the component is unmounted
+  releaseWakeLock(); // Make sure it's called without await if onUnmounted isn't async
+  // Remove event listener
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+});
+
+watch(workoutPhase, async (newPhase, oldPhase) => {
+  showMobileTooltipForIndex.value = null;
+  mobileTooltipText.value = '';
+  if (oldPhase === 'complete' && newPhase !== 'complete') {
+    showActualRepsInputForFail.value = false;
+  }
+
+  // Manage Wake Lock based on workout phase
+  if (newPhase === 'activeSet' || newPhase === 'resting') {
+    await requestWakeLock();
+  } else if (newPhase === 'overview' || newPhase === 'complete') {
+    // Release lock when workout is not actively in progress or is finished
+    await releaseWakeLock();
+  }
 });
 </script>
 
