@@ -67,11 +67,26 @@
         <div class="current-set-info card-inset">
           <h3>Set {{ currentSetNumber }} of {{ currentExercise.targetSets }}</h3>
           <div class="prescription-details">
-            <span class="prescription-reps">{{ currentExercise.prescribedReps }} reps</span>
+            <span 
+              class="prescription-reps" 
+              :class="{ 'failed-last-attempt-text': didFailLastAttemptAtCurrentPrescription }">
+              {{ currentExercise.prescribedReps }} reps
+            </span>
             <span class="prescription-separator">@</span>
-            <span class="prescription-weight">{{ currentExercise.prescribedWeight }} lbs</span>
+            <span 
+              class="prescription-weight" 
+              :class="{ 'failed-last-attempt-text': didFailLastAttemptAtCurrentPrescription }">
+              {{ currentExercise.prescribedWeight }} lbs
+            </span>
           </div>
         </div>
+        
+        <p v-if="didFailLastAttemptAtCurrentPrescription && currentExerciseProgress?.consecutiveFailedWorkoutsAtCurrentWeightAndReps" 
+           class="failure-streak-note">
+          Failed last {{ currentExerciseProgress.consecutiveFailedWorkoutsAtCurrentWeightAndReps }} 
+          attempt{{ currentExerciseProgress.consecutiveFailedWorkoutsAtCurrentWeightAndReps > 1 ? 's' : '' }} 
+          at this prescription. Time to break the cycle!
+        </p>
 
         <div class="set-actions">
           <button @click="logSet('done')" class="button-done">DONE</button>
@@ -127,7 +142,7 @@
       <button @click="proceedToNextSet" class="button-primary start-next-set-button">
         {{ restCountdown > 0 ? 'Skip Rest & Start Next Set' : 'Start Next Set' }}
       </button>
-      </div>
+    </div>
 
     <div v-if="workoutPhase === 'complete'" class="workout-content card">
         <h2>Workout Complete!</h2>
@@ -300,7 +315,7 @@ const totalSessionSets = computed(() => {
 const completedSetsCount = computed(() => workoutLog.filter(s => s.status === 'done').length);
 const failedSetsCount = computed(() => workoutLog.filter(s => s.status === 'failed').length);
 
-const workoutDurationFormatted = computed(() => { // Used for saving
+const workoutDurationFormatted = computed(() => {
   if (!workoutStartTime.value || !workoutEndTime.value) return 'N/A';
   const durationMs = workoutEndTime.value.getTime() - workoutStartTime.value.getTime();
   if (durationMs < 0) return 'N/A';
@@ -325,6 +340,25 @@ const totalWorkoutVolume = computed(() => {
 
 const allExercisesComplete = computed(() => sessionExercises.length > 0 && currentExerciseIndex.value >= sessionExercises.length);
 const currentExercise = computed<SessionExercise | null>(() => (sessionExercises.length > 0 && currentExerciseIndex.value < sessionExercises.length) ? sessionExercises[currentExerciseIndex.value] : null);
+
+// NEW: Computed property for current exercise's progress data
+const currentExerciseProgress = computed<ExerciseProgress | undefined>(() => {
+  if (currentExercise.value) {
+    const progressKey = currentExercise.value.exerciseName.toLowerCase().replace(/\s+/g, '_');
+    return initialExerciseProgressData.get(progressKey);
+  }
+  return undefined;
+});
+
+// NEW: Computed property to check for last attempt failure
+const didFailLastAttemptAtCurrentPrescription = computed(() => {
+  if (currentExerciseProgress.value) {
+    return (currentExerciseProgress.value.consecutiveFailedWorkoutsAtCurrentWeightAndReps ?? 0) > 0;
+  }
+  return false;
+});
+
+
 const formattedRestTime = computed(() => { const m = Math.floor(restCountdown.value / 60); const s = restCountdown.value % 60; return `${m}:${s < 10 ? '0' : ''}${s}`; });
 const timerProgressPercentage = computed(() => (workoutPhase.value === 'resting' && restDurationToUse.value > 0) ? (restCountdown.value / restDurationToUse.value) * 100 : 100);
 
@@ -910,17 +944,31 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
 </script>
 
 <style scoped>
-/* NEW styles for the actions-top-bar and correct-last-set-action */
+/* NEW styles for failure indication */
+.failed-last-attempt-text {
+  color: #dc3545 !important; /* Red color, !important to override existing blue if needed */
+}
+
+.failure-streak-note {
+  color: #dc3545; 
+  font-size: 0.85em;
+  font-style: italic;
+  text-align: center;
+  margin-top: 8px; 
+  margin-bottom: 10px; 
+}
+
+/* Styles for the actions-top-bar and correct-last-set-action */
 .actions-top-bar {
   display: flex; 
-  justify-content: flex-start; /* Aligns items to the left */
-  margin-bottom: 10px; /* Space below the bar */
-  min-height: 25px; /* Ensure space for the element, adjust if needed */
+  justify-content: flex-start; 
+  margin-bottom: 10px; 
+  min-height: 25px; 
 }
 
 .correct-last-set-action {
   font-size: 0.85em;
-  color: #007bff; /* Or use your var(--color-accent) */
+  color: #007bff; 
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
@@ -932,11 +980,11 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
 }
 
 .correct-last-set-action:hover {
-  background-color: #e9ecef; /* A common light hover color */
+  background-color: #e9ecef; 
   text-decoration: none; 
 }
 
-/* All other existing styles from the previous complete version */
+/* All other existing styles */
 .workout-active-view {
   padding-top: 10px; 
   padding-bottom: 10px;
@@ -1036,6 +1084,7 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
 .current-set-info { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid var(--color-border); text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
 .current-set-info h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.5em; color: #495057; font-weight: 600; }
 .prescription-details { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+/* Ensure .prescription-reps and .prescription-weight correctly inherit or define their base color if not red */
 .prescription-reps, .prescription-weight { font-size: 2.0em; font-weight: bold; color: #007bff; display: block; }
 .prescription-separator { font-size: 1.6em; font-weight: normal; color: #6c757d; margin: 5px 0; }
 </style>
