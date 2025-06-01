@@ -81,6 +81,11 @@
     </div>
 
     <div v-if="workoutPhase === 'resting' && !allExercisesComplete" class="rest-screen-content card">
+      <div class="actions-top-bar" v-if="workoutLog.length > 0">
+        <span @click="correctLastSet" class="correct-last-set-action">
+          &larr; Correct Last Set
+        </span>
+      </div>
       <h1 class="workout-day-title">{{ currentWorkoutDayDetails?.dayName }}</h1>
       <div v-if="totalSessionSets > 0" class="workout-progress-indicator">
         <div class="workout-progress-timeline">
@@ -90,7 +95,7 @@
               :class="{
                 'completed-done': index < workoutLog.length && workoutLog[index]?.status === 'done',
                 'completed-failed': index < workoutLog.length && workoutLog[index]?.status === 'failed',
-                'active': index === workoutLog.length,
+                'active': index === workoutLog.length, 
                 'tooltip-active': showMobileTooltipForIndex === index
               }"
               :title="`${set.exerciseName} - Set ${set.setNumberWithinExercise}`"
@@ -122,27 +127,43 @@
       <button @click="proceedToNextSet" class="button-primary start-next-set-button">
         {{ restCountdown > 0 ? 'Skip Rest & Start Next Set' : 'Start Next Set' }}
       </button>
-    </div>
+      </div>
 
     <div v-if="workoutPhase === 'complete'" class="workout-content card">
         <h2>Workout Complete!</h2>
         <p>Great job finishing your {{ currentWorkoutDayDetails?.dayName }} workout!</p>
 
         <div class="workout-summary card-inset">
-            <h4>Session Summary:</h4>
-            <p><strong>Workout Time:</strong> {{ workoutDurationFormatted }}</p>
-            <p><strong>Total Volume:</strong> {{ totalWorkoutVolume.toLocaleString() }} lbs</p>
-            <p><strong>Total Sets Logged:</strong> {{ workoutLog.length }}</p>
-            <p><strong>Sets "DONE":</strong> {{ completedSetsCount }}</p>
-            <p><strong>Sets "FAIL":</strong> {{ failedSetsCount }}</p>
-            <h5 v-if="exerciseSessionSummary.length > 0">Exercise Breakdown:</h5>
-            <ul class="exercise-summary-list" v-if="exerciseSessionSummary.length > 0">
-                <li v-for="summary in exerciseSessionSummary" :key="summary.exerciseId">
-                    <strong>{{ summary.exerciseName }}</strong>
-                    <span v-if="summary.isPR" title="Personal Record!"> 🏅</span>
-                    : {{ summary.status }} ({{ summary.doneSets }}/{{ summary.targetSets }} target sets done)
+          <h4>Session Summary:</h4>
+          <p><strong>Workout Time:</strong> {{ displayDurationForCompletedWorkout }}</p>
+          <p><strong>Total Volume:</strong> {{ totalWorkoutVolume.toLocaleString() }} lbs</p>
+          <p><strong>Total Sets:</strong> {{ displayConsolidatedSetsInfo }}</p>
+
+          <div class="exercise-breakdown-header" v-if="completedPerformedExercisesSummary.length > 0">
+            <h5>Exercise Breakdown:</h5>
+            <button @click="toggleSetDetailsInSummary" class="button-link">
+              {{ showSetDetailsInSummary ? 'Hide Set Details' : 'Show Set Details' }}
+            </button>
+          </div>
+
+          <ul class="exercise-summary-list" v-if="completedPerformedExercisesSummary.length > 0">
+            <li v-for="ex in completedPerformedExercisesSummary" :key="ex.exerciseId || ex.exerciseName">
+              <strong>{{ ex.exerciseName }}</strong>
+              <span v-if="ex.isPR" title="Personal Record!"> 🏅</span>
+              <span>: {{ getExerciseStatusForDisplay(ex) }}{{ getExerciseLineSuffixForDisplay(ex) }}</span>
+              
+              <ul v-if="showSetDetailsInSummary && ex.sets && ex.sets.length > 0" class="set-details-list">
+                <li v-for="(set, setIndex) in ex.sets" :key="setIndex">
+                  Set {{ set.setNumber }}: {{ set.actualWeight }} lbs x {{ set.actualReps }} reps ({{set.status}})
                 </li>
-            </ul>
+              </ul>
+            </li>
+          </ul>
+
+          <div v-if="sessionOverallNotes" class="session-notes-history"> 
+            <strong>Overall Session Notes:</strong>
+            <p>{{ sessionOverallNotes }}</p>
+          </div>
         </div>
 
         <div v-if="showActualRepsInputForFail && lastLoggedSetIndex !== null && workoutLog[lastLoggedSetIndex]?.status === 'failed'" class="actual-reps-input-section card-inset">
@@ -151,14 +172,15 @@
         </div>
 
         <div class="overall-notes-section card-inset">
-          <label for="overallSessionNotesInput">Overall Session Notes (optional):</label>
+          <label for="overallSessionNotesInput">Overall Session Notes (optional - will be saved):</label>
           <textarea id="overallSessionNotesInput" v-model="sessionOverallNotes" rows="3" style="width: 100%; margin-top: 5px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;"></textarea>
         </div>
-
+        
         <button @click="finishWorkoutAndSave" :disabled="isSaving" class="button-primary finish-workout-button">
             {{ isSaving ? 'Saving...' : 'Finish & Save Workout' }}
         </button>
     </div>
+
 
     <div v-if="!isLoading && !error && !currentWorkoutDayDetails && user && workoutPhase ==='overview'" class="card">
         <p>Could not load workout day details. Please try again or check your routine setup.</p>
@@ -178,8 +200,8 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, onUnmounted, computed } from 'vue';
 import { doc, getDoc, setDoc, updateDoc, collection, writeBatch, serverTimestamp } from 'firebase/firestore';
-import { db } from '../firebase.js'; // Ensure this path is correct
-import useAuth from '../composables/useAuth'; // Ensure this path is correct
+import { db } from '../firebase.js'; 
+import useAuth from '../composables/useAuth'; 
 import { useRouter } from 'vue-router';
 
 // --- Type Definitions ---
@@ -187,7 +209,7 @@ interface ExerciseProgress {
   exerciseName: string; currentWeightToAttempt: number; repsToAttemptNext: number;
   lastWorkoutAllSetsSuccessfulAtCurrentWeight?: boolean;
   consecutiveFailedWorkoutsAtCurrentWeightAndReps?: number;
-  lastPerformedDate?: any; // Firestore Timestamp or null
+  lastPerformedDate?: any; 
 }
 
 type WorkoutPhase = 'overview' | 'activeSet' | 'resting' | 'complete';
@@ -212,8 +234,8 @@ interface WorkoutDayInRoutine {
   exercises: ExerciseConfigInRoutine[];
 }
 interface SessionExercise extends ExerciseConfigInRoutine {
-  prescribedWeight: number; // Weight prescribed for this session
-  prescribedReps: number;   // Reps prescribed for this session
+  prescribedWeight: number; 
+  prescribedReps: number;   
 }
 interface LoggedSetData {
   exerciseId: string; exerciseName: string; setNumber: number;
@@ -222,12 +244,11 @@ interface LoggedSetData {
   status: 'done' | 'failed'; timestamp: Date;
 }
 
-// Interface for what's stored in loggedWorkout.performedExercises
-interface PerformedExerciseForLog {
+interface PerformedExerciseInLog { 
   exerciseId: string;
   exerciseName: string;
   sets: LoggedSetData[];
-  isPR?: boolean; // Will be calculated before saving
+  isPR?: boolean;
 }
 
 
@@ -240,7 +261,7 @@ const error = ref<string | null>(null);
 
 const activeProgramName = ref<string | null>(null);
 const currentWorkoutDayDetails = ref<WorkoutDayInRoutine | null>(null);
-const sessionExercises = reactive<SessionExercise[]>([]); // Holds exercises with prescribed weight/reps for THIS session
+const sessionExercises = reactive<SessionExercise[]>([]); 
 const workoutLog = reactive<LoggedSetData[]>([]);
 
 const currentExerciseIndex = ref(0);
@@ -268,8 +289,9 @@ const mobileTooltipText = ref<string>('');
 const initialExerciseProgressData = reactive<Map<string, ExerciseProgress>>(new Map());
 const sessionOverallNotes = ref("");
 
-// --- Wake Lock ---
 const wakeLockSentinel = ref<WakeLockSentinel | null>(null);
+
+const showSetDetailsInSummary = ref(false);
 
 // --- Computed Properties ---
 const totalSessionSets = computed(() => {
@@ -278,7 +300,7 @@ const totalSessionSets = computed(() => {
 const completedSetsCount = computed(() => workoutLog.filter(s => s.status === 'done').length);
 const failedSetsCount = computed(() => workoutLog.filter(s => s.status === 'failed').length);
 
-const workoutDurationFormatted = computed(() => {
+const workoutDurationFormatted = computed(() => { // Used for saving
   if (!workoutStartTime.value || !workoutEndTime.value) return 'N/A';
   const durationMs = workoutEndTime.value.getTime() - workoutStartTime.value.getTime();
   if (durationMs < 0) return 'N/A';
@@ -299,75 +321,6 @@ const totalWorkoutVolume = computed(() => {
     }
     return volume;
   }, 0);
-});
-
-interface ExerciseSummary {
-  exerciseId: string;
-  exerciseName: string;
-  targetSets: number;
-  loggedSetsCount: number;
-  doneSets: number;
-  status: string;
-  isPR?: boolean;
-}
-const exerciseSessionSummary = computed<ExerciseSummary[]>(() => {
-  if (sessionExercises.length === 0 ) return [];
-  return sessionExercises.map(sessionEx => { // sessionEx is a SessionExercise
-    const loggedSetsForThisEx = workoutLog.filter(log => log.exerciseId === sessionEx.id);
-    const doneSetsCount = loggedSetsForThisEx.filter(s => s.status === 'done').length;
-    const targetSets = sessionEx.targetSets || 0; // Target sets for this specific exercise config
-    let statusMessage = 'Not all sets logged "DONE"';
-
-    if (loggedSetsForThisEx.length === 0 && targetSets > 0) {
-        statusMessage = 'No sets performed.';
-    } else if (loggedSetsForThisEx.length >= targetSets && doneSetsCount === targetSets) {
-      statusMessage = 'All sets DONE!';
-    } else if (loggedSetsForThisEx.some(s => s.status === 'failed')) {
-        statusMessage = 'Some sets FAILED.';
-    } else if (loggedSetsForThisEx.length < targetSets && doneSetsCount === loggedSetsForThisEx.length && loggedSetsForThisEx.length > 0) {
-        statusMessage = `Completed ${doneSetsCount}/${targetSets} sets.`;
-    }
-
-    let isPR = false;
-    if (doneSetsCount === targetSets && targetSets > 0) {
-      const exKey = sessionEx.exerciseName.toLowerCase().replace(/\s+/g, '_');
-      const initialProg = initialExerciseProgressData.get(exKey); // Progress state *before* this session
-
-      if (initialProg) {
-        // Check if performance matched what was prescribed (which came from initialProg) for this session
-        if (sessionEx.prescribedWeight === initialProg.currentWeightToAttempt &&
-            sessionEx.prescribedReps === initialProg.repsToAttemptNext) {
-            
-            if (!initialProg.lastWorkoutAllSetsSuccessfulAtCurrentWeight || 
-                (initialProg.consecutiveFailedWorkoutsAtCurrentWeightAndReps && initialProg.consecutiveFailedWorkoutsAtCurrentWeightAndReps > 0) ) {
-              isPR = true;
-            } else {
-              // Already successful at this level, check if it triggers further progression
-              if (initialProg.repsToAttemptNext >= sessionEx.maxReps) {
-                  isPR = true;
-              } else {
-                  const nextRepsIfSuccessful = Math.min(initialProg.repsToAttemptNext + sessionEx.repOverloadStep, sessionEx.maxReps);
-                  if (nextRepsIfSuccessful > initialProg.repsToAttemptNext) {
-                      isPR = true;
-                  } else if (initialProg.repsToAttemptNext === sessionEx.maxReps) {
-                      isPR = true; 
-                  }
-              }
-            }
-        }
-      }
-    }
-
-    return {
-      exerciseId: sessionEx.id,
-      exerciseName: sessionEx.exerciseName,
-      targetSets: targetSets,
-      loggedSetsCount: loggedSetsForThisEx.length,
-      doneSets: doneSetsCount,
-      status: statusMessage,
-      isPR: isPR,
-    };
-  });
 });
 
 const allExercisesComplete = computed(() => sessionExercises.length > 0 && currentExerciseIndex.value >= sessionExercises.length);
@@ -392,7 +345,7 @@ const nextSetDetails = computed(() => {
   let tempCurrentExerciseIndex = currentExerciseIndex.value;
   if (workoutPhase.value === 'overview' && sessionExercises.length > 0) {
       const firstExercise = sessionExercises[0];
-      return { ...firstExercise, exerciseName: firstExercise.exerciseName, setNumber: 1, targetSets: firstExercise.targetSets };
+      return { ...firstExercise, exerciseName: firstExercise.exerciseName, setNumber: 1, targetSets: firstExercise.targetSets, prescribedReps: firstExercise.prescribedReps, prescribedWeight: firstExercise.prescribedWeight };
   }
   if (!currentExercise.value) return null;
   let nextExerciseDetails = currentExercise.value;
@@ -420,6 +373,125 @@ const formattedActiveSetTime = computed(() => {
   return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 });
 
+const displayDurationForCompletedWorkout = computed(() => {
+  if (workoutPhase.value !== 'complete' || !workoutStartTime.value || !workoutEndTime.value) return 'N/A';
+  const durationMs = workoutEndTime.value.getTime() - workoutStartTime.value.getTime();
+  if (durationMs < 0) return 'N/A';
+  const minutes = Math.floor(durationMs / 60000);
+  
+  if (minutes === undefined || minutes === null || isNaN(minutes) || minutes < 0) return 'N/A';
+  if (minutes === 0) return '0m';
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  let formatted = '';
+  if (h > 0) formatted += `${h}h `;
+  if (m > 0 || h === 0) formatted += `${m}m`;
+  return formatted.trim();
+});
+
+const completedPerformedExercisesSummary = computed<PerformedExerciseInLog[]>(() => {
+  if (workoutPhase.value !== 'complete' || !currentWorkoutDayDetails.value?.exercises) {
+    return [];
+  }
+
+  const groupedExercises: { [key: string]: LoggedSetData[] } = {};
+  workoutLog.forEach(set => {
+    if (!groupedExercises[set.exerciseId]) {
+      groupedExercises[set.exerciseId] = [];
+    }
+    groupedExercises[set.exerciseId].push({...set}); 
+  });
+
+  return currentWorkoutDayDetails.value.exercises
+    .map(exConfig => {
+      const setsForThisEx = groupedExercises[exConfig.id]?.sort((a, b) => a.setNumber - b.setNumber) || [];
+      
+      if (setsForThisEx.length === 0) return null; 
+
+      let isExercisePR = false;
+      const exKey = exConfig.exerciseName.toLowerCase().replace(/\s+/g, '_');
+      const initialProg = initialExerciseProgressData.get(exKey);
+      const doneSetsCount = setsForThisEx.filter(s => s.status === 'done').length;
+      const targetSets = exConfig.targetSets || 0;
+      const sessionExerciseConfig = sessionExercises.find(se => se.id === exConfig.id);
+
+      if (sessionExerciseConfig && doneSetsCount === targetSets && targetSets > 0 && initialProg) {
+        if (sessionExerciseConfig.prescribedWeight === initialProg.currentWeightToAttempt &&
+            sessionExerciseConfig.prescribedReps === initialProg.repsToAttemptNext) {
+          if (!initialProg.lastWorkoutAllSetsSuccessfulAtCurrentWeight ||
+              (initialProg.consecutiveFailedWorkoutsAtCurrentWeightAndReps && initialProg.consecutiveFailedWorkoutsAtCurrentWeightAndReps > 0) ) {
+            isExercisePR = true;
+          } else {
+            if (initialProg.repsToAttemptNext >= exConfig.maxReps) {
+              isExercisePR = true;
+            } else {
+              const nextRepsIfSuccessful = Math.min(initialProg.repsToAttemptNext + exConfig.repOverloadStep, exConfig.maxReps);
+              if (nextRepsIfSuccessful > initialProg.repsToAttemptNext) {
+                isExercisePR = true;
+              } else if (initialProg.repsToAttemptNext === exConfig.maxReps) {
+                isExercisePR = true;
+              }
+            }
+          }
+        }
+      }
+      return {
+        exerciseId: exConfig.id,
+        exerciseName: exConfig.exerciseName,
+        sets: setsForThisEx,
+        isPR: isExercisePR,
+      };
+    })
+    .filter(ex => ex !== null) as PerformedExerciseInLog[];
+});
+
+const displayConsolidatedSetsInfo = computed(() => {
+  const total = workoutLog.length;
+  return `${total} (Done: ${completedSetsCount.value}, Failed: ${failedSetsCount.value})`;
+});
+
+const getRepresentativeSetInfo = (sets: LoggedSetData[]): string => {
+  if (!sets || sets.length === 0) return '';
+  let representativeSet: LoggedSetData | null = null;
+  let maxWeight = -1;
+
+  for (const set of sets) {
+    if (set.status === 'done' && set.actualReps > 0 && typeof set.actualWeight === 'number' && set.actualWeight >= 0) {
+      if (set.actualWeight > maxWeight) {
+        maxWeight = set.actualWeight;
+        representativeSet = set;
+      } else if (set.actualWeight === maxWeight && representativeSet && set.actualReps > representativeSet.actualReps) {
+        representativeSet = set;
+      }
+    }
+  }
+  
+  if (!representativeSet) {
+    representativeSet = sets.find(s => s.actualReps > 0 && typeof s.actualWeight === 'number' && s.actualWeight >=0) || (sets.length > 0 ? sets[0] : null);
+  }
+
+  if (representativeSet && typeof representativeSet.actualWeight === 'number' && typeof representativeSet.actualReps === 'number') {
+    return `${representativeSet.actualWeight} lbs x ${representativeSet.actualReps} reps`;
+  }
+  return '';
+};
+
+const getExerciseStatusForDisplay = (exercise: PerformedExerciseInLog): string => {
+  const doneSets = exercise.sets.filter(s => s.status === 'done').length;
+  const totalPerformed = exercise.sets.length;
+  if (totalPerformed === 0) return "No sets recorded";
+  return `${doneSets}/${totalPerformed} sets done`;
+};
+
+const getExerciseLineSuffixForDisplay = (performedExercise: PerformedExerciseInLog): string => {
+  if (!performedExercise.sets || performedExercise.sets.length === 0) return '';
+  const repInfo = getRepresentativeSetInfo(performedExercise.sets);
+  if (repInfo) {
+    return `, ${repInfo}`; 
+  }
+  return '';
+};
+
 
 // --- Wake Lock Functions ---
 const requestWakeLock = async () => {
@@ -427,14 +499,11 @@ const requestWakeLock = async () => {
     try {
       wakeLockSentinel.value = await navigator.wakeLock.request('screen');
       wakeLockSentinel.value.addEventListener('release', () => {
-        // This happens if the lock is released by the system, e.g., tab hidden
         console.log('Screen Wake Lock was released.');
         wakeLockSentinel.value = null;
-        // If the tab becomes visible again, handleVisibilityChange will try to reacquire it
       });
       console.log('Screen Wake Lock is active.');
     } catch (err: any) {
-      // Log an error, but don't block app functionality
       console.warn(`Could not acquire screen wake lock: ${err.name}, ${err.message}. Your phone might lock during the workout.`);
       wakeLockSentinel.value = null;
     }
@@ -445,13 +514,10 @@ const releaseWakeLock = async () => {
   if (wakeLockSentinel.value) {
     try {
       await wakeLockSentinel.value.release();
-      // The 'release' event listener on the sentinel will set wakeLockSentinel.value to null
-      // but we can also set it here for immediate effect in our state.
       console.log('Screen Wake Lock released by component.');
       wakeLockSentinel.value = null;
     } catch (err: any) {
       console.warn(`Failed to release wake lock: ${err.name}, ${err.message}`);
-      // Even on error, assume it's no longer reliably held by us
       wakeLockSentinel.value = null;
     }
   }
@@ -476,6 +542,11 @@ const toggleProgressDotTooltip = (index: number, text: string) => {
     mobileTooltipText.value = text;
   }
 };
+
+const toggleSetDetailsInSummary = () => {
+  showSetDetailsInSummary.value = !showSetDetailsInSummary.value;
+};
+
 
 const startActivitySetTimer = () => {
   activeSetTimeElapsed.value = 0;
@@ -504,6 +575,7 @@ const fetchWorkoutData = async () => {
   showMobileTooltipForIndex.value = null; mobileTooltipText.value = '';
   initialExerciseProgressData.clear(); 
   sessionOverallNotes.value = ""; 
+  showSetDetailsInSummary.value = false;
 
   try {
     const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', props.programId);
@@ -516,32 +588,28 @@ const fetchWorkoutData = async () => {
     currentWorkoutDayDetails.value = workoutDay;
 
     if (workoutDay.exercises && workoutDay.exercises.length > 0) {
-      for (const exConfig of workoutDay.exercises) { // exConfig is ExerciseConfigInRoutine
+      for (const exConfig of workoutDay.exercises) { 
         const exProgressKey = exConfig.exerciseName.toLowerCase().replace(/\s+/g, '_');
         const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', exProgressKey);
         const progressSnap = await getDoc(progressDocRef);
-        
         let pWeight = exConfig.startingWeight ?? 0;
         let pReps = exConfig.minReps;
-        let currentExerciseProg: ExerciseProgress | null = null;
-
         if (progressSnap.exists()) {
-          currentExerciseProg = progressSnap.data() as ExerciseProgress;
-          initialExerciseProgressData.set(exProgressKey, currentExerciseProg);
-          pWeight = currentExerciseProg.currentWeightToAttempt;
-          pReps = currentExerciseProg.repsToAttemptNext;
+          const currentExerciseProgData = progressSnap.data() as ExerciseProgress;
+          initialExerciseProgressData.set(exProgressKey, currentExerciseProgData);
+          pWeight = currentExerciseProgData.currentWeightToAttempt;
+          pReps = currentExerciseProgData.repsToAttemptNext;
         } else {
           const baselineProgress: ExerciseProgress = {
               exerciseName: exConfig.exerciseName,
-              currentWeightToAttempt: pWeight, // uses startingWeight or 0
-              repsToAttemptNext: pReps,       // uses minReps
+              currentWeightToAttempt: pWeight, 
+              repsToAttemptNext: pReps,       
               lastWorkoutAllSetsSuccessfulAtCurrentWeight: false,
               consecutiveFailedWorkoutsAtCurrentWeightAndReps: 0
           };
           initialExerciseProgressData.set(exProgressKey, baselineProgress);
           console.warn(`No progress document found for ${exConfig.exerciseName}. Prescribing based on routine's min reps and starting weight (or default 0).`);
         }
-        // Push to sessionExercises with prescribed values for *this* session
         sessionExercises.push({ ...exConfig, prescribedWeight: pWeight, prescribedReps: pReps });
       }
     }
@@ -558,12 +626,17 @@ const beginActiveWorkout = () => {
     workoutPhase.value = 'overview'; return;
   }
   workoutStartTime.value = new Date();
-  workoutPhase.value = 'activeSet'; // Watcher for workoutPhase will handle requestWakeLock
+  workoutPhase.value = 'activeSet'; 
   startActivitySetTimer();
   showMobileTooltipForIndex.value = null;
 };
 
-const playTimerSound = () => { if (timerAudioPlayer.value) { timerAudioPlayer.value.currentTime = 0; timerAudioPlayer.value.play().catch(e => console.warn("Audio play failed:", e)); } };
+const playTimerSound = () => { 
+  if (timerAudioPlayer.value) { 
+    timerAudioPlayer.value.currentTime = 0; 
+    timerAudioPlayer.value.play().catch(e => console.warn("Audio play failed:", e)); 
+  } 
+};
 
 const startRestTimer = () => {
   if (currentExercise.value && currentExercise.value.customRestSeconds && currentExercise.value.customRestSeconds >= 10) {
@@ -573,9 +646,7 @@ const startRestTimer = () => {
   }
   restCountdown.value = restDurationToUse.value;
   showMobileTooltipForIndex.value = null;
-
   if (timerInterval) clearInterval(timerInterval);
-
   timerInterval = setInterval(() => {
     if (restCountdown.value > 0) {
       restCountdown.value--;
@@ -591,13 +662,11 @@ const startRestTimer = () => {
 const logSet = (status: 'done' | 'failed') => {
   stopActivitySetTimer();
   if (!currentExercise.value) return;
-  const currentEx = currentExercise.value; // currentEx is a SessionExercise
+  const currentEx = currentExercise.value; 
   const loggedSet: LoggedSetData = {
-    exerciseId: currentEx.id, exerciseName: currentEx.exerciseName,
-    setNumber: currentSetNumber.value, 
-    prescribedWeight: currentEx.prescribedWeight, // Log what was prescribed for this session
-    prescribedReps: currentEx.prescribedReps,     // Log what was prescribed for this session
-    actualWeight: currentEx.prescribedWeight, // Assuming actual is same as prescribed unless changed
+    exerciseId: currentEx.id, exerciseName: currentEx.exerciseName, setNumber: currentSetNumber.value, 
+    prescribedWeight: currentEx.prescribedWeight, prescribedReps: currentEx.prescribedReps,     
+    actualWeight: currentEx.prescribedWeight, 
     actualReps: status === 'done' ? currentEx.prescribedReps : 0,
     status: status, timestamp: new Date(),
   };
@@ -605,17 +674,15 @@ const logSet = (status: 'done' | 'failed') => {
   lastLoggedSetIndex.value = workoutLog.length - 1;
   const isLastExerciseInSession = currentExerciseIndex.value === sessionExercises.length - 1;
   const isLastSetOfThisExercise = currentSetNumber.value === currentEx.targetSets;
-
   showActualRepsInputForFail.value = status === 'failed';
   if (status === 'failed') { actualRepsForFailedSet.value = null; }
-
   if (isLastExerciseInSession && isLastSetOfThisExercise) {
     currentExerciseIndex.value++;
-    workoutPhase.value = 'complete'; // Watcher will handle releaseWakeLock
-    workoutEndTime.value = new Date();
+    workoutPhase.value = 'complete'; 
+    workoutEndTime.value = new Date(); 
     showMobileTooltipForIndex.value = null;
   } else {
-    workoutPhase.value = 'resting'; // Watcher will handle requestWakeLock (or ensure it's kept)
+    workoutPhase.value = 'resting'; 
     startRestTimer();
   }
 };
@@ -630,7 +697,6 @@ const proceedToNextSet = () => {
   showActualRepsInputForFail.value = false;
   actualRepsForFailedSet.value = null;
   showMobileTooltipForIndex.value = null;
-
   if (currentExercise.value) {
     if (currentSetNumber.value < currentExercise.value.targetSets) {
       currentSetNumber.value++;
@@ -640,14 +706,56 @@ const proceedToNextSet = () => {
     }
   }
   if (allExercisesComplete.value) { 
-    workoutPhase.value = 'complete'; // Watcher will handle releaseWakeLock
+    workoutPhase.value = 'complete'; 
     workoutEndTime.value = new Date(); 
     stopActivitySetTimer(); 
   } else { 
-    workoutPhase.value = 'activeSet'; // Watcher will handle requestWakeLock
+    workoutPhase.value = 'activeSet'; 
     startActivitySetTimer(); 
   }
 };
+
+const correctLastSet = () => {
+  if (workoutLog.length === 0) {
+    console.warn("No sets in log to correct.");
+    return;
+  }
+
+  if (timerInterval) { 
+    clearInterval(timerInterval);
+    timerInterval = undefined;
+  }
+
+  const setToCorrect = workoutLog.pop();
+  if (!setToCorrect) { 
+     console.error("Popped set is undefined, cannot correct.");
+     startRestTimer(); 
+     return;
+  }
+
+  const exerciseConfigIndex = sessionExercises.findIndex(ex => ex.id === setToCorrect.exerciseId);
+  if (exerciseConfigIndex === -1) {
+    console.error("Could not find exercise config for the set to correct. Restoring popped set.");
+    workoutLog.push(setToCorrect); 
+    startRestTimer(); 
+    return;
+  }
+  currentExerciseIndex.value = exerciseConfigIndex;
+  currentSetNumber.value = setToCorrect.setNumber;
+
+  showActualRepsInputForFail.value = false;
+  actualRepsForFailedSet.value = null;
+  lastLoggedSetIndex.value = workoutLog.length > 0 ? workoutLog.length - 1 : null;
+
+  workoutPhase.value = 'activeSet';
+  startActivitySetTimer(); 
+
+  showMobileTooltipForIndex.value = null;
+  mobileTooltipText.value = '';
+
+  console.log("Correcting set:", setToCorrect.exerciseName, "Set", setToCorrect.setNumber);
+};
+
 
 const finishWorkoutAndSave = async () => {
   if (!user.value || !user.value.uid || !currentWorkoutDayDetails.value || !props.programId) {
@@ -659,74 +767,28 @@ const finishWorkoutAndSave = async () => {
     }
   }
   if (workoutLog.length === 0) { error.value = "No sets were logged. Workout not saved."; return; }
-
   isSaving.value = true; error.value = null;
   
-  const performedExercisesGrouped: { exerciseId: string; exerciseName: string; sets: LoggedSetData[]; }[] = [];
-  if (currentWorkoutDayDetails.value && currentWorkoutDayDetails.value.exercises) {
-    for (const exConfig of currentWorkoutDayDetails.value.exercises) { // exConfig is ExerciseConfigInRoutine
-      const setsForThisEx = workoutLog.filter(log => log.exerciseId === exConfig.id);
-      if (setsForThisEx.length > 0) {
-        performedExercisesGrouped.push({
-          exerciseId: exConfig.id,
-          exerciseName: exConfig.exerciseName,
-          sets: setsForThisEx.sort((a,b) => a.setNumber - b.setNumber)
-        });
-      }
-    }
-  }
+  const performedExercisesForDatabase = completedPerformedExercisesSummary.value.map(ex => ({
+      exerciseId: ex.exerciseId,
+      exerciseName: ex.exerciseName,
+      sets: ex.sets.map(s => ({ 
+          ...s, 
+          timestamp: s.timestamp instanceof Date ? s.timestamp : new Date(s.timestamp) 
+      })),
+      isPR: ex.isPR,
+  }));
 
-  if (performedExercisesGrouped.length === 0) { 
+  if (performedExercisesForDatabase.length === 0) { 
     error.value = "No exercises with logged sets to save."; 
     isSaving.value = false; 
     return; 
   }
 
-  const performedExercisesForLogging: PerformedExerciseForLog[] = performedExercisesGrouped.map(perfExGroup => {
-    const exConfig = currentWorkoutDayDetails.value?.exercises.find(cfg => cfg.id === perfExGroup.exerciseId);
-    let isExercisePR = false;
-
-    if (exConfig) { // exConfig is ExerciseConfigInRoutine (from the day's routine definition)
-      const exKey = exConfig.exerciseName.toLowerCase().replace(/\s+/g, '_');
-      const initialProg = initialExerciseProgressData.get(exKey); // Progress state *before* this session
-      const doneSetsCount = perfExGroup.sets.filter(s => s.status === 'done').length;
-      const targetSets = exConfig.targetSets || 0;
-
-      // Find the corresponding SessionExercise to get what was prescribed for *this* session
-      const sessionExerciseConfig = sessionExercises.find(se => se.id === exConfig.id);
-
-      if (sessionExerciseConfig && doneSetsCount === targetSets && targetSets > 0 && initialProg) {
-        // Ensure PR logic compares against what was prescribed for this session,
-        // and that this prescription aligns with the initialProg's attempt values.
-        if (sessionExerciseConfig.prescribedWeight === initialProg.currentWeightToAttempt &&
-            sessionExerciseConfig.prescribedReps === initialProg.repsToAttemptNext) {
-            
-            if (!initialProg.lastWorkoutAllSetsSuccessfulAtCurrentWeight || 
-                (initialProg.consecutiveFailedWorkoutsAtCurrentWeightAndReps && initialProg.consecutiveFailedWorkoutsAtCurrentWeightAndReps > 0) ) {
-              isExercisePR = true;
-            } else {
-              if (initialProg.repsToAttemptNext >= exConfig.maxReps) { // Used exConfig for maxReps here
-                  isExercisePR = true;
-              } else {
-                  const nextRepsIfSuccessful = Math.min(initialProg.repsToAttemptNext + exConfig.repOverloadStep, exConfig.maxReps); // Used exConfig
-                  if (nextRepsIfSuccessful > initialProg.repsToAttemptNext) {
-                      isExercisePR = true;
-                  } else if (initialProg.repsToAttemptNext === exConfig.maxReps) { // Used exConfig
-                      isExercisePR = true; 
-                  }
-              }
-            }
-        }
-      }
-    }
-    return { ...perfExGroup, isPR: isExercisePR };
-  });
-
-
   if (!workoutStartTime.value) workoutStartTime.value = workoutLog.length > 0 ? workoutLog[0].timestamp : new Date();
-  if (!workoutEndTime.value) workoutEndTime.value = new Date();
+  if (!workoutEndTime.value) workoutEndTime.value = new Date(); 
 
-  const durationMs = workoutEndTime.value.getTime() - workoutStartTime.value.getTime();
+  const durationMs = workoutEndTime.value!.getTime() - workoutStartTime.value!.getTime(); 
   const durationMinutes = Math.max(0, Math.floor(durationMs / 60000));
 
   const newLoggedWorkoutRef = doc(collection(db, 'users', user.value.uid, 'loggedWorkouts'));
@@ -734,7 +796,7 @@ const finishWorkoutAndSave = async () => {
     id: newLoggedWorkoutRef.id, userId: user.value.uid, date: serverTimestamp(),
     trainingProgramIdUsed: props.programId, trainingProgramNameUsed: activeProgramName.value,
     workoutDayNameUsed: currentWorkoutDayDetails.value.dayName, workoutDayIdUsed: props.dayId,
-    performedExercises: performedExercisesForLogging, 
+    performedExercises: performedExercisesForDatabase, 
     overallSessionNotes: sessionOverallNotes.value,
     startTime: workoutStartTime.value, endTime: workoutEndTime.value, durationMinutes: durationMinutes
   };
@@ -743,13 +805,13 @@ const finishWorkoutAndSave = async () => {
   batch.set(newLoggedWorkoutRef, loggedWorkoutData);
 
   try {
-    for (const performedEx of performedExercisesForLogging) { // Iterate over the array that has .isPR
+    for (const performedEx of performedExercisesForDatabase) { 
       const exConfigFromRoutine = currentWorkoutDayDetails.value?.exercises.find(cfg => cfg.id === performedEx.exerciseId);
       if (!exConfigFromRoutine) { console.warn(`Config for ${performedEx.exerciseName} not found. Skipping prog.`); continue; }
       if (exConfigFromRoutine.enableProgression === false) { console.log(`Progression disabled for ${exConfigFromRoutine.exerciseName}.`); continue; }
 
       const progressKey = performedEx.exerciseName.toLowerCase().replace(/\s+/g, '_');
-      const currentProgress = initialExerciseProgressData.get(progressKey); // Use initial progress for update base
+      const currentProgress = initialExerciseProgressData.get(progressKey); 
 
       if (!currentProgress) { console.warn(`No initial progress found for ${performedEx.exerciseName} during save's progression update. Skipping.`); continue; }
       
@@ -779,12 +841,13 @@ const finishWorkoutAndSave = async () => {
       batch.update(progressDocRef, newProgressUpdate);
     }
     await batch.commit();
-    alert("Workout saved and progress updated!");
+    
     workoutLog.length = 0; currentExerciseIndex.value = 0; currentSetNumber.value = 1;
-    workoutPhase.value = 'overview'; // Watcher will handle releaseWakeLock
+    workoutPhase.value = 'overview'; 
     showActualRepsInputForFail.value = false;
     sessionOverallNotes.value = ""; 
     showMobileTooltipForIndex.value = null; mobileTooltipText.value = ''; 
+    showSetDetailsInSummary.value = false; 
     router.push('/');
   } catch (e: any) { console.error("Error finishing workout:", e); error.value = "Failed to save. " + e.message; }
   finally { isSaving.value = false; }
@@ -808,6 +871,7 @@ onMounted(() => {
       sessionExercises.length = 0; workoutLog.length = 0; workoutPhase.value = 'overview';
       showMobileTooltipForIndex.value = null; mobileTooltipText.value = ''; 
       initialExerciseProgressData.clear(); sessionOverallNotes.value = "";
+      showSetDetailsInSummary.value = false; 
       if (currentUser === null) { error.value = "Please log in."; }
     }
     previousUserRef.value = currentUser;
@@ -816,7 +880,6 @@ onMounted(() => {
   if (timerAudioPlayer.value) {
     timerAudioPlayer.value.load();
   }
-  // Add event listener for visibility changes for Wake Lock
   document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
@@ -824,10 +887,7 @@ onUnmounted(() => {
   if (userWatcherUnsubscribe) userWatcherUnsubscribe();
   if (timerInterval) clearInterval(timerInterval);
   if (activeSetTimerInterval) clearInterval(activeSetTimerInterval);
-
-  // Release the wake lock when the component is unmounted
-  releaseWakeLock(); // Make sure it's called without await if onUnmounted isn't async
-  // Remove event listener
+  releaseWakeLock(); 
   document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 
@@ -835,27 +895,53 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
   showMobileTooltipForIndex.value = null;
   mobileTooltipText.value = '';
   if (oldPhase === 'complete' && newPhase !== 'complete') {
-    showActualRepsInputForFail.value = false;
+    showActualRepsInputForFail.value = false; 
+  }
+  if (newPhase === 'complete') { 
+      if (!workoutEndTime.value) workoutEndTime.value = new Date();
   }
 
-  // Manage Wake Lock based on workout phase
   if (newPhase === 'activeSet' || newPhase === 'resting') {
     await requestWakeLock();
   } else if (newPhase === 'overview' || newPhase === 'complete') {
-    // Release lock when workout is not actively in progress or is finished
     await releaseWakeLock();
   }
 });
 </script>
 
 <style scoped>
-/* Styles remain the same as the previous full version you provided */
+/* NEW styles for the actions-top-bar and correct-last-set-action */
+.actions-top-bar {
+  display: flex; 
+  justify-content: flex-start; /* Aligns items to the left */
+  margin-bottom: 10px; /* Space below the bar */
+  min-height: 25px; /* Ensure space for the element, adjust if needed */
+}
+
+.correct-last-set-action {
+  font-size: 0.85em;
+  color: #007bff; /* Or use your var(--color-accent) */
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: transparent;
+  border: 1px solid transparent; 
+  transition: background-color 0.2s, color 0.2s;
+  display: inline-flex; 
+  align-items: center;
+}
+
+.correct-last-set-action:hover {
+  background-color: #e9ecef; /* A common light hover color */
+  text-decoration: none; 
+}
+
+/* All other existing styles from the previous complete version */
 .workout-active-view {
-  /* padding: 20px; */ /* Remove horizontal padding to use space up to #app's padding */
-  padding-top: 10px; /* Example: keep some vertical padding if needed */
+  padding-top: 10px; 
   padding-bottom: 10px;
-  max-width: 750px; /* Content will be max 750px wide, centered by margin */
-  margin: 0 auto;   /* Center the content area */
+  max-width: 750px; 
+  margin: 0 auto;   
 }
 .card { background-color: #fff;   padding: 20px 25px;
   border-radius: 8px;
@@ -902,78 +988,54 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
 .active-set-timer-display { text-align: right; font-size: 0.9em; color: #555; margin-bottom: 15px; padding-right: 5px; }
 .exercise-notes { font-style: italic; color: #666; margin-bottom: 15px; font-size: 0.9em; }
 .current-set-info h3 { margin-top: 0; margin-bottom: 8px; font-size: 1.3em; color: #333;}
-/* .prescription class was not used in the final template for current set, using .prescription-details */
 .set-actions { display: flex; justify-content: space-around; margin-top: 25px; gap: 20px; }
 .set-actions button { padding: 12px 0; font-size: 1.1em; font-weight: bold; border: none; border-radius: 5px; color: white; cursor: pointer; flex-grow: 1; margin: 0; max-width: 220px; transition: background-color 0.2s, transform 0.1s; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
 .button-done { background-color: #28a745; }
 .button-done:hover { background-color: #218838; transform: translateY(-2px); }
 .button-fail { background-color: #dc3545; }
 .button-fail:hover { background-color: #c82333; transform: translateY(-2px); }
-.rest-screen-content h2 { font-size: 2em; margin-bottom: 10px; }
-.timer-display { font-size: 3.5em; font-weight: bold; margin: 20px 0; color: #007bff; }
+.rest-screen-content h2 { font-size: 2em; margin-bottom: 10px; text-align: center;}
+.timer-display { font-size: 3.5em; font-weight: bold; margin: 20px 0; color: #007bff; text-align: center;}
 .timer-bar-container { width: 80%; max-width: 400px; height: 20px; background-color: #e9ecef; border-radius: 10px; margin: 0 auto 20px auto; overflow: hidden; }
 .timer-bar { height: 100%; background: linear-gradient(90deg, #007bff, #0056b3); border-radius: 10px; transition: width 1s linear; width: 100%; }
 .actual-reps-input-section { margin: 20px 0; }
 .actual-reps-input-section label { display: block; margin-bottom: 8px; font-weight: 500; }
 .actual-reps-input-section input[type="number"] { padding: 8px; width: 80px; text-align: center; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; }
-.next-up-info { margin: 25px 0; }
+.next-up-info { margin: 25px 0; text-align: center;}
 .next-up-info h4 { margin-top: 0; color: #333; font-size: 1.2em; }
-.start-next-set-button { width: auto; padding: 12px 30px; font-size: 1.1em; }
-.workout-summary { margin-top: 20px; margin-bottom: 20px; text-align: left; }
-.workout-summary h4 { margin-top: 0; margin-bottom: 10px; }
-.workout-summary p { margin: 5px 0; font-size: 1em; }
-.workout-summary h5 { margin-top: 15px; margin-bottom: 5px; font-size: 1.05em; color: #333; }
+.start-next-set-button { width: auto; padding: 12px 30px; font-size: 1.1em; display: block; margin-left: auto; margin-right: auto;}
+
+.workout-summary { color: #333; }
+.workout-summary h4 { font-size: 1.2em; font-weight: 600; margin-top: 0; margin-bottom: 15px; }
+.workout-summary p { margin: 8px 0 8px 15px; font-size: 0.95em; line-height: 1.5; }
+.workout-summary p strong { font-weight: 500; }
+.exercise-breakdown-header { display: flex; justify-content: space-between; align-items: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #d0d0d0; }
+.workout-summary h5 { font-size: 1.15em; font-weight: 600; color: #333; margin-top: 0; margin-bottom: 15px; }
+.exercise-breakdown-header .button-link { font-size: 0.85em; font-weight: normal; }
 .exercise-summary-list { list-style-type: none; padding-left: 0; }
-.exercise-summary-list li { font-size: 0.95em; margin-bottom: 4px; }
-.overall-notes-section { margin-top: 20px; margin-bottom: 20px; } /* For the textarea section */
+.exercise-summary-list > li { font-size: 0.95em; padding: 10px 0 10px 15px; margin-bottom: 0; border-bottom: 1px dashed #e0e0e0; }
+.exercise-summary-list > li:last-child { border-bottom: none; }
+.exercise-summary-list > li strong { font-weight: 500; }
+.set-details-list { list-style-type: none; padding-left: 20px; margin-top: 8px; font-size: 0.9em; color: #555; }
+.set-details-list li { padding: 3px 0; border-bottom: none; margin-bottom: 0; }
+.button-link { background: none; border: none; color: #007bff; text-decoration: underline; cursor: pointer; padding: 0; font-size: inherit; }
+.button-link:hover { color: #0056b3; }
+.session-notes-history { margin-top: 20px; padding-top: 15px; border-top: 1px solid #d0d0d0; }
+.session-notes-history strong { display: block; margin-bottom: 8px; font-weight: 600; }
+.session-notes-history p { white-space: pre-wrap; font-size: 0.9em; color: #444; line-height: 1.6; margin: 0 0 0 15px; }
+
+.overall-notes-section { margin-top: 20px; margin-bottom: 20px; } 
 .overall-notes-section label { display: block; margin-bottom: 8px; font-weight: 500; }
 .finish-workout-button { margin-top: 30px; padding: 15px 25px; width: 100%; box-sizing: border-box; font-size: 1.2em; }
 .button-secondary { display: inline-block; margin-top: 10px; padding: 10px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; text-decoration: none; transition: background-color 0.2s; }
 .button-secondary:hover { background-color: #5a6268; }
 .button-primary { background-color: #007bff; color:white; border:none; border-radius: 4px; padding:10px 15px; cursor:pointer; font-weight: bold; }
 .button-primary:hover:not(:disabled) { background-color: #0056b3; }
-.loading-message, .no-items-message, .login-prompt { color: #6c757d; text-align: center; padding: 20px; }
+.loading-message, .no-items-message, .login-prompt { color: var(--color-text); text-align: center; padding: 20px; }
 .error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-top: 15px; }
-.current-set-info {
-  background-color: #f8f9fa;
-    padding: 20px; /* Internal padding for the card content */
-  border-radius: 8px;
-  margin-bottom: 25px;
-  /* margin-left: 0; /* Ensure it uses full width of .workout-active-view if needed */
-  /* margin-right: 0; */
-  border: 1px solid var(--color-border);
-  text-align: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-}
-
-.current-set-info h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
-  font-size: 1.5em;
-  color: #495057;
-  font-weight: 600;
-}
-
-.prescription-details {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  line-height: 1.2;
-}
-
-.prescription-reps,
-.prescription-weight {
-  font-size: 2.0em;
-  font-weight: bold;
-  color: #007bff;
-  display: block;
-}
-
-.prescription-separator {
-  font-size: 1.6em;
-  font-weight: normal;
-  color: #6c757d;
-  margin: 5px 0;
-}
+.current-set-info { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid var(--color-border); text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.current-set-info h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.5em; color: #495057; font-weight: 600; }
+.prescription-details { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+.prescription-reps, .prescription-weight { font-size: 2.0em; font-weight: bold; color: #007bff; display: block; }
+.prescription-separator { font-size: 1.6em; font-weight: normal; color: #6c757d; margin: 5px 0; }
 </style>
