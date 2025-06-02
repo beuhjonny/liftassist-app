@@ -1079,7 +1079,7 @@ onUnmounted(() => {
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   text-align: left;
   border: 1px solid var(--color-border); color: #333;  }
-.card-inset { background-color: #f9f9f9; padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom:15px; border: 1px solid #e9ecef;}
+.card-inset { background-color: #f9f9f9; color: #333; padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom:15px; border: 1px solid #e9ecef;}
 .active-routine-display h2, .active-routine-display h3, .active-routine-display h4, .active-routine-display h5 { text-align:left; margin-bottom: 0.5em; }
 .active-routine-display h3 { margin-top: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid #eee; }
 .routine-description { margin-top: 5px; margin-bottom: 15px; color: #555; font-style: italic; font-size: 0.95em; text-align:left;}
@@ -1152,10 +1152,10 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;}
-.modal-content { background-color: #fff; padding: 25px 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 750px; max-height: 85vh; overflow-y: auto; position: relative;}
+.modal-content { background-color: #fff; padding: 25px 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 750px; max-height: 85vh; overflow-y: auto; position: relative; color: #333;}
 .modal-close-button { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 2rem; line-height: 1; color: #888; cursor: pointer;}
 .modal-close-button:hover { color: #333; }
 .modal-content h3 { margin-top: 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;}
-.ai-instructions { margin-top: 10px; background-color: #f9f9f9; border: 1px solid #eee; padding: 15px; border-radius: 4px; font-size: 0.9em;}
-.ai-instructions pre { white-space: pre-wrap; word-wrap: break-word; background-color: #eef; padding: 10px; border-radius: 4px; max-height: 40vh; overflow-y: auto; font-family: monospace; font-size: 0.90em; line-height: 1.4;}
+.ai-instructions { margin-top: 10px; background-color: #f9f9f9; border: 1px solid #eee; padding: 15px; border-radius: 4px; font-size: 0.9em; color: #333;}
+.ai-instructions pre { white-space: pre-wrap; word-wrap: break-word; background-color: #eef; padding: 10px; border-radius: 4px; max-height: 40vh; overflow-y: auto; font-family: monospace; font-size: 0.90em; line-height: 1.4; color: #333;}
 </style>

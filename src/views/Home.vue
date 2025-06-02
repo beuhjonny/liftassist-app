@@ -313,6 +313,7 @@ const enhancedWorkoutDays = computed<EnhancedWorkoutDay[]>(() => {
   if (localSortedWorkoutDays.length > 0) {
     for (const log of historyOldestFirst) {
       const loggedDayInProgram = localSortedWorkoutDays.find(d => d.id === log.workoutDayIdUsed);
+      
       if (!loggedDayInProgram) {
         if (lastCompletedDayIdInStrictSequence === log.workoutDayIdUsed) {
             lastCompletedDayIdInStrictSequence = null;
@@ -335,14 +336,21 @@ const enhancedWorkoutDays = computed<EnhancedWorkoutDay[]>(() => {
       }
 
       if (log.workoutDayIdUsed === expectedNextDayIdInStrictSequence) {
+        // User completed the expected day. Reset its skip count.
+        if (expectedNextDayIdInStrictSequence) {
+          skipCounts.set(expectedNextDayIdInStrictSequence, 0);
+        }
         lastCompletedDayIdInStrictSequence = log.workoutDayIdUsed;
       } else {
+        // User completed a different day. The 'expected' day was skipped.
         if (expectedNextDayIdInStrictSequence) {
           skipCounts.set(
             expectedNextDayIdInStrictSequence,
             (skipCounts.get(expectedNextDayIdInStrictSequence) || 0) + 1
           );
         }
+        // The day ACTUALLY completed has its skip count reset.
+        skipCounts.set(log.workoutDayIdUsed, 0);
         lastCompletedDayIdInStrictSequence = log.workoutDayIdUsed;
       }
     }
@@ -395,17 +403,17 @@ const lastDoneDayOverallDisplay = computed(() => {
   return null;
 });
 
-const nextRecommendedDayObject = computed(() => { // For clickable "Next Up"
+const nextRecommendedDayObject = computed(() => {
   if (enhancedWorkoutDays.value.length === 0) return null;
   return enhancedWorkoutDays.value.find(d => d.isNextRecommended) || null;
 });
 
-const nextRecommendedDayNameDisplay = computed(() => { // For display, uses the object
+const nextRecommendedDayNameDisplay = computed(() => {
   return nextRecommendedDayObject.value?.dayName || (sortedWorkoutDays.value[0]?.dayName || null);
 });
 
 
-const startWorkout = (day: WorkoutDay | EnhancedWorkoutDay) => { // Type can be base or enhanced
+const startWorkout = (day: WorkoutDay | EnhancedWorkoutDay) => {
   if (!activeProgram.id || !day.id) {
     programLoadingError.value = "Cannot start workout: Program or Day ID is missing.";
     return;
