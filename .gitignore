@@ -29,6 +29,7 @@ coverage
 
 *.tsbuildinfo
 .env.local
+.env
 
 # Firebase
 .firebase/*.cache

@@ -10,7 +10,9 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "deploy:prod": "npm run build && firebase deploy --only hosting",
+    "deploy:preview": "npm run build && firebase hosting:channel:deploy v1.1-test --expires 30d"
   },
   "dependencies": {
     "pinia": "^3.0.1",
