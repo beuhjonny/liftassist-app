@@ -17,7 +17,7 @@ let provider;
 let unsubscribe: (() => void) | null = null;
 
 try {
-  if (app._initialized !== false) {
+  if (app) {
     auth = getAuth(app);
     provider = new GoogleAuthProvider();
   } else {

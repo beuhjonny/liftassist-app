@@ -12,7 +12,7 @@ import { app } from '../firebase.js';
 
 let auth;
 try {
-  if (app._initialized !== false) {
+  if (app) {
     auth = getAuth(app);
   } else {
     console.warn('⚠️ Firebase Auth not available - app will work in demo mode');

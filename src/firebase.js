@@ -29,20 +29,22 @@ if (missingEnvVars.length > 0) {
 }
 
 let app;
+let isFirebaseInitialized = false;
 try {
   app = initializeApp(firebaseConfig);
+  isFirebaseInitialized = true;
 } catch (error) {
   console.error('❌ Failed to initialize Firebase:', error);
   console.error('The app will continue to load, but Firebase features will not work.');
   // Create a dummy app object to prevent crashes
-  app = { _initialized: false, _error: error };
+  app = null;
 }
 
 // 2. Initialize Firestore with persistence settings
 //    Replace `const db = getFirestore(app);` and the `enableIndexedDbPersistence(db)` call
 let db;
 try {
-  if (app._initialized !== false) {
+  if (isFirebaseInitialized && app) {
     db = initializeFirestore(app, {
       localCache: persistentLocalCache({ cacheSizeBytes: CACHE_SIZE_UNLIMITED }) // Using unlimited cache size as an example
       // You can also configure cache size explicitly, e.g., { cacheSizeBytes: 100 * 1024 * 1024 } for 100MB
