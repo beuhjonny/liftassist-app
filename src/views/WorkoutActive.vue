@@ -206,7 +206,8 @@
     </div>
 
     <audio ref="timerAudioPlayer" style="display: none;">
-      <source src="https://www.myinstants.com/media/sounds/boxing-bell.mp3" type="audio/mpeg">
+      <!-- Fallback audio element - primary method uses Web Audio API -->
+      <source src="/sounds/bell.mp3" type="audio/mpeg">
       Your browser does not support the audio element.
     </audio>
   </div>
@@ -291,7 +292,10 @@ const lastLoggedSetIndex = ref<number | null>(null);
 let timerInterval: number | undefined = undefined;
 const timerAudioPlayer = ref<HTMLAudioElement | null>(null);
 let audioContext: AudioContext | null = null;
-let audioBuffer: AudioBuffer | null = null;
+
+// Sound type options - can be extended later
+type SoundType = 'bell' | 'beep' | 'chime' | 'ding';
+const selectedSoundType = ref<SoundType>('bell'); // Default to bell
 
 const workoutPhase = ref<WorkoutPhase>('overview');
 const workoutStartTime = ref<Date | null>(null);
@@ -667,8 +671,78 @@ const beginActiveWorkout = () => {
   showMobileTooltipForIndex.value = null;
 };
 
+// Generate short sounds programmatically (very short to minimize interruption)
+const generateSound = (context: AudioContext, type: SoundType): AudioBufferSourceNode => {
+  const sampleRate = context.sampleRate;
+  const duration = 0.25; // Very short - 250ms to minimize interruption
+  const frameCount = sampleRate * duration;
+  const buffer = context.createBuffer(1, frameCount, sampleRate);
+  const data = buffer.getChannelData(0);
+  
+  let fundamentalFreq: number;
+  let harmonics: Array<{ freq: number; amplitude: number }>;
+  let envelopeDecay: number;
+  
+  switch (type) {
+    case 'bell':
+      fundamentalFreq = 800;
+      harmonics = [
+        { freq: fundamentalFreq, amplitude: 1.0 },
+        { freq: fundamentalFreq * 2, amplitude: 0.5 },
+        { freq: fundamentalFreq * 3, amplitude: 0.3 },
+        { freq: fundamentalFreq * 4, amplitude: 0.15 }
+      ];
+      envelopeDecay = 8;
+      break;
+    case 'beep':
+      fundamentalFreq = 1000;
+      harmonics = [{ freq: fundamentalFreq, amplitude: 1.0 }];
+      envelopeDecay = 10;
+      break;
+    case 'chime':
+      fundamentalFreq = 600;
+      harmonics = [
+        { freq: fundamentalFreq, amplitude: 1.0 },
+        { freq: fundamentalFreq * 2.5, amplitude: 0.6 },
+        { freq: fundamentalFreq * 4, amplitude: 0.3 }
+      ];
+      envelopeDecay = 6;
+      break;
+    case 'ding':
+      fundamentalFreq = 1200;
+      harmonics = [
+        { freq: fundamentalFreq, amplitude: 1.0 },
+        { freq: fundamentalFreq * 2, amplitude: 0.4 }
+      ];
+      envelopeDecay = 12;
+      break;
+    default:
+      fundamentalFreq = 800;
+      harmonics = [{ freq: fundamentalFreq, amplitude: 1.0 }];
+      envelopeDecay = 8;
+  }
+  
+  for (let i = 0; i < frameCount; i++) {
+    let sample = 0;
+    const t = i / sampleRate;
+    // Exponential decay envelope
+    const envelope = Math.exp(-t * envelopeDecay);
+    
+    for (const harmonic of harmonics) {
+      sample += Math.sin(2 * Math.PI * harmonic.freq * t) * harmonic.amplitude * envelope;
+    }
+    
+    data[i] = sample * 0.3; // Scale down to reasonable volume
+  }
+  
+  const source = context.createBufferSource();
+  source.buffer = buffer;
+  return source;
+};
+
 const playTimerSound = async () => {
-  // Use Web Audio API for better mobile compatibility and less interruption
+  // Use Web Audio API with programmatically generated short sound
+  // This minimizes interruption time on mobile
   try {
     if (!audioContext) {
       audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -679,45 +753,27 @@ const playTimerSound = async () => {
       await audioContext.resume();
     }
     
-    // Load audio buffer if not already loaded
-    if (!audioBuffer) {
-      try {
-        const response = await fetch('https://www.myinstants.com/media/sounds/boxing-bell.mp3');
-        const arrayBuffer = await response.arrayBuffer();
-        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-      } catch (fetchError) {
-        console.warn('Failed to load audio buffer:', fetchError);
-        // Fall through to HTML5 audio fallback
-      }
-    }
+    // Generate and play a very short sound (250ms) - minimizes interruption
+    const source = generateSound(audioContext, selectedSoundType.value);
+    const gainNode = audioContext.createGain();
+    gainNode.gain.value = 0.6; // 60% volume - less intrusive
     
-    if (audioBuffer && audioContext) {
-      const source = audioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(audioContext.destination);
-      
-      // Set volume to reasonable level (not too loud)
-      const gainNode = audioContext.createGain();
-      gainNode.gain.value = 0.7; // 70% volume
-      source.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      source.start(0);
-      
-      // On mobile, Web Audio API is less likely to interrupt other media
-      // and when it does, other media typically resumes automatically
-      return; // Successfully played with Web Audio API
-    }
+    source.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    source.start(0);
+    
+    // Sound is very short (300ms), so it releases audio focus quickly
+    // This minimizes interruption of other media on mobile
+    return; // Successfully played
   } catch (error) {
     console.warn('Web Audio API failed, falling back to HTML5 audio:', error);
   }
   
   // Fallback to HTML5 audio (original method)
-  // On mobile, this may still interrupt other media, but it's a fallback
+  // Try to use a local file if available, otherwise use remote
   if (timerAudioPlayer.value) {
     timerAudioPlayer.value.currentTime = 0;
-    // Set volume to reasonable level
-    timerAudioPlayer.value.volume = 0.7;
+    timerAudioPlayer.value.volume = 0.6;
     timerAudioPlayer.value.play().catch(e => console.warn("Audio play failed:", e));
   }
 };
