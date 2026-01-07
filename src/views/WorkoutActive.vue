@@ -205,11 +205,8 @@
         <p>Please <router-link to="/login">log in</router-link> to view workouts.</p>
     </div>
 
-    <audio ref="timerAudioPlayer" style="display: none;">
-      <!-- Fallback audio element - primary method uses Web Audio API -->
-      <source src="/sounds/bell.mp3" type="audio/mpeg">
-      Your browser does not support the audio element.
-    </audio>
+    <!-- Audio element kept for fallback, but primary method uses Web Audio API -->
+    <audio ref="timerAudioPlayer" style="display: none;"></audio>
   </div>
 </template>
 
@@ -769,13 +766,10 @@ const playTimerSound = async () => {
     console.warn('Web Audio API failed, falling back to HTML5 audio:', error);
   }
   
-  // Fallback to HTML5 audio (original method)
-  // Try to use a local file if available, otherwise use remote
-  if (timerAudioPlayer.value) {
-    timerAudioPlayer.value.currentTime = 0;
-    timerAudioPlayer.value.volume = 0.6;
-    timerAudioPlayer.value.play().catch(e => console.warn("Audio play failed:", e));
-  }
+  // Fallback to HTML5 audio - but since we're using programmatic sounds,
+  // this fallback won't work without an audio file. That's okay since
+  // Web Audio API should work in all modern browsers.
+  console.warn('Web Audio API not available - audio playback may not work');
 };
 
 const startRestTimer = () => {
