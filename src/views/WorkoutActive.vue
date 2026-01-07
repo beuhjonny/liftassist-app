@@ -1,6 +1,19 @@
 <template>
   <div class="workout-active-view">
-    <div v-if="isLoading" class="loading-message card">
+    <!-- Draft Workout Prompt -->
+    <div v-if="showDraftPrompt" class="draft-prompt-overlay">
+      <div class="draft-prompt-card card">
+        <h2>Resume Workout?</h2>
+        <p>You have an unfinished workout in progress.</p>
+        <p v-if="isLoadingDraft">Loading draft...</p>
+        <div v-else class="draft-prompt-actions">
+          <button @click="resumeDraft" class="button-primary">Resume Workout</button>
+          <button @click="discardDraft" class="button-secondary">Start Fresh</button>
+        </div>
+      </div>
+    </div>
+    
+    <div v-if="isLoading && !showDraftPrompt" class="loading-message card">
       <p>Loading your workout...</p>
     </div>
     <div v-if="error && !isLoading" class="error-message card">
@@ -214,7 +227,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, onUnmounted, computed } from 'vue';
-import { doc, getDoc, setDoc, updateDoc, collection, writeBatch, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, writeBatch, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase.js'; 
 import useAuth from '../composables/useAuth'; 
 import { useRouter } from 'vue-router';
@@ -266,6 +279,25 @@ interface PerformedExerciseInLog {
   isPR?: boolean;
 }
 
+// Draft workout interface for auto-save
+interface DraftWorkout {
+  id: string;
+  userId: string;
+  programId: string;
+  dayId: string;
+  programName: string;
+  dayName: string;
+  workoutLog: LoggedSetData[];
+  sessionExercises: SessionExercise[];
+  currentExerciseIndex: number;
+  currentSetNumber: number;
+  workoutPhase: WorkoutPhase;
+  workoutStartTime: Date | null;
+  sessionOverallNotes: string;
+  lastUpdated: any; // Firestore Timestamp
+  createdAt: any; // Firestore Timestamp
+}
+
 
 const props = defineProps<{ programId: string; dayId: string; }>();
 const { user } = useAuth();
@@ -273,6 +305,19 @@ const router = useRouter();
 const isLoading = ref(true);
 const isSaving = ref(false);
 const error = ref<string | null>(null);
+
+// Draft workout state
+const draftWorkoutId = ref<string | null>(null);
+const hasDraft = ref(false);
+const showDraftPrompt = ref(false);
+const isLoadingDraft = ref(false);
+
+// Declare global window type for pending draft
+declare global {
+  interface Window {
+    _pendingDraft?: DraftWorkout;
+  }
+}
 
 const activeProgramName = ref<string | null>(null);
 const currentWorkoutDayDetails = ref<WorkoutDayInRoutine | null>(null);
@@ -661,7 +706,7 @@ const fetchWorkoutData = async () => {
   finally { isLoading.value = false; }
 };
 
-const beginActiveWorkout = () => {
+const beginActiveWorkout = async () => {
   if (sessionExercises.length === 0) {
     error.value = "No exercises to start. Please define exercises in your routine.";
     workoutPhase.value = 'overview'; return;
@@ -670,6 +715,9 @@ const beginActiveWorkout = () => {
   workoutPhase.value = 'activeSet'; 
   startActivitySetTimer();
   showMobileTooltipForIndex.value = null;
+  
+  // Create initial draft workout
+  await saveDraftWorkout();
 };
 
 // Generate short sounds programmatically (very short to minimize interruption)
@@ -834,7 +882,7 @@ const startRestTimer = () => {
   }, 1000);
 };
 
-const logSet = (status: 'done' | 'failed') => {
+const logSet = async (status: 'done' | 'failed') => {
   stopActivitySetTimer();
   if (!currentExercise.value) return;
   const currentEx = currentExercise.value; 
@@ -860,6 +908,142 @@ const logSet = (status: 'done' | 'failed') => {
     workoutPhase.value = 'resting'; 
     startRestTimer();
   }
+  
+  // Auto-save draft after logging set
+  await saveDraftWorkout();
+};
+
+// Draft workout functions
+const getDraftWorkoutRef = () => {
+  if (!user.value?.uid) return null;
+  // Use a predictable ID based on programId and dayId
+  const draftId = `draft_${props.programId}_${props.dayId}`;
+  return doc(db, 'users', user.value.uid, 'draftWorkouts', draftId);
+};
+
+const saveDraftWorkout = async () => {
+  if (!user.value?.uid || !currentWorkoutDayDetails.value) return;
+  
+  try {
+    const draftRef = getDraftWorkoutRef();
+    if (!draftRef) return;
+    
+    const draftData: Omit<DraftWorkout, 'id'> = {
+      userId: user.value.uid,
+      programId: props.programId,
+      dayId: props.dayId,
+      programName: activeProgramName.value || '',
+      dayName: currentWorkoutDayDetails.value.dayName,
+      workoutLog: workoutLog.map(set => ({
+        ...set,
+        timestamp: set.timestamp instanceof Date ? set.timestamp : new Date(set.timestamp)
+      })),
+      sessionExercises: sessionExercises.map(ex => ({ ...ex })),
+      currentExerciseIndex: currentExerciseIndex.value,
+      currentSetNumber: currentSetNumber.value,
+      workoutPhase: workoutPhase.value,
+      workoutStartTime: workoutStartTime.value,
+      sessionOverallNotes: sessionOverallNotes.value,
+      lastUpdated: serverTimestamp(),
+      createdAt: draftWorkoutId.value ? undefined : serverTimestamp(), // Only set on first save
+    };
+    
+    await setDoc(draftRef, draftData, { merge: true });
+    draftWorkoutId.value = draftRef.id;
+    console.log('Draft workout saved');
+  } catch (error) {
+    console.error('Failed to save draft workout:', error);
+  }
+};
+
+const loadDraftWorkout = async () => {
+  if (!user.value?.uid) return null;
+  
+  try {
+    const draftRef = getDraftWorkoutRef();
+    if (!draftRef) return null;
+    
+    const draftSnap = await getDoc(draftRef);
+    if (draftSnap.exists()) {
+      const data = draftSnap.data() as Omit<DraftWorkout, 'id'>;
+      return { id: draftSnap.id, ...data } as DraftWorkout;
+    }
+    return null;
+  } catch (error) {
+    console.error('Failed to load draft workout:', error);
+    return null;
+  }
+};
+
+const deleteDraftWorkout = async () => {
+  if (!user.value?.uid) return;
+  
+  try {
+    const draftRef = getDraftWorkoutRef();
+    if (!draftRef) return;
+    
+    await deleteDoc(draftRef);
+    draftWorkoutId.value = null;
+    console.log('Draft workout deleted');
+  } catch (error) {
+    console.error('Failed to delete draft workout:', error);
+  }
+};
+
+const restoreDraftWorkout = (draft: DraftWorkout) => {
+  // Restore all state from draft
+  workoutLog.length = 0;
+  workoutLog.push(...draft.workoutLog.map(set => ({
+    ...set,
+    timestamp: set.timestamp instanceof Date ? set.timestamp : new Date(set.timestamp)
+  })));
+  
+  sessionExercises.length = 0;
+  sessionExercises.push(...draft.sessionExercises);
+  
+  currentExerciseIndex.value = draft.currentExerciseIndex;
+  currentSetNumber.value = draft.currentSetNumber;
+  workoutPhase.value = draft.workoutPhase;
+  workoutStartTime.value = draft.workoutStartTime ? new Date(draft.workoutStartTime) : null;
+  sessionOverallNotes.value = draft.sessionOverallNotes || '';
+  draftWorkoutId.value = draft.id;
+  
+  console.log('Draft workout restored');
+};
+
+// Resume/discard draft handlers
+const resumeDraft = async () => {
+  showDraftPrompt.value = false;
+  isLoading.value = true;
+  
+  const draft = window._pendingDraft as DraftWorkout;
+  if (!draft) {
+    console.error('No pending draft found');
+    await fetchWorkoutData();
+    return;
+  }
+  
+  // Load workout data first to get exercise configs
+  await fetchWorkoutData();
+  
+  // Then restore draft state
+  restoreDraftWorkout(draft);
+  
+  isLoading.value = false;
+  delete window._pendingDraft;
+};
+
+const discardDraft = async () => {
+  showDraftPrompt.value = false;
+  hasDraft.value = false;
+  
+  // Delete the draft from Firestore
+  await deleteDraftWorkout();
+  
+  // Load fresh workout data
+  isLoading.value = true;
+  await fetchWorkoutData();
+  delete window._pendingDraft;
 };
 
 const proceedToNextSet = () => {
@@ -1017,6 +1201,9 @@ const finishWorkoutAndSave = async () => {
     }
     await batch.commit();
     
+    // Delete draft workout after successful save
+    await deleteDraftWorkout();
+    
     workoutLog.length = 0; currentExerciseIndex.value = 0; currentSetNumber.value = 1;
     workoutPhase.value = 'overview'; 
     showActualRepsInputForFail.value = false;
@@ -1032,8 +1219,27 @@ const finishWorkoutAndSave = async () => {
 let userWatcherUnsubscribe: (() => void) | null = null;
 const previousUserRef = ref<typeof user.value | null>(null);
 
-onMounted(() => {
+onMounted(async () => {
   isLoading.value = true;
+  
+  // Check for draft workout before loading fresh data
+  if (user.value && user.value.uid && props.programId && props.dayId) {
+    isLoadingDraft.value = true;
+    const draft = await loadDraftWorkout();
+    isLoadingDraft.value = false;
+    
+    if (draft && draft.workoutLog.length > 0) {
+      // Found a draft with progress
+      hasDraft.value = true;
+      showDraftPrompt.value = true;
+      isLoading.value = false;
+      
+      // Store draft for potential restoration
+      window._pendingDraft = draft;
+      return; // Don't load fresh data yet, wait for user choice
+    }
+  }
+  
   userWatcherUnsubscribe = watch(user, (currentUser) => {
     if (currentUser && currentUser.uid) {
       if (props.programId && props.dayId) {
@@ -1239,4 +1445,51 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
 /* Ensure .prescription-reps and .prescription-weight correctly inherit or define their base color if not red */
 .prescription-reps, .prescription-weight { font-size: 2.0em; font-weight: bold; color: #007bff; display: block; }
 .prescription-separator { font-size: 1.6em; font-weight: normal; color: #6c757d; margin: 5px 0; }
+
+/* Draft Workout Prompt Overlay */
+.draft-prompt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.draft-prompt-card {
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  padding: 30px;
+}
+
+.draft-prompt-card h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.draft-prompt-card p {
+  margin-bottom: 15px;
+  color: #555;
+}
+
+.draft-prompt-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.draft-prompt-actions .button-primary,
+.draft-prompt-actions .button-secondary {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+}
 </style>
