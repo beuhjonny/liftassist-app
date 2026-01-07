@@ -205,8 +205,10 @@
         <p>Please <router-link to="/login">log in</router-link> to view workouts.</p>
     </div>
 
-    <!-- Audio element kept for fallback, but primary method uses Web Audio API -->
-    <audio ref="timerAudioPlayer" style="display: none;"></audio>
+    <!-- Audio element for final fallback -->
+    <audio ref="timerAudioPlayer" style="display: none;">
+      <source src="/sounds/bell.mp3" type="audio/mpeg">
+    </audio>
   </div>
 </template>
 
@@ -289,10 +291,12 @@ const lastLoggedSetIndex = ref<number | null>(null);
 let timerInterval: number | undefined = undefined;
 const timerAudioPlayer = ref<HTMLAudioElement | null>(null);
 let audioContext: AudioContext | null = null;
+let audioBuffer: AudioBuffer | null = null; // For loaded MP3 file
 
 // Sound type options - can be extended later
-type SoundType = 'bell' | 'beep' | 'chime' | 'ding';
-const selectedSoundType = ref<SoundType>('bell'); // Default to bell
+type SoundType = 'bell' | 'beep' | 'chime' | 'ding' | 'file';
+const selectedSoundType = ref<SoundType>('file'); // Default to file (MP3)
+const useLocalFile = ref(true); // Toggle between generated sound and file
 
 const workoutPhase = ref<WorkoutPhase>('overview');
 const workoutStartTime = ref<Date | null>(null);
@@ -738,8 +742,8 @@ const generateSound = (context: AudioContext, type: SoundType): AudioBufferSourc
 };
 
 const playTimerSound = async () => {
-  // Use Web Audio API with programmatically generated short sound
-  // This minimizes interruption time on mobile
+  // Try to use local MP3 file first (better sound quality)
+  // If file not available, fall back to generated sound
   try {
     if (!audioContext) {
       audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -750,7 +754,45 @@ const playTimerSound = async () => {
       await audioContext.resume();
     }
     
-    // Generate and play a very short sound (250ms) - minimizes interruption
+    // Try to load and use MP3 file if available
+    if (useLocalFile.value) {
+      if (!audioBuffer) {
+        try {
+          // Try to load the bell sound from public folder
+          const response = await fetch('/sounds/bell.mp3');
+          if (response.ok) {
+            const arrayBuffer = await response.arrayBuffer();
+            audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            
+            // Check if sound is too long (warn if > 1 second)
+            if (audioBuffer.duration > 1.0) {
+              console.warn(`Bell sound is ${audioBuffer.duration.toFixed(2)}s - consider using a shorter file (< 1s) to minimize interruption`);
+            }
+          } else {
+            console.log('Bell MP3 file not found, using generated sound instead');
+            useLocalFile.value = false;
+          }
+        } catch (fetchError) {
+          console.log('Could not load bell MP3 file, using generated sound:', fetchError);
+          useLocalFile.value = false;
+        }
+      }
+      
+      // Play the loaded MP3 file
+      if (audioBuffer) {
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = 0.6; // 60% volume - less intrusive
+        
+        source.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        source.start(0);
+        return; // Successfully played MP3 file
+      }
+    }
+    
+    // Fallback to programmatically generated sound
     const source = generateSound(audioContext, selectedSoundType.value);
     const gainNode = audioContext.createGain();
     gainNode.gain.value = 0.6; // 60% volume - less intrusive
@@ -758,18 +800,17 @@ const playTimerSound = async () => {
     source.connect(gainNode);
     gainNode.connect(audioContext.destination);
     source.start(0);
-    
-    // Sound is very short (300ms), so it releases audio focus quickly
-    // This minimizes interruption of other media on mobile
-    return; // Successfully played
+    return; // Successfully played generated sound
   } catch (error) {
-    console.warn('Web Audio API failed, falling back to HTML5 audio:', error);
+    console.warn('Web Audio API failed:', error);
   }
   
-  // Fallback to HTML5 audio - but since we're using programmatic sounds,
-  // this fallback won't work without an audio file. That's okay since
-  // Web Audio API should work in all modern browsers.
-  console.warn('Web Audio API not available - audio playback may not work');
+  // Final fallback to HTML5 audio (if file exists)
+  if (timerAudioPlayer.value) {
+    timerAudioPlayer.value.currentTime = 0;
+    timerAudioPlayer.value.volume = 0.6;
+    timerAudioPlayer.value.play().catch(e => console.warn("Audio play failed:", e));
+  }
 };
 
 const startRestTimer = () => {
