@@ -463,18 +463,22 @@ const checkForDraftWorkout = async () => {
       
       if (draftSnap.exists()) {
         const draftData = draftSnap.data();
-        console.log('Draft found:', { dayId: day.id, setsCount: draftData.workoutLog?.length || 0 });
+        const setsCount = draftData.workoutLog?.length || 0;
+        console.log('Draft found:', { dayId: day.id, setsCount, phase: draftData.workoutPhase });
         
-        if (draftData.workoutLog && draftData.workoutLog.length > 0) {
+        // Show draft if it has sets OR if workout has started (not just overview)
+        if (setsCount > 0 || (draftData.workoutPhase && draftData.workoutPhase !== 'overview')) {
           activeDraft.value = {
             programId: activeProgram.id,
             dayId: day.id,
             dayName: draftData.dayName || day.dayName,
-            setsCount: draftData.workoutLog.length
+            setsCount: setsCount
           };
           console.log('✅ Active draft set:', activeDraft.value);
           isLoadingDraft.value = false;
           return; // Found a draft, stop checking
+        } else {
+          console.log('Draft found but no sets and still in overview - skipping');
         }
       }
     }
