@@ -230,7 +230,7 @@ import { ref, reactive, onMounted, watch, onUnmounted, computed } from 'vue';
 import { doc, getDoc, setDoc, updateDoc, collection, writeBatch, serverTimestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase.js'; 
 import useAuth from '../composables/useAuth'; 
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 // --- Type Definitions ---
 interface ExerciseProgress {
@@ -302,6 +302,7 @@ interface DraftWorkout {
 const props = defineProps<{ programId: string; dayId: string; }>();
 const { user } = useAuth();
 const router = useRouter();
+const route = useRoute();
 const isLoading = ref(true);
 const isSaving = ref(false);
 const error = ref<string | null>(null);
@@ -1282,6 +1283,27 @@ onUnmounted(() => {
   releaseWakeLock(); 
   document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
+
+// Watch route params to check for draft when navigating to workout
+watch(() => [route.params.programId, route.params.dayId], async ([newProgramId, newDayId], [oldProgramId, oldDayId]) => {
+  // Only check if params actually changed
+  if (newProgramId !== oldProgramId || newDayId !== oldDayId) {
+    if (user.value?.uid && newProgramId && newDayId) {
+      isLoadingDraft.value = true;
+      const draft = await loadDraftWorkout();
+      isLoadingDraft.value = false;
+      
+      if (draft && draft.workoutLog.length > 0) {
+        hasDraft.value = true;
+        showDraftPrompt.value = true;
+        window._pendingDraft = draft;
+      } else {
+        showDraftPrompt.value = false;
+        hasDraft.value = false;
+      }
+    }
+  }
+}, { immediate: false });
 
 watch(workoutPhase, async (newPhase, oldPhase) => {
   showMobileTooltipForIndex.value = null;

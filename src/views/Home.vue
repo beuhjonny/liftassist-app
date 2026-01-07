@@ -34,6 +34,21 @@
              <p>Could not load workout insights: {{ historyError }}</p>
           </div>
           <div v-else class="program-insights">
+            <div v-if="activeDraft" class="draft-workout-alert card-inset" style="background-color: #fff3cd; border: 1px solid #ffc107; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
+              <p style="margin: 0 0 10px 0; font-weight: 600; color: #856404;">
+                ⚠️ Unfinished Workout
+              </p>
+              <p style="margin: 0 0 10px 0; color: #856404;">
+                You have {{ activeDraft.setsCount }} set(s) logged for {{ activeDraft.dayName }}
+              </p>
+              <button 
+                @click="resumeDraftWorkout" 
+                class="button-primary"
+                style="width: 100%;"
+              >
+                Resume Workout
+              </button>
+            </div>
             <p v-if="lastDoneDayOverallDisplay" class="insight-item">
               <span class="insight-label">Last Workout:</span>
               <span class="insight-value">{{ lastDoneDayOverallDisplay.name }}
@@ -187,6 +202,10 @@ const programWorkoutsHistory = ref<LoggedWorkout[]>([]);
 const isLoadingHistory = ref(false);
 const historyError = ref<string | null>(null);
 
+// Draft workout state
+const activeDraft = ref<{ programId: string; dayId: string; dayName: string; setsCount: number } | null>(null);
+const isLoadingDraft = ref(false);
+
 const formatDate = (date: Date | null | undefined): string => {
   if (!date) return '';
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -273,20 +292,31 @@ const fetchProgramWorkoutsHistory = async () => {
   }
 };
 
-watch([user, () => activeProgram.id], ([currentUser, currentProgramId], [oldUser, oldProgramId]) => {
+watch([user, () => activeProgram.id], async ([currentUser, currentProgramId], [oldUser, oldProgramId]) => {
   if (currentUser && currentUser.uid) {
     const userChanged = oldUser?.uid !== currentUser.uid;
     const programIdActuallyChanged = currentProgramId !== oldProgramId;
 
     if (!currentProgramId || userChanged || (programIdActuallyChanged && oldProgramId !== undefined) ) {
-      loadActiveProgram();
+      await loadActiveProgram();
+      // Check for draft after loading program
+      if (activeProgram.id) {
+        await checkForDraftWorkout();
+      }
     }
   } else {
     isProgramLoading.value = false;
     programLoadingError.value = null;
     clearActiveProgram();
+    activeDraft.value = null;
   }
 }, { immediate: true, deep: true });
+
+watch(() => activeProgram.id, async (newProgramId) => {
+  if (newProgramId && user.value?.uid) {
+    await checkForDraftWorkout();
+  }
+});
 
 watch(() => activeProgram.id, (newProgramId, oldProgramId) => {
   if (newProgramId) {
@@ -412,6 +442,50 @@ const nextRecommendedDayNameDisplay = computed(() => {
   return nextRecommendedDayObject.value?.dayName || (sortedWorkoutDays.value[0]?.dayName || null);
 });
 
+
+const checkForDraftWorkout = async () => {
+  if (!user.value?.uid || !activeProgram.id) return;
+  
+  isLoadingDraft.value = true;
+  try {
+    // Check for draft for any day in the active program
+    for (const day of activeProgram.workoutDays) {
+      const draftId = `draft_${activeProgram.id}_${day.id}`;
+      const draftRef = doc(db, 'users', user.value.uid, 'draftWorkouts', draftId);
+      const draftSnap = await getDoc(draftRef);
+      
+      if (draftSnap.exists()) {
+        const draftData = draftSnap.data();
+        if (draftData.workoutLog && draftData.workoutLog.length > 0) {
+          activeDraft.value = {
+            programId: activeProgram.id,
+            dayId: day.id,
+            dayName: draftData.dayName || day.dayName,
+            setsCount: draftData.workoutLog.length
+          };
+          isLoadingDraft.value = false;
+          return; // Found a draft, stop checking
+        }
+      }
+    }
+    activeDraft.value = null;
+  } catch (error) {
+    console.error('Error checking for draft workout:', error);
+  } finally {
+    isLoadingDraft.value = false;
+  }
+};
+
+const resumeDraftWorkout = () => {
+  if (!activeDraft.value) return;
+  router.push({ 
+    name: 'WorkoutActive', 
+    params: { 
+      programId: activeDraft.value.programId, 
+      dayId: activeDraft.value.dayId 
+    } 
+  });
+};
 
 const startWorkout = (day: WorkoutDay | EnhancedWorkoutDay) => {
   if (!activeProgram.id || !day.id) {
