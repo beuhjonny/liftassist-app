@@ -10,25 +10,48 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { getAuth, onAuthStateChanged, type User } from 'firebase/auth';
 import { app } from '../firebase.js';
 
-
-const auth = getAuth(app);
+let auth;
+try {
+  if (app._initialized !== false) {
+    auth = getAuth(app);
+  } else {
+    console.warn('⚠️ Firebase Auth not available - app will work in demo mode');
+    auth = null;
+  }
+} catch (error) {
+  console.error('❌ Failed to initialize Firebase Auth:', error);
+  auth = null;
+}
 
 // Helper function to get current user state asynchronously
 // This is useful because onAuthStateChanged is the most reliable way,
 // but router.beforeEach might run before the initial onAuthStateChanged in useAuth.ts fires
 // or if the page is refreshed.
 const getCurrentUser = (): Promise<User | null> => {
+  if (!auth) {
+    // If Firebase isn't initialized, return null (no user)
+    return Promise.resolve(null);
+  }
+  
   return new Promise((resolve, reject) => {
-    // onAuthStateChanged returns an unsubscribe function,
-    // so we call it once we have the initial user state.
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (user) => {
-        unsubscribe(); // Unsubscribe to avoid memory leaks if called multiple times
-        resolve(user);
-      },
-      reject // If there's an error with onAuthStateChanged
-    );
+    try {
+      // onAuthStateChanged returns an unsubscribe function,
+      // so we call it once we have the initial user state.
+      const unsubscribe = onAuthStateChanged(
+        auth,
+        (user) => {
+          unsubscribe(); // Unsubscribe to avoid memory leaks if called multiple times
+          resolve(user);
+        },
+        (error) => {
+          console.warn('⚠️ Auth state check failed:', error);
+          resolve(null); // Resolve with null instead of rejecting
+        }
+      );
+    } catch (error) {
+      console.warn('⚠️ Failed to check auth state:', error);
+      resolve(null); // Resolve with null instead of rejecting
+    }
   });
 };
 
