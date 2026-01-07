@@ -444,18 +444,27 @@ const nextRecommendedDayNameDisplay = computed(() => {
 
 
 const checkForDraftWorkout = async () => {
-  if (!user.value?.uid || !activeProgram.id) return;
+  if (!user.value?.uid || !activeProgram.id) {
+    console.log('Cannot check draft: no user or program');
+    return;
+  }
   
   isLoadingDraft.value = true;
+  console.log('Checking for draft workouts...', { programId: activeProgram.id, daysCount: activeProgram.workoutDays.length });
+  
   try {
     // Check for draft for any day in the active program
     for (const day of activeProgram.workoutDays) {
       const draftId = `draft_${activeProgram.id}_${day.id}`;
       const draftRef = doc(db, 'users', user.value.uid, 'draftWorkouts', draftId);
+      console.log('Checking draft:', draftRef.path);
+      
       const draftSnap = await getDoc(draftRef);
       
       if (draftSnap.exists()) {
         const draftData = draftSnap.data();
+        console.log('Draft found:', { dayId: day.id, setsCount: draftData.workoutLog?.length || 0 });
+        
         if (draftData.workoutLog && draftData.workoutLog.length > 0) {
           activeDraft.value = {
             programId: activeProgram.id,
@@ -463,14 +472,16 @@ const checkForDraftWorkout = async () => {
             dayName: draftData.dayName || day.dayName,
             setsCount: draftData.workoutLog.length
           };
+          console.log('✅ Active draft set:', activeDraft.value);
           isLoadingDraft.value = false;
           return; // Found a draft, stop checking
         }
       }
     }
+    console.log('No drafts found');
     activeDraft.value = null;
   } catch (error) {
-    console.error('Error checking for draft workout:', error);
+    console.error('❌ Error checking for draft workout:', error);
   } finally {
     isLoadingDraft.value = false;
   }

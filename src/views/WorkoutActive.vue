@@ -923,11 +923,27 @@ const getDraftWorkoutRef = () => {
 };
 
 const saveDraftWorkout = async () => {
-  if (!user.value?.uid || !currentWorkoutDayDetails.value) return;
+  if (!user.value?.uid) {
+    console.warn('Cannot save draft: no user');
+    return;
+  }
+  
+  if (!currentWorkoutDayDetails.value) {
+    console.warn('Cannot save draft: no workout day details');
+    return;
+  }
+  
+  if (!props.programId || !props.dayId) {
+    console.warn('Cannot save draft: missing programId or dayId', { programId: props.programId, dayId: props.dayId });
+    return;
+  }
   
   try {
     const draftRef = getDraftWorkoutRef();
-    if (!draftRef) return;
+    if (!draftRef) {
+      console.error('Failed to get draft ref');
+      return;
+    }
     
     const draftData: Omit<DraftWorkout, 'id'> = {
       userId: user.value.uid,
@@ -949,29 +965,52 @@ const saveDraftWorkout = async () => {
       createdAt: draftWorkoutId.value ? undefined : serverTimestamp(), // Only set on first save
     };
     
+    console.log('Saving draft workout:', {
+      programId: props.programId,
+      dayId: props.dayId,
+      setsCount: workoutLog.length,
+      phase: workoutPhase.value
+    });
+    
     await setDoc(draftRef, draftData, { merge: true });
     draftWorkoutId.value = draftRef.id;
-    console.log('Draft workout saved');
+    console.log('✅ Draft workout saved successfully', draftRef.id);
   } catch (error) {
-    console.error('Failed to save draft workout:', error);
+    console.error('❌ Failed to save draft workout:', error);
   }
 };
 
 const loadDraftWorkout = async () => {
-  if (!user.value?.uid) return null;
+  if (!user.value?.uid) {
+    console.log('Cannot load draft: no user');
+    return null;
+  }
+  
+  if (!props.programId || !props.dayId) {
+    console.log('Cannot load draft: missing programId or dayId', { programId: props.programId, dayId: props.dayId });
+    return null;
+  }
   
   try {
     const draftRef = getDraftWorkoutRef();
-    if (!draftRef) return null;
+    if (!draftRef) {
+      console.error('Failed to get draft ref for loading');
+      return null;
+    }
     
+    console.log('Loading draft workout:', { programId: props.programId, dayId: props.dayId, path: draftRef.path });
     const draftSnap = await getDoc(draftRef);
+    
     if (draftSnap.exists()) {
       const data = draftSnap.data() as Omit<DraftWorkout, 'id'>;
+      console.log('✅ Draft found:', { setsCount: data.workoutLog?.length || 0, phase: data.workoutPhase });
       return { id: draftSnap.id, ...data } as DraftWorkout;
+    } else {
+      console.log('No draft found at path:', draftRef.path);
     }
     return null;
   } catch (error) {
-    console.error('Failed to load draft workout:', error);
+    console.error('❌ Failed to load draft workout:', error);
     return null;
   }
 };
