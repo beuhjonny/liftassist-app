@@ -945,7 +945,8 @@ const saveDraftWorkout = async () => {
       return;
     }
     
-    const draftData: Omit<DraftWorkout, 'id'> = {
+    // Build draft data object - use 'any' type to conditionally add createdAt
+    const draftData: any = {
       userId: user.value.uid,
       programId: props.programId,
       dayId: props.dayId,
@@ -962,8 +963,13 @@ const saveDraftWorkout = async () => {
       workoutStartTime: workoutStartTime.value,
       sessionOverallNotes: sessionOverallNotes.value,
       lastUpdated: serverTimestamp(),
-      createdAt: draftWorkoutId.value ? undefined : serverTimestamp(), // Only set on first save
     };
+    
+    // Only set createdAt on first save (when draftWorkoutId is null)
+    // Firestore doesn't allow undefined values, so we conditionally add it
+    if (!draftWorkoutId.value) {
+      draftData.createdAt = serverTimestamp();
+    }
     
     console.log('Saving draft workout:', {
       programId: props.programId,
