@@ -290,6 +290,8 @@ const actualRepsForFailedSet = ref<number | null>(null);
 const lastLoggedSetIndex = ref<number | null>(null);
 let timerInterval: number | undefined = undefined;
 const timerAudioPlayer = ref<HTMLAudioElement | null>(null);
+let audioContext: AudioContext | null = null;
+let audioBuffer: AudioBuffer | null = null;
 
 const workoutPhase = ref<WorkoutPhase>('overview');
 const workoutStartTime = ref<Date | null>(null);
@@ -665,11 +667,59 @@ const beginActiveWorkout = () => {
   showMobileTooltipForIndex.value = null;
 };
 
-const playTimerSound = () => { 
-  if (timerAudioPlayer.value) { 
-    timerAudioPlayer.value.currentTime = 0; 
-    timerAudioPlayer.value.play().catch(e => console.warn("Audio play failed:", e)); 
-  } 
+const playTimerSound = async () => {
+  // Use Web Audio API for better mobile compatibility and less interruption
+  try {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    
+    // Resume audio context if suspended (required on mobile after user interaction)
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume();
+    }
+    
+    // Load audio buffer if not already loaded
+    if (!audioBuffer) {
+      try {
+        const response = await fetch('https://www.myinstants.com/media/sounds/boxing-bell.mp3');
+        const arrayBuffer = await response.arrayBuffer();
+        audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      } catch (fetchError) {
+        console.warn('Failed to load audio buffer:', fetchError);
+        // Fall through to HTML5 audio fallback
+      }
+    }
+    
+    if (audioBuffer && audioContext) {
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+      
+      // Set volume to reasonable level (not too loud)
+      const gainNode = audioContext.createGain();
+      gainNode.gain.value = 0.7; // 70% volume
+      source.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      source.start(0);
+      
+      // On mobile, Web Audio API is less likely to interrupt other media
+      // and when it does, other media typically resumes automatically
+      return; // Successfully played with Web Audio API
+    }
+  } catch (error) {
+    console.warn('Web Audio API failed, falling back to HTML5 audio:', error);
+  }
+  
+  // Fallback to HTML5 audio (original method)
+  // On mobile, this may still interrupt other media, but it's a fallback
+  if (timerAudioPlayer.value) {
+    timerAudioPlayer.value.currentTime = 0;
+    // Set volume to reasonable level
+    timerAudioPlayer.value.volume = 0.7;
+    timerAudioPlayer.value.play().catch(e => console.warn("Audio play failed:", e));
+  }
 };
 
 const startRestTimer = () => {
@@ -914,6 +964,17 @@ onMounted(() => {
   if (timerAudioPlayer.value) {
     timerAudioPlayer.value.load();
   }
+  
+  // Initialize audio context on mount (needs user interaction on mobile)
+  // We'll resume it when needed in playTimerSound
+  try {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+  } catch (error) {
+    console.warn('Failed to initialize audio context:', error);
+  }
+  
   document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
