@@ -227,7 +227,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, onUnmounted, computed } from 'vue';
-import { doc, getDoc, setDoc, updateDoc, collection, writeBatch, serverTimestamp, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, collection, writeBatch, serverTimestamp, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase.js'; 
 import useAuth from '../composables/useAuth'; 
 import { useRouter, useRoute } from 'vue-router';
@@ -922,6 +922,15 @@ const getDraftWorkoutRef = () => {
   return doc(db, 'users', user.value.uid, 'draftWorkouts', draftId);
 };
 
+// Helper function to validate and convert dates for Firestore
+const ensureValidDate = (dateValue: Date | null | undefined): Date | null => {
+  if (!dateValue) return null;
+  if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
+    return dateValue;
+  }
+  return null;
+};
+
 const saveDraftWorkout = async () => {
   if (!user.value?.uid) {
     console.warn('Cannot save draft: no user');
@@ -952,15 +961,23 @@ const saveDraftWorkout = async () => {
       dayId: props.dayId,
       programName: activeProgramName.value || '',
       dayName: currentWorkoutDayDetails.value.dayName,
-      workoutLog: workoutLog.map(set => ({
-        ...set,
-        timestamp: set.timestamp instanceof Date ? set.timestamp : new Date(set.timestamp)
-      })),
+      // Validate and convert all timestamps in workoutLog
+      workoutLog: workoutLog.map(set => {
+        const validTimestamp = ensureValidDate(set.timestamp);
+        if (!validTimestamp) {
+          console.warn('Invalid timestamp in set, using current date:', set);
+        }
+        return {
+          ...set,
+          timestamp: validTimestamp || new Date()
+        };
+      }),
       sessionExercises: sessionExercises.map(ex => ({ ...ex })),
       currentExerciseIndex: currentExerciseIndex.value,
       currentSetNumber: currentSetNumber.value,
       workoutPhase: workoutPhase.value,
-      workoutStartTime: workoutStartTime.value,
+      // Validate workoutStartTime before saving
+      workoutStartTime: ensureValidDate(workoutStartTime.value),
       sessionOverallNotes: sessionOverallNotes.value,
       lastUpdated: serverTimestamp(),
     };
@@ -1071,7 +1088,37 @@ const restoreDraftWorkout = (draft: DraftWorkout) => {
   currentExerciseIndex.value = draft.currentExerciseIndex || 0;
   currentSetNumber.value = draft.currentSetNumber || 1;
   workoutPhase.value = draft.workoutPhase || 'overview';
-  workoutStartTime.value = draft.workoutStartTime ? new Date(draft.workoutStartTime) : null;
+  // Handle workoutStartTime - could be Date, Timestamp, or null
+  if (draft.workoutStartTime) {
+    let parsedDate: Date | null = null;
+    
+    if (draft.workoutStartTime instanceof Date) {
+      parsedDate = draft.workoutStartTime;
+    } else if (draft.workoutStartTime && typeof (draft.workoutStartTime as any).toDate === 'function') {
+      // Firestore Timestamp
+      parsedDate = (draft.workoutStartTime as any).toDate();
+    } else if (draft.workoutStartTime && typeof (draft.workoutStartTime as any).seconds === 'number') {
+      // Firestore Timestamp (alternative format)
+      parsedDate = new Date((draft.workoutStartTime as any).seconds * 1000);
+    } else {
+      // Try to parse as date string or timestamp
+      try {
+        parsedDate = new Date(draft.workoutStartTime as any);
+      } catch (e) {
+        console.warn('Failed to parse workoutStartTime:', e);
+      }
+    }
+    
+    // Validate the parsed date
+    if (parsedDate && parsedDate instanceof Date && !isNaN(parsedDate.getTime())) {
+      workoutStartTime.value = parsedDate;
+    } else {
+      console.warn('Invalid workoutStartTime in draft, using null');
+      workoutStartTime.value = null;
+    }
+  } else {
+    workoutStartTime.value = null;
+  }
   sessionOverallNotes.value = draft.sessionOverallNotes || '';
   
   // Don't set draftWorkoutId here - let the caller set it using getDraftWorkoutRef()
