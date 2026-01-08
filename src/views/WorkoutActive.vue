@@ -1039,22 +1039,34 @@ const deleteDraftWorkout = async () => {
 const restoreDraftWorkout = (draft: DraftWorkout) => {
   // Restore all state from draft
   workoutLog.length = 0;
-  workoutLog.push(...draft.workoutLog.map(set => ({
-    ...set,
-    timestamp: set.timestamp instanceof Date ? set.timestamp : new Date(set.timestamp)
-  })));
+  if (draft.workoutLog && draft.workoutLog.length > 0) {
+    workoutLog.push(...draft.workoutLog.map(set => ({
+      ...set,
+      timestamp: set.timestamp instanceof Date ? set.timestamp : (set.timestamp ? new Date(set.timestamp) : new Date())
+    })));
+  }
   
   sessionExercises.length = 0;
-  sessionExercises.push(...draft.sessionExercises);
+  if (draft.sessionExercises && draft.sessionExercises.length > 0) {
+    sessionExercises.push(...draft.sessionExercises.map(ex => ({ ...ex })));
+  }
   
-  currentExerciseIndex.value = draft.currentExerciseIndex;
-  currentSetNumber.value = draft.currentSetNumber;
-  workoutPhase.value = draft.workoutPhase;
+  currentExerciseIndex.value = draft.currentExerciseIndex || 0;
+  currentSetNumber.value = draft.currentSetNumber || 1;
+  workoutPhase.value = draft.workoutPhase || 'overview';
   workoutStartTime.value = draft.workoutStartTime ? new Date(draft.workoutStartTime) : null;
   sessionOverallNotes.value = draft.sessionOverallNotes || '';
+  
+  // Set the draft ID so we can continue updating the same draft
   draftWorkoutId.value = draft.id;
   
-  console.log('Draft workout restored');
+  console.log('✅ Draft workout state restored', {
+    setsCount: workoutLog.length,
+    exercisesCount: sessionExercises.length,
+    phase: workoutPhase.value,
+    exerciseIndex: currentExerciseIndex.value,
+    setNumber: currentSetNumber.value
+  });
 };
 
 // Resume/discard draft handlers
@@ -1065,18 +1077,77 @@ const resumeDraft = async () => {
   const draft = window._pendingDraft as DraftWorkout;
   if (!draft) {
     console.error('No pending draft found');
+    isLoading.value = false;
     await fetchWorkoutData();
     return;
   }
   
-  // Load workout data first to get exercise configs
-  await fetchWorkoutData();
-  
-  // Then restore draft state
-  restoreDraftWorkout(draft);
-  
-  isLoading.value = false;
-  delete window._pendingDraft;
+  try {
+    // Load workout data first to get exercise configs (without clearing state)
+    // We need the program/day details to be loaded
+    if (!user.value?.uid || !props.programId || !props.dayId) {
+      error.value = "Missing required information to load workout."; 
+      isLoading.value = false; 
+      return;
+    }
+    
+    error.value = null;
+    
+    // Load program and day details without clearing the restored state
+    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', props.programId);
+    const programSnap = await getDoc(programDocRef);
+    
+    if (programSnap.exists()) {
+      const programData = programSnap.data();
+      activeProgramName.value = programData.programName || '';
+      
+      const dayData = programData.workoutDays?.find((d: any) => d.id === props.dayId);
+      if (dayData) {
+        currentWorkoutDayDetails.value = {
+          id: dayData.id,
+          dayName: dayData.dayName,
+          order: dayData.order,
+          exercises: dayData.exercises || []
+        };
+      }
+      
+      // Load exercise progress data if user exists
+      if (user.value?.uid) {
+        const progressPromises = draft.sessionExercises.map(async (sessionEx) => {
+          const progressKey = sessionEx.exerciseName.toLowerCase().replace(/\s+/g, '_');
+          const progressRef = doc(db, 'users', user.value!.uid, 'exerciseProgress', progressKey);
+          const progressSnap = await getDoc(progressRef);
+          if (progressSnap.exists()) {
+            const progressData = progressSnap.data() as ExerciseProgress;
+            initialExerciseProgressData.set(progressKey, progressData);
+          }
+        });
+        await Promise.all(progressPromises);
+      }
+    }
+    
+    // Now restore the draft state (this will set all the workout state)
+    restoreDraftWorkout(draft);
+    
+    // Ensure draft ID is set correctly for future saves
+    const draftRef = getDraftWorkoutRef();
+    if (draftRef) {
+      draftWorkoutId.value = draftRef.id;
+    }
+    
+    console.log('✅ Draft restored successfully', { 
+      setsCount: workoutLog.length, 
+      phase: workoutPhase.value,
+      draftId: draftWorkoutId.value 
+    });
+    
+  } catch (e: any) {
+    console.error('Error resuming draft:', e);
+    error.value = "Failed to resume workout: " + e.message;
+  } finally {
+    isLoading.value = false;
+    delete window._pendingDraft;
+  }
 };
 
 const discardDraft = async () => {
