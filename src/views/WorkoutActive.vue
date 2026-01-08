@@ -1070,13 +1070,46 @@ const deleteDraftWorkout = async () => {
   }
 };
 
+// Helper function to convert Firestore Timestamp or Date to Date object
+const convertToDate = (timestamp: any): Date => {
+  if (!timestamp) return new Date();
+  
+  // Already a Date object
+  if (timestamp instanceof Date && !isNaN(timestamp.getTime())) {
+    return timestamp;
+  }
+  
+  // Firestore Timestamp (has toDate method)
+  if (timestamp && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate();
+  }
+  
+  // Firestore Timestamp (alternative format with seconds)
+  if (timestamp && typeof timestamp.seconds === 'number') {
+    return new Date(timestamp.seconds * 1000);
+  }
+  
+  // Try to parse as date string or number
+  try {
+    const parsed = new Date(timestamp);
+    if (!isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  } catch (e) {
+    console.warn('Failed to parse timestamp:', e);
+  }
+  
+  // Fallback to current date
+  return new Date();
+};
+
 const restoreDraftWorkout = (draft: DraftWorkout) => {
   // Restore all state from draft (but don't set draftWorkoutId here - let caller handle it)
   workoutLog.length = 0;
   if (draft.workoutLog && draft.workoutLog.length > 0) {
     workoutLog.push(...draft.workoutLog.map(set => ({
       ...set,
-      timestamp: set.timestamp instanceof Date ? set.timestamp : (set.timestamp ? new Date(set.timestamp) : new Date())
+      timestamp: convertToDate(set.timestamp)
     })));
   }
   
@@ -1088,29 +1121,11 @@ const restoreDraftWorkout = (draft: DraftWorkout) => {
   currentExerciseIndex.value = draft.currentExerciseIndex || 0;
   currentSetNumber.value = draft.currentSetNumber || 1;
   workoutPhase.value = draft.workoutPhase || 'overview';
-  // Handle workoutStartTime - could be Date, Timestamp, or null
+  // Handle workoutStartTime - use convertToDate helper
   if (draft.workoutStartTime) {
-    let parsedDate: Date | null = null;
-    
-    if (draft.workoutStartTime instanceof Date) {
-      parsedDate = draft.workoutStartTime;
-    } else if (draft.workoutStartTime && typeof (draft.workoutStartTime as any).toDate === 'function') {
-      // Firestore Timestamp
-      parsedDate = (draft.workoutStartTime as any).toDate();
-    } else if (draft.workoutStartTime && typeof (draft.workoutStartTime as any).seconds === 'number') {
-      // Firestore Timestamp (alternative format)
-      parsedDate = new Date((draft.workoutStartTime as any).seconds * 1000);
-    } else {
-      // Try to parse as date string or timestamp
-      try {
-        parsedDate = new Date(draft.workoutStartTime as any);
-      } catch (e) {
-        console.warn('Failed to parse workoutStartTime:', e);
-      }
-    }
-    
+    const parsedDate = convertToDate(draft.workoutStartTime);
     // Validate the parsed date
-    if (parsedDate && parsedDate instanceof Date && !isNaN(parsedDate.getTime())) {
+    if (parsedDate instanceof Date && !isNaN(parsedDate.getTime())) {
       workoutStartTime.value = parsedDate;
     } else {
       console.warn('Invalid workoutStartTime in draft, using null');
@@ -1347,7 +1362,10 @@ const finishWorkoutAndSave = async () => {
     workoutDayNameUsed: currentWorkoutDayDetails.value.dayName, workoutDayIdUsed: props.dayId,
     performedExercises: performedExercisesForDatabase, 
     overallSessionNotes: sessionOverallNotes.value,
-    startTime: workoutStartTime.value, endTime: workoutEndTime.value, durationMinutes: durationMinutes
+    // Ensure dates are valid Date objects before saving
+    startTime: ensureValidDate(workoutStartTime.value), 
+    endTime: ensureValidDate(workoutEndTime.value), 
+    durationMinutes: durationMinutes
   };
 
   const batch = writeBatch(db);
