@@ -1280,7 +1280,10 @@ const proceedToNextSet = () => {
     stopActivitySetTimer(); 
   } else { 
     workoutPhase.value = 'activeSet'; 
-    startActivitySetTimer(); 
+    startActivitySetTimer();
+    
+    // Save draft when starting a new set so we can resume here if user leaves
+    saveDraftWorkout();
   }
 };
 
@@ -1317,7 +1320,10 @@ const correctLastSet = () => {
   lastLoggedSetIndex.value = workoutLog.length > 0 ? workoutLog.length - 1 : null;
 
   workoutPhase.value = 'activeSet';
-  startActivitySetTimer(); 
+  startActivitySetTimer();
+  
+  // Save draft when correcting to active set so we can resume here if user leaves
+  saveDraftWorkout();
 
   showMobileTooltipForIndex.value = null;
   mobileTooltipText.value = '';
