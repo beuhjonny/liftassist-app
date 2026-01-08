@@ -965,22 +965,39 @@ const saveDraftWorkout = async () => {
       lastUpdated: serverTimestamp(),
     };
     
-    // Only set createdAt on first save (when draftWorkoutId is null)
+    // Determine if this is a new draft or an update
+    // Compare with expected ref ID (constructed from props) to ensure consistency
+    const expectedDraftId = draftRef.id;
+    const isNewDraft = !draftWorkoutId.value || draftWorkoutId.value !== expectedDraftId;
+    
+    // Only set createdAt on first save
     // Firestore doesn't allow undefined values, so we conditionally add it
-    if (!draftWorkoutId.value) {
+    if (isNewDraft) {
       draftData.createdAt = serverTimestamp();
     }
     
-    console.log('Saving draft workout:', {
+    console.log('💾 Saving draft workout:', {
       programId: props.programId,
       dayId: props.dayId,
       setsCount: workoutLog.length,
-      phase: workoutPhase.value
+      phase: workoutPhase.value,
+      currentDraftId: draftWorkoutId.value,
+      expectedDraftId: expectedDraftId,
+      isUpdate: !isNewDraft,
+      isNewDraft: isNewDraft
     });
     
     await setDoc(draftRef, draftData, { merge: true });
-    draftWorkoutId.value = draftRef.id;
-    console.log('✅ Draft workout saved successfully', draftRef.id);
+    
+    // CRITICAL: Always set draftWorkoutId to the expected ref ID after save
+    // This ensures consistency - we always use the ID constructed from props
+    draftWorkoutId.value = expectedDraftId;
+    
+    console.log('✅ Draft workout saved successfully', { 
+      draftId: draftWorkoutId.value, 
+      setsCount: workoutLog.length,
+      phase: workoutPhase.value 
+    });
   } catch (error) {
     console.error('❌ Failed to save draft workout:', error);
   }
@@ -1037,7 +1054,7 @@ const deleteDraftWorkout = async () => {
 };
 
 const restoreDraftWorkout = (draft: DraftWorkout) => {
-  // Restore all state from draft
+  // Restore all state from draft (but don't set draftWorkoutId here - let caller handle it)
   workoutLog.length = 0;
   if (draft.workoutLog && draft.workoutLog.length > 0) {
     workoutLog.push(...draft.workoutLog.map(set => ({
@@ -1057,8 +1074,8 @@ const restoreDraftWorkout = (draft: DraftWorkout) => {
   workoutStartTime.value = draft.workoutStartTime ? new Date(draft.workoutStartTime) : null;
   sessionOverallNotes.value = draft.sessionOverallNotes || '';
   
-  // Set the draft ID so we can continue updating the same draft
-  draftWorkoutId.value = draft.id;
+  // Don't set draftWorkoutId here - let the caller set it using getDraftWorkoutRef()
+  // This ensures we always use the ref ID (constructed from props) not the stored document ID
   
   console.log('✅ Draft workout state restored', {
     setsCount: workoutLog.length,
@@ -1126,19 +1143,28 @@ const resumeDraft = async () => {
       }
     }
     
+    // Get the draft ref FIRST (before restoring, to ensure we use the correct ID)
+    const draftRef = getDraftWorkoutRef();
+    if (!draftRef) {
+      console.error('Failed to get draft ref');
+      isLoading.value = false;
+      return;
+    }
+    
     // Now restore the draft state (this will set all the workout state)
+    // But we'll set the draft ID to the ref ID (not draft.id) to ensure consistency
     restoreDraftWorkout(draft);
     
-    // Ensure draft ID is set correctly for future saves
-    const draftRef = getDraftWorkoutRef();
-    if (draftRef) {
-      draftWorkoutId.value = draftRef.id;
-    }
+    // CRITICAL: Always use the ref ID (constructed from props) not the document ID from draft
+    // This ensures we're updating the same draft document
+    draftWorkoutId.value = draftRef.id;
     
     console.log('✅ Draft restored successfully', { 
       setsCount: workoutLog.length, 
       phase: workoutPhase.value,
-      draftId: draftWorkoutId.value 
+      draftId: draftWorkoutId.value,
+      refId: draftRef.id,
+      matches: draftWorkoutId.value === draftRef.id
     });
     
   } catch (e: any) {
