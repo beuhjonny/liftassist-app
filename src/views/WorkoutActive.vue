@@ -210,7 +210,7 @@
     </div>
 
 
-    <div v-if="!isLoading && !error && !currentWorkoutDayDetails && user && workoutPhase ==='overview'" class="card">
+    <div v-if="!isLoading && !error && !currentWorkoutDayDetails && user && workoutPhase ==='overview' && !showDraftPrompt" class="card">
         <p>Could not load workout day details. Please try again or check your routine setup.</p>
         <router-link to="/" class="button-secondary">Back to Home</router-link>
     </div>
