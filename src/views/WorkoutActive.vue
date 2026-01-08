@@ -1232,6 +1232,9 @@ const resumeDraft = async () => {
     // If the workout was in a rest period, restart the rest timer
     if (workoutPhase.value === 'resting') {
       startRestTimer();
+    } else if (workoutPhase.value === 'activeSet') {
+      // If the workout was in an active set, restart the activity timer
+      startActivitySetTimer();
     }
     
   } catch (e: any) {
