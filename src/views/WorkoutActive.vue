@@ -1229,6 +1229,11 @@ const resumeDraft = async () => {
       matches: draftWorkoutId.value === draftRef.id
     });
     
+    // If the workout was in a rest period, restart the rest timer
+    if (workoutPhase.value === 'resting') {
+      startRestTimer();
+    }
+    
   } catch (e: any) {
     console.error('Error resuming draft:', e);
     error.value = "Failed to resume workout: " + e.message;
