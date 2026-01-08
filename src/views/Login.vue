@@ -1,58 +1,68 @@
 <template>
   <div class="login-view">
     <h1>{{ isSignUp ? 'Sign Up' : 'Login' }}</h1>
-    <p v-if="!user">Please sign in to continue.</p>
+    <p v-if="!user" class="intro-text">Please sign in to continue.</p>
     
-    <!-- Email/Password Form -->
-    <div v-if="!user" class="auth-form">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input
-          id="email"
-          v-model="email"
-          type="email"
-          placeholder="your@email.com"
-          class="form-input"
-          @keyup.enter="handleEmailAuth"
-        />
+    <div v-if="!user" class="auth-options">
+      <!-- Google Sign In Section -->
+      <div class="auth-section google-section">
+        <h2 class="section-title">Sign in with Google</h2>
+        <p class="section-description">Use your Google account to sign in</p>
+        <button @click="handleSignInWithGoogle" class="google-signin-button">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google G Logo" />
+          <span>Continue with Google</span>
+        </button>
       </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          id="password"
-          v-model="password"
-          type="password"
-          placeholder="Enter your password"
-          class="form-input"
-          @keyup.enter="handleEmailAuth"
-        />
+
+      <!-- Divider -->
+      <div class="divider">
+        <span>OR</span>
       </div>
-      <button
-        @click="handleEmailAuth"
-        class="email-auth-button"
-        :disabled="isLoading || !email || !password"
-      >
-        {{ isLoading ? 'Please wait...' : (isSignUp ? 'Sign Up' : 'Sign In') }}
-      </button>
-      <button
-        @click="toggleSignUp"
-        class="toggle-auth-button"
-        type="button"
-      >
-        {{ isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up" }}
-      </button>
-    </div>
 
-    <!-- Divider -->
-    <div v-if="!user" class="divider">
-      <span>or</span>
+      <!-- Email/Password Form Section -->
+      <div class="auth-section email-section">
+        <h2 class="section-title">Sign in with Email</h2>
+        <p class="section-description">Use your email and password to sign in</p>
+        <div class="auth-form">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              v-model="email"
+              type="email"
+              placeholder="your@email.com"
+              class="form-input"
+              @keyup.enter="handleEmailAuth"
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              id="password"
+              v-model="password"
+              type="password"
+              placeholder="Enter your password"
+              class="form-input"
+              @keyup.enter="handleEmailAuth"
+            />
+          </div>
+          <button
+            @click="handleEmailAuth"
+            class="email-auth-button"
+            :disabled="isLoading || !email || !password"
+          >
+            {{ isLoading ? 'Please wait...' : (isSignUp ? 'Sign Up with Email' : 'Sign In with Email') }}
+          </button>
+          <button
+            @click="toggleSignUp"
+            class="toggle-auth-button"
+            type="button"
+          >
+            {{ isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up" }}
+          </button>
+        </div>
+      </div>
     </div>
-
-    <!-- Google Sign In -->
-    <button v-if="!user" @click="handleSignInWithGoogle" class="google-signin-button">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google G Logo" />
-      Sign in with Google
-    </button>
     
     <p v-if="user" class="already-logged-in-message">You are already logged in. Redirecting...</p>
     <p v-if="authError" class="error-message">{{ authError }}</p>
@@ -133,13 +143,54 @@ watch(user, (currentUser) => {
   flex-direction: column;
   align-items: center;
   padding: 20px;
-  max-width: 400px;
+  max-width: 500px;
   margin: 0 auto;
+}
+
+.intro-text {
+  margin-bottom: 30px;
+  color: #666;
+}
+
+.auth-options {
+  width: 100%;
+}
+
+.auth-section {
+  background-color: #f8f9fa;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 25px;
+  margin-bottom: 20px;
+}
+
+.google-section {
+  border-color: #4285F4;
+  background-color: #f0f7ff;
+}
+
+.email-section {
+  border-color: #007bff;
+  background-color: #f0f7ff;
+}
+
+.section-title {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #333;
+  text-align: center;
+}
+
+.section-description {
+  font-size: 0.9em;
+  color: #666;
+  margin: 0 0 20px 0;
+  text-align: center;
 }
 
 .auth-form {
   width: 100%;
-  margin-bottom: 20px;
 }
 
 .form-group {
@@ -179,7 +230,7 @@ watch(user, (currentUser) => {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
-  margin-top: 10px;
+  margin-top: 15px;
   font-weight: 500;
 }
 
@@ -212,19 +263,22 @@ watch(user, (currentUser) => {
   display: flex;
   align-items: center;
   width: 100%;
-  margin: 20px 0;
+  margin: 25px 0;
   color: #666;
+  font-weight: 600;
+  font-size: 0.9em;
 }
 
 .divider::before,
 .divider::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 2px solid #ddd;
 }
 
 .divider span {
-  padding: 0 15px;
+  padding: 0 20px;
+  background-color: #fff;
 }
 
 .google-signin-button {

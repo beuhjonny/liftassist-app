@@ -78,18 +78,21 @@
           <em>Notes: {{ currentExercise.notesForExercise }}</em>
         </p>
         <div class="current-set-info card-inset">
-          <h3>Set {{ currentSetNumber }} of {{ currentExercise.targetSets }}</h3>
+          <div class="current-set-info-header">
+            <h3>Set {{ currentSetNumber }} of {{ currentExercise.targetSets }}</h3>
+            <button @click="openEditPrescriptionModal" class="button-icon extra-small" title="Edit Weight/Reps">✏️</button>
+          </div>
           <div class="prescription-details">
             <span 
               class="prescription-reps" 
               :class="{ 'failed-last-attempt-text': didFailLastAttemptAtCurrentPrescription }">
-              {{ currentExercise.prescribedReps }} reps
+              {{ getEffectivePrescribedReps }} reps
             </span>
             <span class="prescription-separator">@</span>
             <span 
               class="prescription-weight" 
               :class="{ 'failed-last-attempt-text': didFailLastAttemptAtCurrentPrescription }">
-              {{ currentExercise.prescribedWeight }} lbs
+              {{ getEffectivePrescribedWeight }} lbs
             </span>
           </div>
         </div>
@@ -158,7 +161,16 @@
     </div>
 
     <div v-if="workoutPhase === 'complete'" class="workout-content card">
-        <h2>Workout Complete!</h2>
+        <div class="workout-complete-header">
+          <h2>Workout Complete!</h2>
+          <button 
+            @click="toggleEditMode" 
+            class="button-icon edit-mode-toggle" 
+            :class="{ 'edit-mode-active': isEditModeActive }"
+            title="Toggle Edit Mode">
+            ✏️
+          </button>
+        </div>
         <p>Great job finishing your {{ currentWorkoutDayDetails?.dayName }} workout!</p>
 
         <div class="workout-summary card-inset">
@@ -175,10 +187,21 @@
           </div>
 
           <ul class="exercise-summary-list" v-if="completedPerformedExercisesSummary.length > 0">
-            <li v-for="ex in completedPerformedExercisesSummary" :key="ex.exerciseId || ex.exerciseName">
-              <strong>{{ ex.exerciseName }}</strong>
-              <span v-if="ex.isPR" title="Personal Record!"> 🏅</span>
-              <span>: {{ getExerciseStatusForDisplay(ex) }}{{ getExerciseLineSuffixForDisplay(ex) }}</span>
+            <li v-for="ex in completedPerformedExercisesSummary" :key="ex.exerciseId || ex.exerciseName" class="exercise-summary-item">
+              <div class="exercise-summary-header">
+                <div class="exercise-summary-info">
+                  <strong>{{ ex.exerciseName }}</strong>
+                  <span v-if="ex.isPR" title="Personal Record!"> 🏅</span>
+                  <span>: {{ getExerciseStatusForDisplay(ex) }}{{ getExerciseLineSuffixForDisplay(ex) }}</span>
+                </div>
+                <button 
+                  v-if="isEditModeActive" 
+                  @click="openEditWorkoutModal(ex)" 
+                  class="button-icon extra-small" 
+                  title="Edit Sets">
+                  ✏️
+                </button>
+              </div>
               
               <ul v-if="showSetDetailsInSummary && ex.sets && ex.sets.length > 0" class="set-details-list">
                 <li v-for="(set, setIndex) in ex.sets" :key="setIndex">
@@ -216,6 +239,75 @@
     </div>
       <div v-if="!user && !isLoading && !error">
         <p>Please <router-link to="/login">log in</router-link> to view workouts.</p>
+    </div>
+
+    <!-- Edit Prescription Modal -->
+    <div v-if="showEditPrescriptionModal" class="modal-overlay" @click.self="closeEditPrescriptionModal">
+      <div class="modal-content edit-prescription-modal">
+        <button @click="closeEditPrescriptionModal" class="modal-close-button" title="Close">&times;</button>
+        <h3>Edit Weight & Reps</h3>
+        <div class="form-group">
+          <label for="editReps">Reps:</label>
+          <input type="number" id="editReps" v-model.number="editedReps" min="1" step="1" />
+        </div>
+        <div class="form-group">
+          <label for="editWeight">Weight (lbs):</label>
+          <input type="number" id="editWeight" v-model.number="editedWeight" min="0" step="0.1" />
+        </div>
+        <div class="form-actions">
+          <button @click="saveEditedPrescription" class="button-primary">Save</button>
+          <button @click="closeEditPrescriptionModal" class="button-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Choice Modal (This Set Only vs All Future Sets) -->
+    <div v-if="showEditChoiceModal" class="modal-overlay" @click.self="closeEditChoiceModal">
+      <div class="modal-content edit-choice-modal">
+        <h3>Apply Edit</h3>
+        <p>How would you like to apply this change?</p>
+        <div class="edit-choice-actions">
+          <button @click="applyEditThisSetOnly" class="button-primary">Edit for This Set Only</button>
+          <button @click="applyEditAllFutureSets" class="button-primary">Edit for All Future Sets</button>
+          <button @click="closeEditChoiceModal" class="button-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Workout Modal (for completion screen) -->
+    <div v-if="showEditWorkoutModal" class="modal-overlay" @click.self="closeEditWorkoutModal">
+      <div class="modal-content edit-workout-modal">
+        <button @click="closeEditWorkoutModal" class="modal-close-button" title="Close">&times;</button>
+        <h3>Edit Sets: {{ editingExercise?.exerciseName }}</h3>
+        <div v-if="editingExercise" class="edit-sets-list">
+          <div v-for="(set, index) in editingExercise.sets" :key="index" class="edit-set-item">
+            <div class="edit-set-header">
+              <strong>Set {{ set.setNumber }}</strong>
+            </div>
+            <div class="edit-set-fields">
+              <div class="form-group">
+                <label>Weight (lbs):</label>
+                <input type="number" v-model.number="set.actualWeight" min="0" step="0.1" />
+              </div>
+              <div class="form-group">
+                <label>Reps:</label>
+                <input type="number" v-model.number="set.actualReps" min="0" step="1" />
+              </div>
+              <div class="form-group">
+                <label>Status:</label>
+                <select v-model="set.status" class="status-select">
+                  <option value="done">Done</option>
+                  <option value="failed">Failed</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button @click="saveEditedWorkout" class="button-primary">Save Changes</button>
+          <button @click="closeEditWorkoutModal" class="button-secondary">Cancel</button>
+        </div>
+      </div>
     </div>
 
     <!-- Audio element for final fallback -->
@@ -361,6 +453,19 @@ const wakeLockSentinel = ref<WakeLockSentinel | null>(null);
 
 const showSetDetailsInSummary = ref(false);
 
+// Edit prescription state
+const showEditPrescriptionModal = ref(false);
+const showEditChoiceModal = ref(false);
+const editedReps = ref<number | null>(null);
+const editedWeight = ref<number | null>(null);
+const overriddenRepsForCurrentSet = ref<number | null>(null);
+const overriddenWeightForCurrentSet = ref<number | null>(null);
+
+// Edit workout state (for completion screen)
+const isEditModeActive = ref(false);
+const showEditWorkoutModal = ref(false);
+const editingExercise = ref<PerformedExerciseInLog | null>(null);
+
 // --- Computed Properties ---
 const totalSessionSets = computed(() => {
   return sessionExercises.reduce((total, exercise) => total + (exercise.targetSets || 0), 0);
@@ -409,6 +514,21 @@ const didFailLastAttemptAtCurrentPrescription = computed(() => {
     return (currentExerciseProgress.value.consecutiveFailedWorkoutsAtCurrentWeightAndReps ?? 0) > 0;
   }
   return false;
+});
+
+// Computed properties for effective prescribed values (accounting for overrides)
+const getEffectivePrescribedReps = computed((): number => {
+  if (overriddenRepsForCurrentSet.value !== null) {
+    return overriddenRepsForCurrentSet.value;
+  }
+  return currentExercise.value?.prescribedReps || 0;
+});
+
+const getEffectivePrescribedWeight = computed((): number => {
+  if (overriddenWeightForCurrentSet.value !== null) {
+    return overriddenWeightForCurrentSet.value;
+  }
+  return currentExercise.value?.prescribedWeight || 0;
 });
 
 
@@ -886,18 +1006,31 @@ const startRestTimer = () => {
 const logSet = async (status: 'done' | 'failed') => {
   stopActivitySetTimer();
   if (!currentExercise.value) return;
-  const currentEx = currentExercise.value; 
+  
+  // Use effective prescribed values (from overrides if set, otherwise from exercise)
+  const effectiveWeight = getEffectivePrescribedWeight.value;
+  const effectiveReps = getEffectivePrescribedReps.value;
+  
   const loggedSet: LoggedSetData = {
-    exerciseId: currentEx.id, exerciseName: currentEx.exerciseName, setNumber: currentSetNumber.value, 
-    prescribedWeight: currentEx.prescribedWeight, prescribedReps: currentEx.prescribedReps,     
-    actualWeight: currentEx.prescribedWeight, 
-    actualReps: status === 'done' ? currentEx.prescribedReps : 0,
-    status: status, timestamp: new Date(),
+    exerciseId: currentExercise.value.id, 
+    exerciseName: currentExercise.value.exerciseName, 
+    setNumber: currentSetNumber.value, 
+    prescribedWeight: effectiveWeight, 
+    prescribedReps: effectiveReps,     
+    actualWeight: effectiveWeight, 
+    actualReps: status === 'done' ? effectiveReps : 0,
+    status: status, 
+    timestamp: new Date(),
   };
+  
   workoutLog.push(loggedSet);
   lastLoggedSetIndex.value = workoutLog.length - 1;
+  
+  // Clear overrides after logging the set (they only apply to one set)
+  overriddenRepsForCurrentSet.value = null;
+  overriddenWeightForCurrentSet.value = null;
   const isLastExerciseInSession = currentExerciseIndex.value === sessionExercises.length - 1;
-  const isLastSetOfThisExercise = currentSetNumber.value === currentEx.targetSets;
+  const isLastSetOfThisExercise = currentSetNumber.value === currentExercise.value.targetSets;
   showActualRepsInputForFail.value = status === 'failed';
   if (status === 'failed') { actualRepsForFailedSet.value = null; }
   if (isLastExerciseInSession && isLastSetOfThisExercise) {
@@ -1269,6 +1402,10 @@ const proceedToNextSet = () => {
   showActualRepsInputForFail.value = false;
   actualRepsForFailedSet.value = null;
   showMobileTooltipForIndex.value = null;
+  
+  // Clear any overrides when moving to next set (overrides only apply to the set they were set for)
+  overriddenRepsForCurrentSet.value = null;
+  overriddenWeightForCurrentSet.value = null;
   if (currentExercise.value) {
     if (currentSetNumber.value < currentExercise.value.targetSets) {
       currentSetNumber.value++;
@@ -1321,6 +1458,10 @@ const correctLastSet = () => {
   showActualRepsInputForFail.value = false;
   actualRepsForFailedSet.value = null;
   lastLoggedSetIndex.value = workoutLog.length > 0 ? workoutLog.length - 1 : null;
+  
+  // Clear any overrides when correcting back to a set
+  overriddenRepsForCurrentSet.value = null;
+  overriddenWeightForCurrentSet.value = null;
 
   workoutPhase.value = 'activeSet';
   startActivitySetTimer();
@@ -1544,6 +1685,162 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
     await releaseWakeLock();
   }
 });
+
+// Edit prescription functions
+const openEditPrescriptionModal = () => {
+  if (!currentExercise.value) return;
+  
+  // Initialize with current effective values (accounting for any existing overrides)
+  editedReps.value = getEffectivePrescribedReps.value;
+  editedWeight.value = getEffectivePrescribedWeight.value;
+  showEditPrescriptionModal.value = true;
+};
+
+const closeEditPrescriptionModal = () => {
+  showEditPrescriptionModal.value = false;
+  // Don't clear editedReps/editedWeight here - they need to persist for the choice modal
+};
+
+const saveEditedPrescription = () => {
+  if (editedReps.value === null || editedWeight.value === null) {
+    return;
+  }
+  
+  if (editedReps.value < 1) {
+    error.value = 'Reps must be at least 1';
+    return;
+  }
+  
+  if (editedWeight.value < 0) {
+    error.value = 'Weight cannot be negative';
+    return;
+  }
+  
+  // Close the edit modal and show the choice modal
+  showEditPrescriptionModal.value = false;
+  showEditChoiceModal.value = true;
+};
+
+const closeEditChoiceModal = () => {
+  showEditChoiceModal.value = false;
+  // Clear the edited values when canceling
+  editedReps.value = null;
+  editedWeight.value = null;
+};
+
+const applyEditThisSetOnly = () => {
+  if (editedReps.value === null || editedWeight.value === null) {
+    return;
+  }
+  
+  // Set overrides for current set only
+  overriddenRepsForCurrentSet.value = editedReps.value;
+  overriddenWeightForCurrentSet.value = editedWeight.value;
+  
+  // Clear modals and edited values
+  showEditChoiceModal.value = false;
+  editedReps.value = null;
+  editedWeight.value = null;
+};
+
+const applyEditAllFutureSets = async () => {
+  if (!currentExercise.value || editedReps.value === null || editedWeight.value === null) {
+    return;
+  }
+  
+  if (!user.value?.uid) {
+    error.value = 'User not logged in';
+    return;
+  }
+  
+  try {
+    // Update the ExerciseProgress document in Firestore
+    const progressKey = currentExercise.value.exerciseName.toLowerCase().replace(/\s+/g, '_');
+    const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
+    
+    await updateDoc(progressDocRef, {
+      currentWeightToAttempt: editedWeight.value,
+      repsToAttemptNext: editedReps.value
+    });
+    
+    // Update the initialExerciseProgressData cache
+    const currentProgress = initialExerciseProgressData.get(progressKey);
+    if (currentProgress) {
+      currentProgress.currentWeightToAttempt = editedWeight.value;
+      currentProgress.repsToAttemptNext = editedReps.value;
+    }
+    
+    // Update ALL exercises in sessionExercises that match this exercise ID
+    // This ensures that if the same exercise appears multiple times in a routine, all future instances are updated
+    sessionExercises.forEach(ex => {
+      if (ex.id === currentExercise.value!.id) {
+        ex.prescribedWeight = editedWeight.value!;
+        ex.prescribedReps = editedReps.value!;
+      }
+    });
+    
+    // Clear any current set overrides (since we're updating the base prescription)
+    overriddenRepsForCurrentSet.value = null;
+    overriddenWeightForCurrentSet.value = null;
+    
+    // Clear modals and edited values
+    showEditChoiceModal.value = false;
+    editedReps.value = null;
+    editedWeight.value = null;
+    
+    console.log('✅ Updated all future sets for', currentExercise.value.exerciseName, {
+      newWeight: editedWeight.value,
+      newReps: editedReps.value
+    });
+  } catch (err: any) {
+    console.error('Failed to update all future sets:', err);
+    error.value = 'Failed to update progression: ' + err.message;
+  }
+};
+
+// Edit workout functions (for completion screen)
+const toggleEditMode = () => {
+  isEditModeActive.value = !isEditModeActive.value;
+};
+
+const openEditWorkoutModal = (exercise: PerformedExerciseInLog) => {
+  // Create a deep copy of the exercise's sets for editing
+  editingExercise.value = {
+    ...exercise,
+    sets: exercise.sets.map(set => ({ ...set }))
+  };
+  showEditWorkoutModal.value = true;
+};
+
+const closeEditWorkoutModal = () => {
+  showEditWorkoutModal.value = false;
+  editingExercise.value = null;
+};
+
+const saveEditedWorkout = () => {
+  if (!editingExercise.value) return;
+  
+  // Find the exercise in workoutLog and update all its sets
+  const exerciseId = editingExercise.value.exerciseId;
+  
+  // Update workoutLog with the edited sets
+  editingExercise.value.sets.forEach(editedSet => {
+    const setIndex = workoutLog.findIndex(
+      set => set.exerciseId === exerciseId && set.setNumber === editedSet.setNumber
+    );
+    
+    if (setIndex !== -1) {
+      workoutLog[setIndex] = {
+        ...workoutLog[setIndex],
+        actualWeight: editedSet.actualWeight,
+        actualReps: editedSet.actualReps,
+        status: editedSet.status
+      };
+    }
+  });
+  
+  closeEditWorkoutModal();
+};
 </script>
 
 <style scoped>
@@ -1664,9 +1961,11 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
 .workout-summary h5 { font-size: 1.15em; font-weight: 600; color: #333; margin-top: 0; margin-bottom: 15px; }
 .exercise-breakdown-header .button-link { font-size: 0.85em; font-weight: normal; }
 .exercise-summary-list { list-style-type: none; padding-left: 0; }
-.exercise-summary-list > li { font-size: 0.95em; padding: 10px 0 10px 15px; margin-bottom: 0; border-bottom: 1px dashed #e0e0e0; }
-.exercise-summary-list > li:last-child { border-bottom: none; }
-.exercise-summary-list > li strong { font-weight: 500; }
+.exercise-summary-item { font-size: 0.95em; padding: 10px 0 10px 15px; margin-bottom: 0; border-bottom: 1px dashed #e0e0e0; }
+.exercise-summary-item:last-child { border-bottom: none; }
+.exercise-summary-item strong { font-weight: 500; }
+.exercise-summary-header { display: flex; justify-content: space-between; align-items: flex-start; }
+.exercise-summary-info { flex-grow: 1; }
 .set-details-list { list-style-type: none; padding-left: 20px; margin-top: 8px; font-size: 0.9em; color: #555; }
 .set-details-list li { padding: 3px 0; border-bottom: none; margin-bottom: 0; }
 .button-link { background: none; border: none; color: #007bff; text-decoration: underline; cursor: pointer; padding: 0; font-size: inherit; }
@@ -1685,7 +1984,9 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
 .loading-message, .no-items-message, .login-prompt { color: var(--color-text); text-align: center; padding: 20px; }
 .error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-top: 15px; }
 .current-set-info { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid var(--color-border); text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
-.current-set-info h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.5em; color: #495057; font-weight: 600; }
+.current-set-info-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+.current-set-info-header h3 { margin-top: 0; margin-bottom: 0; font-size: 1.5em; color: #495057; font-weight: 600; flex-grow: 1; }
+.current-set-info-header .button-icon { margin-left: 10px; }
 .prescription-details { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
 /* Ensure .prescription-reps and .prescription-weight correctly inherit or define their base color if not red */
 .prescription-reps, .prescription-weight { font-size: 2.0em; font-weight: bold; color: #007bff; display: block; }
@@ -1736,5 +2037,236 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
   width: 100%;
   padding: 12px;
   font-size: 1rem;
+}
+
+/* Edit Prescription Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  padding: 25px;
+  max-width: 400px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #666;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-button:hover {
+  color: #333;
+}
+
+.edit-prescription-modal h3,
+.edit-choice-modal h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.3em;
+  color: #333;
+}
+
+.edit-choice-modal p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.form-group input[type="number"]:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.form-actions .button-primary,
+.form-actions .button-secondary {
+  flex: 1;
+  height: 42px;
+  line-height: 1;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.edit-choice-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.edit-choice-actions .button-primary,
+.edit-choice-actions .button-secondary {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+}
+
+/* Button Icon Styles */
+.button-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.button-icon:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.button-icon.extra-small {
+  font-size: 0.75em;
+  filter: grayscale(100%);
+  align-self: flex-start;
+}
+
+/* Workout Complete Header */
+.workout-complete-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.workout-complete-header h2 {
+  margin: 0;
+  flex-grow: 1;
+}
+
+.edit-mode-toggle {
+  font-size: 1.2em;
+  padding: 8px 12px;
+  filter: grayscale(100%);
+  opacity: 0.6;
+  transition: opacity 0.2s, filter 0.2s;
+}
+
+.edit-mode-toggle:hover {
+  opacity: 1;
+}
+
+.edit-mode-toggle.edit-mode-active {
+  filter: none;
+  opacity: 1;
+}
+
+/* Edit Workout Modal Styles */
+.edit-workout-modal {
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.edit-workout-modal h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.3em;
+  color: #333;
+}
+
+.edit-sets-list {
+  margin-bottom: 20px;
+}
+
+.edit-set-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #f8f9fa;
+}
+
+.edit-set-header {
+  margin-bottom: 12px;
+  font-size: 1em;
+  color: #333;
+}
+
+.edit-set-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 15px;
+}
+
+.edit-set-fields .form-group {
+  margin-bottom: 0;
+}
+
+.edit-set-fields .form-group label {
+  font-size: 0.9em;
+  margin-bottom: 5px;
+}
+
+.edit-set-fields .form-group input,
+.edit-set-fields .form-group select {
+  width: 100%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.status-select {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
 }
 </style>
