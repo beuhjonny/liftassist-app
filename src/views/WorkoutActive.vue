@@ -16,7 +16,7 @@
     <div v-if="isLoading && !showDraftPrompt" class="loading-message card">
       <p>Loading your workout...</p>
     </div>
-    <div v-if="error && !isLoading" class="error-message card">
+    <div v-if="error && !isLoading && !showDraftPrompt" class="error-message card">
       <p>Error: {{ error }}</p>
       <router-link to="/" class="button-secondary">Back to Home</router-link>
     </div>
@@ -1429,6 +1429,7 @@ const previousUserRef = ref<typeof user.value | null>(null);
 
 onMounted(async () => {
   isLoading.value = true;
+  error.value = null; // Clear any existing errors
   
   // Check for draft workout before loading fresh data
   if (user.value && user.value.uid && props.programId && props.dayId) {
@@ -1436,11 +1437,12 @@ onMounted(async () => {
     const draft = await loadDraftWorkout();
     isLoadingDraft.value = false;
     
-    if (draft && draft.workoutLog.length > 0) {
+    if (draft && (draft.workoutLog.length > 0 || draft.workoutPhase !== 'overview')) {
       // Found a draft with progress
       hasDraft.value = true;
       showDraftPrompt.value = true;
       isLoading.value = false;
+      error.value = null; // Ensure error is cleared when showing draft prompt
       
       // Store draft for potential restoration
       window._pendingDraft = draft;
