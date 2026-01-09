@@ -1,12 +1,17 @@
 @import './base.css';
 
 #app {
-  max-width: 1200px; /* Overall max width of your application */
-  margin: 0 auto;    /* Centers #app on the page */
-  padding: 0.75rem;  /* Default padding (approx 12px) for mobile screens */
+  max-width: 1200px;
+  /* Overall max width of your application */
+  margin: 0 auto;
+  /* Centers #app on the page */
+  padding: 0.75rem;
+  /* Default padding (approx 12px) for mobile screens */
   font-weight: normal;
-  width: 100%;       /* Ensures #app uses the available width */
-  box-sizing: border-box; /* Includes padding and border in the element's total width and height */
+  width: 100%;
+  /* Ensures #app uses the available width */
+  box-sizing: border-box;
+  /* Includes padding and border in the element's total width and height */
 }
 
 a,
@@ -19,8 +24,9 @@ a,
 
 .card {
   /* This would be a global default for all .card elements */
-  background-color: #fff !important; /* Ensure it's white, potentially overriding others */
-  color: #333 !important;         /* Default dark text for all cards */
+  background-color: var(--color-card-bg);
+  color: var(--color-card-text);
+  border: 1px solid var(--color-card-border);
   /* You might also put other common card properties here like padding, border-radius, box-shadow,
      and then remove them from the scoped component styles to avoid duplication,
      but that's a bigger refactor. */
@@ -35,12 +41,16 @@ a,
 @media (min-width: 1024px) {
   body {
     display: flex;
-    place-items: center; /* Vertically centers #app if body has sufficient height (e.g., min-height: 100vh) */
+    place-items: center;
+    /* Vertically centers #app if body has sufficient height (e.g., min-height: 100vh) */
   }
 
   #app {
-    padding: 2rem; /* Larger padding (approx 32px) for desktop screens */
-    /* display: grid; */ /* Keep commented unless specifically needed */
-    /* grid-template-columns: 1fr 1fr; */ /* Keep commented unless specifically needed */
+    padding: 2rem;
+    /* Larger padding (approx 32px) for desktop screens */
+    /* display: grid; */
+    /* Keep commented unless specifically needed */
+    /* grid-template-columns: 1fr 1fr; */
+    /* Keep commented unless specifically needed */
   }
 }

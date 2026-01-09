@@ -2,7 +2,7 @@
   <div class="routines-view">
     <div class="routine-actions-header">
       <h1>Your Training Routine</h1>
-      <button v-if="activeProgram.id && !isLoading && !error && user" @click="toggleOverallEditMode" class="button-primary">
+      <button v-if="activeProgram.id && !isLoading && user" @click="toggleOverallEditMode" class="button-primary">
         {{ isInOverallEditMode ? 'Done Editing' : 'Edit Routine' }}
       </button>
     </div>
@@ -10,11 +10,12 @@
     <div v-if="isLoading" class="loading-message card">
       <p>Loading routine...</p>
     </div>
-    <div v-if="error && !isLoading" class="error-message card">
+    <div v-if="error && !isLoading" class="error-message card" style="position: relative;">
+      <button @click="error = null" class="modal-close-button" style="top: 5px; right: 10px; font-size: 1.2em;">&times;</button>
       <p>Error: {{ error }}</p>
     </div>
 
-    <div v-if="!activeProgram.id && !isLoading && !error && user" class="create-routine-section card">
+    <div v-if="!activeProgram.id && !isLoading && user" class="create-routine-section card">
       <h2>No Active Routine Found</h2>
 
       <div class="lazy-import-help card-inset">
@@ -61,7 +62,7 @@
       </div>
     </div>
 
-    <div v-if="activeProgram.id && !isLoading && !error && user" class="active-routine-display card">
+    <div v-if="activeProgram.id && !isLoading && user" class="active-routine-display card">
       <div v-if="!isInOverallEditMode" class="routine-info-display">
         <h2>{{ activeProgram.programName }}</h2>
         <p class="routine-description"><em>{{ activeProgram.description || 'No description.' }}</em></p>
@@ -76,149 +77,185 @@
       </form>
 
 <div class="workout-days-list">
-        <div v-for="day in sortedWorkoutDays" :key="day.id" class="workout-day-entry card-inset">
-          <div class="workout-day-entry-header">
-            <h4 v-if="!(isInOverallEditMode && editingDayNameId === day.id)" class="day-name-display">{{ day.dayName }}</h4>
-            <div v-if="isInOverallEditMode && editingDayNameId === day.id" class="day-name-edit-form">
-              <input type="text" v-model="editableDayName" @keyup.enter="saveWorkoutDayName(day.id)" @keyup.esc="cancelEditWorkoutDayName()" placeholder="Day Name"/>
-              <button @click="saveWorkoutDayName(day.id)" :disabled="isSaving" class="button-icon success small" title="Save Name">✔️</button>
-              <button @click="cancelEditWorkoutDayName()" class="button-icon danger small" title="Cancel Edit Name">❌</button>
-            </div>
-            <div v-if="isInOverallEditMode" class="day-header-actions">
-              <button v-if="editingDayNameId !== day.id" @click="startEditWorkoutDayName(day)" class="button-icon small" title="Edit Day Name">✏️</button>
-              <button @click="removeWorkoutDay(day.id)" :disabled="isSaving" class="button-icon small danger" title="Remove Day">🗑️</button>
-            </div>
-          </div>
-
-          <ul v-if="day.exercises && day.exercises.length > 0" class="exercise-list-display">
-            <li v-for="exercise in day.exercises" :key="exercise.id" class="exercise-item-with-inline-form">
-              <div class="exercise-item-display">
-                <div class="exercise-info-text">
-                  <span class="ex-name">{{ exercise.exerciseName }}</span>
-                  <span class="ex-details">
-                    : {{ exercise.targetSets }} sets, {{ exercise.currentPrescribedReps ?? exercise.minReps }} reps, {{ exercise.currentPrescribedWeight ?? 'N/A' }} lbs
-                    <span v-if="exercise.customRestSeconds">, {{ exercise.customRestSeconds }}s rest</span>
-                    <span v-else-if="isInOverallEditMode && (exercise.customRestSeconds === null || exercise.customRestSeconds === undefined)">, (Default Rest)</span>
-                    <span v-if="exercise.enableProgression === false" class="no-progression-note"> (No Auto-Progression)</span>
-                  </span>
-                </div>
-                <div v-if="isInOverallEditMode" class="exercise-item-actions">
-                  <button @click="startEditExercise(day.id, exercise)" class="button-icon extra-small" title="Edit Exercise">✏️</button>
-                  <button @click="removeExerciseFromDay(day.id, exercise.id)" :disabled="isSaving" class="button-icon extra-small danger" title="Remove Exercise">🗑️</button>
-                </div>
-              </div>
-
-              <div v-if="isInOverallEditMode && editingExerciseDayId === day.id && editingExercise.id === exercise.id" 
-                   class="exercise-form-container edit-exercise-form-inline" 
-                   style="margin-top: 10px; padding-top:10px; border-top: 1px dashed #ddd; margin-bottom: 10px; padding-bottom:10px; border-bottom: 1px dashed #ddd;">
-                <form @submit.prevent="addOrUpdateExercise(day.id)" class="add-exercise-form">
-                  <h5>{{ 'Edit Exercise: ' + editingExercise.exerciseName }}</h5>
-                  <div class="form-group"><label>Name:</label><input type="text" v-model="editingExercise.exerciseName" required /></div>
-                  
-                  <div class="form-group form-group-inline" v-if="editingExercise.id">
-                    <div>
-                        <label>Current Weight to Attempt Next (lbs):</label>
-                        <input type="number" v-model.number="editingExercise.currentWeightToDisplayOrEdit" step="0.1" />
+        <draggable 
+            v-model="activeProgram.workoutDays" 
+            item-key="id" 
+            handle=".drag-handle-day"
+            :disabled="!isInOverallEditMode"
+            @end="onDayDragEnd"
+            class="days-draggable-area"
+        >
+            <template #item="{ element: day }">
+                <div class="workout-day-entry card-inset">
+                  <div class="workout-day-entry-header">
+                    <div class="header-left-group" style="display:flex; align-items:center;">
+                        <span v-if="isInOverallEditMode" class="drag-handle-day" style="cursor: grab; margin-right: 10px; font-size: 1.2rem;" title="Drag to reorder day">☰</span>
+                        <h4 v-if="!(isInOverallEditMode && editingDayNameId === day.id)" class="day-name-display">{{ day.dayName }}</h4>
+                        <div v-if="isInOverallEditMode && editingDayNameId === day.id" class="day-name-edit-form">
+                          <input type="text" v-model="editableDayName" @keyup.enter="saveWorkoutDayName(day.id)" @keyup.esc="cancelEditWorkoutDayName()" placeholder="Day Name"/>
+                          <button @click="saveWorkoutDayName(day.id)" :disabled="isSaving" class="button-icon success small" title="Save Name">✔️</button>
+                          <button @click="cancelEditWorkoutDayName()" class="button-icon danger small" title="Cancel Edit Name">❌</button>
+                        </div>
                     </div>
-                    <div>
-                        <label>Current Reps to Attempt Next:</label>
-                        <input type="number" v-model.number="editingExercise.currentRepsToDisplayOrEdit" step="1" min="1" />
+                    
+                    <div v-if="isInOverallEditMode" class="day-header-actions">
+                      <button v-if="editingDayNameId !== day.id" @click="startEditWorkoutDayName(day)" class="button-icon small" title="Edit Day Name">✏️</button>
+                      <button @click="removeWorkoutDay(day.id)" :disabled="isSaving" class="button-icon small danger" title="Remove Day">🗑️</button>
                     </div>
                   </div>
 
-                  <div class="form-group form-group-inline">
-                    <div><label>Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
-                    <div><label>Rest (s):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" placeholder="Default (90s)" /></div>
-                  </div>
-                  <div class="form-group form-group-inline">
-                    <div><label>Min Reps:</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
-                    <div><label>Max Reps:</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
-                  </div>
-                  
-                  <div class="form-group">
-                    <label class="checkbox-label">
-                      <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?
-                    </label>
+                  <!-- Exercise List Draggable -->
+                  <div v-if="day.exercises && day.exercises.length > 0" class="exercise-list-display">
+                      <draggable 
+                        v-model="day.exercises" 
+                        item-key="id" 
+                        handle=".drag-handle-exercise"
+                        group="exercises" 
+                        :disabled="!isInOverallEditMode"
+                        @end="() => onExerciseDragEnd(day.id)"
+                      >
+                        <template #item="{ element: exercise }">
+                            <div class="exercise-item-with-inline-form">
+                              <div class="exercise-item-display">
+                                <div class="exercise-info-text" style="display:flex; align-items:center;">
+                                  <span v-if="isInOverallEditMode" class="drag-handle-exercise" style="cursor: grab; margin-right: 8px; color:#888;" title="Drag to reorder exercise">::</span>
+                                  <span class="ex-name">{{ exercise.exerciseName }}</span>
+                                  <span class="ex-details">
+                                    : {{ exercise.targetSets }} sets, {{ exercise.currentPrescribedReps ?? exercise.minReps }} {{ exercise.isTimed ? 'sec' : 'reps' }}, {{ toDisplay(exercise.currentPrescribedWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }}
+                                    <span v-if="exercise.customRestSeconds">, {{ exercise.customRestSeconds }}s rest</span>
+                                    <span v-else-if="isInOverallEditMode && (exercise.customRestSeconds === null || exercise.customRestSeconds === undefined)">, (Default Rest)</span>
+                                    <span v-if="exercise.enableProgression === false" class="no-progression-note"> (No Auto-Progression)</span>
+                                  </span>
+                                </div>
+                                <div v-if="isInOverallEditMode" class="exercise-item-actions">
+                                  <button @click="startEditExercise(day.id, exercise)" class="button-icon extra-small" title="Edit Exercise">✏️</button>
+                                  <button @click="removeExerciseFromDay(day.id, exercise.id)" :disabled="isSaving" class="button-icon extra-small danger" title="Remove Exercise">🗑️</button>
+                                </div>
+                              </div>
+
+                              <!-- Inline Edit Form (Keep existing logic) -->
+                              <div v-if="isInOverallEditMode && editingExerciseDayId === day.id && editingExercise.id === exercise.id" 
+                                   class="exercise-form-container edit-exercise-form-inline" 
+                                   style="margin-top: 10px; padding-top:10px; border-top: 1px dashed #ddd; margin-bottom: 10px; padding-bottom:10px; border-bottom: 1px dashed #ddd;">
+                                <form @submit.prevent="addOrUpdateExercise(day.id)" class="add-exercise-form">
+                                  <h5>{{ 'Edit Exercise: ' + editingExercise.exerciseName }}</h5>
+                                  <div class="form-group"><label>Name:</label><input type="text" v-model="editingExercise.exerciseName" required /></div>
+                                  
+                                  <div class="form-group form-group-inline" v-if="editingExercise.id">
+                                    <div>
+                                        <label>Current Weight to Attempt Next ({{ displayUnit(settings.weightUnit) }}):</label>
+                                        <input type="number" v-model.number="editingExercise.currentWeightToDisplayOrEdit" step="0.1" />
+                                    </div>
+                                    <div>
+                                        <label>{{ editingExercise.isTimed ? 'Current Hold to Attempt Next (sec):' : 'Current Reps to Attempt Next:' }}</label>
+                                        <input type="number" v-model.number="editingExercise.currentRepsToDisplayOrEdit" step="1" min="1" />
+                                    </div>
+                                  </div>
+
+                                  <div class="form-group form-group-inline">
+                                    <div><label>Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
+                                    <div><label>Rest (sec):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" :placeholder="'Default (' + settings.defaultRestTimer + 's)'" /></div>
+                                  </div>
+                                  <div class="form-group form-group-inline">
+                                    <div><label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
+                                    <div><label>{{ editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:' }}</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
+                                  </div>
+                                  
+                                  <div class="form-group" style="display: flex; gap: 20px;">
+                                    <label class="checkbox-label">
+                                      <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?
+                                    </label>
+                                    <label class="checkbox-label">
+                                      <input type="checkbox" v-model="editingExercise.isTimed" /> Timed Exercise (e.g. Plank)
+                                    </label>
+                                  </div>
+
+                                  <div class="form-group form-group-inline">
+                                    <div>
+                                        <label>Starting Weight ({{ displayUnit(settings.weightUnit) }}):</label>
+                                        <input type="number" v-model.number="editingExercise.startingWeight" step="0.1" :required="!editingExercise.id" />
+                                    </div>
+                                    <div>
+                                        <label>Weight Increment ({{ displayUnit(settings.weightUnit) }}):</label>
+                                        <input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required />
+                                    </div>
+                                  </div>
+                                  
+                                  <div class="form-group"><label>Notes (Optional):</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
+                                  <div class="form-actions">
+                                    <button type="submit" :disabled="isSaving" class="button-primary small">Update Exercise</button>
+                                    <button type="button" @click="cancelAddOrEditExercise" class="button-secondary small">Cancel</button>
+                                  </div>
+                                </form>
+                              </div>
+                            </div>
+                        </template>
+                      </draggable>
                   </div>
 
-                  <div class="form-group form-group-inline">
-                    <div>
-                      <label>Reps to Add on Progression:</label>
-                      <input type="number" v-model.number="editingExercise.repOverloadStep" min="1" required :disabled="!editingExercise.enableProgression" />
-                    </div>
-                    <div>
-                      <label>Weight to Add on Progression (lbs):</label>
-                      <input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required :disabled="!editingExercise.enableProgression" />
-                    </div>
+                  <p v-if="(!day.exercises || day.exercises.length === 0) && !isInOverallEditMode" class="no-items-message small-text">
+                    No exercises defined for this day. Click "Edit Routine" to add some.
+                  </p>
+                   <p v-if="isInOverallEditMode && (!day.exercises || day.exercises.length === 0) && !(addingExerciseToDayId === day.id && !editingExercise.id)" class="no-items-message small-text" style="margin-top:10px;">
+                    No exercises yet for this day. Use the button below to add one.
+                  </p>
+
+                  <div v-if="isInOverallEditMode && addingExerciseToDayId === day.id && !editingExercise.id" class="exercise-form-container add-new-exercise-to-day-form" style="margin-top: 15px; padding-top:15px; border-top:1px dashed #ccc;">
+                    <form @submit.prevent="addOrUpdateExercise(day.id)" class="add-exercise-form">
+                      <h5>{{ `Add New Exercise to ${day.dayName}` }}</h5>
+                      <div class="form-group"><label>Name:</label><input type="text" v-model="editingExercise.exerciseName" required /></div>
+                      
+                          <div class="form-group form-group-inline">
+                        <div><label>Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
+                        <div><label>Rest (sec):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" :placeholder="'Default (' + settings.defaultRestTimer + 's)'" /></div>
+                      </div>
+                      <div class="form-group form-group-inline">
+                        <div><label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
+                        <div><label>{{ editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:' }}</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
+                      </div>
+
+                      <div class="form-group" style="display: flex; gap: 20px;">
+                        <label class="checkbox-label">
+                          <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?
+                        </label>
+                        <label class="checkbox-label">
+                          <input type="checkbox" v-model="editingExercise.isTimed" /> Timed Exercise (e.g. Plank)
+                        </label>
+                      </div>
+
+                      <div class="form-group form-group-inline">
+                        <div>
+                          <label>{{ editingExercise.isTimed ? 'Time (sec) to Add on Progression:' : 'Reps to Add on Progression:' }}</label>
+                          <input type="number" v-model.number="editingExercise.repOverloadStep" min="0" required :disabled="!editingExercise.enableProgression" />
+                        </div>
+                        <div>
+                          <label>Weight to Add on Progression (lbs):</label>
+                          <input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" min="0" required :disabled="!editingExercise.enableProgression" />
+                        </div>
+                      </div>
+                      
+                      <div class="form-group" v-if="!editingExercise.id && addingExerciseToDayId === day.id">
+                        <label>Starting Wt (lbs, for new exercise's progress):</label>
+                        <input type="number" v-model.number="editingExercise.startingWeight" step="0.1" placeholder="e.g., 45" />
+                      </div>
+                      <div class="form-group"><label>Notes (Optional):</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
+                      <div class="form-actions">
+                        <button type="submit" :disabled="isSaving" class="button-primary small">Add Exercise</button>
+                        <button type="button" @click="cancelAddOrEditExercise" class="button-secondary small">Cancel</button>
+                      </div>
+                    </form>
                   </div>
-                  
-                  <div class="form-group"><label>Notes (Optional):</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
-                  <div class="form-actions">
-                    <button type="submit" :disabled="isSaving" class="button-primary small">Update Exercise</button>
-                    <button type="button" @click="cancelAddOrEditExercise" class="button-secondary small">Cancel</button>
-                  </div>
-                </form>
-              </div>
-            </li>
-          </ul>
-          <p v-if="(!day.exercises || day.exercises.length === 0) && !isInOverallEditMode" class="no-items-message small-text">
-            No exercises defined for this day. Click "Edit Routine" to add some.
-          </p>
-           <p v-if="isInOverallEditMode && (!day.exercises || day.exercises.length === 0) && !(addingExerciseToDayId === day.id && !editingExercise.id)" class="no-items-message small-text" style="margin-top:10px;">
-            No exercises yet for this day. Use the button below to add one.
-          </p>
 
-          <div v-if="isInOverallEditMode && addingExerciseToDayId === day.id && !editingExercise.id" class="exercise-form-container add-new-exercise-to-day-form" style="margin-top: 15px; padding-top:15px; border-top:1px dashed #ccc;">
-            <form @submit.prevent="addOrUpdateExercise(day.id)" class="add-exercise-form">
-              <h5>{{ `Add New Exercise to ${day.dayName}` }}</h5>
-              <div class="form-group"><label>Name:</label><input type="text" v-model="editingExercise.exerciseName" required /></div>
-              
-              <div class="form-group form-group-inline">
-                <div><label>Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
-                <div><label>Rest (s):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" placeholder="Default (90s)" /></div>
-              </div>
-              <div class="form-group form-group-inline">
-                <div><label>Min Reps:</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
-                <div><label>Max Reps:</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
-              </div>
-
-              <div class="form-group">
-                <label class="checkbox-label">
-                  <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?
-                </label>
-              </div>
-
-              <div class="form-group form-group-inline">
-                <div>
-                  <label>Reps to Add on Progression:</label>
-                  <input type="number" v-model.number="editingExercise.repOverloadStep" min="1" required :disabled="!editingExercise.enableProgression" />
+                  <button
+                    v-if="isInOverallEditMode && !(editingExerciseDayId === day.id && editingExercise.id) && !(addingExerciseToDayId === day.id && !editingExercise.id)"
+                    @click="prepareAddExerciseToDay(day.id)"
+                    class="button-primary-outline small add-exercise-btn"
+                    style="margin-top:15px;">
+                    + Add Exercise to {{day.dayName}}
+                  </button>
                 </div>
-                <div>
-                  <label>Weight to Add on Progression (lbs):</label>
-                  <input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required :disabled="!editingExercise.enableProgression" />
-                </div>
-              </div>
-              
-              <div class="form-group" v-if="!editingExercise.id && addingExerciseToDayId === day.id">
-                <label>Starting Wt (lbs, for new exercise's progress):</label>
-                <input type="number" v-model.number="editingExercise.startingWeight" step="0.1" placeholder="e.g., 45" />
-              </div>
-              <div class="form-group"><label>Notes (Optional):</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
-              <div class="form-actions">
-                <button type="submit" :disabled="isSaving" class="button-primary small">Add Exercise</button>
-                <button type="button" @click="cancelAddOrEditExercise" class="button-secondary small">Cancel</button>
-              </div>
-            </form>
-          </div>
-
-          <button
-            v-if="isInOverallEditMode && !(editingExerciseDayId === day.id && editingExercise.id) && !(addingExerciseToDayId === day.id && !editingExercise.id)"
-            @click="prepareAddExerciseToDay(day.id)"
-            class="button-primary-outline small add-exercise-btn"
-            style="margin-top:15px;">
-            + Add Exercise to {{day.dayName}}
-          </button>
-        </div>
+            </template>
+        </draggable>
       </div>
 
 
@@ -384,16 +421,20 @@ import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, deleteDoc, type DocumentData } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import useAuth from '../composables/useAuth';
+import useSettings, { type WeightUnitOption } from '../composables/useSettings';
+import { toDisplay, fromInput, displayUnit } from '../utils/weight';
 import {
   type ExerciseProgress,
   type ExerciseConfig,
   type ExerciseConfigForDisplay,
   type WorkoutDay,
-  type TrainingProgram
+  type TrainingProgram,
+  type SessionExercise
 } from '../types';
 
 // --- Core State ---
 const { user } = useAuth();
+const { settings } = useSettings();
 const isLoading = ref(true);
 const isSaving = ref(false);
 const error = ref<string | null>(null);
@@ -423,18 +464,66 @@ const editingExerciseDayId = ref<string | null>(null);
 const editingExercise = reactive<Partial<ExerciseConfig> & { startingWeight?: number; currentWeightToDisplayOrEdit?: number; currentRepsToDisplayOrEdit?: number }>({
   id: undefined, exerciseName: '', targetSets: 3, minReps: 8, maxReps: 12, repOverloadStep: 2,
   weightIncrement: 5, customRestSeconds: undefined, notesForExercise: '', enableProgression: true,
+  isTimed: false,
   startingWeight: 45, currentWeightToDisplayOrEdit: undefined, currentRepsToDisplayOrEdit: undefined,
 });
 const addingExerciseToDayId = ref<string | null>(null);
 
 
 // --- Computed Properties ---
-const sortedWorkoutDays = computed(() => {
-  if (!activeProgram.workoutDays) return [];
-  return [...activeProgram.workoutDays].sort((a, b) => a.order - b.order);
-});
+// We no longer use a computed property for sorting because we need to bind v-model directly to the array for drag-and-drop.
+// Instead, we will rely on activeProgram.workoutDays being sorted upon load, and maintained in order.
+// const sortedWorkoutDays = computed(() => { ... }); REMOVED
 
 // --- Functions ---
+import draggable from 'vuedraggable';
+
+const onDayDragEnd = async () => {
+    isSaving.value = true;
+    try {
+        // Update order property based on new index
+        activeProgram.workoutDays.forEach((day, index) => {
+            day.order = index + 1;
+        });
+
+        const programDocRef = doc(db, 'users', user.value!.uid, 'trainingPrograms', activeProgram.id!);
+        // We need to save the new order to Firestore
+        // We'll map to the persistable structure (removing display-only fields is handled in saveActiveProgramBaseDetails but we can duplicate minimal logic here for speed or reuse)
+        
+        // Let's reuse the logic from saveActiveProgramBaseDetails or create a dedicate saveOrder function.
+        // For safety, let's just trigger a full update of the workoutDays structure.
+        
+        const workoutDaysToSave = activeProgram.workoutDays.map(day => ({
+             ...day,
+             exercises: day.exercises.map(ex => {
+                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                 const { currentPrescribedReps, currentPrescribedWeight, ...routineExerciseConfig } = ex;
+                 return routineExerciseConfig as ExerciseConfig;
+             })
+         }));
+
+         await updateDoc(programDocRef, { workoutDays: workoutDaysToSave, updatedAt: serverTimestamp() });
+
+    } catch (e: any) {
+        error.value = "Failed to save new order. " + e.message;
+        // Optionally revert order here if needed, but for MVP we just show error
+    } finally {
+        isSaving.value = false;
+    }
+};
+
+const onExerciseDragEnd = async (dayId: string) => {
+    // When exercises are reordered within a day (or between days if we enable that),
+    // we need to save the parent structure.
+    // v-model on nested draggable will have already updated the array in memory.
+    // We just need to persist it.
+    
+    // If we support dragging between days, we might need to update the dayId of the exercise if we track that? 
+    // In our structure, exercises are nested in the day object, so moving them in the UI moves them in the data structure automatically.
+    
+    await onDayDragEnd(); // Reusing the save logic since it saves the entire tree
+};
+
 const toggleExistingRoutineHelp = () => {
   showExistingRoutineHelpDialog.value = !showExistingRoutineHelpDialog.value;
   if (showExistingRoutineHelpDialog.value) {
@@ -529,7 +618,8 @@ const loadActiveProgram = async () => {
           tempWorkoutDays.push({ ...dayConfig, exercises: exercisesForDisplay });
         }
       }
-      activeProgram.workoutDays = tempWorkoutDays;
+      activeProgram.workoutDays = tempWorkoutDays.sort((a, b) => a.order - b.order); // Initial sort by order
+      // Ensure editingExercise is reset if needed elsewhere, but mostly we reset on open.
       editableProgramDetails.programName = activeProgram.programName;
       editableProgramDetails.description = activeProgram.description;
     } else {
@@ -760,6 +850,7 @@ const resetEditingExerciseForm = () => {
   Object.assign(editingExercise, {
     id: undefined, exerciseName: '', targetSets: 3, minReps: 8, maxReps: 12, repOverloadStep: 2,
     weightIncrement: 5, customRestSeconds: undefined, notesForExercise: '', enableProgression: true,
+    isTimed: false,
     startingWeight: 45, currentWeightToDisplayOrEdit: undefined, currentRepsToDisplayOrEdit: undefined,
   });
 };
@@ -793,12 +884,22 @@ const startEditExercise = async (dayId: string, exerciseToEdit: ExerciseConfigFo
     editingExercise.weightIncrement = exerciseToEdit.weightIncrement || 5;
     editingExercise.customRestSeconds = exerciseToEdit.customRestSeconds ?? undefined; // Use ?? for null/undefined
     editingExercise.notesForExercise = exerciseToEdit.notesForExercise || '';
-    editingExercise.enableProgression = typeof exerciseToEdit.enableProgression === 'boolean' ? exerciseToEdit.enableProgression : true;
+    editingExercise.enableProgression = exerciseToEdit.enableProgression !== false;
+    editingExercise.isTimed = exerciseToEdit.isTimed === true;
     
-    // These are specific to editing an existing exercise and its current progress state
-    editingExercise.currentWeightToDisplayOrEdit = exerciseToEdit.currentPrescribedWeight;
+    // Convert to display units
+    editingExercise.weightIncrement = toDisplay(exerciseToEdit.weightIncrement, settings.value.weightUnit);
+    editingExercise.startingWeight = toDisplay((exerciseToEdit as any).startingWeight, settings.value.weightUnit);
+    
+    // We already have the current prescriptions from fetchWorkoutData if they exist 
+    editingExercise.currentWeightToDisplayOrEdit = toDisplay(exerciseToEdit.currentPrescribedWeight, settings.value.weightUnit);
     editingExercise.currentRepsToDisplayOrEdit = exerciseToEdit.currentPrescribedReps;
-    editingExercise.startingWeight = undefined; // Not used when editing an existing exercise's config
+    // Note: startingWeight is not used when editing an existing exercise's config,
+    // but it might be populated if the exercise was newly added and then immediately edited.
+    // The line below ensures it's cleared if it's an existing exercise being edited.
+    if (exerciseToEdit.id) { // Only clear if it's an existing exercise
+        editingExercise.startingWeight = undefined; 
+    }
 
     // Fallback for fetching progress data if not available on exerciseToEdit or needs refresh
     if ((editingExercise.currentWeightToDisplayOrEdit === undefined || editingExercise.currentRepsToDisplayOrEdit === undefined) &&
@@ -811,15 +912,18 @@ const startEditExercise = async (dayId: string, exerciseToEdit: ExerciseConfigFo
           const progressData = progressSnap.data() as ExerciseProgress;
           // Only update if the form values are still undefined from exerciseToEdit
           if (editingExercise.currentWeightToDisplayOrEdit === undefined) {
-               editingExercise.currentWeightToDisplayOrEdit = progressData?.currentWeightToAttempt;
+               editingExercise.currentWeightToDisplayOrEdit = toDisplay(progressData?.currentWeightToAttempt, settings.value.weightUnit);
           }
           if (editingExercise.currentRepsToDisplayOrEdit === undefined) {
-              editingExercise.currentRepsToDisplayOrEdit = progressData?.repsToAttemptNext;
+               editingExercise.currentRepsToDisplayOrEdit = progressData?.repsToAttemptNext;
           }
         } else {
            // If no progress doc, and currentRepsToDisplayOrEdit is still undefined, default to minReps from config
            if (editingExercise.currentRepsToDisplayOrEdit === undefined) {
               editingExercise.currentRepsToDisplayOrEdit = editingExercise.minReps;
+           }
+           if (editingExercise.currentWeightToDisplayOrEdit === undefined) {
+              editingExercise.currentWeightToDisplayOrEdit = toDisplay((editingExercise as any).startingWeight, settings.value.weightUnit) || 0;
            }
         }
       } catch (e) { 
@@ -851,18 +955,18 @@ const addOrUpdateExercise = async (dayId: string) => {
   const exName = editingExercise.exerciseName?.trim();
   const sets = editingExercise.targetSets; const minR = editingExercise.minReps;
   const maxR = editingExercise.maxReps; const repStep = editingExercise.repOverloadStep;
-  const weightInc = editingExercise.weightIncrement; const formCustomRest = editingExercise.customRestSeconds;
+  const weightInc = fromInput(editingExercise.weightIncrement, settings.value.weightUnit); const formCustomRest = editingExercise.customRestSeconds;
   const formEnableProg = editingExercise.enableProgression; const formNotes = editingExercise.notesForExercise?.trim();
-  const formStartingWeight = editingExercise.startingWeight;
-  const formCurrentWeight = editingExercise.currentWeightToDisplayOrEdit;
+  const formStartingWeight = fromInput(editingExercise.startingWeight, settings.value.weightUnit);
+  const formCurrentWeight = fromInput(editingExercise.currentWeightToDisplayOrEdit, settings.value.weightUnit);
   const formCurrentReps = editingExercise.currentRepsToDisplayOrEdit;
 
   if (!exName) { error.value = "Exercise name is required."; return; }
   if (typeof sets !== 'number' || sets < 1) { error.value = "Target sets must be >= 1."; return; }
-  if (typeof minR !== 'number' || minR < 1) { error.value = "Min reps must be >= 1."; return; }
-  if (typeof maxR !== 'number' || maxR < minR) { error.value = "Max reps must be >= min reps."; return; }
-  if (typeof repStep !== 'number' || repStep < 1) { error.value = "Rep step must be >= 1."; return; }
-  if (typeof weightInc !== 'number' || weightInc <= 0) { error.value = "Weight increment must be > 0."; return; }
+  if (typeof minR !== 'number' || minR < 1) { error.value = editingExercise.isTimed ? "Min hold must be >= 1s." : "Min reps must be >= 1."; return; }
+  if (typeof maxR !== 'number' || maxR < minR) { error.value = editingExercise.isTimed ? "Max hold must be >= min hold." : "Max reps must be >= min reps."; return; }
+  if (typeof repStep !== 'number' || repStep < 0) { error.value = editingExercise.isTimed ? "Time step must be >= 0." : "Rep step must be >= 0."; return; }
+  if (typeof weightInc !== 'number' || weightInc < 0) { error.value = "Weight increment must be >= 0."; return; }
 
   let customRestForSave: number | null = null;
   if (formCustomRest !== null && formCustomRest !== undefined) {
@@ -896,6 +1000,7 @@ const addOrUpdateExercise = async (dayId: string) => {
     exerciseName: exName, targetSets: sets, minReps: minR, maxReps: maxR,
     repOverloadStep: repStep, weightIncrement: weightInc, enableProgression: enableProgToSave,
     customRestSeconds: customRestForSave, notesForExercise: notesToSave,
+    isTimed: editingExercise.isTimed || false,
   };
 
   if (editingExercise.id) {
@@ -1065,30 +1170,30 @@ onUnmounted(() => {
 
 <style scoped>
 .routines-view {   padding: 20px; /* This is internal padding since the view itself is a card */
-  max-width: 800px;
+  max-width: 700px;
   margin: 20px auto; /* Includes vertical margin for spacing from nav/header */
-  background-color: var(--color-background-soft); /* Using CSS var */
+  background-color: var(--color-card-bg); /* Using CSS var */
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  border: 1px solid var(--color-border); }
-.routine-actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom:15px; border-bottom: 1px solid #eee;}
-.routine-actions-header h1 { margin: 0; font-size: 1.8em; }
-.card { background-color: #fff;   padding: 20px 25px;
+  border: 1px solid var(--color-card-border); }
+.routine-actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom:15px; border-bottom: 1px solid var(--color-card-border);}
+.routine-actions-header h1 { margin: 0; font-size: 1.8em; color: var(--color-card-heading); }
+.card { background-color: var(--color-card-bg);   padding: 20px 25px;
   border-radius: 6px; /* Slightly smaller radius for nested cards if desired */
   margin-bottom: 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   text-align: left;
-  border: 1px solid var(--color-border); color: #333;  }
-.card-inset { background-color: #f9f9f9; color: #333; padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom:15px; border: 1px solid #e9ecef;}
-.active-routine-display h2, .active-routine-display h3, .active-routine-display h4, .active-routine-display h5 { text-align:left; margin-bottom: 0.5em; }
-.active-routine-display h3 { margin-top: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid #eee; }
-.routine-description { margin-top: 5px; margin-bottom: 15px; color: #555; font-style: italic; font-size: 0.95em; text-align:left;}
-.edit-details-form { margin-top: 10px; padding: 20px; border: 1px solid #e0e0e0; border-radius: 6px; background-color: #f0f0f0; }
+  border: 1px solid var(--color-card-border); color: var(--color-card-text);  }
+.card-inset { background-color: var(--color-card-mute); color: var(--color-card-text); padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom:15px; border: 1px solid var(--color-card-border);}
+.active-routine-display h2, .active-routine-display h3, .active-routine-display h4, .active-routine-display h5 { text-align:left; margin-bottom: 0.5em; color: var(--color-card-heading); }
+.active-routine-display h3 { margin-top: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--color-card-border); }
+.routine-description { margin-top: 5px; margin-bottom: 15px; color: var(--color-card-text); font-style: italic; font-size: 0.95em; text-align:left;}
+.edit-details-form { margin-top: 10px; padding: 20px; border: 1px solid var(--color-card-border); border-radius: 6px; background-color: var(--color-card-mute); }
 .form-group { margin-bottom: 12px; }
 .form-group-inline { display: flex; gap: 10px; flex-wrap: wrap; }
 .form-group-inline > div { flex: 1; min-width: 120px; }
-label { display: block; margin-bottom: 5px; font-weight: 500; font-size:0.9em; color: #333; }
-input[type="text"], input[type="number"], textarea { width: 100%; padding: 8px 10px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-size: 0.95rem; }
+label { display: block; margin-bottom: 5px; font-weight: 500; font-size:0.9em; color: var(--color-card-text); }
+input[type="text"], input[type="number"], textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--color-card-border); border-radius: 4px; box-sizing: border-box; font-size: 0.95rem; background-color: var(--color-card-bg); color: var(--color-card-text); }
 textarea { min-height: 70px; resize: vertical; }
 .button-primary { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s; }
 .button-primary:hover:not(:disabled) { background-color: #0056b3; }
@@ -1110,15 +1215,15 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 .button-icon.success { color: #28a745; } .button-icon.success:hover { color: #218838; }
 .button-icon:hover { opacity: 0.7; }
 .exercise-list-display { list-style-type: none; padding-left: 0; margin-top:10px; margin-bottom: 10px; }
-.exercise-item-display { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.9em; border-bottom: 1px solid #f0f0f0; }
+.exercise-item-display { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.9em; border-bottom: 1px solid var(--color-card-border); }
 .exercise-item-display:last-child { border-bottom: none; }
-.exercise-info-text { text-align:left; flex-grow:1; }
-.ex-name { font-weight: 500; }
-.ex-details { color: #444; font-size: 0.9em; margin-left: 5px; }
+.exercise-info-text { text-align:left; flex-grow:1; color: var(--color-card-text);}
+.ex-name { font-weight: 500; color: var(--color-card-heading); }
+.ex-details { color: var(--color-card-text); opacity: 0.8; font-size: 0.9em; margin-left: 5px; }
 .no-progression-note { font-style: italic; color: #777; }
 .exercise-item-actions { white-space: nowrap; }
-.exercise-form-container { margin-top: 15px; padding-top:15px; border-top:1px dashed #ccc;}
-.add-exercise-form h5 { margin-top: 0; margin-bottom: 15px; font-size: 1.1em; text-align:left; }
+.exercise-form-container { margin-top: 15px; padding-top:15px; border-top:1px dashed var(--color-card-border);}
+.add-exercise-form h5 { margin-top: 0; margin-bottom: 15px; font-size: 1.1em; text-align:left; color: var(--color-card-heading); }
 .add-day-controls { text-align: center; padding-top: 10px; }
 .add-day-form-inline { display: flex; gap: 10px; align-items: center; margin-top:10px; }
 .add-day-form-inline input {flex-grow:1;}
@@ -1126,12 +1231,12 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 .no-items-message, .loading-message, .login-prompt { color: #6c757d; text-align: center; padding: 20px; }
 .no-items-message.small-text { font-size:0.9em; padding:10px 0; text-align:left; }
 .error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-top: 15px; }
-.checkbox-label { display: flex; align-items: center; font-weight: normal; color: #555; font-size: 0.9em; }
+.checkbox-label { display: flex; align-items: center; font-weight: normal; color: var(--color-card-text); font-size: 0.9em; }
 .checkbox-label input[type="checkbox"] { width: auto; margin-right: 8px; }
 
-.import-routine-section h4, .manual-create-section h4 { margin-top: 0; margin-bottom: 10px; }
-.import-routine-section textarea { width: 100%; min-height: 150px; font-family: monospace; font-size: 0.9em;}
-.section-divider { margin: 30px 0; border: 0; border-top: 1px solid #eee; }
+.import-routine-section h4, .manual-create-section h4 { margin-top: 0; margin-bottom: 10px; color: var(--color-card-heading); }
+.import-routine-section textarea { width: 100%; min-height: 150px; font-family: monospace; font-size: 0.9em; background-color: var(--color-card-bg); color: var(--color-card-text); }
+.section-divider { margin: 30px 0; border: 0; border-top: 1px solid var(--color-card-border); }
 
 .button-danger { padding: 10px 15px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s; box-sizing: border-box;}
 .button-danger:hover:not(:disabled) { background-color: #c82333; }
@@ -1152,10 +1257,10 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;}
-.modal-content { background-color: #fff; padding: 25px 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 750px; max-height: 85vh; overflow-y: auto; position: relative; color: #333;}
+.modal-content { background-color: var(--color-card-bg); padding: 25px 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 750px; max-height: 85vh; overflow-y: auto; position: relative; color: var(--color-card-text);}
 .modal-close-button { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 2rem; line-height: 1; color: #888; cursor: pointer;}
-.modal-close-button:hover { color: #333; }
-.modal-content h3 { margin-top: 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;}
-.ai-instructions { margin-top: 10px; background-color: #f9f9f9; border: 1px solid #eee; padding: 15px; border-radius: 4px; font-size: 0.9em; color: #333;}
-.ai-instructions pre { white-space: pre-wrap; word-wrap: break-word; background-color: #eef; padding: 10px; border-radius: 4px; max-height: 40vh; overflow-y: auto; font-family: monospace; font-size: 0.90em; line-height: 1.4; color: #333;}
+.modal-close-button:hover { color: var(--color-card-text); }
+.modal-content h3 { margin-top: 0; color: var(--color-card-heading); border-bottom: 1px solid var(--color-card-border); padding-bottom: 10px; margin-bottom: 15px;}
+.ai-instructions { margin-top: 10px; background-color: var(--color-card-mute); border: 1px solid var(--color-card-border); padding: 15px; border-radius: 4px; font-size: 0.9em; color: var(--color-card-text);}
+.ai-instructions pre { white-space: pre-wrap; word-wrap: break-word; background-color: var(--color-card-bg); padding: 10px; border-radius: 4px; max-height: 40vh; overflow-y: auto; font-family: monospace; font-size: 0.90em; line-height: 1.4; color: var(--color-card-text);}
 </style>

@@ -61,7 +61,7 @@
         <div class="workout-summary card-inset">
           <h4>Session Summary:</h4>
           <p><strong>Workout Time:</strong> {{ formatDuration(workout.durationMinutes) }}</p>
-          <p><strong>Total Volume:</strong> {{ calculateTotalVolume(workout.performedExercises).toLocaleString() }} lbs</p>
+          <p><strong>Total Volume:</strong> {{ calculateTotalVolume(workout.performedExercises).toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</p>
           <p><strong>Total Sets:</strong> {{ getConsolidatedSetsInfo(workout.performedExercises) }}</p>
 
           <div class="exercise-breakdown-header" v-if="workout.performedExercises && workout.performedExercises.length > 0">
@@ -79,7 +79,7 @@
               
               <ul v-if="allDetailsExpandedForWorkout[workout.id] && ex.sets && ex.sets.length > 0" class="set-details-list">
                 <li v-for="(set, setIndex) in ex.sets" :key="setIndex">
-                  Set {{ set.setNumber }}: {{ set.actualWeight }} lbs x {{ set.actualReps }} reps ({{set.status}})
+                  Set {{ set.setNumber }}: {{ toDisplay(set.actualWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }} x {{ set.actualReps }} {{ set.isTimed ? 'sec' : 'reps' }} ({{set.status}})
                 </li>
               </ul>
             </li>
@@ -104,41 +104,9 @@ import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
 import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase.js'; 
 import useAuth from '../composables/useAuth';
-
-// --- Interfaces ---
-interface LoggedSetData {
-  exerciseId: string;
-  exerciseName: string;
-  setNumber: number;
-  prescribedWeight: number;
-  prescribedReps: number;
-  actualWeight: number;
-  actualReps: number;
-  status: 'done' | 'failed';
-  timestamp: any; 
-}
-
-interface PerformedExerciseInLog {
-  exerciseId: string;
-  exerciseName: string;
-  sets: LoggedSetData[];
-  isPR?: boolean;
-}
-
-interface LoggedWorkout {
-  id: string;
-  userId: string;
-  date: Timestamp;
-  trainingProgramIdUsed: string;
-  workoutDayNameUsed: string;
-  workoutDayIdUsed: string;
-  performedExercises: PerformedExerciseInLog[];
-  trainingProgramNameUsed?: string;
-  overallSessionNotes?: string;
-  startTime?: any; 
-  endTime?: any; 
-  durationMinutes?: number;
-}
+import useSettings from '../composables/useSettings';
+import { toDisplay, displayUnit } from '../utils/weight';
+import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
 
 interface CalendarDay {
   date: Date;
@@ -151,6 +119,7 @@ interface CalendarDay {
 }
 
 const { user } = useAuth();
+const { settings } = useSettings();
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 const loggedWorkouts = reactive<LoggedWorkout[]>([]);
@@ -336,7 +305,7 @@ const formatDuration = (minutes: number | undefined): string => {
 
 const calculateTotalVolume = (performedExercises: PerformedExerciseInLog[] | undefined): number => {
   if (!performedExercises) return 0;
-  return performedExercises.reduce((totalVolume, ex) => {
+  const volLbs = performedExercises.reduce((totalVolume, ex) => {
     const exerciseVolume = ex.sets.reduce((vol, set) => {
       if (typeof set.actualWeight === 'number' && typeof set.actualReps === 'number' && set.actualReps > 0) {
         return vol + (set.actualWeight * set.actualReps);
@@ -345,6 +314,7 @@ const calculateTotalVolume = (performedExercises: PerformedExerciseInLog[] | und
     }, 0);
     return totalVolume + exerciseVolume;
   }, 0);
+  return toDisplay(volLbs, settings.value.weightUnit);
 };
 
 const getTotalSetsLogged = (performedExercises: PerformedExerciseInLog[] | undefined): number => {
@@ -388,7 +358,7 @@ const getRepresentativeSetInfo = (sets: LoggedSetData[]): string => {
   }
 
   if (representativeSet && typeof representativeSet.actualWeight === 'number' && typeof representativeSet.actualReps === 'number') {
-    return `${representativeSet.actualWeight} lbs x ${representativeSet.actualReps} reps`;
+    return `${toDisplay(representativeSet.actualWeight, settings.value.weightUnit)} ${displayUnit(settings.value.weightUnit)} x ${representativeSet.actualReps} ${representativeSet.isTimed ? 'sec' : 'reps'}`;
   }
   return '';
 };
@@ -448,7 +418,7 @@ onUnmounted(() => {
 .history-view {
   padding-top: 20px;
   padding-bottom: 20px;
-  max-width: 800px;
+  max-width: 700px;
   margin: 0 auto;
 }
 .history-view h1 {
@@ -550,55 +520,58 @@ onUnmounted(() => {
 
 /* General card style for loading/error/no-history messages */
 .card {
-  background-color: #fff;
+  background-color: var(--color-card-bg);
   padding: 20px 25px;
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
-  color: #333; 
+  color: var(--color-card-text);
+  border: 1px solid var(--color-card-border);
 }
 
 .history-item-card {
-  background-color: #fff; 
+  background-color: var(--color-card-bg);
   padding: 20px 25px;
   border-radius: 8px;
   margin-bottom: 25px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
-  border: 1px solid var(--color-border);
-  color: #333; 
+  border: 1px solid var(--color-card-border);
+  color: var(--color-card-text); 
 }
 
 .history-item-header {
-  border-bottom: 1px solid #e0e0e0; 
+  border-bottom: 1px solid var(--color-card-border); 
   padding-bottom: 15px;
   margin-bottom: 15px;
 }
 .history-item-header h2 {
   margin-top: 0;
   margin-bottom: 5px;
-  color: #333;
+  color: var(--color-card-heading);
   font-size: 1.5em;
 }
 .workout-date {
   font-size: 0.9em;
-  color: #6c757d;
+  color: var(--color-card-text);
+  opacity: 0.8;
   margin-bottom: 5px;
 }
 .program-name {
   font-size: 0.9em;
-  color: #555;
+  color: var(--color-card-text);
+  opacity: 0.8;
   font-style: italic;
 }
 
 .workout-summary { 
-  background-color: #f8f9fa;
+  background-color: var(--color-card-mute);
   padding: 20px;
   border-radius: 6px;
   margin-top: 20px;
-  border: 1px solid #e0e0e0;
-  color: #333; 
+  border: 1px solid var(--color-card-border);
+  color: var(--color-card-text); 
 }
 
 .workout-summary h4 { 
@@ -606,14 +579,17 @@ onUnmounted(() => {
   font-weight: 600;
   margin-top: 0;
   margin-bottom: 15px;
+  color: var(--color-card-heading);
 }
 .workout-summary p { 
   margin: 8px 0 8px 15px; 
   font-size: 0.95em;
   line-height: 1.5;
+  color: var(--color-card-text);
 }
 .workout-summary p strong {
   font-weight: 500; 
+  color: var(--color-card-heading);
 }
 
 .exercise-breakdown-header {
@@ -622,13 +598,13 @@ onUnmounted(() => {
   align-items: center;
   margin-top: 25px;
   padding-top: 20px;
-  border-top: 1px solid #d0d0d0; 
+  border-top: 1px solid var(--color-card-border); 
 }
 
 .workout-summary h5 { 
   font-size: 1.15em;
   font-weight: 600;
-  color: #333;
+  color: var(--color-card-heading);
   margin-top: 0;
   margin-bottom: 15px;
 }
@@ -645,13 +621,15 @@ onUnmounted(() => {
   font-size: 0.95em;
   padding: 10px 0 10px 15px; 
   margin-bottom: 0;
-  border-bottom: 1px dashed #e0e0e0; 
+  border-bottom: 1px dashed var(--color-card-border); 
+  color: var(--color-card-text);
 }
 .exercise-summary-list li:last-child {
   border-bottom: none;
 }
 .exercise-summary-list li strong { 
   font-weight: 500;
+  color: var(--color-card-heading);
 }
 
 .set-details-list {
@@ -659,7 +637,8 @@ onUnmounted(() => {
   padding-left: 20px; 
   margin-top: 8px;
   font-size: 0.9em; 
-  color: #555;
+  color: var(--color-card-text);
+  opacity: 0.9;
 }
 .set-details-list li {
   padding: 3px 0;
@@ -682,17 +661,18 @@ onUnmounted(() => {
 .session-notes-history {
   margin-top: 20px; 
   padding-top: 15px;
-  border-top: 1px solid #d0d0d0; 
+  border-top: 1px solid var(--color-card-border); 
 }
 .session-notes-history strong {
   display: block;
   margin-bottom: 8px; 
   font-weight: 600;
+  color: var(--color-card-heading);
 }
 .session-notes-history p {
   white-space: pre-wrap;
   font-size: 0.9em;
-  color: #444;
+  color: var(--color-card-text);
   line-height: 1.6;
 }
 
@@ -713,7 +693,7 @@ onUnmounted(() => {
 }
 
 .loading-message, .no-history, .login-prompt {
-  color: var(--color-text); 
+  color: var(--color-card-text); 
   text-align: center;
   padding: 20px;
 }

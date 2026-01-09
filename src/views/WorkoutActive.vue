@@ -29,7 +29,7 @@
         <li v-for="(exercise, index) in sessionExercises" :key="exercise.id" class="exercise-overview-item">
           <strong>{{ index + 1 }}. {{ exercise.exerciseName }}</strong>
           <span class="overview-details">
-            : {{ exercise.targetSets }} sets of {{ exercise.prescribedReps }} reps @ {{ exercise.prescribedWeight }} lbs
+            : {{ exercise.targetSets }} sets of {{ exercise.prescribedReps }} reps @ {{ toDisplay(exercise.prescribedWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }}
             <em v-if="exercise.customRestSeconds"> ({{ exercise.customRestSeconds }}s rest)</em>
             <em v-else> ({{ DEFAULT_REST_SECONDS }}s default rest)</em>
           </span>
@@ -86,14 +86,24 @@
             <span 
               class="prescription-reps" 
               :class="{ 'failed-last-attempt-text': didFailLastAttemptAtCurrentPrescription }">
-              {{ getEffectivePrescribedReps }} reps
+              {{ getEffectivePrescribedReps }} {{ currentExercise.isTimed ? 'sec hold' : 'reps' }}
             </span>
             <span class="prescription-separator">@</span>
             <span 
               class="prescription-weight" 
               :class="{ 'failed-last-attempt-text': didFailLastAttemptAtCurrentPrescription }">
-              {{ getEffectivePrescribedWeight }} lbs
+              {{ toDisplay(getEffectivePrescribedWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }}
             </span>
+          </div>
+        </div>
+
+        <div v-if="currentExercise.isTimed" class="timed-exercise-controls card-inset" style="margin-top: 20px; text-align: center;">
+          <div v-if="!isHoldTimerRunning" class="hold-timer-prep">
+            <button @click="startHoldTimer" class="button-primary full-width-button">START HOLD TIMER</button>
+          </div>
+          <div v-else class="hold-timer-active">
+            <div class="hold-timer-display" style="font-size: 3rem; font-weight: bold; margin-bottom: 10px; color: var(--color-primary);">{{ formattedHoldTime }}</div>
+            <button @click="stopHoldTimer(false)" class="button-secondary full-width-button">Cancel Timer</button>
           </div>
         </div>
         
@@ -104,9 +114,14 @@
           at this prescription. Time to break the cycle!
         </p>
 
-        <div class="set-actions">
+        <div class="set-actions" v-if="!currentExercise.isTimed || (!isHoldTimerRunning && !currentExercise.isTimed)">
           <button @click="logSet('done')" class="button-done">DONE</button>
           <button @click="logSet('failed')" class="button-fail">FAIL</button>
+        </div>
+        <div class="set-actions" v-else-if="currentExercise.isTimed && !isHoldTimerRunning">
+           <!-- Allow manual logging if hold timer not running -->
+           <button @click="logSet('done')" class="button-done">DONE MANUALLY</button>
+           <button @click="logSet('failed')" class="button-fail">FAIL</button>
         </div>
       </div>
     </div>
@@ -153,7 +168,7 @@
       </div>
       <div v-if="nextSetDetails" class="next-up-info card-inset">
         <h4>NEXT UP: {{ nextSetDetails.exerciseName }}</h4>
-        <p>Set {{ nextSetDetails.setNumber }} of {{ nextSetDetails.targetSets }}: {{ nextSetDetails.prescribedReps }} reps @ {{ nextSetDetails.prescribedWeight }} lbs</p>
+        <p>Set {{ nextSetDetails.setNumber }} of {{ nextSetDetails.targetSets }}: {{ nextSetDetails.prescribedReps }} {{ (nextSetDetails as any).isTimed ? 'sec hold' : 'reps' }} @ {{ nextSetDetails.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}</p>
       </div>
       <button @click="proceedToNextSet" class="button-primary start-next-set-button">
         {{ restCountdown > 0 ? 'Skip Rest & Start Next Set' : 'Start Next Set' }}
@@ -176,7 +191,7 @@
         <div class="workout-summary card-inset">
           <h4>Session Summary:</h4>
           <p><strong>Workout Time:</strong> {{ displayDurationForCompletedWorkout }}</p>
-          <p><strong>Total Volume:</strong> {{ totalWorkoutVolume.toLocaleString() }} lbs</p>
+          <p><strong>Total Volume:</strong> {{ totalWorkoutVolume.toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</p>
           <p><strong>Total Sets:</strong> {{ displayConsolidatedSetsInfo }}</p>
 
           <div class="exercise-breakdown-header" v-if="completedPerformedExercisesSummary.length > 0">
@@ -205,7 +220,7 @@
               
               <ul v-if="showSetDetailsInSummary && ex.sets && ex.sets.length > 0" class="set-details-list">
                 <li v-for="(set, setIndex) in ex.sets" :key="setIndex">
-                  Set {{ set.setNumber }}: {{ set.actualWeight }} lbs x {{ set.actualReps }} reps ({{set.status}})
+                  Set {{ set.setNumber }}: {{ toDisplay(set.actualWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }} x {{ set.actualReps }} {{ set.isTimed ? 'sec' : 'reps' }} ({{set.status}})
                 </li>
               </ul>
             </li>
@@ -247,7 +262,7 @@
         <button @click="closeEditPrescriptionModal" class="modal-close-button" title="Close">&times;</button>
         <h3>Edit Weight & Reps</h3>
         <div class="form-group">
-          <label for="editReps">Reps:</label>
+          <label for="editReps">{{ currentExercise?.isTimed ? 'Hold Time (sec):' : 'Reps:' }}</label>
           <input type="number" id="editReps" v-model.number="editedReps" min="1" step="1" />
         </div>
         <div class="form-group">
@@ -290,7 +305,7 @@
                 <input type="number" v-model.number="set.actualWeight" min="0" step="0.1" />
               </div>
               <div class="form-group">
-                <label>Reps:</label>
+                <label>{{ (set as any).isTimed ? 'Time (sec):' : 'Reps:' }}</label>
                 <input type="number" v-model.number="set.actualReps" min="0" step="1" />
               </div>
               <div class="form-group">
@@ -323,14 +338,10 @@ import { doc, getDoc, setDoc, updateDoc, collection, writeBatch, serverTimestamp
 import { db } from '../firebase.js'; 
 import useAuth from '../composables/useAuth'; 
 import { useRouter, useRoute } from 'vue-router';
-
-// --- Type Definitions ---
-interface ExerciseProgress {
-  exerciseName: string; currentWeightToAttempt: number; repsToAttemptNext: number;
-  lastWorkoutAllSetsSuccessfulAtCurrentWeight?: boolean;
-  consecutiveFailedWorkoutsAtCurrentWeightAndReps?: number;
-  lastPerformedDate?: any; 
-}
+import useSettings from '../composables/useSettings'; 
+import { toDisplay, fromInput, displayUnit } from '../utils/weight';
+import { playTone } from '../utils/audio';
+import type { LoggedSetData, PerformedExerciseInLog, ExerciseProgress, SessionExercise } from '@/types';
 
 type WorkoutPhase = 'overview' | 'activeSet' | 'resting' | 'complete';
 
@@ -353,23 +364,7 @@ interface WorkoutDayInRoutine {
   order: number;
   exercises: ExerciseConfigInRoutine[];
 }
-interface SessionExercise extends ExerciseConfigInRoutine {
-  prescribedWeight: number; 
-  prescribedReps: number;   
-}
-interface LoggedSetData {
-  exerciseId: string; exerciseName: string; setNumber: number;
-  prescribedWeight: number; prescribedReps: number;
-  actualWeight: number; actualReps: number;
-  status: 'done' | 'failed'; timestamp: Date;
-}
-
-interface PerformedExerciseInLog { 
-  exerciseId: string;
-  exerciseName: string;
-  sets: LoggedSetData[];
-  isPR?: boolean;
-}
+// SessionExercise is now imported from types.ts, removed local definition.
 
 // Draft workout interface for auto-save
 interface DraftWorkout {
@@ -396,6 +391,7 @@ const { user } = useAuth();
 const router = useRouter();
 const route = useRoute();
 const isLoading = ref(true);
+const { settings } = useSettings();
 const isSaving = ref(false);
 const error = ref<string | null>(null);
 
@@ -420,7 +416,7 @@ const workoutLog = reactive<LoggedSetData[]>([]);
 const currentExerciseIndex = ref(0);
 const currentSetNumber = ref(1);
 
-const DEFAULT_REST_SECONDS = 90;
+const DEFAULT_REST_SECONDS = computed(() => settings.value.defaultRestTimer || 90);
 const restDurationToUse = ref(DEFAULT_REST_SECONDS);
 const restCountdown = ref(DEFAULT_REST_SECONDS);
 const showActualRepsInputForFail = ref(false);
@@ -432,9 +428,9 @@ let audioContext: AudioContext | null = null;
 let audioBuffer: AudioBuffer | null = null; // For loaded MP3 file
 
 // Sound type options - can be extended later
-type SoundType = 'bell' | 'beep' | 'chime' | 'ding' | 'file';
-const selectedSoundType = ref<SoundType>('file'); // Default to file (MP3)
-const useLocalFile = ref(true); // Toggle between generated sound and file
+type SoundType = 'bell' | 'beep' | 'chime' | 'ding'; // simplified
+// const selectedSoundType = ref<SoundType>('file'); // REMOVED - using settings
+// const useLocalFile = ref(true); // REMOVED - using settings
 
 const workoutPhase = ref<WorkoutPhase>('overview');
 const workoutStartTime = ref<Date | null>(null);
@@ -448,6 +444,42 @@ const mobileTooltipText = ref<string>('');
 
 const initialExerciseProgressData = reactive<Map<string, ExerciseProgress>>(new Map());
 const sessionOverallNotes = ref("");
+
+// Hold Timer for Timed Exercises
+const isHoldTimerRunning = ref(false);
+const holdCountdown = ref(0);
+let holdTimerInterval: number | undefined = undefined;
+
+const formattedHoldTime = computed(() => {
+  const m = Math.floor(holdCountdown.value / 60);
+  const s = holdCountdown.value % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+});
+
+const startHoldTimer = () => {
+  if (!currentExercise.value) return;
+  holdCountdown.value = getEffectivePrescribedReps.value; 
+  isHoldTimerRunning.value = true;
+  if (holdTimerInterval) clearInterval(holdTimerInterval);
+  holdTimerInterval = setInterval(() => {
+    if (holdCountdown.value > 0) {
+      holdCountdown.value--;
+    } else {
+      stopHoldTimer(true);
+    }
+  }, 1000);
+};
+
+const stopHoldTimer = (autoAdvance = false) => {
+  isHoldTimerRunning.value = false;
+  if (holdTimerInterval) clearInterval(holdTimerInterval);
+  holdTimerInterval = undefined;
+  
+  if (autoAdvance) {
+    playTimerSound();
+    logSet('done');
+  }
+};
 
 const wakeLockSentinel = ref<WakeLockSentinel | null>(null);
 
@@ -488,12 +520,13 @@ const workoutDurationFormatted = computed(() => {
 });
 
 const totalWorkoutVolume = computed(() => {
-  return workoutLog.reduce((volume, set) => {
+  const volLbs = workoutLog.reduce((volume, set) => {
     if (typeof set.actualWeight === 'number' && typeof set.actualReps === 'number' && set.actualReps > 0) {
       return volume + (set.actualWeight * set.actualReps);
     }
     return volume;
   }, 0);
+  return toDisplay(volLbs, settings.value.weightUnit);
 });
 
 const allExercisesComplete = computed(() => sessionExercises.length > 0 && currentExerciseIndex.value >= sessionExercises.length);
@@ -552,7 +585,15 @@ const nextSetDetails = computed(() => {
   let tempCurrentExerciseIndex = currentExerciseIndex.value;
   if (workoutPhase.value === 'overview' && sessionExercises.length > 0) {
       const firstExercise = sessionExercises[0];
-      return { ...firstExercise, exerciseName: firstExercise.exerciseName, setNumber: 1, targetSets: firstExercise.targetSets, prescribedReps: firstExercise.prescribedReps, prescribedWeight: firstExercise.prescribedWeight };
+      return { 
+        ...firstExercise, 
+        exerciseName: firstExercise.exerciseName, 
+        setNumber: 1, 
+        targetSets: firstExercise.targetSets, 
+        prescribedReps: firstExercise.prescribedReps, 
+        prescribedWeight: firstExercise.prescribedWeight,
+        isTimed: firstExercise.isTimed
+      };
   }
   if (!currentExercise.value) return null;
   let nextExerciseDetails = currentExercise.value;
@@ -568,9 +609,13 @@ const nextSetDetails = computed(() => {
     }
   }
   return {
-    exerciseName: nextExerciseDetails.exerciseName, setNumber: tempCurrentSetNumber,
-    targetSets: nextExerciseDetails.targetSets, prescribedReps: nextExerciseDetails.prescribedReps,
-    prescribedWeight: nextExerciseDetails.prescribedWeight,
+    ...nextExerciseDetails,
+    exerciseName: nextExerciseDetails.exerciseName,
+    setNumber: tempCurrentSetNumber,
+    targetSets: nextExerciseDetails.targetSets,
+    prescribedReps: nextExerciseDetails.prescribedReps,
+    prescribedWeight: toDisplay(nextExerciseDetails.prescribedWeight, settings.value.weightUnit),
+    isTimed: nextExerciseDetails.isTimed
   };
 });
 
@@ -678,7 +723,7 @@ const getRepresentativeSetInfo = (sets: LoggedSetData[]): string => {
   }
 
   if (representativeSet && typeof representativeSet.actualWeight === 'number' && typeof representativeSet.actualReps === 'number') {
-    return `${representativeSet.actualWeight} lbs x ${representativeSet.actualReps} reps`;
+    return `${toDisplay(representativeSet.actualWeight, settings.value.weightUnit)} ${displayUnit(settings.value.weightUnit)} x ${representativeSet.actualReps} ${representativeSet.isTimed ? 'sec' : 'reps'}`;
   }
   return '';
 };
@@ -842,151 +887,38 @@ const beginActiveWorkout = async () => {
 };
 
 // Generate short sounds programmatically (very short to minimize interruption)
-const generateSound = (context: AudioContext, type: SoundType): AudioBufferSourceNode => {
-  const sampleRate = context.sampleRate;
-  const duration = 0.25; // Very short - 250ms to minimize interruption
-  const frameCount = sampleRate * duration;
-  const buffer = context.createBuffer(1, frameCount, sampleRate);
-  const data = buffer.getChannelData(0);
-  
-  let fundamentalFreq: number;
-  let harmonics: Array<{ freq: number; amplitude: number }>;
-  let envelopeDecay: number;
-  
-  switch (type) {
-    case 'bell':
-      fundamentalFreq = 800;
-      harmonics = [
-        { freq: fundamentalFreq, amplitude: 1.0 },
-        { freq: fundamentalFreq * 2, amplitude: 0.5 },
-        { freq: fundamentalFreq * 3, amplitude: 0.3 },
-        { freq: fundamentalFreq * 4, amplitude: 0.15 }
-      ];
-      envelopeDecay = 8;
-      break;
-    case 'beep':
-      fundamentalFreq = 1000;
-      harmonics = [{ freq: fundamentalFreq, amplitude: 1.0 }];
-      envelopeDecay = 10;
-      break;
-    case 'chime':
-      fundamentalFreq = 600;
-      harmonics = [
-        { freq: fundamentalFreq, amplitude: 1.0 },
-        { freq: fundamentalFreq * 2.5, amplitude: 0.6 },
-        { freq: fundamentalFreq * 4, amplitude: 0.3 }
-      ];
-      envelopeDecay = 6;
-      break;
-    case 'ding':
-      fundamentalFreq = 1200;
-      harmonics = [
-        { freq: fundamentalFreq, amplitude: 1.0 },
-        { freq: fundamentalFreq * 2, amplitude: 0.4 }
-      ];
-      envelopeDecay = 12;
-      break;
-    default:
-      fundamentalFreq = 800;
-      harmonics = [{ freq: fundamentalFreq, amplitude: 1.0 }];
-      envelopeDecay = 8;
-  }
-  
-  for (let i = 0; i < frameCount; i++) {
-    let sample = 0;
-    const t = i / sampleRate;
-    // Exponential decay envelope
-    const envelope = Math.exp(-t * envelopeDecay);
-    
-    for (const harmonic of harmonics) {
-      sample += Math.sin(2 * Math.PI * harmonic.freq * t) * harmonic.amplitude * envelope;
-    }
-    
-    data[i] = sample * 0.3; // Scale down to reasonable volume
-  }
-  
-  const source = context.createBufferSource();
-  source.buffer = buffer;
-  return source;
-};
+// Audio logic is now centralized in utils/audio.ts
+import { playTone } from '../utils/audio';
+
+// generateSound logic removed (it's in useAudio/audio.ts now directly)
 
 const playTimerSound = async () => {
-  // Try to use local MP3 file first (better sound quality)
-  // If file not available, fall back to generated sound
-  try {
+    // Respect mute setting
+    if (settings.value.timerSound === 'mute') return;
+
+    // Use settings for volume and type
+    const volume = settings.value.timerVolume;
+    // Map settings sound to expected handle (no major change needed as strict types match mostly)
+    const soundType = settings.value.timerSound === 'bell' ? 'bell' : settings.value.timerSound; 
+    
+    // Pass existing audioContext if initialized, though playTone handles it too.
+    // We try to init context on mount, so it might be ready.
     if (!audioContext) {
-      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
-    
-    // Resume audio context if suspended (required on mobile after user interaction)
-    if (audioContext.state === 'suspended') {
-      await audioContext.resume();
+
+    try {
+        await playTone(soundType, volume, audioContext);
+    } catch (e) {
+        console.warn("Error playing timer sound:", e);
     }
-    
-    // Try to load and use MP3 file if available
-    if (useLocalFile.value) {
-      if (!audioBuffer) {
-        try {
-          // Try to load the bell sound from public folder
-          const response = await fetch('/sounds/bell.mp3');
-          if (response.ok) {
-            const arrayBuffer = await response.arrayBuffer();
-            audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-            
-            // Check if sound is too long (warn if > 1 second)
-            if (audioBuffer.duration > 1.0) {
-              console.warn(`Bell sound is ${audioBuffer.duration.toFixed(2)}s - consider using a shorter file (< 1s) to minimize interruption`);
-            }
-          } else {
-            console.log('Bell MP3 file not found, using generated sound instead');
-            useLocalFile.value = false;
-          }
-        } catch (fetchError) {
-          console.log('Could not load bell MP3 file, using generated sound:', fetchError);
-          useLocalFile.value = false;
-        }
-      }
-      
-      // Play the loaded MP3 file
-      if (audioBuffer) {
-        const source = audioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        const gainNode = audioContext.createGain();
-        gainNode.gain.value = 0.6; // 60% volume - less intrusive
-        
-        source.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        source.start(0);
-        return; // Successfully played MP3 file
-      }
-    }
-    
-    // Fallback to programmatically generated sound
-    const source = generateSound(audioContext, selectedSoundType.value);
-    const gainNode = audioContext.createGain();
-    gainNode.gain.value = 0.6; // 60% volume - less intrusive
-    
-    source.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    source.start(0);
-    return; // Successfully played generated sound
-  } catch (error) {
-    console.warn('Web Audio API failed:', error);
-  }
-  
-  // Final fallback to HTML5 audio (if file exists)
-  if (timerAudioPlayer.value) {
-    timerAudioPlayer.value.currentTime = 0;
-    timerAudioPlayer.value.volume = 0.6;
-    timerAudioPlayer.value.play().catch(e => console.warn("Audio play failed:", e));
-  }
 };
 
 const startRestTimer = () => {
   if (currentExercise.value && currentExercise.value.customRestSeconds && currentExercise.value.customRestSeconds >= 10) {
     restDurationToUse.value = currentExercise.value.customRestSeconds;
   } else {
-    restDurationToUse.value = DEFAULT_REST_SECONDS;
+    restDurationToUse.value = DEFAULT_REST_SECONDS.value;
   }
   restCountdown.value = restDurationToUse.value;
   showMobileTooltipForIndex.value = null;
@@ -1018,10 +950,15 @@ const logSet = async (status: 'done' | 'failed') => {
     prescribedWeight: effectiveWeight, 
     prescribedReps: effectiveReps,     
     actualWeight: effectiveWeight, 
-    actualReps: status === 'done' ? effectiveReps : 0,
+    actualReps: status === 'done' ? (currentExercise.value.isTimed ? effectiveReps : effectiveReps) : (currentExercise.value.isTimed ? (effectiveReps - holdCountdown.value) : 0),
     status: status, 
     timestamp: new Date(),
+    isTimed: currentExercise.value.isTimed || false,
   };
+
+  if (currentExercise.value.isTimed && isHoldTimerRunning.value) {
+    stopHoldTimer(false);
+  }
   
   workoutLog.push(loggedSet);
   lastLoggedSetIndex.value = workoutLog.length - 1;
@@ -1056,8 +993,11 @@ const getDraftWorkoutRef = () => {
 };
 
 // Helper function to validate and convert dates for Firestore
-const ensureValidDate = (dateValue: Date | null | undefined): Date | null => {
+const ensureValidDate = (dateValue: Date | Timestamp | null | undefined): Date | null => {
   if (!dateValue) return null;
+  if (dateValue instanceof Timestamp) {
+    return dateValue.toDate();
+  }
   if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
     return dateValue;
   }
@@ -1493,7 +1433,7 @@ const finishWorkoutAndSave = async () => {
       exerciseName: ex.exerciseName,
       sets: ex.sets.map(s => ({ 
           ...s, 
-          timestamp: s.timestamp instanceof Date ? s.timestamp : new Date(s.timestamp) 
+          timestamp: s.timestamp instanceof Timestamp ? s.timestamp.toDate() : s.timestamp
       })),
       isPR: ex.isPR,
   }));
@@ -1504,7 +1444,20 @@ const finishWorkoutAndSave = async () => {
     return; 
   }
 
-  if (!workoutStartTime.value) workoutStartTime.value = workoutLog.length > 0 ? workoutLog[0].timestamp : new Date();
+  if (!workoutStartTime.value) {
+    if (workoutLog.length > 0) {
+      const firstTs = workoutLog[0].timestamp;
+      if (firstTs instanceof Timestamp) {
+        workoutStartTime.value = firstTs.toDate();
+      } else if (firstTs instanceof Date) {
+        workoutStartTime.value = firstTs;
+      } else {
+        workoutStartTime.value = new Date();
+      }
+    } else {
+      workoutStartTime.value = new Date();
+    }
+  }
   if (!workoutEndTime.value) workoutEndTime.value = new Date(); 
 
   const durationMs = workoutEndTime.value!.getTime() - workoutStartTime.value!.getTime(); 
@@ -1692,7 +1645,7 @@ const openEditPrescriptionModal = () => {
   
   // Initialize with current effective values (accounting for any existing overrides)
   editedReps.value = getEffectivePrescribedReps.value;
-  editedWeight.value = getEffectivePrescribedWeight.value;
+  editedWeight.value = toDisplay(getEffectivePrescribedWeight.value, settings.value.weightUnit);
   showEditPrescriptionModal.value = true;
 };
 
@@ -1728,17 +1681,17 @@ const closeEditChoiceModal = () => {
   editedWeight.value = null;
 };
 
-const applyEditThisSetOnly = () => {
-  if (editedReps.value === null || editedWeight.value === null) {
-    return;
-  }
+const updateOnlyThisSetPrescription = () => {
+  if (editedReps.value === null || editedWeight.value === null) return;
   
-  // Set overrides for current set only
+  // Convert back to LBS for internal storage
+  const weightInLbs = fromInput(editedWeight.value, settings.value.weightUnit);
+  
   overriddenRepsForCurrentSet.value = editedReps.value;
-  overriddenWeightForCurrentSet.value = editedWeight.value;
-  
-  // Clear modals and edited values
+  overriddenWeightForCurrentSet.value = weightInLbs;
   showEditChoiceModal.value = false;
+  
+  // Clear the edited values when done
   editedReps.value = null;
   editedWeight.value = null;
 };
@@ -1754,19 +1707,21 @@ const applyEditAllFutureSets = async () => {
   }
   
   try {
+    const weightInLbs = fromInput(editedWeight.value, settings.value.weightUnit);
+    
     // Update the ExerciseProgress document in Firestore
     const progressKey = currentExercise.value.exerciseName.toLowerCase().replace(/\s+/g, '_');
     const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
     
     await updateDoc(progressDocRef, {
-      currentWeightToAttempt: editedWeight.value,
+      currentWeightToAttempt: weightInLbs,
       repsToAttemptNext: editedReps.value
     });
     
     // Update the initialExerciseProgressData cache
     const currentProgress = initialExerciseProgressData.get(progressKey);
     if (currentProgress) {
-      currentProgress.currentWeightToAttempt = editedWeight.value;
+      currentProgress.currentWeightToAttempt = weightInLbs;
       currentProgress.repsToAttemptNext = editedReps.value;
     }
     
@@ -1774,7 +1729,7 @@ const applyEditAllFutureSets = async () => {
     // This ensures that if the same exercise appears multiple times in a routine, all future instances are updated
     sessionExercises.forEach(ex => {
       if (ex.id === currentExercise.value!.id) {
-        ex.prescribedWeight = editedWeight.value!;
+        ex.prescribedWeight = weightInLbs;
         ex.prescribedReps = editedReps.value!;
       }
     });
@@ -1888,31 +1843,32 @@ const saveEditedWorkout = () => {
 .workout-active-view {
   padding-top: 10px; 
   padding-bottom: 10px;
-  max-width: 750px; 
+  max-width: 700px; 
   margin: 0 auto;   
 }
-.card { background-color: #fff;   padding: 20px 25px;
+.card { background-color: var(--color-card-bg);   padding: 20px 25px;
   border-radius: 8px;
   margin-bottom: 25px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
-  border: 1px solid var(--color-border);}
-.card-inset { background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom: 15px; border: 1px solid #e9ecef;}
-.workout-overview-content h1, .workout-content h1.workout-day-title, .rest-screen-content h1.workout-day-title { text-align: center; margin-bottom: 5px; font-size: 1.8em; color: #333; }
-.routine-name { text-align: center; margin-top: 0; margin-bottom: 25px; color: #555; font-size: 0.9em; }
-.overview-subtitle { text-align: left; font-size: 1.2em; margin-bottom: 15px; color: #333; font-weight: 500; }
+  border: 1px solid var(--color-card-border);
+  color: var(--color-card-text); }
+.card-inset { background-color: var(--color-card-mute); padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom: 15px; border: 1px solid var(--color-card-border); color: var(--color-card-text); }
+.workout-overview-content h1, .workout-content h1.workout-day-title, .rest-screen-content h1.workout-day-title { text-align: center; margin-bottom: 5px; font-size: 1.8em; color: var(--color-card-heading); }
+.routine-name { text-align: center; margin-top: 0; margin-bottom: 25px; color: var(--color-card-text); opacity: 0.8; font-size: 0.9em; }
+.overview-subtitle { text-align: left; font-size: 1.2em; margin-bottom: 15px; color: var(--color-card-heading); font-weight: 500; }
 .exercise-overview-list { list-style-type: none; padding: 0; margin-bottom: 25px; }
-.exercise-overview-item { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 1em; background-color: #fdfdfd; border-radius: 4px; margin-bottom: 8px; }
+.exercise-overview-item { padding: 12px; border-bottom: 1px solid var(--color-card-border); font-size: 1em; background-color: var(--color-card-mute); border-radius: 4px; margin-bottom: 8px; color: var(--color-card-text); }
 .exercise-overview-item:last-child { border-bottom: none; }
-.exercise-overview-item strong { color: #0056b3; }
-.exercise-overview-item span.overview-details { color: #555; font-size: 0.95em; display: block; margin-top: 4px;}
-.exercise-overview-item em { font-size: 0.85em; color: #777; }
+.exercise-overview-item strong { color: #007bff; }
+.exercise-overview-item span.overview-details { color: var(--color-card-text); font-size: 0.95em; display: block; margin-top: 4px; opacity: 0.8;}
+.exercise-overview-item em { font-size: 0.85em; color: var(--color-card-text); opacity: 0.7; }
 .overview-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px;}
 .button-begin-workout { width: 100%; padding: 15px; font-size: 1.2em; }
 
 .workout-progress-indicator { margin-bottom: 20px; text-align: center; }
 .workout-progress-timeline { display: flex; justify-content: center; align-items: center; gap: 4px; margin-bottom: 5px; padding: 5px 0; flex-wrap: wrap; }
-.progress-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #e0e0e0; transition: background-color 0.3s ease, transform 0.2s ease; cursor: pointer; }
+.progress-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: var(--color-card-border); transition: background-color 0.3s ease, transform 0.2s ease; cursor: pointer; }
 .progress-dot.completed-done { background-color: #28a745; }
 .progress-dot.completed-failed { background-color: #ffc107; }
 .progress-dot.active { background-color: #007bff; transform: scale(1.3); }
@@ -1932,65 +1888,65 @@ const saveEditedWorkout = () => {
   box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
-.current-exercise-block h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.6em; color: #2c3e50; border-bottom: 2px solid #007bff; padding-bottom: 10px;}
-.active-set-timer-display { text-align: right; font-size: 0.9em; color: #555; margin-bottom: 15px; padding-right: 5px; }
-.exercise-notes { font-style: italic; color: #666; margin-bottom: 15px; font-size: 0.9em; }
-.current-set-info h3 { margin-top: 0; margin-bottom: 8px; font-size: 1.3em; color: #333;}
+.current-exercise-block h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.6em; color: var(--color-card-heading); border-bottom: 2px solid #007bff; padding-bottom: 10px;}
+.active-set-timer-display { text-align: right; font-size: 0.9em; color: var(--color-card-text); margin-bottom: 15px; padding-right: 5px; opacity: 0.8; }
+.exercise-notes { font-style: italic; color: var(--color-card-text); margin-bottom: 15px; font-size: 0.9em; opacity: 0.8; }
+.current-set-info h3 { margin-top: 0; margin-bottom: 8px; font-size: 1.3em; color: var(--color-card-heading);}
 .set-actions { display: flex; justify-content: space-around; margin-top: 25px; gap: 20px; }
 .set-actions button { padding: 12px 0; font-size: 1.1em; font-weight: bold; border: none; border-radius: 5px; color: white; cursor: pointer; flex-grow: 1; margin: 0; max-width: 220px; transition: background-color 0.2s, transform 0.1s; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
 .button-done { background-color: #28a745; }
 .button-done:hover { background-color: #218838; transform: translateY(-2px); }
 .button-fail { background-color: #dc3545; }
 .button-fail:hover { background-color: #c82333; transform: translateY(-2px); }
-.rest-screen-content h2 { font-size: 2em; margin-bottom: 10px; text-align: center;}
+.rest-screen-content h2 { font-size: 2em; margin-bottom: 10px; text-align: center; color: var(--color-card-heading); }
 .timer-display { font-size: 3.5em; font-weight: bold; margin: 20px 0; color: #007bff; text-align: center;}
-.timer-bar-container { width: 80%; max-width: 400px; height: 20px; background-color: #e9ecef; border-radius: 10px; margin: 0 auto 20px auto; overflow: hidden; }
+.timer-bar-container { width: 80%; max-width: 400px; height: 20px; background-color: var(--color-card-border); border-radius: 10px; margin: 0 auto 20px auto; overflow: hidden; }
 .timer-bar { height: 100%; background: linear-gradient(90deg, #007bff, #0056b3); border-radius: 10px; transition: width 1s linear; width: 100%; }
 .actual-reps-input-section { margin: 20px 0; }
-.actual-reps-input-section label { display: block; margin-bottom: 8px; font-weight: 500; }
-.actual-reps-input-section input[type="number"] { padding: 8px; width: 80px; text-align: center; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; }
+.actual-reps-input-section label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--color-card-text); }
+.actual-reps-input-section input[type="number"] { padding: 8px; width: 80px; text-align: center; font-size: 1em; border: 1px solid var(--color-card-border); border-radius: 4px; background-color: var(--color-card-bg); color: var(--color-card-text); }
 .next-up-info { margin: 25px 0; text-align: center;}
-.next-up-info h4 { margin-top: 0; color: #333; font-size: 1.2em; }
+.next-up-info h4 { margin-top: 0; color: var(--color-card-heading); font-size: 1.2em; }
 .start-next-set-button { width: auto; padding: 12px 30px; font-size: 1.1em; display: block; margin-left: auto; margin-right: auto;}
 
-.workout-summary { color: #333; }
-.workout-summary h4 { font-size: 1.2em; font-weight: 600; margin-top: 0; margin-bottom: 15px; }
-.workout-summary p { margin: 8px 0 8px 15px; font-size: 0.95em; line-height: 1.5; }
-.workout-summary p strong { font-weight: 500; }
-.exercise-breakdown-header { display: flex; justify-content: space-between; align-items: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #d0d0d0; }
-.workout-summary h5 { font-size: 1.15em; font-weight: 600; color: #333; margin-top: 0; margin-bottom: 15px; }
+.workout-summary { color: var(--color-card-text); }
+.workout-summary h4 { font-size: 1.2em; font-weight: 600; margin-top: 0; margin-bottom: 15px; color: var(--color-card-heading); }
+.workout-summary p { margin: 8px 0 8px 15px; font-size: 0.95em; line-height: 1.5; color: var(--color-card-text); }
+.workout-summary p strong { font-weight: 500; color: var(--color-card-heading); }
+.exercise-breakdown-header { display: flex; justify-content: space-between; align-items: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid var(--color-card-border); }
+.workout-summary h5 { font-size: 1.15em; font-weight: 600; color: var(--color-card-heading); margin-top: 0; margin-bottom: 15px; }
 .exercise-breakdown-header .button-link { font-size: 0.85em; font-weight: normal; }
 .exercise-summary-list { list-style-type: none; padding-left: 0; }
-.exercise-summary-item { font-size: 0.95em; padding: 10px 0 10px 15px; margin-bottom: 0; border-bottom: 1px dashed #e0e0e0; }
+.exercise-summary-item { font-size: 0.95em; padding: 10px 0 10px 15px; margin-bottom: 0; border-bottom: 1px dashed var(--color-card-border); color: var(--color-card-text); }
 .exercise-summary-item:last-child { border-bottom: none; }
-.exercise-summary-item strong { font-weight: 500; }
+.exercise-summary-item strong { font-weight: 500; color: var(--color-card-heading); }
 .exercise-summary-header { display: flex; justify-content: space-between; align-items: flex-start; }
 .exercise-summary-info { flex-grow: 1; }
-.set-details-list { list-style-type: none; padding-left: 20px; margin-top: 8px; font-size: 0.9em; color: #555; }
+.set-details-list { list-style-type: none; padding-left: 20px; margin-top: 8px; font-size: 0.9em; color: var(--color-card-text); opacity: 0.9; }
 .set-details-list li { padding: 3px 0; border-bottom: none; margin-bottom: 0; }
 .button-link { background: none; border: none; color: #007bff; text-decoration: underline; cursor: pointer; padding: 0; font-size: inherit; }
 .button-link:hover { color: #0056b3; }
-.session-notes-history { margin-top: 20px; padding-top: 15px; border-top: 1px solid #d0d0d0; }
-.session-notes-history strong { display: block; margin-bottom: 8px; font-weight: 600; }
-.session-notes-history p { white-space: pre-wrap; font-size: 0.9em; color: #444; line-height: 1.6; margin: 0 0 0 15px; }
+.session-notes-history { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--color-card-border); }
+.session-notes-history strong { display: block; margin-bottom: 8px; font-weight: 600; color: var(--color-card-heading); }
+.session-notes-history p { white-space: pre-wrap; font-size: 0.9em; color: var(--color-card-text); line-height: 1.6; margin: 0 0 0 15px; }
 
 .overall-notes-section { margin-top: 20px; margin-bottom: 20px; } 
-.overall-notes-section label { display: block; margin-bottom: 8px; font-weight: 500; }
+.overall-notes-section label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--color-card-heading); }
 .finish-workout-button { margin-top: 30px; padding: 15px 25px; width: 100%; box-sizing: border-box; font-size: 1.2em; }
 .button-secondary { display: inline-block; margin-top: 10px; padding: 10px 15px; background-color: #6c757d; color: white; border: none; border-radius: 4px; text-decoration: none; transition: background-color 0.2s; }
 .button-secondary:hover { background-color: #5a6268; }
 .button-primary { background-color: #007bff; color:white; border:none; border-radius: 4px; padding:10px 15px; cursor:pointer; font-weight: bold; }
 .button-primary:hover:not(:disabled) { background-color: #0056b3; }
-.loading-message, .no-items-message, .login-prompt { color: var(--color-text); text-align: center; padding: 20px; }
+.loading-message, .no-items-message, .login-prompt { color: var(--color-card-text); text-align: center; padding: 20px; }
 .error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-top: 15px; }
-.current-set-info { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid var(--color-border); text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.current-set-info { background-color: var(--color-card-mute); padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid var(--color-card-border); text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
 .current-set-info-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-.current-set-info-header h3 { margin-top: 0; margin-bottom: 0; font-size: 1.5em; color: #495057; font-weight: 600; flex-grow: 1; }
+.current-set-info-header h3 { margin-top: 0; margin-bottom: 0; font-size: 1.5em; color: var(--color-card-heading); font-weight: 600; flex-grow: 1; }
 .current-set-info-header .button-icon { margin-left: 10px; }
 .prescription-details { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
 /* Ensure .prescription-reps and .prescription-weight correctly inherit or define their base color if not red */
 .prescription-reps, .prescription-weight { font-size: 2.0em; font-weight: bold; color: #007bff; display: block; }
-.prescription-separator { font-size: 1.6em; font-weight: normal; color: #6c757d; margin: 5px 0; }
+.prescription-separator { font-size: 1.6em; font-weight: normal; color: var(--color-card-text); opacity: 0.6; margin: 5px 0; }
 
 /* Draft Workout Prompt Overlay */
 .draft-prompt-overlay {
@@ -2012,17 +1968,21 @@ const saveEditedWorkout = () => {
   width: 100%;
   text-align: center;
   padding: 30px;
+  background-color: var(--color-card-bg);
+  border-radius: 8px;
+  color: var(--color-card-text);
 }
 
 .draft-prompt-card h2 {
   margin-top: 0;
   margin-bottom: 15px;
-  color: #333;
+  color: var(--color-card-heading);
 }
 
 .draft-prompt-card p {
   margin-bottom: 15px;
-  color: #555;
+  color: var(--color-card-text);
+  opacity: 0.8;
 }
 
 .draft-prompt-actions {
@@ -2055,13 +2015,14 @@ const saveEditedWorkout = () => {
 }
 
 .modal-content {
-  background-color: white;
+  background-color: var(--color-card-bg);
   border-radius: 8px;
   padding: 25px;
   max-width: 400px;
   width: 100%;
   position: relative;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  color: var(--color-card-text);
 }
 
 .modal-close-button {
@@ -2071,7 +2032,8 @@ const saveEditedWorkout = () => {
   background: none;
   border: none;
   font-size: 28px;
-  color: #666;
+  color: var(--color-card-text);
+  opacity: 0.6;
   cursor: pointer;
   line-height: 1;
   padding: 0;
@@ -2083,7 +2045,8 @@ const saveEditedWorkout = () => {
 }
 
 .modal-close-button:hover {
-  color: #333;
+  color: var(--color-card-heading);
+  opacity: 1;
 }
 
 .edit-prescription-modal h3,
@@ -2091,12 +2054,13 @@ const saveEditedWorkout = () => {
   margin-top: 0;
   margin-bottom: 20px;
   font-size: 1.3em;
-  color: #333;
+  color: var(--color-card-heading);
 }
 
 .edit-choice-modal p {
   margin-bottom: 20px;
-  color: #666;
+  color: var(--color-card-text);
+  opacity: 0.8;
 }
 
 .form-group {
@@ -2107,16 +2071,18 @@ const saveEditedWorkout = () => {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-card-text);
 }
 
 .form-group input[type="number"] {
   width: 100%;
   padding: 10px;
   font-size: 16px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-card-border);
   border-radius: 4px;
   box-sizing: border-box;
+  background-color: var(--color-card-bg);
+  color: var(--color-card-text);
 }
 
 .form-group input[type="number"]:focus {

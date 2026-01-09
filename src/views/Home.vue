@@ -14,6 +14,21 @@
 
     <div v-if="user && activeProgram.id" class="authenticated-view">
       <h1>Home Dashboard</h1>
+      
+      <!-- Confirmation Modal for Draft Discard -->
+      <div v-if="showDiscardDraftModal" class="manifesto-modal-overlay" @click.self="cancelDiscardDraft">
+        <div class="manifesto-modal-content card" style="max-width: 400px; text-align: center; padding-top: 25px;">
+           <button class="modal-close-button" @click="cancelDiscardDraft">×</button>
+           <h3 style="margin-top: 0; color: var(--color-card-heading);">Discard Draft?</h3>
+           <p style="margin: 15px 0; color: var(--color-card-text);">
+             Are you sure you want to delete this unfinished workout? This action cannot be undone.
+           </p>
+           <div class="modal-actions" style="display: flex; gap: 10px; margin-top: 20px;">
+             <button @click="cancelDiscardDraft" class="button-secondary" style="flex: 1;">Cancel</button>
+             <button @click="handleDiscardDraft" class="button-primary" style="flex: 1; background-color: #dc3545;">Delete Forever</button>
+           </div>
+        </div>
+      </div>
 
       <div v-if="isProgramLoading" class="loading-message">
         <p>Loading your program...</p>
@@ -41,13 +56,23 @@
               <p style="margin: 0 0 10px 0; color: #856404;">
                 You have {{ activeDraft.setsCount }} set(s) logged for {{ activeDraft.dayName }}
               </p>
-              <button 
-                @click="resumeDraftWorkout" 
-                class="button-primary"
-                style="width: 100%;"
-              >
-                Resume Workout
-              </button>
+              <div class="draft-actions" style="display: flex; gap: 10px;">
+                <button 
+                  @click="resumeDraftWorkout" 
+                  class="button-primary"
+                  style="flex: 4;"
+                >
+                  Resume Workout
+                </button>
+                <button 
+                  @click="confirmDiscardDraft" 
+                  class="button-danger-icon"
+                  style="flex: 1; display: flex; align-items: center; justify-content: center; background-color: #dc3545; border: none; border-radius: 4px; cursor: pointer; color: white; font-size: 1.2em;"
+                  title="Discard Draft"
+                >
+                  🗑️
+                </button>
+              </div>
             </div>
             <p v-if="lastDoneDayOverallDisplay" class="insight-item">
               <span class="insight-label">Last Workout:</span>
@@ -128,367 +153,51 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed } from 'vue';
-import { doc, getDoc, collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { ref } from 'vue';
 import useAuth from '../composables/useAuth';
+import useTrainingProgram from '../composables/useTrainingProgram';
 import { useRouter } from 'vue-router';
 import ManifestoComponent from '@/components/ManifestoComponent.vue';
-
-// --- START Interface Definitions ---
-interface LoggedSetData {
-  exerciseId: string;
-  exerciseName: string;
-  setNumber: number;
-  prescribedWeight: number;
-  prescribedReps: number;
-  actualWeight: number;
-  actualReps: number;
-  status: 'done' | 'failed';
-  timestamp: any;
-}
-
-interface PerformedExerciseInLog {
-  exerciseId: string;
-  exerciseName: string;
-  sets: LoggedSetData[];
-  isPR?: boolean;
-}
-
-interface LoggedWorkout {
-  id: string;
-  userId: string;
-  date: Timestamp | Date;
-  trainingProgramIdUsed: string;
-  workoutDayNameUsed: string;
-  workoutDayIdUsed: string;
-  performedExercises: PerformedExerciseInLog[];
-  trainingProgramNameUsed?: string;
-  overallSessionNotes?: string;
-  startTime?: any;
-  endTime?: any;
-  durationMinutes?: number;
-}
-
-interface ExerciseConfig { id: string; exerciseName: string; targetSets: number; targetRepRange: string; minRepsInTargetRange: number; maxRepsInTargetRange: number; weightIncrement: number; notesForExercise?: string; }
-interface WorkoutDay { id: string; dayName: string; order: number; exercises: ExerciseConfig[]; }
-interface TrainingProgram { id: string | null; programName: string; description: string; workoutDays: WorkoutDay[]; }
-
-interface EnhancedWorkoutDay extends WorkoutDay {
-  isNextRecommended: boolean;
-  isLastDoneOverall: boolean;
-  skipIndicatorCount: number;
-  lastCompletedThisDayDate: Date | null;
-}
-// --- END Interface Definitions ---
+import type { WorkoutDay, EnhancedWorkoutDay } from '@/types';
 
 const { user } = useAuth();
 const router = useRouter();
 
-const isProgramLoading = ref(false);
-const programLoadingError = ref<string | null>(null);
+const {
+  isProgramLoading,
+  programLoadingError,
+  activeProgram,
+  programWorkoutsHistory,
+  isLoadingHistory,
+  historyError,
+  activeDraft,
+  enhancedWorkoutDays,
+  lastDoneDayOverallDisplay,
+  nextRecommendedDayObject,
+  nextRecommendedDayNameDisplay,
+  sortedWorkoutDays,
+  formatDate,
+  deleteDraftWorkout
+} = useTrainingProgram();
+
 const showManifestoModal = ref(false);
+const showDiscardDraftModal = ref(false);
 
-const ACTIVE_PROGRAM_ID = 'user_active_main_program';
-
-const activeProgram = reactive<TrainingProgram>({
-  id: null,
-  programName: '',
-  description: '',
-  workoutDays: [],
-});
-
-const programWorkoutsHistory = ref<LoggedWorkout[]>([]);
-const isLoadingHistory = ref(false);
-const historyError = ref<string | null>(null);
-
-// Draft workout state
-const activeDraft = ref<{ programId: string; dayId: string; dayName: string; setsCount: number } | null>(null);
-const isLoadingDraft = ref(false);
-
-const formatDate = (date: Date | null | undefined): string => {
-  if (!date) return '';
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+const confirmDiscardDraft = () => {
+    showDiscardDraftModal.value = true;
 };
 
-const ensureDateObject = (dateInput: Timestamp | Date): Date => {
-  if (dateInput instanceof Timestamp) {
-    return dateInput.toDate();
-  }
-  return new Date(dateInput.getTime()); // Create a new Date instance from milliseconds
+const cancelDiscardDraft = () => {
+    showDiscardDraftModal.value = false;
 };
 
-const sortedWorkoutDays = computed((): WorkoutDay[] => {
-  if (!activeProgram.workoutDays) return [];
-  return [...activeProgram.workoutDays].sort((a, b) => a.order - b.order);
-});
-
-const clearActiveProgram = () => {
-  activeProgram.id = null;
-  activeProgram.programName = '';
-  activeProgram.description = '';
-  activeProgram.workoutDays = [];
-  programWorkoutsHistory.value = [];
-  historyError.value = null;
-};
-
-const loadActiveProgram = async () => {
-  if (!user.value || !user.value.uid) {
-    clearActiveProgram();
-    isProgramLoading.value = false;
-    return;
-  }
-  isProgramLoading.value = true;
-  programLoadingError.value = null;
-  try {
-    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
-    const programSnap = await getDoc(programDocRef);
-
-    if (programSnap.exists()) {
-      const data = programSnap.data() as Omit<TrainingProgram, 'id'>;
-      activeProgram.id = programSnap.id;
-      activeProgram.programName = data.programName || 'Your Active Routine';
-      activeProgram.description = data.description || '';
-      activeProgram.workoutDays = Array.isArray(data.workoutDays) ? data.workoutDays : [];
-    } else {
-      clearActiveProgram();
+const handleDiscardDraft = async () => {
+    try {
+      await deleteDraftWorkout();
+      showDiscardDraftModal.value = false;
+    } catch (e) {
+      alert("Failed to delete draft: " + e);
     }
-  } catch (e: any) {
-    console.error("Home.vue: Error loading active program:", e);
-    programLoadingError.value = "Failed to load your active routine. " + e.message;
-    clearActiveProgram();
-  } finally {
-    isProgramLoading.value = false;
-  }
-};
-
-const fetchProgramWorkoutsHistory = async () => {
-  if (!user.value || !user.value.uid || !activeProgram.id) {
-    programWorkoutsHistory.value = [];
-    isLoadingHistory.value = false;
-    return;
-  }
-  isLoadingHistory.value = true;
-  historyError.value = null;
-  const fetchedHistory: LoggedWorkout[] = [];
-  try {
-    const historyCollectionRef = collection(db, 'users', user.value.uid, 'loggedWorkouts');
-    const q = query(historyCollectionRef, orderBy('date', 'desc'));
-    const querySnapshot = await getDocs(q);
-
-    querySnapshot.forEach((docSnap) => {
-      const data = docSnap.data() as Omit<LoggedWorkout, 'id'>;
-      if (data.trainingProgramIdUsed === activeProgram.id) {
-        fetchedHistory.push({ id: docSnap.id, ...data });
-      }
-    });
-    programWorkoutsHistory.value = fetchedHistory;
-  } catch (e: any) {
-    console.error("Error fetching program workout history:", e);
-    historyError.value = "Failed to load workout insights: " + e.message;
-    programWorkoutsHistory.value = [];
-  } finally {
-    isLoadingHistory.value = false;
-  }
-};
-
-watch([user, () => activeProgram.id], async ([currentUser, currentProgramId], [oldUser, oldProgramId]) => {
-  if (currentUser && currentUser.uid) {
-    const userChanged = oldUser?.uid !== currentUser.uid;
-    const programIdActuallyChanged = currentProgramId !== oldProgramId;
-
-    if (!currentProgramId || userChanged || (programIdActuallyChanged && oldProgramId !== undefined) ) {
-      await loadActiveProgram();
-      // Check for draft after loading program
-      if (activeProgram.id) {
-        await checkForDraftWorkout();
-      }
-    }
-  } else {
-    isProgramLoading.value = false;
-    programLoadingError.value = null;
-    clearActiveProgram();
-    activeDraft.value = null;
-  }
-}, { immediate: true, deep: true });
-
-watch(() => activeProgram.id, async (newProgramId) => {
-  if (newProgramId && user.value?.uid) {
-    await checkForDraftWorkout();
-  }
-});
-
-watch(() => activeProgram.id, (newProgramId, oldProgramId) => {
-  if (newProgramId) {
-    if (newProgramId !== oldProgramId || programWorkoutsHistory.value.length === 0) {
-      fetchProgramWorkoutsHistory();
-    }
-  } else {
-    programWorkoutsHistory.value = [];
-  }
-}, { immediate: true });
-
-
-const enhancedWorkoutDays = computed<EnhancedWorkoutDay[]>(() => {
-  if (!activeProgram.id || sortedWorkoutDays.value.length === 0) return [];
-
-  const localSortedWorkoutDays = sortedWorkoutDays.value;
-  const historyNewestFirst = programWorkoutsHistory.value;
-  const historyOldestFirst = [...historyNewestFirst].slice().reverse();
-
-  const skipCounts = new Map<string, number>();
-  localSortedWorkoutDays.forEach(day => skipCounts.set(day.id, 0));
-  let lastCompletedDayIdInStrictSequence: string | null = null;
-
-  if (localSortedWorkoutDays.length > 0) {
-    for (const log of historyOldestFirst) {
-      const loggedDayInProgram = localSortedWorkoutDays.find(d => d.id === log.workoutDayIdUsed);
-      
-      if (!loggedDayInProgram) {
-        if (lastCompletedDayIdInStrictSequence === log.workoutDayIdUsed) {
-            lastCompletedDayIdInStrictSequence = null;
-        }
-        continue;
-      }
-
-      let expectedNextDayIdInStrictSequence: string | null = null;
-      if (lastCompletedDayIdInStrictSequence === null) {
-        expectedNextDayIdInStrictSequence = localSortedWorkoutDays[0]?.id || null;
-      } else {
-        const lastCompletedIndex = localSortedWorkoutDays.findIndex(d => d.id === lastCompletedDayIdInStrictSequence);
-        if (lastCompletedIndex === -1) {
-          lastCompletedDayIdInStrictSequence = null;
-          expectedNextDayIdInStrictSequence = localSortedWorkoutDays[0]?.id || null;
-        } else {
-          const nextIndex = (lastCompletedIndex + 1) % localSortedWorkoutDays.length;
-          expectedNextDayIdInStrictSequence = localSortedWorkoutDays[nextIndex]?.id || null;
-        }
-      }
-
-      if (log.workoutDayIdUsed === expectedNextDayIdInStrictSequence) {
-        // User completed the expected day. Reset its skip count.
-        if (expectedNextDayIdInStrictSequence) {
-          skipCounts.set(expectedNextDayIdInStrictSequence, 0);
-        }
-        lastCompletedDayIdInStrictSequence = log.workoutDayIdUsed;
-      } else {
-        // User completed a different day. The 'expected' day was skipped.
-        if (expectedNextDayIdInStrictSequence) {
-          skipCounts.set(
-            expectedNextDayIdInStrictSequence,
-            (skipCounts.get(expectedNextDayIdInStrictSequence) || 0) + 1
-          );
-        }
-        // The day ACTUALLY completed has its skip count reset.
-        skipCounts.set(log.workoutDayIdUsed, 0);
-        lastCompletedDayIdInStrictSequence = log.workoutDayIdUsed;
-      }
-    }
-  }
-
-  const lastCompletionDateMap = new Map<string, Date>();
-  if (historyNewestFirst.length > 0) {
-    const processedDayIds = new Set<string>();
-    for (const log of historyNewestFirst) {
-      if (localSortedWorkoutDays.some(d => d.id === log.workoutDayIdUsed)) {
-        if (!processedDayIds.has(log.workoutDayIdUsed)) {
-          lastCompletionDateMap.set(log.workoutDayIdUsed, ensureDateObject(log.date));
-          processedDayIds.add(log.workoutDayIdUsed);
-        }
-        if (processedDayIds.size === localSortedWorkoutDays.length) break;
-      }
-    }
-  }
-
-  const lastOverallCompletedLog = historyNewestFirst.length > 0 ? historyNewestFirst[0] : null;
-  let nextRecommendedDayIdBasedOnOverallLast: string | null = null;
-
-  if (localSortedWorkoutDays.length > 0) {
-    if (lastOverallCompletedLog && localSortedWorkoutDays.some(d => d.id === lastOverallCompletedLog.workoutDayIdUsed)) {
-      const lastDayIndex = localSortedWorkoutDays.findIndex(d => d.id === lastOverallCompletedLog!.workoutDayIdUsed);
-      nextRecommendedDayIdBasedOnOverallLast = localSortedWorkoutDays[(lastDayIndex + 1) % localSortedWorkoutDays.length].id;
-    } else {
-      nextRecommendedDayIdBasedOnOverallLast = localSortedWorkoutDays[0].id;
-    }
-  }
-
-  return localSortedWorkoutDays.map(day => {
-    return {
-      ...day,
-      isNextRecommended: day.id === nextRecommendedDayIdBasedOnOverallLast,
-      isLastDoneOverall: lastOverallCompletedLog ? day.id === lastOverallCompletedLog.workoutDayIdUsed : false,
-      skipIndicatorCount: skipCounts.get(day.id) || 0,
-      lastCompletedThisDayDate: lastCompletionDateMap.get(day.id) || null,
-    };
-  });
-});
-
-const lastDoneDayOverallDisplay = computed(() => {
-  if (programWorkoutsHistory.value.length > 0) {
-    const lastLog = programWorkoutsHistory.value[0];
-    const dayDetails = sortedWorkoutDays.value.find(d => d.id === lastLog.workoutDayIdUsed);
-    const dayName = lastLog.workoutDayNameUsed || dayDetails?.dayName || 'Workout';
-    return { name: dayName, date: ensureDateObject(lastLog.date) };
-  }
-  return null;
-});
-
-const nextRecommendedDayObject = computed(() => {
-  if (enhancedWorkoutDays.value.length === 0) return null;
-  return enhancedWorkoutDays.value.find(d => d.isNextRecommended) || null;
-});
-
-const nextRecommendedDayNameDisplay = computed(() => {
-  return nextRecommendedDayObject.value?.dayName || (sortedWorkoutDays.value[0]?.dayName || null);
-});
-
-
-const checkForDraftWorkout = async () => {
-  if (!user.value?.uid || !activeProgram.id) {
-    console.log('Cannot check draft: no user or program');
-    return;
-  }
-  
-  isLoadingDraft.value = true;
-  console.log('Checking for draft workouts...', { programId: activeProgram.id, daysCount: activeProgram.workoutDays.length });
-  
-  try {
-    // Check for draft for any day in the active program
-    for (const day of activeProgram.workoutDays) {
-      const draftId = `draft_${activeProgram.id}_${day.id}`;
-      const draftRef = doc(db, 'users', user.value.uid, 'draftWorkouts', draftId);
-      console.log('Checking draft:', draftRef.path);
-      
-      const draftSnap = await getDoc(draftRef);
-      
-      if (draftSnap.exists()) {
-        const draftData = draftSnap.data();
-        const setsCount = draftData.workoutLog?.length || 0;
-        console.log('Draft found:', { dayId: day.id, setsCount, phase: draftData.workoutPhase });
-        
-        // Show draft if it has sets OR if workout has started (not just overview)
-        if (setsCount > 0 || (draftData.workoutPhase && draftData.workoutPhase !== 'overview')) {
-          activeDraft.value = {
-            programId: activeProgram.id,
-            dayId: day.id,
-            dayName: draftData.dayName || day.dayName,
-            setsCount: setsCount
-          };
-          console.log('✅ Active draft set:', activeDraft.value);
-          isLoadingDraft.value = false;
-          return; // Found a draft, stop checking
-        } else {
-          console.log('Draft found but no sets and still in overview - skipping');
-        }
-      }
-    }
-    console.log('No drafts found');
-    activeDraft.value = null;
-  } catch (error) {
-    console.error('❌ Error checking for draft workout:', error);
-  } finally {
-    isLoadingDraft.value = false;
-  }
 };
 
 const resumeDraftWorkout = () => {
@@ -504,7 +213,10 @@ const resumeDraftWorkout = () => {
 
 const startWorkout = (day: WorkoutDay | EnhancedWorkoutDay) => {
   if (!activeProgram.id || !day.id) {
-    programLoadingError.value = "Cannot start workout: Program or Day ID is missing.";
+    // We can't set programLoadingError from here directly as it's readonly from composable usually, 
+    // but ref is mutable. 
+    // Ideally we'd use a setter or just log it/alert.
+    console.error("Cannot start workout: Program or Day ID is missing.");
     return;
   }
   router.push({ name: 'WorkoutActive', params: { programId: activeProgram.id, dayId: day.id } });
@@ -519,56 +231,57 @@ const closeManifestoModal = () => { showManifestoModal.value = false; };
 /* Main layout and structure */
 .home-view {
   padding: 10px;
-  max-width: 800px;
+  max-width: 700px;
   margin: 20px auto;
 }
 .card {
-  background-color: #fff; padding: 20px 25px;
+  background-color: var(--color-card-bg); padding: 20px 25px;
   border-radius: 8px;
   margin-bottom: 25px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-card-border);
+  color: var(--color-card-text);
 }
 
 /* Unauthenticated View */
 .unauthenticated-view.card {
   text-align: center; padding: 30px 25px;
 }
-.welcome-title { font-size: 2.2em; color: #333; margin-bottom: 10px; }
-.welcome-subtitle { font-size: 1.1em; color: #555; margin-bottom: 25px; }
+.welcome-title { font-size: 2.2em; color: var(--color-card-heading); margin-bottom: 10px; }
+.welcome-subtitle { font-size: 1.1em; color: var(--color-card-text); margin-bottom: 25px; }
 .cta-container { margin: 25px 0; text-align: center; }
 .cta-container.top-cta { margin-bottom: 30px; }
 .cta-container.bottom-cta { margin-top: 30px; }
 .button-large { padding: 15px 30px; font-size: 1.1em; font-weight: bold; }
 
 /* Authenticated View */
-.authenticated-view h1 { text-align: center; margin-bottom: 20px; }
+.authenticated-view h1 { text-align: center; margin-bottom: 20px; color: var(--color-heading); /* Main heading is outside card */ }
 .active-program-display h2 {
-  margin-top: 0; color: #333; font-size: 1.8em; margin-bottom: 8px;
+  margin-top: 0; color: var(--color-card-heading); font-size: 1.8em; margin-bottom: 8px;
 }
 .routine-description {
-  margin-top: 0; margin-bottom: 20px; color: #555; font-style: italic;
+  margin-top: 0; margin-bottom: 20px; color: var(--color-card-text); font-style: italic;
 }
 
 /* Program Insights Section - REFINED STYLES */
 .program-insights {
-  background-color: #f8f9fa;
+  background-color: var(--color-card-mute);
   padding: 10px 15px; /* Reduced padding */
   border-radius: 6px;
   margin-bottom: 15px; /* Reduced space before H3 */
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--color-card-border);
   text-align: left;
 }
 .insight-item {
   margin: 4px 0; /* Reduced vertical margin */
   font-size: 0.95em; /* Slightly smaller font */
   line-height: 1.5; /* Adjusted line height */
-  color: #333;
+  color: var(--color-card-text);
 }
 .insight-label {
   font-weight: 600; /* Can be 'bold' if preferred */
-  color: #495057;
+  color: var(--color-card-text);
   margin-right: 5px;
 }
 .insight-value {
@@ -580,7 +293,8 @@ const closeManifestoModal = () => { showManifestoModal.value = false; };
 }
 .insight-date {
   font-size: 0.9em; /* Relative to .insight-item */
-  color: #6c757d;
+  color: var(--color-card-text);
+  opacity: 0.8;
   margin-left: 3px;
 }
 .clickable-next-up-text {
@@ -601,7 +315,7 @@ const closeManifestoModal = () => { showManifestoModal.value = false; };
 .active-program-display h3 { /* "Choose a Workout to Start:" */
   margin-top: 15px; /* Reduced from 25px */
   margin-bottom: 15px;
-  color: #444;
+  color: var(--color-card-text);
   font-size: 1.4em;
 }
 .workout-day-selection { display: flex; flex-direction: column; gap: 15px; }
@@ -641,9 +355,9 @@ const closeManifestoModal = () => { showManifestoModal.value = false; };
   text-decoration: none; display: inline-block; transition: background-color 0.2s;
 }
 .button-primary:hover:not(:disabled) { background-color: #0056b3; }
-.loading-message { color: #6c757d; padding: 20px; text-align: center; }
+.loading-message { color: var(--color-card-text); padding: 20px; text-align: center; }
 .loading-message.small-loading p { font-size: 0.9em; padding: 10px 0 0 0; }
-.no-items-message { color: #6c757d; padding: 20px; text-align: center; }
+.no-items-message { color: var(--color-card-text); padding: 20px; text-align: center; }
 .error-message {
   color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb;
   padding: 10px 15px; border-radius: 4px; margin-top: 15px; margin-bottom: 15px;
@@ -668,11 +382,13 @@ const closeManifestoModal = () => { showManifestoModal.value = false; };
 .manifesto-modal-content.card {
   max-width: 700px; width: 100%; max-height: 85vh; overflow-y: auto;
   position: relative; padding: 25px; padding-top: 45px; text-align: left;
+  background-color: var(--color-card-bg);
+  color: var(--color-card-text);
 }
 .modal-close-button {
   position: absolute; top: 10px; right: 15px; background: none; border: none;
-  font-size: 2em; color: #777; cursor: pointer; line-height: 1; padding: 5px;
+  font-size: 2em; color: var(--color-card-text); opacity: 0.6; cursor: pointer; line-height: 1; padding: 5px;
 }
-.modal-close-button:hover { color: #333; }
+.modal-close-button:hover { color: var(--color-card-text); opacity: 1; }
 
 </style>

@@ -20,16 +20,44 @@
     <main class="main-content">
       <router-view />
     </main>
+
+    <div v-if="envLabel" class="env-banner">
+      {{ envLabel }}
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// No need for useRouter or logout function here anymore
-import useAuth from './composables/useAuth'; // Make sure this path is correct
+// No need for useRouter import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import useAuth from './composables/useAuth';
+import useSettings from './composables/useSettings'; // Make sure this path is correct
 
-const { user } = useAuth(); // We only need 'user' here for conditional rendering
-                            // 'logout' function will be called from Profile.vue
+const { user, handleAuthResult } = useAuth();
+// Init settings (will auto-load when user is set due to watcher in composable)
+useSettings();
+
+const route = useRoute();
+
+const envLabel = import.meta.env.VITE_APP_ENV_LABEL;
 </script>
+
+<style>
+/* Environment Banner */
+.env-banner {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  background-color: #ff9800;
+  color: #fff;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border-top-left-radius: 8px;
+  z-index: 9999;
+  opacity: 0.8;
+  pointer-events: none; /* Let clicks pass through */
+}
 
 <style>
 /* Styles for App.vue navigation */
