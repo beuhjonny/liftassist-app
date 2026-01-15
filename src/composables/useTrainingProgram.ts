@@ -2,12 +2,14 @@ import { ref, reactive, watch, computed } from 'vue';
 import { doc, getDoc, collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import useAuth from './useAuth';
+import useSettings from './useSettings';
 import type { TrainingProgram, LoggedWorkout, WorkoutDay, EnhancedWorkoutDay } from '@/types';
 
 export default function useTrainingProgram() {
     const { user } = useAuth();
+    const { settings, saveSettings } = useSettings();
 
-    const ACTIVE_PROGRAM_ID = 'user_active_main_program';
+    const allPrograms = ref<TrainingProgram[]>([]);
 
     const isProgramLoading = ref(false);
     const programLoadingError = ref<string | null>(null);
@@ -45,25 +47,74 @@ export default function useTrainingProgram() {
         }
         isProgramLoading.value = true;
         programLoadingError.value = null;
-        try {
-            const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
-            const programSnap = await getDoc(programDocRef);
 
-            if (programSnap.exists()) {
-                const data = programSnap.data() as Omit<TrainingProgram, 'id'>;
-                activeProgram.id = programSnap.id;
-                activeProgram.programName = data.programName || 'Your Active Routine';
-                activeProgram.description = data.description || '';
-                activeProgram.workoutDays = Array.isArray(data.workoutDays) ? data.workoutDays : [];
+        try {
+            let targetProgramId = settings.value.activeProgramId;
+
+            // MIGRATION: Check for legacy program if no activeProgramId
+            if (!targetProgramId) {
+                const legacyId = 'user_active_main_program';
+                const legacyRef = doc(db, 'users', user.value.uid, 'trainingPrograms', legacyId);
+                const legacySnap = await getDoc(legacyRef);
+
+                if (legacySnap.exists()) {
+                    targetProgramId = legacyId;
+                    await saveSettings({ activeProgramId: legacyId });
+                }
+            }
+
+            // If still no ID, try to find any program
+            if (!targetProgramId) {
+                await fetchAllPrograms();
+                if (allPrograms.value.length > 0 && allPrograms.value[0].id) {
+                    targetProgramId = allPrograms.value[0].id;
+                    await saveSettings({ activeProgramId: targetProgramId });
+                }
+            }
+
+            // Load the program
+            if (targetProgramId) {
+                const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', targetProgramId);
+                const programSnap = await getDoc(programDocRef);
+
+                if (programSnap.exists()) {
+                    const data = programSnap.data() as Omit<TrainingProgram, 'id'>;
+                    activeProgram.id = programSnap.id;
+                    activeProgram.programName = data.programName || 'Your Active Routine';
+                    activeProgram.description = data.description || '';
+                    activeProgram.workoutDays = Array.isArray(data.workoutDays) ? data.workoutDays : [];
+                } else {
+                    clearActiveProgram();
+                }
             } else {
                 clearActiveProgram();
             }
         } catch (e: any) {
             console.error("useTrainingProgram: Error loading active program:", e);
-            programLoadingError.value = "Failed to load your active routine. " + e.message;
+            programLoadingError.value = "Failed to load your active routine.";
             clearActiveProgram();
         } finally {
             isProgramLoading.value = false;
+        }
+    };
+
+    const fetchAllPrograms = async () => {
+        if (!user.value || !user.value.uid) {
+            allPrograms.value = [];
+            return;
+        }
+        try {
+            const programsCollectionRef = collection(db, 'users', user.value.uid, 'trainingPrograms');
+            const q = query(programsCollectionRef, orderBy('programName', 'asc'));
+            const querySnapshot = await getDocs(q);
+            const fetchedPrograms: TrainingProgram[] = [];
+            querySnapshot.forEach((docSnap) => {
+                fetchedPrograms.push({ id: docSnap.id, ...docSnap.data() } as TrainingProgram);
+            });
+            allPrograms.value = fetchedPrograms;
+        } catch (e) {
+            console.error("Error fetching all programs:", e);
+            allPrograms.value = [];
         }
     };
 
@@ -282,12 +333,14 @@ export default function useTrainingProgram() {
 
     // --- Watchers ---
 
-    watch([user, () => activeProgram.id], async ([currentUser, currentProgramId], [oldUser, oldProgramId]) => {
+    // Watch user and activeProgramId from settings (NOT activeProgram.id to avoid circular dependency)
+    watch([user, () => settings.value.activeProgramId], async ([currentUser, currentActiveId], [oldUser, oldActiveId]) => {
         if (currentUser && currentUser.uid) {
             const userChanged = oldUser?.uid !== currentUser.uid;
-            const programIdActuallyChanged = currentProgramId !== oldProgramId;
+            const programIdChanged = currentActiveId !== oldActiveId;
 
-            if (!currentProgramId || userChanged || (programIdActuallyChanged && oldProgramId !== undefined)) {
+            // Load program if user changed, if activeProgramId changed, or if we don't have a program loaded yet
+            if (userChanged || programIdChanged || !activeProgram.id) {
                 await loadActiveProgram();
                 if (activeProgram.id) {
                     await checkForDraftWorkout();
@@ -299,7 +352,7 @@ export default function useTrainingProgram() {
             clearActiveProgram();
             activeDraft.value = null;
         }
-    }, { immediate: true, deep: true });
+    }, { immediate: true });
 
     watch(() => activeProgram.id, (newProgramId, oldProgramId) => {
         if (newProgramId) {
@@ -325,6 +378,9 @@ export default function useTrainingProgram() {
         nextRecommendedDayObject,
         nextRecommendedDayNameDisplay,
         sortedWorkoutDays,
+        allPrograms,
+        fetchAllPrograms,
+        loadActiveProgram,
         checkForDraftWorkout,
         deleteDraftWorkout,
         formatDate: (date: Date | null | undefined): string => {
@@ -333,3 +389,4 @@ export default function useTrainingProgram() {
         }
     };
 }
+

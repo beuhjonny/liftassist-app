@@ -13,6 +13,7 @@ export interface UserSettings {
     timerVolume: number; // 0.0 to 1.0
     weightUnit: WeightUnitOption;
     defaultRestTimer: number; // in seconds
+    activeProgramId: string | null; // ID of the active training program
 }
 
 const defaultSettings: UserSettings = {
@@ -21,6 +22,7 @@ const defaultSettings: UserSettings = {
     timerVolume: 0.6,
     weightUnit: 'lbs',
     defaultRestTimer: 90,
+    activeProgramId: null,
 };
 
 const settings = ref<UserSettings>({ ...defaultSettings });

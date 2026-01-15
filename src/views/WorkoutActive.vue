@@ -282,7 +282,7 @@
         <h3>Apply Edit</h3>
         <p>How would you like to apply this change?</p>
         <div class="edit-choice-actions">
-          <button @click="applyEditThisSetOnly" class="button-primary">Edit for This Set Only</button>
+          <button @click="updateOnlyThisSetPrescription" class="button-primary">Edit for This Set Only</button>
           <button @click="applyEditAllFutureSets" class="button-primary">Edit for All Future Sets</button>
           <button @click="closeEditChoiceModal" class="button-secondary">Cancel</button>
         </div>
@@ -417,8 +417,8 @@ const currentExerciseIndex = ref(0);
 const currentSetNumber = ref(1);
 
 const DEFAULT_REST_SECONDS = computed(() => settings.value.defaultRestTimer || 90);
-const restDurationToUse = ref(DEFAULT_REST_SECONDS);
-const restCountdown = ref(DEFAULT_REST_SECONDS);
+const restDurationToUse = ref(DEFAULT_REST_SECONDS.value);
+const restCountdown = ref(DEFAULT_REST_SECONDS.value);
 const showActualRepsInputForFail = ref(false);
 const actualRepsForFailedSet = ref<number | null>(null);
 const lastLoggedSetIndex = ref<number | null>(null);
@@ -888,7 +888,6 @@ const beginActiveWorkout = async () => {
 
 // Generate short sounds programmatically (very short to minimize interruption)
 // Audio logic is now centralized in utils/audio.ts
-import { playTone } from '../utils/audio';
 
 // generateSound logic removed (it's in useAudio/audio.ts now directly)
 
