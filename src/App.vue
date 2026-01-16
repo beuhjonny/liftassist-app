@@ -33,7 +33,7 @@ import { useRoute } from 'vue-router';
 import useAuth from './composables/useAuth';
 import useSettings from './composables/useSettings'; // Make sure this path is correct
 
-const { user, handleAuthResult } = useAuth();
+const { user } = useAuth();
 // Init settings (will auto-load when user is set due to watcher in composable)
 useSettings();
 

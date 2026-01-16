@@ -127,10 +127,17 @@
           </p>
         </div>
       </div>
-       <div v-if="!activeProgram.id && !isProgramLoading && !programLoadingError && user" class="no-program-message card">
-        <h2>Welcome, {{ user.displayName || 'Fitness Enthusiast' }}!</h2>
-        <p>You don't have an active training routine set up yet.</p>
-        <router-link to="/routines" class="button-primary">Setup Your Routine</router-link>
+       <div v-if="!activeProgram.id && !isProgramLoading && !programLoadingError && user" class="no-program-message card setup-nudge">
+        <h2 style="text-align: center;">Welcome, {{ user.displayName || 'Fitness Enthusiast' }}! 🏋️</h2>
+        <div class="cta-container top-cta" style="margin-top: 20px;">
+          <router-link to="/routines" class="button-primary button-large">✨ GET STARTED WITH A ROUTINE</router-link>
+        </div>
+        
+        <ManifestoComponent />
+
+        <div class="cta-container bottom-cta">
+          <router-link to="/routines" class="button-primary button-large">CREATE A ROUTINE</router-link>
+        </div>
       </div>
 
       <div class="about-section-logged-in">
@@ -347,14 +354,17 @@ const closeManifestoModal = () => { showManifestoModal.value = false; };
 .skipped-badge { background-color: #ffc107; color: #333; }
 
 /* General Messages & Buttons */
-.no-program-message { padding: 30px; text-align: center; }
-.no-program-message h2 { margin-top:0; margin-bottom: 15px; }
+.no-program-message { padding: 40px 30px; text-align: center; }
+.no-program-message h2 { margin-top:0; margin-bottom: 20px; color: var(--color-card-heading); }
+.no-program-message p { margin-bottom: 30px; font-size: 1.1em; opacity: 0.9; }
+.setup-actions { margin-top: 20px; }
 .button-primary {
   padding: 12px 20px; background-color: #007bff; color: white;
   border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;
-  text-decoration: none; display: inline-block; transition: background-color 0.2s;
+  text-decoration: none; display: inline-block; transition: background-color 0.2s, transform 0.1s;
 }
-.button-primary:hover:not(:disabled) { background-color: #0056b3; }
+.button-primary:hover:not(:disabled) { background-color: #0056b3; transform: translateY(-1px); }
+.button-primary:active { transform: translateY(0px); }
 .loading-message { color: var(--color-card-text); padding: 20px; text-align: center; }
 .loading-message.small-loading p { font-size: 0.9em; padding: 10px 0 0 0; }
 .no-items-message { color: var(--color-card-text); padding: 20px; text-align: center; }

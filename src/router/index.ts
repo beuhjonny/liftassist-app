@@ -32,7 +32,7 @@ const getCurrentUser = (): Promise<User | null> => {
     // If Firebase isn't initialized, return null (no user)
     return Promise.resolve(null);
   }
-  
+
   return new Promise((resolve, reject) => {
     try {
       // onAuthStateChanged returns an unsubscribe function,
@@ -111,10 +111,26 @@ router.beforeEach(async (to, from, next) => {
   if (requiresAuth && !user) {
     console.log('  Redirecting to /login');
     next({ name: 'Login' });
-  } else if (to.name === 'Login' && user) { // THIS IS THE KEY PART
-    // User is logged in and trying to access Login page
+  } else if (to.name === 'Login' && user) {
     console.log('  User logged in, redirecting from Login to /');
-    next({ name: 'Home' }); // Redirecting to Home
+    next({ name: 'Home' });
+  } else if (user && to.name === 'Home') {
+    try {
+      // Check for the known active program ID
+      const { db } = await import('../firebase.js');
+      const { doc, getDoc } = await import('firebase/firestore');
+      const activeProgramRef = doc(db, 'users', user.uid, 'trainingPrograms', 'user_active_main_program');
+      const activeProgramSnap = await getDoc(activeProgramRef);
+
+      if (!activeProgramSnap.exists() && (from.name === null || from.name === 'Login')) {
+        console.log('  New user detected (initial or login), auto-redirecting to /routines for setup');
+        next({ name: 'Routines' });
+        return;
+      }
+    } catch (e) {
+      console.warn('  Failed active program check:', e);
+    }
+    next();
   } else {
     console.log('  Allowing navigation.');
     next();

@@ -50,23 +50,23 @@
 
 <style scoped>
 .manifesto-content {
-  padding: 10px 0; /* Adjusted padding */
+  padding: 10px 0;
   text-align: left;
   line-height: 1.6;
-  color: #333; /* General text color */
+  color: var(--color-card-text);
 }
 .manifesto-content h2 {
   text-align: center;
   margin-top: 0;
   margin-bottom: 25px;
   font-size: 1.7em;
-  color: #2c3e50;
+  color: var(--color-card-heading);
 }
 .manifesto-content h3 {
   margin-top: 25px;
   margin-bottom: 10px;
   font-size: 1.3em;
-  color: #2c3e50;
+  color: var(--color-card-heading);
 }
 .manifesto-content p,
 .manifesto-content ul {
@@ -83,6 +83,6 @@
   margin-bottom: 8px;
 }
 .manifesto-content strong {
-  color: #34495e;
+  color: var(--color-card-heading);
 }
 </style>

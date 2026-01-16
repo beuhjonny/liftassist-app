@@ -15,50 +15,95 @@
       <p>Error: {{ error }}</p>
     </div>
 
-    <div v-if="!activeProgram.id && !isLoading && user" class="create-routine-section card">
-      <h2>No Active Routine Found</h2>
+    <div v-if="!activeProgram.id && !isLoading && user" class="create-routine-section">
+      <div v-if="!creationMode" class="creation-choice-phase card">
+        <h2>How would you like to start?</h2>
+        <p class="choice-subtitle">Choose the method that works best for your training style.</p>
+        
+        <div class="choice-grid">
+          <button @click="creationMode = 'manual'" class="choice-card manual-choice">
+            <div class="choice-icon">✍️</div>
+            <div class="choice-content">
+              <h3>Create Manually</h3>
+              <p>Build your routine from scratch, exercise by exercise.</p>
+            </div>
+            <div class="choice-arrow">→</div>
+          </button>
 
-      <div class="lazy-import-help card-inset">
-        <p style="text-align:center; margin-bottom:15px; font-weight:bold;">Need help getting started or importing?</p>
-        <button @click="toggleExistingRoutineHelp" class="button-secondary full-width-button-link">
-          Format an Existing Routine (e.g., from Notes/Screenshots)
-        </button>
-        <button @click="toggleNewRoutineHelp" class="button-secondary full-width-button-link" style="margin-top:10px;">
-          Design a New Routine with AI Assistance
-        </button>
+          <button @click="creationMode = 'ai'" class="choice-card ai-choice">
+            <div class="choice-icon">✨</div>
+            <div class="choice-content">
+              <h3>AI Assisted</h3>
+              <p>Import from notes, screenshots, or let AI design a plan for you.</p>
+            </div>
+            <div class="choice-arrow">→</div>
+          </button>
+        </div>
       </div>
 
-      <div class="import-routine-section card-inset" style="margin-top:20px;">
-        <h4>Have a Routine Code/Text Directly?</h4>
-        <p>Paste your routine data (JSON format) below and click import.</p>
-        <form @submit.prevent="importPastedRoutine">
-          <div class="form-group">
-            <label for="routineJsonData">Routine Data (JSON):</label>
-            <textarea id="routineJsonData" v-model="pastedRoutineJson" rows="10" placeholder="Paste your routine JSON here..."></textarea>
-          </div>
-          <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary">
-            {{ isSaving ? 'Importing...' : 'Import Pasted Routine' }}
-          </button>
-        </form>
+      <div v-if="creationMode === 'manual'" class="manual-creation-flow card animate-fade-in">
+        <header class="flow-header">
+          <button @click="creationMode = null" class="back-link">← Back to choices</button>
+          <h2>Manual Routine Setup</h2>
+        </header>
+        
+        <div class="manual-create-section">
+          <p class="section-hint">Give your routine a name and description to get started. You'll add exercises on the next screen.</p>
+          <form @submit.prevent="saveActiveProgramBaseDetails">
+            <div class="form-group">
+              <label for="programName">Routine Name:</label>
+              <input type="text" id="programName" v-model="editableProgramDetails.programName" placeholder="e.g., My PPL Split, 5/3/1, etc." required />
+            </div>
+            <div class="form-group">
+              <label for="programDescription">Description (Optional):</label>
+              <textarea id="programDescription" v-model="editableProgramDetails.description" placeholder="A brief overview of your routine's focus..."></textarea>
+            </div>
+            <div class="flow-actions">
+              <button type="submit" :disabled="isSaving" class="button-primary button-large full-width">
+                {{ isSaving ? 'Creating...' : 'Create & Add Exercises' }}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
-      <hr class="section-divider">
+      <div v-if="creationMode === 'ai'" class="ai-creation-flow card animate-fade-in">
+        <header class="flow-header">
+          <button @click="creationMode = null" class="back-link">← Back to choices</button>
+          <h2>AI Assisted Setup</h2>
+        </header>
 
-      <div class="manual-create-section">
-        <h4>Or, Create a New Routine Manually:</h4>
-        <form @submit.prevent="saveActiveProgramBaseDetails">
-          <div class="form-group">
-            <label for="programName">Routine Name (e.g., My PPL):</label>
-            <input type="text" id="programName" v-model="editableProgramDetails.programName" required />
+        <div class="ai-sub-options">
+          <div class="ai-nudge-section">
+             <button @click="toggleExistingRoutineHelp" class="ai-nudge-card">
+               <div class="nudge-icon">📸</div>
+               <div class="nudge-text">
+                 <strong>Import Existing Routine</strong>
+                 <span>From Notes, Screenshots, or raw text</span>
+               </div>
+             </button>
+             <button @click="toggleNewRoutineHelp" class="ai-nudge-card">
+               <div class="nudge-icon">🤖</div>
+               <div class="nudge-text">
+                 <strong>Design New with AI</strong>
+                 <span>Let AI build a plan based on your goals</span>
+               </div>
+             </button>
           </div>
-          <div class="form-group">
-            <label for="programDescription">Description (Optional):</label>
-            <textarea id="programDescription" v-model="editableProgramDetails.description"></textarea>
+
+          <div class="import-routine-section card-inset">
+            <h4>Import via JSON (Advanced)</h4>
+            <p class="small-text">If you have correctly formatted JSON data, paste it here.</p>
+            <form @submit.prevent="importPastedRoutine">
+              <div class="form-group">
+                <textarea id="routineJsonData" v-model="pastedRoutineJson" rows="4" placeholder="Paste your routine JSON here..."></textarea>
+              </div>
+              <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary button-large full-width">
+                {{ isSaving ? 'Importing...' : 'Perform Import' }}
+              </button>
+            </form>
           </div>
-          <button type="submit" :disabled="isSaving" class="button-primary">
-            {{ isSaving ? 'Saving...' : 'Create Routine Base Manually' }}
-          </button>
-        </form>
+        </div>
       </div>
     </div>
 
@@ -448,6 +493,7 @@ const showNewRoutineHelpDialog = ref(false);
 
 // --- Overall Edit Mode State ---
 const isInOverallEditMode = ref(false);
+const creationMode = ref<'manual' | 'ai' | null>(null);
 
 // --- Routine Name/Description Edit State ---
 const showEditProgramDetailsForm = ref(false);
@@ -669,6 +715,13 @@ const saveActiveProgramBaseDetails = async () => {
     activeProgram.programName = editableProgramDetails.programName;
     activeProgram.description = editableProgramDetails.description;
     await loadActiveProgram(); 
+    
+    // After successful save, if we were in manual creation mode, transition to full edit mode
+    if (creationMode.value === 'manual') {
+      creationMode.value = null;
+      isInOverallEditMode.value = true;
+      showEditProgramDetailsForm.value = false; // Transition to full routine editor
+    }
   } catch (e: any) { error.value = "Failed to save routine details. " + e.message; }
   finally { isSaving.value = false; }
 };
@@ -1169,6 +1222,141 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* --- New Routine Creation UX Styles --- */
+.creation-choice-phase {
+  text-align: center;
+  padding: 40px 20px;
+}
+.choice-subtitle {
+  margin-bottom: 30px;
+  opacity: 0.8;
+  font-size: 1.1em;
+}
+.choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+.choice-card {
+  background: var(--color-card-mute);
+  border: 1px solid var(--color-card-border);
+  border-radius: 12px;
+  padding: 30px 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.choice-card:hover {
+  transform: translateY(-5px);
+  border-color: #007bff;
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+  background: var(--color-card-bg);
+}
+.choice-icon {
+  font-size: 3em;
+  line-height: 1;
+}
+.choice-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.3em;
+  color: var(--color-card-heading);
+}
+.choice-content p {
+  margin: 0;
+  font-size: 0.9em;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+.choice-arrow {
+  font-size: 1.5em;
+  color: #007bff;
+  opacity: 0;
+  transition: all 0.3s;
+  margin-top: 10px;
+}
+.choice-card:hover .choice-arrow {
+  opacity: 1;
+  transform: translateX(5px);
+}
+
+/* AI Creation Flow Specifics */
+.ai-nudge-section {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+.ai-nudge-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  padding: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  width: 100%;
+}
+.ai-nudge-card:hover {
+  border-color: #007bff;
+  background: var(--color-card-mute);
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+}
+.nudge-icon { font-size: 1.5em; }
+.nudge-text { display: flex; flex-direction: column; }
+.nudge-text strong { color: var(--color-card-heading); font-size: 1.1em; }
+.nudge-text span { font-size: 0.9em; opacity: 0.8; }
+
+/* Flow Headers & Back Links */
+.flow-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid var(--color-card-border);
+  padding-bottom: 15px;
+}
+.back-link {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 0.9em;
+  padding: 0;
+  text-decoration: none;
+}
+.back-link:hover { text-decoration: underline; }
+.section-hint {
+  margin-bottom: 20px;
+  font-style: italic;
+  opacity: 0.8;
+  font-size: 0.95em;
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 500px) {
+  .choice-grid {
+    grid-template-columns: 1fr;
+  }
+}
 .routines-view {   padding: 20px; /* This is internal padding since the view itself is a card */
   max-width: 700px;
   margin: 20px auto; /* Includes vertical margin for spacing from nav/header */
