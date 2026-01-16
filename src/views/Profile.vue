@@ -73,6 +73,7 @@
         </div>
 
 
+
         <button @click="handleLogout" class="logout-button">Logout</button>
       </div>
 
@@ -258,7 +259,6 @@ const handleLogout = async () => {
     router.push('/');
   } catch (error) {
     console.error('Error during profile logout:', error);
-    // Optionally, show an error message to the user
   }
 };
 
@@ -321,8 +321,11 @@ const previewSound = () => {
 
 .profile-view h1 {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  margin-top: 0;
   color: var(--color-heading);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
 }
 
 .user-details-container {
@@ -602,4 +605,45 @@ select {
 
 .success-text { color: #28a745; }
 .error-text { color: #dc3545; }
+
+/* Mobile Adjustments */
+@media (max-width: 600px) {
+  .profile-view {
+    padding: 5px; 
+    margin: 10px auto;
+  }
+  .card {
+    padding: 15px; /* Reduced padding on mobile */
+  }
+  
+  /* Stack settings */
+  .setting-item, .timer-combined-row {
+     flex-direction: column;
+     align-items: flex-start;
+     gap: 8px;
+  }
+  
+  .setting-item label, .timer-combined-row label {
+      margin-bottom: 5px; 
+  }
+  
+  .timer-controls {
+      width: 100%;
+      justify-content: space-between; 
+  }
+  
+  .segmented-control {
+      width: 100%;
+      justify-content: center;
+  }
+  
+  .volume-control {
+      flex-grow: 1; 
+      justify-content: center;
+  }
+  .volume-slider {
+      width: 100%; 
+      max-width: 120px;
+  }
+}
 </style>

@@ -39,7 +39,7 @@ export default function useTrainingProgram() {
         activeDraft.value = null;
     };
 
-    const loadActiveProgram = async () => {
+    const loadProgram = async (programId?: string) => {
         if (!user.value || !user.value.uid) {
             clearActiveProgram();
             isProgramLoading.value = false;
@@ -49,10 +49,10 @@ export default function useTrainingProgram() {
         programLoadingError.value = null;
 
         try {
-            let targetProgramId = settings.value.activeProgramId;
+            let targetProgramId = programId || settings.value.activeProgramId;
 
-            // MIGRATION: Check for legacy program if no activeProgramId
-            if (!targetProgramId) {
+            // MIGRATION: Check for legacy program if no explicit target and no active setting
+            if (!targetProgramId && !programId) {
                 const legacyId = 'user_active_main_program';
                 const legacyRef = doc(db, 'users', user.value.uid, 'trainingPrograms', legacyId);
                 const legacySnap = await getDoc(legacyRef);
@@ -63,8 +63,8 @@ export default function useTrainingProgram() {
                 }
             }
 
-            // If still no ID, try to find any program
-            if (!targetProgramId) {
+            // If still no ID, try to find any program (fallback for initial load)
+            if (!targetProgramId && !programId) {
                 await fetchAllPrograms();
                 if (allPrograms.value.length > 0 && allPrograms.value[0].id) {
                     targetProgramId = allPrograms.value[0].id;
@@ -80,21 +80,68 @@ export default function useTrainingProgram() {
                 if (programSnap.exists()) {
                     const data = programSnap.data() as Omit<TrainingProgram, 'id'>;
                     activeProgram.id = programSnap.id;
-                    activeProgram.programName = data.programName || 'Your Active Routine';
+                    activeProgram.programName = data.programName || 'Training Routine';
                     activeProgram.description = data.description || '';
                     activeProgram.workoutDays = Array.isArray(data.workoutDays) ? data.workoutDays : [];
                 } else {
+                    // If specifically requested ID doesn't exist, error. If auto-load, clear.
+                    if (programId) {
+                        programLoadingError.value = "Routine not found.";
+                    }
                     clearActiveProgram();
                 }
             } else {
                 clearActiveProgram();
             }
         } catch (e: any) {
-            console.error("useTrainingProgram: Error loading active program:", e);
-            programLoadingError.value = "Failed to load your active routine.";
+            console.error("useTrainingProgram: Error loading program:", e);
+            programLoadingError.value = "Failed to load routine.";
             clearActiveProgram();
         } finally {
             isProgramLoading.value = false;
+        }
+    };
+
+    const createProgram = async (name: string, description: string = ''): Promise<string> => {
+        if (!user.value?.uid) throw new Error("User not logged in");
+
+        try {
+            const { addDoc, collection, serverTimestamp } = await import('firebase/firestore');
+            const programsRef = collection(db, 'users', user.value.uid, 'trainingPrograms');
+
+            const newProgram: any = {
+                programName: name,
+                description: description,
+                workoutDays: [], // Empty start
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp()
+            };
+
+            const docRef = await addDoc(programsRef, newProgram);
+
+            // Refresh list
+            await fetchAllPrograms();
+
+            // If this is the FIRST program, make it active automatically
+            if (!settings.value.activeProgramId) {
+                await saveSettings({ activeProgramId: docRef.id });
+            }
+
+            return docRef.id;
+        } catch (e: any) {
+            console.error("Error creating program:", e);
+            throw e;
+        }
+    };
+
+    const setActiveProgram = async (programId: string) => {
+        if (!programId) return;
+        try {
+            await saveSettings({ activeProgramId: programId });
+            // The watcher will handle reloading if needed, or we might need to manually trigger if on same page
+        } catch (e) {
+            console.error("Failed to set active program:", e);
+            throw e;
         }
     };
 
@@ -339,12 +386,15 @@ export default function useTrainingProgram() {
             const userChanged = oldUser?.uid !== currentUser.uid;
             const programIdChanged = currentActiveId !== oldActiveId;
 
-            // Load program if user changed, if activeProgramId changed, or if we don't have a program loaded yet
-            if (userChanged || programIdChanged || !activeProgram.id) {
-                await loadActiveProgram();
-                if (activeProgram.id) {
-                    await checkForDraftWorkout();
-                }
+            // Only auto-load if we are "tracking" the active program (implied by default usage)
+            // or if it's the initial load.
+            // Note: If Routines.vue calls loadProgram('other_id'), activeProgram.id will differ from settings.
+            // We shouldn't force-reload UNLESS the user explicitly changed the *setting*.
+
+            if (userChanged || programIdChanged) {
+                await loadProgram(); // Loads based on settings
+            } else if (!activeProgram.id && !isProgramLoading.value) {
+                await loadProgram();
             }
         } else {
             isProgramLoading.value = false;
@@ -380,7 +430,9 @@ export default function useTrainingProgram() {
         sortedWorkoutDays,
         allPrograms,
         fetchAllPrograms,
-        loadActiveProgram,
+        loadProgram, // Replaced loadActiveProgram
+        createProgram,
+        setActiveProgram,
         checkForDraftWorkout,
         deleteDraftWorkout,
         formatDate: (date: Date | null | undefined): string => {

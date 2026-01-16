@@ -1,6 +1,6 @@
 <template>
   <div class="history-view">
-    <h1>Workout History</h1>
+    <h1>Training Progress</h1>
 
     <div class="calendar-heatmap-container" v-if="calendarWeeks.length > 0" @click.self="hideTooltip" ref="calendarRef">
       <div class="calendar-grid">
@@ -416,15 +416,16 @@ onUnmounted(() => {
 
 <style scoped>
 .history-view {
-  padding-top: 20px;
-  padding-bottom: 20px;
+  padding: 10px;
   max-width: 700px;
-  margin: 0 auto;
+  margin: 20px auto;
 }
 .history-view h1 {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   color: var(--color-heading);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
 }
 
 /* Calendar Heatmap Styles */
@@ -711,7 +712,8 @@ onUnmounted(() => {
 
 @media (max-width: 600px) {
   .history-view {
-    padding-top: 10px;
+    padding: 5px;
+    margin: 10px auto;
     padding-bottom: 30px; /* Extra bottom space for nav */
   }
   .card, .history-item-card {

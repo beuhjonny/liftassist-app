@@ -2,8 +2,10 @@
   <div class="home-view">
     <div v-if="!user" class="unauthenticated-view card">
       <div class="cta-container top-cta">
-        <h1 class="welcome-title">Welcome to LiftAssist!</h1>
-        <p class="welcome-subtitle">Your journey to consistent strength starts here.</p>
+        <h1 class="welcome-title">
+          <span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span>
+        </h1>
+        <p class="welcome-subtitle">Get Stronger Progressively.</p>
         <router-link to="/login" class="button-primary button-large">Sign In to Continue</router-link>
       </div>
       <ManifestoComponent />
@@ -144,7 +146,7 @@
 
       <div class="about-section-logged-in">
         <button @click="toggleManifestoModal" class="button-about">
-          <span class="info-icon" aria-hidden="true">ⓘ</span> About LiftAssist
+          <span class="info-icon" aria-hidden="true">ⓘ</span> About <span style="font-family: 'Montserrat', sans-serif; margin-left:4px;"><span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span></span>
         </button>
       </div>
     <div v-if="user && !activeProgram.id && isProgramLoading" class="loading-message">
@@ -154,6 +156,12 @@
     <div v-if="user && showManifestoModal" class="manifesto-modal-overlay" @click.self="closeManifestoModal">
       <div class="manifesto-modal-content card">
         <button @click="closeManifestoModal" class="modal-close-button" aria-label="Close manifesto">&times;</button>
+        <div style="text-align: center; margin-bottom: 20px;">
+             <h1 class="welcome-title" style="font-size: 2.2em; margin-top: 0; margin-bottom: 5px; display: flex; justify-content: center; align-items: center;">
+               <span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span>
+             </h1>
+             <p class="welcome-subtitle" style="margin-bottom: 15px;">Get Stronger Progressively.</p>
+        </div>
         <ManifestoComponent />
       </div>
     </div>
@@ -270,7 +278,20 @@ const closeManifestoModal = () => { showManifestoModal.value = false; };
     padding: 20px 15px;
   }
 }
-.welcome-title { font-size: 2.2em; color: var(--color-card-heading); margin-bottom: 10px; }
+.welcome-title { 
+  font-family: 'Montserrat', sans-serif;
+  font-size: 2.8em; /* Slightly larger for impact */
+  color: var(--color-card-heading); 
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+}
+.brand-lift {
+  font-weight: 900; /* Extra Bold */
+}
+.brand-logic {
+  font-weight: 400; /* Regular */
+}
 .welcome-subtitle { font-size: 1.1em; color: var(--color-card-text); margin-bottom: 25px; }
 .cta-container { margin: 25px 0; text-align: center; }
 .cta-container.top-cta { margin-bottom: 30px; }
@@ -278,7 +299,7 @@ const closeManifestoModal = () => { showManifestoModal.value = false; };
 .button-large { padding: 15px 30px; font-size: 1.1em; font-weight: bold; }
 
 /* Authenticated View */
-.authenticated-view h1 { text-align: center; margin-bottom: 20px; color: var(--color-heading); /* Main heading is outside card */ }
+.authenticated-view h1 { text-align: center; margin-bottom: 20px; color: var(--color-heading); font-family: 'Montserrat', sans-serif; font-weight: 400; }
 .active-program-display h2 {
   margin-top: 0; color: var(--color-card-heading); font-size: 1.8em; margin-bottom: 8px;
 }
