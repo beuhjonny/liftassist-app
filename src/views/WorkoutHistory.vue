@@ -146,6 +146,7 @@ import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firesto
 import { db } from '../firebase.js'; 
 import useAuth from '../composables/useAuth';
 import useSettings from '../composables/useSettings';
+import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import { toDisplay, displayUnit } from '../utils/weight';
 import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
 
@@ -164,9 +165,7 @@ interface CalendarDay {
 
 const { user } = useAuth();
 const { settings } = useSettings();
-const isLoading = ref(true);
-const error = ref<string | null>(null);
-const loggedWorkouts = reactive<LoggedWorkout[]>([]);
+const { loggedWorkouts, isLoading, error, fetchLoggedWorkouts } = useLoggedWorkouts();
 const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
 
 // Chart & Analytics State
@@ -327,33 +326,7 @@ const generateCalendarGridData = (
 };
 
 
-const fetchWorkoutHistory = async () => {
-  if (!user.value || !user.value.uid) {
-    error.value = "User not available.";
-    isLoading.value = false;
-    loggedWorkouts.length = 0;
-    return;
-  }
-  error.value = null;
-  
-  try {
-    const historyCollectionRef = collection(db, 'users', user.value.uid, 'loggedWorkouts');
-    const q = query(historyCollectionRef, orderBy('date', 'desc')); // Fetch newest first for display list
 
-    const querySnapshot = await getDocs(q);
-    const newWorkouts: LoggedWorkout[] = [];
-    querySnapshot.forEach((docSnap) => {
-      newWorkouts.push({ id: docSnap.id, ...docSnap.data() } as LoggedWorkout);
-    });
-    loggedWorkouts.splice(0, loggedWorkouts.length, ...newWorkouts);
-
-  } catch (e: any) {
-    console.error("Error fetching workout history:", e);
-    error.value = "Failed to load workout history. " + e.message;
-  } finally {
-    isLoading.value = false;
-  }
-};
 
 const formatWorkoutDate = (timestamp: Timestamp | Date | undefined): string => {
   if (!timestamp) return 'Date not available';
@@ -453,18 +426,15 @@ const toggleAllDetailsForWorkout = (workoutId: string) => {
 };
 
 let userWatcherUnsubscribe: (() => void) | null = null;
+
 onMounted(() => {
-  isLoading.value = true; 
-  userWatcherUnsubscribe = watch(user, (currentUser, previousUser) => {
-    if (currentUser && currentUser.uid) {
-      if (!previousUser || currentUser.uid !== previousUser.uid || (loggedWorkouts.length === 0 && !error.value)) {
-        isLoading.value = true;
-        fetchWorkoutHistory();
-      } else {
-        isLoading.value = false; 
-      }
+  fetchLoggedWorkouts(); 
+  
+  userWatcherUnsubscribe = watch(user, (currentUser) => {
+    if (currentUser?.uid) {
+        fetchLoggedWorkouts();
     } else {
-      isLoading.value = false;
+      // User logged out, clear data
       loggedWorkouts.length = 0;
       for (const key in allDetailsExpandedForWorkout) {
         delete allDetailsExpandedForWorkout[key];

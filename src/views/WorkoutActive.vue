@@ -339,6 +339,7 @@ import { db } from '../firebase.js';
 import useAuth from '../composables/useAuth'; 
 import { useRouter, useRoute } from 'vue-router';
 import useSettings from '../composables/useSettings'; 
+import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import { toDisplay, fromInput, displayUnit } from '../utils/weight';
 import { playTone } from '../utils/audio';
 import type { LoggedSetData, PerformedExerciseInLog, ExerciseProgress, SessionExercise } from '@/types';
@@ -392,6 +393,7 @@ const router = useRouter();
 const route = useRoute();
 const isLoading = ref(true);
 const { settings } = useSettings();
+const { invalidateCache } = useLoggedWorkouts();
 const isSaving = ref(false);
 const error = ref<string | null>(null);
 
@@ -1515,8 +1517,12 @@ const finishWorkoutAndSave = async () => {
       batch.update(progressDocRef, newProgressUpdate);
     }
     await batch.commit();
-    
-    // Delete draft workout after successful save
+
+    // Invalidate cache so history page reloads
+    invalidateCache();
+
+    // 5. Clean up draft if it exists
+
     await deleteDraftWorkout();
     
     workoutLog.length = 0; currentExerciseIndex.value = 0; currentSetNumber.value = 1;
