@@ -169,25 +169,20 @@ const envLabel = computed(() => {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 500px) {
   .app-nav a {
-    font-size: 0.9rem;
-    margin: 0 8px;
+    font-size: 0.8rem; /* Smaller font to fit "Progress" */
+    margin: 0 4px;   /* Much tighter margins */
+    padding: 6px 6px; /* Add some touch target padding, removed vertical margin */
   }
   .app-nav a::before {
-    font-size: 1em;
-    margin-right: 0.3em;
+    font-size: 1.1em;
+    margin-right: 4px;
   }
-}
-
-@media (max-width: 400px) {
-  .app-nav a {
-    font-size: 0.8rem;
-    margin: 0 6px;
-  }
-  .app-nav a::before {
-    font-size: 0.9em;
-    margin-right: 0.25em;
+  .nav-links {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: nowrap; /* Force single line if possible */
   }
 }
 </style>

@@ -32,6 +32,43 @@
            :style="{ top: (activeTooltip.event.clientY + 10) + 'px', left: (activeTooltip.event.clientX + 10) + 'px' }">
         {{ activeTooltip.text }} - {{ activeTooltip.date }}
       </div>
+      </div>
+
+
+    <!-- Analytics Section -->
+    <div v-if="!isLoading && loggedWorkouts.length > 0" class="analytics-dashboard">
+        
+        <div class="chart-section card">
+            <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; line-height:1.2;">Weekly Volume</h3>
+                <select v-model="weeklyVolumeTimeRange" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 150px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-text); font-size: 0.9em;">
+                     <option value="12w">Last 12 Weeks</option>
+                     <option value="6m">Last 6 Months</option>
+                     <option value="1y">Last Year</option>
+                     <option value="all">All Time</option>
+                </select>
+            </div>
+            <WeeklyVolumeChart :workouts="loggedWorkouts" :weightUnit="settings?.weightUnit || 'lbs'" :timeRange="weeklyVolumeTimeRange" />
+        </div>
+
+        <div class="chart-section card">
+             <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                 <h3 style="margin:0;">Exercise Trends</h3>
+                 <select v-model="selectedExerciseForGraph" class="exercise-select" style="padding: 5px; border-radius:4px; max-width: 150px;">
+                     <option value="">Select Exercise</option>
+                     <option v-for="ex in uniqueExercises" :key="ex" :value="ex">{{ ex }}</option>
+                 </select>
+             </div>
+             <ExerciseProgressChart 
+                 v-if="selectedExerciseForGraph" 
+                 :exerciseName="selectedExerciseForGraph" 
+                 :workouts="loggedWorkouts" 
+                 :weightUnit="settings?.weightUnit || 'lbs'"
+             />
+             <div v-else class="placeholder-text" style="text-align:center; padding: 40px; color: var(--color-text); opacity: 0.6;">
+                 Select an exercise to view 1RM & Volume trends.
+             </div>
+        </div>
     </div>
 
     <div v-if="isLoading && loggedWorkouts.length === 0" class="loading-message">
@@ -47,7 +84,8 @@
     </div>
 
     <div v-if="!isLoading && !error && user && loggedWorkouts.length > 0" class="history-list">
-      <div v-for="workout in loggedWorkouts" :key="workout.id" class="history-item-card">
+      <h3 style="margin: 30px 0 20px 0; font-size: 1.5em; border-bottom: 1px solid var(--color-border); padding-bottom: 10px; color: var(--color-heading);">Recent Logs</h3>
+      <div v-for="workout in visibleWorkouts" :key="workout.id" class="history-item-card">
         <div class="history-item-header">
           <h2>{{ workout.workoutDayNameUsed || 'Workout Session' }}</h2>
           <p class="workout-date">
@@ -91,6 +129,9 @@
           </div>
         </div>
       </div>
+
+      
+      <button v-if="hasMoreLogs" @click="loadMoreLogs" class="button-secondary full-width" style="margin-top: 10px;">Load More History</button>
     </div>
 
     <div v-if="!user && !isLoading" class="login-prompt">
@@ -107,6 +148,9 @@ import useAuth from '../composables/useAuth';
 import useSettings from '../composables/useSettings';
 import { toDisplay, displayUnit } from '../utils/weight';
 import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
+
+import WeeklyVolumeChart from '../components/WeeklyVolumeChart.vue';
+import ExerciseProgressChart from '../components/ExerciseProgressChart.vue';
 
 interface CalendarDay {
   date: Date;
@@ -125,6 +169,31 @@ const error = ref<string | null>(null);
 const loggedWorkouts = reactive<LoggedWorkout[]>([]);
 const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
 
+// Chart & Analytics State
+const selectedExerciseForGraph = ref<string>('');
+const weeklyVolumeTimeRange = ref('12w');
+const uniqueExercises = computed(() => {
+    const exercises = new Set<string>();
+    loggedWorkouts.forEach(w => {
+        if(w.performedExercises) {
+            w.performedExercises.forEach(ex => exercises.add(ex.exerciseName));
+        }
+    });
+    return Array.from(exercises).sort();
+});
+
+// Pagination State
+const logsLimit = ref(10);
+const visibleWorkouts = computed(() => {
+    return loggedWorkouts.slice(0, logsLimit.value);
+});
+const hasMoreLogs = computed(() => {
+    return logsLimit.value < loggedWorkouts.length;
+});
+const loadMoreLogs = () => {
+    logsLimit.value += 10;
+};
+
 const activeTooltip = ref<{ date: string; text: string; event: MouseEvent } | null>(null);
 const calendarRef = ref<HTMLElement | null>(null);
 
@@ -140,7 +209,7 @@ const daySequenceColorPalette = [
 const defaultWorkoutColor = 'hsla(160, 100%, 37%, 0.8)'; // Default (e.g., Vue green)
 
 const calendarWeeks = computed<CalendarDay[][]>(() => {
-  return generateCalendarGridData(loggedWorkouts.slice(), 12); // Show last 12 weeks
+  return generateCalendarGridData(loggedWorkouts.slice(), 52); // Show last 52 weeks (1 year)
 });
 
 const handleDayCellClick = (day: CalendarDay, event: MouseEvent) => {
@@ -404,6 +473,16 @@ onMounted(() => {
   }, { immediate: true });
 
   document.addEventListener('click', handleClickOutsideTooltip);
+
+  // Scroll calendar to end (latest dates)
+  setTimeout(() => {
+    if (calendarRef.value) {
+        const scrollArea = calendarRef.value.querySelector('.calendar-main-area');
+        if (scrollArea) {
+            scrollArea.scrollLeft = scrollArea.scrollWidth;
+        }
+    }
+  }, 200);
 });
 
 onUnmounted(() => {
@@ -468,6 +547,11 @@ onUnmounted(() => {
   gap: 2px; 
   overflow-x: auto; 
   padding-bottom: 5px;
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+.calendar-main-area::-webkit-scrollbar { 
+    display: none;  /* Chrome/Safari */
 }
 
 .calendar-week {
@@ -691,6 +775,27 @@ onUnmounted(() => {
 }
 .button-primary:hover:not(:disabled) {
   background-color: #0056b3;
+}
+
+.button-secondary {
+  padding: 10px 15px;
+  background-color: var(--color-background-soft);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+  display: inline-block;
+  text-align: center;
+}
+.button-secondary:hover:not(:disabled) {
+  background-color: var(--color-background-mute);
+  border-color: var(--color-heading);
+}
+.full-width {
+  width: 100%;
+  display: block;
 }
 
 .loading-message, .no-history, .login-prompt {
