@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-// No need for useRouter import { computed } from 'vue';
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import useAuth from './composables/useAuth';
 import useSettings from './composables/useSettings'; // Make sure this path is correct
@@ -39,7 +39,18 @@ useSettings();
 
 const route = useRoute();
 
-const envLabel = import.meta.env.VITE_APP_ENV_LABEL;
+const envLabel = computed(() => {
+  const hostname = window.location.hostname;
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'LOCAL';
+  }
+  if (hostname.includes('web.app') && hostname.includes('--')) {
+     // Firebase preview channels usually look like project--channel-id.web.app
+     // While production is project.web.app
+     return 'PREVIEW';
+  }
+  return null; // Production or unknown
+});
 </script>
 
 <style>
@@ -163,9 +174,13 @@ const envLabel = import.meta.env.VITE_APP_ENV_LABEL;
 
 /* Fallback for .main-content if it was styled here, ensure it still works */
 .main-content {
-  padding: 0 20px; /* This was in your original, assuming it's for content below nav */
-  /* text-align: center; /* This might be better handled by specific page layouts */
+  padding: 0 20px;
   width: 100%;
-  /* display: block; /* Default for divs, often not needed explicitly */
+}
+
+@media (max-width: 600px) {
+  .main-content {
+    padding: 0 10px; /* Reduced from 20px */
+  }
 }
 </style>

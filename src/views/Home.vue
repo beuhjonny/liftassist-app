@@ -127,25 +127,26 @@
           </p>
         </div>
       </div>
-       <div v-if="!activeProgram.id && !isProgramLoading && !programLoadingError && user" class="no-program-message card setup-nudge">
-        <h2 style="text-align: center;">Welcome, {{ user.displayName || 'Fitness Enthusiast' }}! 🏋️</h2>
-        <div class="cta-container top-cta" style="margin-top: 20px;">
-          <router-link to="/routines" class="button-primary button-large">✨ GET STARTED WITH A ROUTINE</router-link>
-        </div>
-        
-        <ManifestoComponent />
+    </div>
 
-        <div class="cta-container bottom-cta">
-          <router-link to="/routines" class="button-primary button-large">CREATE A ROUTINE</router-link>
-        </div>
+    <div v-if="!activeProgram.id && !isProgramLoading && !programLoadingError && user" class="no-program-message card setup-nudge">
+      <h2 style="text-align: center;">Welcome, {{ user.displayName || 'Fitness Enthusiast' }}! 🏋️</h2>
+      <div class="cta-container top-cta" style="margin-top: 20px;">
+        <router-link to="/routines" class="button-primary button-large">✨ GET STARTED WITH A ROUTINE</router-link>
       </div>
+      
+      <ManifestoComponent />
+
+      <div class="cta-container bottom-cta">
+        <router-link to="/routines" class="button-primary button-large">CREATE A ROUTINE</router-link>
+      </div>
+    </div>
 
       <div class="about-section-logged-in">
         <button @click="toggleManifestoModal" class="button-about">
           <span class="info-icon" aria-hidden="true">ⓘ</span> About LiftAssist
         </button>
       </div>
-    </div>
     <div v-if="user && !activeProgram.id && isProgramLoading" class="loading-message">
         <p>Loading your program details...</p>
     </div>
@@ -254,6 +255,20 @@ const closeManifestoModal = () => { showManifestoModal.value = false; };
 /* Unauthenticated View */
 .unauthenticated-view.card {
   text-align: center; padding: 30px 25px;
+}
+
+@media (max-width: 600px) {
+  .home-view {
+    padding: 5px; /* Reduced from 10px */
+    margin: 10px auto; /* Reduced margin */
+  }
+  .card {
+    padding: 15px 15px; /* Reduced from 20px 25px */
+    margin-bottom: 15px;
+  }
+  .unauthenticated-view.card {
+    padding: 20px 15px;
+  }
 }
 .welcome-title { font-size: 2.2em; color: var(--color-card-heading); margin-bottom: 10px; }
 .welcome-subtitle { font-size: 1.1em; color: var(--color-card-text); margin-bottom: 25px; }

@@ -21,7 +21,7 @@
         <p class="choice-subtitle">Choose the method that works best for your training style.</p>
         
         <div class="choice-grid">
-          <button @click="creationMode = 'manual'" class="choice-card manual-choice">
+          <button @click="quickStartManualRoutine" class="choice-card manual-choice">
             <div class="choice-icon">✍️</div>
             <div class="choice-content">
               <h3>Create Manually</h3>
@@ -41,31 +41,6 @@
         </div>
       </div>
 
-      <div v-if="creationMode === 'manual'" class="manual-creation-flow card animate-fade-in">
-        <header class="flow-header">
-          <button @click="creationMode = null" class="back-link">← Back to choices</button>
-          <h2>Manual Routine Setup</h2>
-        </header>
-        
-        <div class="manual-create-section">
-          <p class="section-hint">Give your routine a name and description to get started. You'll add exercises on the next screen.</p>
-          <form @submit.prevent="saveActiveProgramBaseDetails">
-            <div class="form-group">
-              <label for="programName">Routine Name:</label>
-              <input type="text" id="programName" v-model="editableProgramDetails.programName" placeholder="e.g., My PPL Split, 5/3/1, etc." required />
-            </div>
-            <div class="form-group">
-              <label for="programDescription">Description (Optional):</label>
-              <textarea id="programDescription" v-model="editableProgramDetails.description" placeholder="A brief overview of your routine's focus..."></textarea>
-            </div>
-            <div class="flow-actions">
-              <button type="submit" :disabled="isSaving" class="button-primary button-large full-width">
-                {{ isSaving ? 'Creating...' : 'Create & Add Exercises' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
 
       <div v-if="creationMode === 'ai'" class="ai-creation-flow card animate-fade-in">
         <header class="flow-header">
@@ -216,7 +191,7 @@
                                   </div>
 
                                   <div class="form-group form-group-inline">
-                                    <div>
+                                    <div v-if="!editingExercise.id">
                                         <label>Starting Weight ({{ displayUnit(settings.weightUnit) }}):</label>
                                         <input type="number" v-model.number="editingExercise.startingWeight" step="0.1" :required="!editingExercise.id" />
                                     </div>
@@ -685,9 +660,63 @@ const loadActiveProgram = async () => {
   }
 };
 
+const quickStartManualRoutine = async () => {
+  if (!user.value || !user.value.uid) { error.value = 'User not logged in.'; return; }
+  
+  isSaving.value = true; error.value = null;
+  
+  try {
+    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
+    
+    const firstDayId = doc(collection(db, '_')).id;
+    const defaultName = "New Routine";
+    const defaultDayName = "Day 1";
+
+    const dataToSave: any = {
+      programName: defaultName,
+      description: "",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      workoutDays: [
+        {
+          id: firstDayId,
+          dayName: defaultDayName,
+          order: 1,
+          exercises: []
+        }
+      ]
+    };
+
+    await setDoc(programDocRef, dataToSave);
+    activeProgram.id = ACTIVE_PROGRAM_ID;
+    
+    await loadActiveProgram();
+
+    // Reset UI states
+    creationMode.value = null;
+    isInOverallEditMode.value = true;
+    
+    // Pre-fill edit forms so they appear open
+    editableProgramDetails.programName = defaultName;
+    editableProgramDetails.description = "";
+    showEditProgramDetailsForm.value = true; // Show top-level name/desc inputs
+    
+    addingExerciseToDayId.value = firstDayId; // Open "Add Exercise" for Day 1
+
+  } catch (e: any) { 
+    error.value = "Failed to create routine. " + e.message; 
+    console.error(e);
+  } finally { 
+    isSaving.value = false; 
+  }
+};
+
 const saveActiveProgramBaseDetails = async () => {
   if (!user.value || !user.value.uid) { error.value = 'User not logged in.'; return; }
   if (!editableProgramDetails.programName.trim()) { error.value = 'Routine name is required.'; return; }
+  
+  const initialCreationMode = creationMode.value; // Capture mode at start
+  
   isSaving.value = true; error.value = null;
   try {
     const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
@@ -717,10 +746,12 @@ const saveActiveProgramBaseDetails = async () => {
     await loadActiveProgram(); 
     
     // After successful save, if we were in manual creation mode, transition to full edit mode
-    if (creationMode.value === 'manual') {
+    // AND automatically open the "Add Day" form
+    if (initialCreationMode === 'manual') {
       creationMode.value = null;
       isInOverallEditMode.value = true;
-      showEditProgramDetailsForm.value = false; // Transition to full routine editor
+      showEditProgramDetailsForm.value = false; 
+      addingNewDay.value = true; // <--- Auto-open the "Add Day" form
     }
   } catch (e: any) { error.value = "Failed to save routine details. " + e.message; }
   finally { isSaving.value = false; }
@@ -1451,4 +1482,36 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 .modal-content h3 { margin-top: 0; color: var(--color-card-heading); border-bottom: 1px solid var(--color-card-border); padding-bottom: 10px; margin-bottom: 15px;}
 .ai-instructions { margin-top: 10px; background-color: var(--color-card-mute); border: 1px solid var(--color-card-border); padding: 15px; border-radius: 4px; font-size: 0.9em; color: var(--color-card-text);}
 .ai-instructions pre { white-space: pre-wrap; word-wrap: break-word; background-color: var(--color-card-bg); padding: 10px; border-radius: 4px; max-height: 40vh; overflow-y: auto; font-family: monospace; font-size: 0.90em; line-height: 1.4; color: var(--color-card-text);}
+
+@media (max-width: 600px) {
+  .routines-view {
+    padding: 5px;
+  }
+  /* Align header with card content (5px view + 10px header = 15px visual start, matching card text loosely) */
+  .routine-actions-header {
+    padding: 0 10px; 
+    margin-bottom: 10px;
+  }
+  .routine-actions-header h1 {
+    font-size: 1.5rem; /* Slightly smaller for mobile */
+  }
+  
+  .card {
+    padding: 15px 15px; /* Reduced from 20px 25px */
+    margin-bottom: 15px;
+  }
+  /* Reduce inset card padding to save even more space for lists */
+  .card-inset {
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .section-divider {
+    margin: 20px 0;
+  }
+  .import-routine-section textarea {
+    min-height: 100px;
+  }
+}
 </style>

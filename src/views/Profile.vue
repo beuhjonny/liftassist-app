@@ -72,6 +72,7 @@
 
         </div>
 
+
         <button @click="handleLogout" class="logout-button">Logout</button>
       </div>
 
@@ -126,7 +127,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, Timestamp, setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase'; // Adjust path if needed
 import useAuth from '../composables/useAuth'; // Adjust path if needed
 import useSettings, { type ThemeOption, type TimerSoundOption, type WeightUnitOption } from '../composables/useSettings'; 
@@ -249,6 +250,7 @@ const formatDateForDisplay = (date: Date | null): string => {
     if (!date) return 'N/A';
     return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 };
+
 
 const handleLogout = async () => {
   try {
@@ -598,4 +600,6 @@ select {
     background-color: var(--color-card-border);
 }
 
+.success-text { color: #28a745; }
+.error-text { color: #dc3545; }
 </style>

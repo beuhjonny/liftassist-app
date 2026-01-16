@@ -709,4 +709,21 @@ onUnmounted(() => {
     color: #007bff; 
 }
 
+@media (max-width: 600px) {
+  .history-view {
+    padding-top: 10px;
+    padding-bottom: 30px; /* Extra bottom space for nav */
+  }
+  .card, .history-item-card {
+    padding: 15px 15px;
+    margin-bottom: 15px;
+  }
+  .history-item-header h2 {
+    font-size: 1.3em;
+  }
+  .workout-summary {
+    padding: 15px;
+    margin-top: 15px;
+  }
+}
 </style>
