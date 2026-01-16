@@ -230,7 +230,8 @@ watch(user, (currentUser) => {
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s;
-  margin-top: 15px;
+  margin-top: 2px;
+  margin-bottom: 10px;
   font-weight: 500;
 }
 
@@ -251,7 +252,7 @@ watch(user, (currentUser) => {
   color: #007bff;
   border: none;
   cursor: pointer;
-  margin-top: 10px;
+  margin-top: -5px;
   text-decoration: underline;
 }
 
@@ -263,7 +264,7 @@ watch(user, (currentUser) => {
   display: flex;
   align-items: center;
   width: 100%;
-  margin: 25px 0;
+  margin: 15px 0;
   color: #666;
   font-weight: 600;
   font-size: 0.9em;

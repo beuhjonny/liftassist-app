@@ -1,404 +1,438 @@
 <template>
   <div class="routines-view">
-    <div class="routine-actions-header">
-      <h1>Your Training Routine</h1>
-      <button v-if="activeProgram.id && !isLoading && !error && user" @click="toggleOverallEditMode" class="button-primary">
-        {{ isInOverallEditMode ? 'Done Editing' : 'Edit Routine' }}
-      </button>
-    </div>
+    <h1>Training Routines</h1>
 
+    <!-- Loading / Error -->
     <div v-if="isLoading" class="loading-message card">
       <p>Loading routine...</p>
     </div>
-    <div v-if="error && !isLoading" class="error-message card">
+    <div v-if="error && !isLoading" class="error-message card" style="position: relative;">
+      <button @click="error = null" class="modal-close-button" style="top: 5px; right: 10px; font-size: 1.2em;">&times;</button>
       <p>Error: {{ error }}</p>
     </div>
 
-    <div v-if="!activeProgram.id && !isLoading && !error && user" class="create-routine-section card">
-      <h2>No Active Routine Found</h2>
+    <!-- Creation Choices (Active ID null) -->
+    <div v-if="!activeProgram.id && !isLoading && user" class="create-routine-section">
+      <div v-if="!creationMode" class="creation-choice-phase card">
+        <h2>How would you like to start?</h2>
+        <p class="choice-subtitle">Choose the method that works best for your training style.</p>
+        
+        <div class="choice-grid">
+          <button @click="quickStartManualRoutine" class="choice-card manual-choice">
+            <div class="choice-icon">✍️</div>
+            <div class="choice-content">
+              <h3>Create Manually</h3>
+              <p>Build your routine from scratch, exercise by exercise.</p>
+            </div>
+            <div class="choice-arrow">→</div>
+          </button>
 
-      <div class="lazy-import-help card-inset">
-        <p style="text-align:center; margin-bottom:15px; font-weight:bold;">Need help getting started or importing?</p>
-        <button @click="toggleExistingRoutineHelp" class="button-secondary full-width-button-link">
-          Format an Existing Routine (e.g., from Notes/Screenshots)
-        </button>
-        <button @click="toggleNewRoutineHelp" class="button-secondary full-width-button-link" style="margin-top:10px;">
-          Design a New Routine with AI Assistance
-        </button>
+          <button @click="creationMode = 'ai'" class="choice-card ai-choice">
+            <div class="choice-icon">✨</div>
+            <div class="choice-content">
+              <h3>AI Assisted</h3>
+              <p>Import from notes, screenshots, or let AI design a plan for you.</p>
+            </div>
+            <div class="choice-arrow">→</div>
+          </button>
+        </div>
       </div>
 
-      <div class="import-routine-section card-inset" style="margin-top:20px;">
-        <h4>Have a Routine Code/Text Directly?</h4>
-        <p>Paste your routine data (JSON format) below and click import.</p>
-        <form @submit.prevent="importPastedRoutine">
-          <div class="form-group">
-            <label for="routineJsonData">Routine Data (JSON):</label>
-            <textarea id="routineJsonData" v-model="pastedRoutineJson" rows="10" placeholder="Paste your routine JSON here..."></textarea>
-          </div>
-          <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary">
-            {{ isSaving ? 'Importing...' : 'Import Pasted Routine' }}
-          </button>
-        </form>
-      </div>
 
-      <hr class="section-divider">
+      <div v-if="creationMode === 'ai'" class="ai-creation-flow card animate-fade-in">
+        <header class="flow-header">
+          <button @click="creationMode = null" class="back-link">← Back to choices</button>
+          <h2>AI Assisted Setup</h2>
+        </header>
 
-      <div class="manual-create-section">
-        <h4>Or, Create a New Routine Manually:</h4>
-        <form @submit.prevent="saveActiveProgramBaseDetails">
-          <div class="form-group">
-            <label for="programName">Routine Name (e.g., My PPL):</label>
-            <input type="text" id="programName" v-model="editableProgramDetails.programName" required />
+        <div class="ai-sub-options">
+          <div class="ai-nudge-section">
+             <button @click="toggleExistingRoutineHelp" class="ai-nudge-card">
+               <div class="nudge-icon">📸</div>
+               <div class="nudge-text">
+                 <strong>Import Existing Routine</strong>
+                 <span>From Notes, Screenshots, or raw text</span>
+               </div>
+             </button>
+             <button @click="toggleNewRoutineHelp" class="ai-nudge-card">
+               <div class="nudge-icon">🤖</div>
+               <div class="nudge-text">
+                 <strong>Design New with AI</strong>
+                 <span>Let AI build a plan based on your goals</span>
+               </div>
+             </button>
           </div>
-          <div class="form-group">
-            <label for="programDescription">Description (Optional):</label>
-            <textarea id="programDescription" v-model="editableProgramDetails.description"></textarea>
+
+          <div class="import-routine-section card-inset">
+            <h4>Import via JSON (Advanced)</h4>
+            <p class="small-text">If you have correctly formatted JSON data, paste it here.</p>
+            <form @submit.prevent="importPastedRoutine">
+              <div class="form-group">
+                <textarea id="routineJsonData" v-model="pastedRoutineJson" rows="4" placeholder="Paste your routine JSON here..."></textarea>
+              </div>
+              <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary button-large full-width">
+                {{ isSaving ? 'Importing...' : 'Perform Import' }}
+              </button>
+            </form>
           </div>
-          <button type="submit" :disabled="isSaving" class="button-primary">
-            {{ isSaving ? 'Saving...' : 'Create Routine Base Manually' }}
-          </button>
-        </form>
+        </div>
       </div>
     </div>
 
-    <div v-if="activeProgram.id && !isLoading && !error && user" class="active-routine-display card">
+    <!-- Active Routine Display -->
+    <div v-if="activeProgram.id && !isLoading && user" class="active-routine-display card">
       <div v-if="!isInOverallEditMode" class="routine-info-display">
-        <h2>{{ activeProgram.programName }}</h2>
+        <div class="routine-header-flex" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+             <h2 style="margin: 0;">{{ activeProgram.programName }}</h2>
+             <div class="header-actions" style="display:flex; gap:10px;">
+                 <button 
+                    v-if="settings.activeProgramId !== activeProgram.id" 
+                    @click="handleSetAsActive(activeProgram.id)" 
+                    class="button-secondary small"
+                    title="Make this my primary routine"
+                 >
+                    Set as Active
+                 </button>
+                 <button @click="toggleOverallEditMode" class="button-primary small">Edit Routine</button>
+             </div>
+        </div>
         <p class="routine-description"><em>{{ activeProgram.description || 'No description.' }}</em></p>
       </div>
 
-      <form v-if="isInOverallEditMode && showEditProgramDetailsForm" @submit.prevent="saveActiveProgramBaseDetails" class="edit-details-form card-inset">
+      <form v-if="isInOverallEditMode" @submit.prevent="saveActiveProgramBaseDetails" class="edit-details-form card-inset">
+        <div class="edit-mode-header" style="display: flex; justify-content: space-between; align-items:center; margin-bottom: 15px;">
+            <h4 style="margin:0;">Editing Routine Details</h4>
+            <button type="button" @click="toggleOverallEditMode" class="button-primary small">Done Editing</button>
+        </div>
+        
         <div class="form-group"><label for="editProgramName">Routine Name:</label><input type="text" id="editProgramName" v-model="editableProgramDetails.programName" required /></div>
         <div class="form-group"><label for="editProgramDescription">Description (Optional):</label><textarea id="editProgramDescription" v-model="editableProgramDetails.description"></textarea></div>
-        <div class="form-actions">
-            <button type="submit" :disabled="isSaving" class="button-primary small">{{ isSaving ? 'Saving...' : 'Save Details' }}</button>
-        </div>
       </form>
 
-<div class="workout-days-list">
-        <div v-for="day in sortedWorkoutDays" :key="day.id" class="workout-day-entry card-inset">
-          <div class="workout-day-entry-header">
-            <h4 v-if="!(isInOverallEditMode && editingDayNameId === day.id)" class="day-name-display">{{ day.dayName }}</h4>
-            <div v-if="isInOverallEditMode && editingDayNameId === day.id" class="day-name-edit-form">
-              <input type="text" v-model="editableDayName" @keyup.enter="saveWorkoutDayName(day.id)" @keyup.esc="cancelEditWorkoutDayName()" placeholder="Day Name"/>
-              <button @click="saveWorkoutDayName(day.id)" :disabled="isSaving" class="button-icon success small" title="Save Name">✔️</button>
-              <button @click="cancelEditWorkoutDayName()" class="button-icon danger small" title="Cancel Edit Name">❌</button>
-            </div>
-            <div v-if="isInOverallEditMode" class="day-header-actions">
-              <button v-if="editingDayNameId !== day.id" @click="startEditWorkoutDayName(day)" class="button-icon small" title="Edit Day Name">✏️</button>
-              <button @click="removeWorkoutDay(day.id)" :disabled="isSaving" class="button-icon small danger" title="Remove Day">🗑️</button>
-            </div>
-          </div>
+      <div class="workout-days-list">
+        <draggable 
+            v-model="activeProgram.workoutDays" 
+            item-key="id" 
+            handle=".drag-handle-day"
+            :disabled="!isInOverallEditMode"
+            @end="onDayDragEnd"
+            class="days-draggable-area"
+        >
+            <template #item="{ element: day }">
+                <div class="workout-day-entry card-inset">
+                  <div class="workout-day-entry-header">
+                    <div class="header-left-group" style="display:flex; align-items:center;">
+                        <span v-if="isInOverallEditMode" class="drag-handle-day" style="cursor: grab; margin-right: 10px; font-size: 1.2rem;" title="Drag to reorder session">☰</span>
+                        <h4 v-if="!(isInOverallEditMode && editingDayNameId === day.id)" class="day-name-display">{{ day.dayName }}</h4>
+                        <div v-if="isInOverallEditMode && editingDayNameId === day.id" class="day-name-edit-form">
+                          <input type="text" v-model="editableDayName" @keyup.enter="saveWorkoutDayName(day.id)" @keyup.esc="cancelEditWorkoutDayName()" placeholder="Session Name"/>
+                          <button @click="saveWorkoutDayName(day.id)" :disabled="isSaving" class="button-icon success small" title="Save Name">✔️</button>
+                          <button @click="cancelEditWorkoutDayName()" class="button-icon danger small" title="Cancel Edit Name">❌</button>
+                        </div>
+                    </div>
+                    
+                    <div v-if="isInOverallEditMode" class="day-header-actions">
+                      <button v-if="editingDayNameId !== day.id" @click="startEditWorkoutDayName(day)" class="button-icon small" title="Edit Session Name">✏️</button>
+                      <button @click="removeWorkoutDay(day.id)" :disabled="isSaving" class="button-icon small danger" title="Remove Session">🗑️</button>
+                    </div>
+                  </div>
 
-          <ul v-if="day.exercises && day.exercises.length > 0" class="exercise-list-display">
-            <li v-for="exercise in day.exercises" :key="exercise.id" class="exercise-item-with-inline-form">
-              <div class="exercise-item-display">
-                <div class="exercise-info-text">
-                  <span class="ex-name">{{ exercise.exerciseName }}</span>
-                  <span class="ex-details">
-                    : {{ exercise.targetSets }} sets, {{ exercise.currentPrescribedReps ?? exercise.minReps }} reps, {{ exercise.currentPrescribedWeight ?? 'N/A' }} lbs
-                    <span v-if="exercise.customRestSeconds">, {{ exercise.customRestSeconds }}s rest</span>
-                    <span v-else-if="isInOverallEditMode && (exercise.customRestSeconds === null || exercise.customRestSeconds === undefined)">, (Default Rest)</span>
-                    <span v-if="exercise.enableProgression === false" class="no-progression-note"> (No Auto-Progression)</span>
-                  </span>
-                </div>
-                <div v-if="isInOverallEditMode" class="exercise-item-actions">
-                  <button @click="startEditExercise(day.id, exercise)" class="button-icon extra-small" title="Edit Exercise">✏️</button>
-                  <button @click="removeExerciseFromDay(day.id, exercise.id)" :disabled="isSaving" class="button-icon extra-small danger" title="Remove Exercise">🗑️</button>
-                </div>
-              </div>
+                  <!-- Exercise List Draggable -->
+                  <div v-if="day.exercises && day.exercises.length > 0" class="exercise-list-display">
+                      <draggable 
+                        v-model="day.exercises" 
+                        item-key="id" 
+                        handle=".drag-handle-exercise"
+                        group="exercises" 
+                        :disabled="!isInOverallEditMode"
+                        @end="() => onExerciseDragEnd(day.id)"
+                      >
+                        <template #item="{ element: exercise }">
+                            <div class="exercise-item-with-inline-form">
+                              <div class="exercise-item-display">
+                                <div class="exercise-info-text" style="display:flex; align-items:center;">
+                                  <span v-if="isInOverallEditMode" class="drag-handle-exercise" style="cursor: grab; margin-right: 8px; color:#888;" title="Drag to reorder exercise">::</span>
+                                  <span class="ex-name">{{ exercise.exerciseName }}</span>
+                                  <span class="ex-details">
+                                    : {{ exercise.targetSets }} sets, {{ exercise.currentPrescribedReps ?? exercise.minReps }} {{ exercise.isTimed ? 'sec' : 'reps' }}, {{ toDisplay(exercise.currentPrescribedWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }}
+                                    <span v-if="exercise.customRestSeconds">, {{ exercise.customRestSeconds }}s rest</span>
+                                    <span v-else-if="isInOverallEditMode && (exercise.customRestSeconds === null || exercise.customRestSeconds === undefined)">, (Default Rest)</span>
+                                    <span v-if="exercise.enableProgression === false" class="no-progression-note"> (No Auto-Progression)</span>
+                                  </span>
+                                </div>
+                                <div v-if="isInOverallEditMode" class="exercise-item-actions">
+                                  <button @click="startEditExercise(day.id!, exercise)" class="button-icon extra-small" title="Edit Exercise">✏️</button>
+                                  <button @click="removeExerciseFromDay(day.id!, exercise.id!)" :disabled="isSaving" class="button-icon extra-small danger" title="Remove Exercise">🗑️</button>
+                                </div>
+                              </div>
 
-              <div v-if="isInOverallEditMode && editingExerciseDayId === day.id && editingExercise.id === exercise.id" 
-                   class="exercise-form-container edit-exercise-form-inline" 
-                   style="margin-top: 10px; padding-top:10px; border-top: 1px dashed #ddd; margin-bottom: 10px; padding-bottom:10px; border-bottom: 1px dashed #ddd;">
-                <form @submit.prevent="addOrUpdateExercise(day.id)" class="add-exercise-form">
-                  <h5>{{ 'Edit Exercise: ' + editingExercise.exerciseName }}</h5>
-                  <div class="form-group"><label>Name:</label><input type="text" v-model="editingExercise.exerciseName" required /></div>
+                              <!-- Inline Edit Form (Keep existing logic) -->
+                              <div v-if="isInOverallEditMode && editingExerciseDayId === day.id && editingExercise.id === exercise.id" 
+                                   class="exercise-form-container edit-exercise-form-inline" 
+                                   style="margin-top: 10px; padding-top:10px; border-top: 1px dashed #ddd; margin-bottom: 10px; padding-bottom:10px; border-bottom: 1px dashed #ddd;">
+                                <form @submit.prevent="addOrUpdateExercise(day.id!)" class="add-exercise-form">
+                                  <h5>{{ 'Edit Exercise: ' + editingExercise.exerciseName }}</h5>
+                                  <div class="form-group"><label>Name:</label><input type="text" v-model="editingExercise.exerciseName" required /></div>
+                                  
+                                  <div class="form-group form-group-inline" v-if="editingExercise.id">
+                                    <div>
+                                        <label>Current Weight to Attempt Next ({{ displayUnit(settings.weightUnit) }}):</label>
+                                        <input type="number" v-model.number="editingExercise.currentWeightToDisplayOrEdit" step="0.1" />
+                                    </div>
+                                    <div>
+                                        <label>{{ editingExercise.isTimed ? 'Current Hold to Attempt Next (sec):' : 'Current Reps to Attempt Next:' }}</label>
+                                        <input type="number" v-model.number="editingExercise.currentRepsToDisplayOrEdit" step="1" min="1" />
+                                    </div>
+                                  </div>
+
+                                  <div class="form-group form-group-inline">
+                                    <div><label>Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
+                                    <div><label>Rest (sec):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" :placeholder="'Default (' + settings.defaultRestTimer + 's)'" /></div>
+                                  </div>
+                                  <div class="form-group form-group-inline">
+                                    <div><label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
+                                    <div><label>{{ editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:' }}</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
+                                  </div>
+                                  
+                                  <div class="form-group" style="display: flex; gap: 20px;">
+                                    <label class="checkbox-label">
+                                      <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?
+                                    </label>
+                                    <label class="checkbox-label">
+                                      <input type="checkbox" v-model="editingExercise.isTimed" /> Timed Exercise (e.g. Plank)
+                                    </label>
+                                  </div>
+
+                                  <div class="form-group form-group-inline">
+                                    <div v-if="!editingExercise.id">
+                                        <label>Starting Weight ({{ displayUnit(settings.weightUnit) }}):</label>
+                                        <input type="number" v-model.number="editingExercise.startingWeight" step="0.1" :required="!editingExercise.id" />
+                                    </div>
+                                    <div><label>Weight Increment ({{ displayUnit(settings.weightUnit) }}):</label><input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required /></div>
+                                  </div>
+                                  <div class="form-group"><label>Notes:</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
+
+                                  <div class="form-actions">
+                                    <button type="submit" :disabled="isSaving" class="button-primary small">{{ isSaving ? 'Saving...' : (editingExercise.id ? 'Update Exercise' : 'Add Exercise') }}</button>
+                                    <button type="button" @click="cancelAddOrEditExercise" class="button-secondary small">Cancel</button>
+                                  </div>
+                                </form>
+                              </div>
+                            </div>
+                        </template>
+                      </draggable>
+                  </div>
+                  <div v-else class="no-items-message small-text">
+                      No exercises yet.
+                  </div>
+
+                  <!-- Inline Add Exercise Form (Only if active for this day) --> 
+                   <div v-if="isInOverallEditMode && addingExerciseToDayId === day.id && !editingExercise.id" class="exercise-form-container add-exercise-form-inline">
+                      <form @submit.prevent="addOrUpdateExercise(day.id)" class="add-exercise-form">
+                          <h5>Add New Exercise to {{ day.dayName }}</h5>
+                          <div class="form-group"><label>Exercise Name:</label><input type="text" v-model="editingExercise.exerciseName" required placeholder="e.g. Bench Press" /></div>
+                          <div class="form-group form-group-inline">
+                              <div><label>Target Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
+                              <div><label>Rest (sec):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" :placeholder="'Default (' + settings.defaultRestTimer + 's)'" /></div>
+                          </div>
+                          <div class="form-group form-group-inline">
+                            <div><label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
+                            <div><label>{{ editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:' }}</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
+                          </div>
+                          <div class="form-group" style="display: flex; gap: 20px;">
+                            <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?</label>
+                            <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.isTimed" /> Timed Exercise</label>
+                          </div>
+                          <div class="form-group form-group-inline">
+                            <div><label>Starting Weight ({{ displayUnit(settings.weightUnit) }}):</label><input type="number" v-model.number="editingExercise.startingWeight" step="0.1" /></div>
+                            <div><label>Weight Increment ({{ displayUnit(settings.weightUnit) }}):</label><input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required /></div>
+                          </div>
+                          <div class="form-group"><label>Notes:</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
+                          <div class="form-actions">
+                              <button type="submit" :disabled="isSaving" class="button-primary small">{{ isSaving ? 'Scanning...' : 'Add Exercise' }}</button>
+                              <button type="button" @click="cancelAddOrEditExercise" class="button-secondary small">Cancel</button>
+                          </div>
+                      </form>
+                   </div>
                   
-                  <div class="form-group form-group-inline" v-if="editingExercise.id">
-                    <div>
-                        <label>Current Weight to Attempt Next (lbs):</label>
-                        <input type="number" v-model.number="editingExercise.currentWeightToDisplayOrEdit" step="0.1" />
-                    </div>
-                    <div>
-                        <label>Current Reps to Attempt Next:</label>
-                        <input type="number" v-model.number="editingExercise.currentRepsToDisplayOrEdit" step="1" min="1" />
-                    </div>
+                  <div v-if="isInOverallEditMode" class="add-day-controls" style="text-align: left; padding-top: 0; margin-top: 10px;">
+                       <button v-if="addingExerciseToDayId !== day.id" @click="prepareAddExerciseToDay(day.id)" class="button-primary-outline small">+ Add Exercise</button>
                   </div>
-
-                  <div class="form-group form-group-inline">
-                    <div><label>Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
-                    <div><label>Rest (s):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" placeholder="Default (90s)" /></div>
-                  </div>
-                  <div class="form-group form-group-inline">
-                    <div><label>Min Reps:</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
-                    <div><label>Max Reps:</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
-                  </div>
-                  
-                  <div class="form-group">
-                    <label class="checkbox-label">
-                      <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?
-                    </label>
-                  </div>
-
-                  <div class="form-group form-group-inline">
-                    <div>
-                      <label>Reps to Add on Progression:</label>
-                      <input type="number" v-model.number="editingExercise.repOverloadStep" min="1" required :disabled="!editingExercise.enableProgression" />
-                    </div>
-                    <div>
-                      <label>Weight to Add on Progression (lbs):</label>
-                      <input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required :disabled="!editingExercise.enableProgression" />
-                    </div>
-                  </div>
-                  
-                  <div class="form-group"><label>Notes (Optional):</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
-                  <div class="form-actions">
-                    <button type="submit" :disabled="isSaving" class="button-primary small">Update Exercise</button>
-                    <button type="button" @click="cancelAddOrEditExercise" class="button-secondary small">Cancel</button>
-                  </div>
-                </form>
-              </div>
-            </li>
-          </ul>
-          <p v-if="(!day.exercises || day.exercises.length === 0) && !isInOverallEditMode" class="no-items-message small-text">
-            No exercises defined for this day. Click "Edit Routine" to add some.
-          </p>
-           <p v-if="isInOverallEditMode && (!day.exercises || day.exercises.length === 0) && !(addingExerciseToDayId === day.id && !editingExercise.id)" class="no-items-message small-text" style="margin-top:10px;">
-            No exercises yet for this day. Use the button below to add one.
-          </p>
-
-          <div v-if="isInOverallEditMode && addingExerciseToDayId === day.id && !editingExercise.id" class="exercise-form-container add-new-exercise-to-day-form" style="margin-top: 15px; padding-top:15px; border-top:1px dashed #ccc;">
-            <form @submit.prevent="addOrUpdateExercise(day.id)" class="add-exercise-form">
-              <h5>{{ `Add New Exercise to ${day.dayName}` }}</h5>
-              <div class="form-group"><label>Name:</label><input type="text" v-model="editingExercise.exerciseName" required /></div>
-              
-              <div class="form-group form-group-inline">
-                <div><label>Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
-                <div><label>Rest (s):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" placeholder="Default (90s)" /></div>
-              </div>
-              <div class="form-group form-group-inline">
-                <div><label>Min Reps:</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
-                <div><label>Max Reps:</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
-              </div>
-
-              <div class="form-group">
-                <label class="checkbox-label">
-                  <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?
-                </label>
-              </div>
-
-              <div class="form-group form-group-inline">
-                <div>
-                  <label>Reps to Add on Progression:</label>
-                  <input type="number" v-model.number="editingExercise.repOverloadStep" min="1" required :disabled="!editingExercise.enableProgression" />
                 </div>
-                <div>
-                  <label>Weight to Add on Progression (lbs):</label>
-                  <input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required :disabled="!editingExercise.enableProgression" />
-                </div>
-              </div>
-              
-              <div class="form-group" v-if="!editingExercise.id && addingExerciseToDayId === day.id">
-                <label>Starting Wt (lbs, for new exercise's progress):</label>
-                <input type="number" v-model.number="editingExercise.startingWeight" step="0.1" placeholder="e.g., 45" />
-              </div>
-              <div class="form-group"><label>Notes (Optional):</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
-              <div class="form-actions">
-                <button type="submit" :disabled="isSaving" class="button-primary small">Add Exercise</button>
-                <button type="button" @click="cancelAddOrEditExercise" class="button-secondary small">Cancel</button>
-              </div>
-            </form>
-          </div>
-
-          <button
-            v-if="isInOverallEditMode && !(editingExerciseDayId === day.id && editingExercise.id) && !(addingExerciseToDayId === day.id && !editingExercise.id)"
-            @click="prepareAddExerciseToDay(day.id)"
-            class="button-primary-outline small add-exercise-btn"
-            style="margin-top:15px;">
-            + Add Exercise to {{day.dayName}}
-          </button>
-        </div>
+            </template>
+        </draggable>
       </div>
+        
+        <!-- Add New Session Logic -->
+        <div v-if="isInOverallEditMode" class="add-day-section card-inset" style="text-align: center; margin-top: 25px;">
+           <button v-if="!addingNewDay" @click="addingNewDay = true" class="button-primary full-width">+ Add Session</button>
+           <div v-if="addingNewDay" class="add-day-form-inline">
+               <input type="text" v-model="newWorkoutDayName" placeholder="New Session Name (e.g. Pull Day)" @keyup.enter="addWorkoutDayToList" />
+               <button @click="addWorkoutDayToList" :disabled="isSaving" class="button-primary small" style="height: 38px;">Save</button>
+               <button @click="addingNewDay = false" class="button-secondary small" style="height: 38px;">Cancel</button>
+           </div>
+        </div>
+      
+      <!-- Routine Actions Footer -->
+      <div v-if="isInOverallEditMode" class="routine-level-actions">
+           <h4>Danger Zone</h4>
+           <button @click.prevent="requestDeleteRoutine" class="button-danger full-width" :disabled="isSaving" style="margin-top:20px;">
+               Delete Entire Routine
+           </button>
+           <p class="warning-text">This will delete the routine "{{ activeProgram.programName }}" and all its configuration. Exercise history will be preserved.</p>
+      </div>
+    
+    </div> <!-- End active-routine-display -->
+    
+    <!-- Manage Routines List -->
+    <div v-if="!isLoading && user" class="manage-routines-section card" style="margin-top: 40px;">
+        <div class="header-with-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0;">Manage Routines</h3>
+            <button @click="showProgressionHint = !showProgressionHint" class="button-icon" title="Progression Tip" style="font-size: 1.2rem; cursor: pointer; background: none; border: none;">
+                💡
+            </button>
+        </div>
+        
+        <div v-if="showProgressionHint" class="info-hint-box animate-fade-in" style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 10px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9em;">
+            <strong>Pro Tip:</strong> Using the exact same exercise name across multiple routines will share your progress (weight/reps) between them automatically.
+        </div>
+        
+        <div class="routines-list">
+             <div 
+                v-for="program in validPrograms" 
+                :key="program.id"
+                class="routine-list-item"
+                style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;"
+            >
+                <div class="routine-info">
+                    <span class="routine-name">{{ program.programName || 'Untitled' }}</span>
+                    <span v-if="settings.activeProgramId === program.id" class="active-badge-inline" style="margin-left: 8px; font-size: 0.8em; color: #ffc107; font-weight: bold;">★ Active</span>
+                </div>
+                
+                <div class="routine-actions" style="display:flex; gap:10px;">
+                    <button 
+                        v-if="settings.activeProgramId !== program.id" 
+                        @click.stop="handleSetAsActive(program.id)" 
+                        class="button-secondary small"
+                    >
+                       Set Active
+                    </button>
+                     <button 
+                         @click="handleSwitchRoutine(program.id)" 
+                         class="button-primary-outline small"
+                     >
+                        View/Edit
+                     </button>
+                 </div>
+             </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button class="button-primary full-width" @click="startCreatingNewRoutine">
+                + Add New Routine
+            </button>
+        </div>
+    </div>
 
-
-      <div v-if="isInOverallEditMode" class="add-day-controls card-inset">
-          <button v-if="!addingNewDay" @click="addingNewDay = true" class="button-primary-outline">Add New Workout Day</button>
-          <form v-if="addingNewDay" @submit.prevent="addWorkoutDayToList" class="add-day-form-inline">
-            <input type="text" v-model="newWorkoutDayName" placeholder="New Day Name (e.g., Full Body)" required />
-            <div class="form-actions">
-              <button type="submit" :disabled="isSaving" class="button-primary small">Save Day</button>
-              <button type="button" @click="addingNewDay = false" class="button-secondary small">Cancel</button>
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteConfirmation" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px; text-align: center;">
+            <button @click="cancelDeleteRoutine" class="modal-close-button">&times;</button>
+            <h3 style="color: #dc3545;">Delete Routine?</h3>
+            <p>Are you sure you want to permanently delete <strong>{{ activeProgram.programName }}</strong>?</p>
+            <p class="small-text warning-text" style="margin-bottom: 25px;">This action cannot be undone.</p>
+            
+            <div class="form-actions" style="justify-content: center; gap: 15px;">
+                <button @click="confirmDeleteRoutine" class="button-danger" :disabled="isSaving">
+                    {{ isSaving ? 'Deleting...' : 'Yes, Delete Routine' }}
+                </button>
+                <button @click="cancelDeleteRoutine" class="button-secondary">Cancel</button>
             </div>
-          </form>
-      </div>
-
-      <div v-if="isInOverallEditMode" class="routine-level-actions card-inset">
-        <h4>Routine Danger Zone</h4>
-        <button @click="confirmAndDeleteActiveProgram" :disabled="isSaving" class="button-danger full-width">
-          {{ isSaving ? 'Deleting...' : 'Delete Entire Routine' }}
-        </button>
-        <p class="small-text warning-text">This action will remove the current routine program. Exercise progress data will remain.</p>
-      </div>
-    </div>
-
-    <div v-if="!user && !isLoading && !error" class="login-prompt card">
-      <p>Please <router-link to="/login">log in</router-link> to manage your routines.</p>
-    </div>
-
-    <div v-if="showExistingRoutineHelpDialog" class="modal-overlay" @click.self="toggleExistingRoutineHelp">
-      <div class="modal-content">
-        <button @click="toggleExistingRoutineHelp" class="modal-close-button" title="Close">&times;</button>
-        <h3>AI Help: Format Your Existing Routine</h3>
-        <p>To import an existing routine (e.g., from screenshots, notes, or another app), you can use an AI (like ChatGPT, Claude, or Gemini) to generate the necessary JSON. Provide the AI with your routine details and the following prompt:</p>
-        <hr>
-        <div class="ai-instructions">
-          <p><strong>Prompt to give to the AI for FORMATTING an EXISTING routine:</strong></p>
-          <pre>
-Okay, AI, I need your help to convert my existing workout routine into a specific JSON format for my workout app. I will provide you with details of my current routine (e.g., screenshots from an app, a text document, or a spreadsheet).
-
-Your task is to take the information I give you and structure it precisely into the following JSON format.
-
-**Overall Goal:** Produce a single JSON object from my provided routine details.
-
-**Top-Level JSON Structure:**
-The main JSON object must have:
-- `programName`: (String) Create a descriptive name based on my routine (e.g., "My Current PPL Split", "Leg Day Focus Routine").
-- `description`: (String, optional) A brief description (e.g., "Imported from FitNotes screenshots").
-- `workoutDays`: (Array of Objects) Each object represents a workout day from my routine.
-
-**WorkoutDay Object Structure:**
-For each day in my routine, create an object in `workoutDays` with:
-- `dayName`: (String) The name of the workout day (e.g., "Push Day", "Monday Workout").
-- `order`: (Number) Assign a sequential order (1, 2, 3...). If my routine has specific days or an order, please follow it.
-- `exercises`: (Array of Objects) Each object defines an exercise for this day.
-- *Note: Do NOT include an `id` field for `workoutDays`; the app generates it.*
-
-**Exercise Object Structure:**
-For each exercise I provide for a given day, create an object with these fields:
-- `exerciseName`: (String) **Crucial.** The exact name of the exercise.
-- `targetSets`: (Number) The number of sets I do. If I provide logs, count the sets. If I just list exercises, assume 3 sets unless I specify otherwise.
-- `minReps`: (Number) The minimum target repetitions.
-  - If I provide logs (like screenshots): Use the rep count from the *first logged set* for this exercise.
-  - If I give a single rep target (e.g., "6 reps"): Use that number.
-  - If unclear, assume 6.
-- `maxReps`: (Number) The maximum target repetitions.
-  - If `minReps` (derived as above) is less than 10, set `maxReps` to 12.
-  - If `minReps` is 10 or more, set `maxReps` to `minReps + 2` (e.g., if `minReps` is 10, `maxReps` is 12; if `minReps` is 12, `maxReps` is 14).
-- `repOverloadStep`: (Number) Default to `1`.
-- `weightIncrement`: (Number) Use a sensible default based on the exercise type if I don't specify (e.g., 10 for Deadlifts/Squats, 5 for Bench/OHP/Rows, 2.5 for isolation/dumbbell work).
-- `startingWeight`: (Number) The weight I currently use or want to start with.
-  - If I provide logs: Use the weight from the *first logged set*.
-  - If I specify a starting weight, use that.
-  - If unclear, make a conservative common starting guess (e.g., 45 for an empty barbell, appropriate dumbbell weights). **Please state if you're guessing this value.**
-- `customRestSeconds`: (Number or `null`) My target rest time in seconds. If I specify (e.g., "90s rest"), convert it. Otherwise, use `null`.
-- `enableProgression`: (Boolean) Default to `true`. Only set to `false` if I explicitly state the exercise should not auto-progress.
-- `notesForExercise`: (String or `null`) Any specific notes I have for the exercise. If none, use `null`.
-- *Note: Do NOT include an `id` field for `exercises`; the app generates it.*
-
-**Your Process:**
-1.  Wait for me to provide my routine details (text, description of images, etc.).
-2.  Carefully parse this information.
-3.  Ask clarifying questions if any detail for the JSON fields is ambiguous.
-4.  Construct the JSON object precisely according to the structure above.
-5.  Ensure the output is a single, valid JSON object.
-
-I will now provide my routine information.
-          </pre>
         </div>
-        <p style="margin-top: 15px;"><strong>Remember to provide your routine details clearly to the AI and always review the generated JSON for accuracy before importing!</strong></p>
-      </div>
     </div>
 
-    <div v-if="showNewRoutineHelpDialog" class="modal-overlay" @click.self="toggleNewRoutineHelp">
-      <div class="modal-content">
-        <button @click="toggleNewRoutineHelp" class="modal-close-button" title="Close">&times;</button>
-        <h3>AI Help: Design a New Routine</h3>
-        <p>If you want help creating a new workout routine from scratch, an AI can assist you. Use the following prompt to guide the AI through designing a routine and then formatting it into the JSON required by this app:</p>
-        <hr>
-        <div class="ai-instructions">
-          <p><strong>Prompt to give to the AI for DESIGNING and formatting a NEW routine:</strong></p>
-          <pre>
-Okay, AI, I need your help with two things:
-1.  First, help me design a new workout routine based on my goals and preferences.
-2.  Second, once we've outlined the routine, convert it into a specific JSON format for my workout app.
-
-Let's start with designing the routine. Please ask me questions to understand what I'm looking for.
-
-**Phase 1: Routine Design - Information Gathering (AI, please ask me about these):**
-* **My primary fitness goal(s):** (e.g., build muscle (hypertrophy), increase strength, general fitness, weight loss, improve endurance)
-* **My experience level:** (e.g., beginner, intermediate, advanced)
-* **How many days per week can I train?** (e.g., 2, 3, 4, 5 days)
-* **What equipment do I have access to?** (e.g., full gym, dumbbells only, bodyweight only, specific machines like Smith machine, barbells, kettlebells)
-* **Any preferred workout split?** (e.g., Full Body, Upper/Lower, Push/Pull/Legs (PPL), Bro Split, or open to suggestions)
-* **How long can each workout session be?** (e.g., 30 mins, 1 hour, 90 mins)
-* **Are there any exercises I must include, love, or absolutely want to avoid?** (e.g., due to preference, injury, or limitations)
-
-Once you have a good understanding from my answers, please suggest a routine structure (days, exercises for each day). For each exercise, suggest: a target number of sets, a target rep range (e.g., 5-8 for strength, 8-12 for hypertrophy), a recommended starting weight (be conservative), and suggested rest times. We can iterate on this design until I'm happy with it.
-
-**Phase 2: JSON Formatting**
-Once the routine design (exercises, sets, reps, initial weights, rest times per day) is finalized, please structure it *precisely* into the following JSON format.
-
-**Top-Level JSON Structure:**
-- `programName`: (String) A descriptive name for the designed routine.
-- `description`: (String, optional) A brief description of the program and its goals.
-- `workoutDays`: (Array of Objects)
-
-**WorkoutDay Object Structure (for each day in `workoutDays`):**
-- `dayName`: (String) (e.g., "Day 1 - Upper Body A", "Push Day").
-- `order`: (Number) Sequential order (1, 2, 3...).
-- `exercises`: (Array of Objects).
-- *Note: Do NOT include an `id` field for `workoutDays`.*
-
-**Exercise Object Structure (for each exercise in `exercises`):**
-- `exerciseName`: (String) The exact name.
-- `targetSets`: (Number) As decided in Phase 1.
-- `minReps`: (Number) Lower end of the decided rep range.
-- `maxReps`: (Number) Upper end of the decided rep range.
-- `repOverloadStep`: (Number) Default to `1`.
-- `weightIncrement`: (Number) Sensible increment (e.g., 10 for major lifts, 5 for compounds, 2.5 for isolation).
-- `startingWeight`: (Number) The initial weight decided in Phase 1.
-- `customRestSeconds`: (Number or `null`) Rest time in seconds decided in Phase 1. If none, use `null`.
-- `enableProgression`: (Boolean) Default to `true`.
-- `notesForExercise`: (String or `null`) (e.g., "Focus on form"). If none, use `null`.
-- *Note: Do NOT include an `id` field for `exercises`.*
-
-**Your Process:**
-1.  Engage with me to design the workout routine first (Phase 1).
-2.  Once the routine details are finalized, proceed to Phase 2.
-3.  Construct the JSON object precisely.
-4.  Ensure the output is a single, valid JSON object.
-
-Let's begin with designing my new routine! What information do you need from me first?
-          </pre>
-        </div>
-        <p style="margin-top: 15px;"><strong>Be detailed in your answers to the AI's design questions, and always review the final JSON for accuracy before importing!</strong></p>
-      </div>
-    </div>
-
-  </div>
+  </div> <!-- End routines-view -->
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, watch, computed, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, deleteDoc, type DocumentData } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import useAuth from '../composables/useAuth';
+import useSettings, { type WeightUnitOption } from '../composables/useSettings';
+import useTrainingProgram from '../composables/useTrainingProgram';
+import { toDisplay, fromInput, displayUnit } from '../utils/weight';
 import {
   type ExerciseProgress,
   type ExerciseConfig,
   type ExerciseConfigForDisplay,
   type WorkoutDay,
-  type TrainingProgram
+  type TrainingProgram,
+  type SessionExercise
 } from '../types';
+import draggable from 'vuedraggable';
 
 // --- Core State ---
+const router = useRouter();
 const { user } = useAuth();
-const isLoading = ref(true);
+const { settings, saveSettings } = useSettings();
+const { 
+  activeProgram, 
+  loadProgram, 
+  isProgramLoading, 
+  programLoadingError, 
+  fetchAllPrograms, 
+  allPrograms,
+  createProgram,
+  setActiveProgram
+} = useTrainingProgram();
+
+const isLoading = computed(() => isProgramLoading.value);
 const isSaving = ref(false);
 const error = ref<string | null>(null);
-const ACTIVE_PROGRAM_ID = 'user_active_main_program';
-const activeProgram = reactive<TrainingProgram>({ id: null, programName: '', description: '', workoutDays: [] });
+const showDeleteConfirmation = ref(false);
+const showExerciseDeleteConfirmation = ref(false); // Potential future use, but let's stick to routine for now
+const itemToDelete = ref<any>(null); // For generic delete if needed
+const showProgressionHint = ref(false);
+
+const validPrograms = computed(() => {
+  return allPrograms.value.filter(p => p.id !== null) as (TrainingProgram & { id: string })[];
+});
+
+// --- Switcher Logic ---
+const isActiveRoutine = computed(() => {
+  return activeProgram.id === settings.value.activeProgramId;
+});
+
+const handleSwitchRoutine = async (programId: string) => {
+    creationMode.value = null; // Exit creation if searching
+    await loadProgram(programId);
+};
+
+const handleSetAsActive = async (programId?: string) => {
+  const idToSet = programId || activeProgram.id;
+  if (!idToSet) return;
+  
+  try {
+    isSaving.value = true;
+    await setActiveProgram(idToSet);
+  } catch (e: any) {
+    console.error(e);
+    error.value = "Failed to set active routine.";
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+const startCreatingNewRoutine = () => {
+    // Clear active program view to show the "Choice" screen, but we need to ensure we don't think we are loading.
+    // Actually, createProgram creates it then bumps us to it.
+    // But the UI currently uses (!activeProgram.id) to show the creation choice.
+    // So we can:
+    activeProgram.id = null; // Unsets current view
+    creationMode.value = null; // Resets choice
+};
 
 // --- Import Routine State ---
 const pastedRoutineJson = ref('');
@@ -407,6 +441,7 @@ const showNewRoutineHelpDialog = ref(false);
 
 // --- Overall Edit Mode State ---
 const isInOverallEditMode = ref(false);
+const creationMode = ref<'manual' | 'ai' | null>(null);
 
 // --- Routine Name/Description Edit State ---
 const showEditProgramDetailsForm = ref(false);
@@ -423,18 +458,64 @@ const editingExerciseDayId = ref<string | null>(null);
 const editingExercise = reactive<Partial<ExerciseConfig> & { startingWeight?: number; currentWeightToDisplayOrEdit?: number; currentRepsToDisplayOrEdit?: number }>({
   id: undefined, exerciseName: '', targetSets: 3, minReps: 8, maxReps: 12, repOverloadStep: 2,
   weightIncrement: 5, customRestSeconds: undefined, notesForExercise: '', enableProgression: true,
+  isTimed: false,
   startingWeight: 45, currentWeightToDisplayOrEdit: undefined, currentRepsToDisplayOrEdit: undefined,
 });
 const addingExerciseToDayId = ref<string | null>(null);
 
 
 // --- Computed Properties ---
-const sortedWorkoutDays = computed(() => {
-  if (!activeProgram.workoutDays) return [];
-  return [...activeProgram.workoutDays].sort((a, b) => a.order - b.order);
-});
+// We no longer use a computed property for sorting because we need to bind v-model directly to the array for drag-and-drop.
+// Instead, we will rely on activeProgram.workoutDays being sorted upon load, and maintained in order.
+// const sortedWorkoutDays = computed(() => { ... }); REMOVED
 
 // --- Functions ---
+const onDayDragEnd = async () => {
+    isSaving.value = true;
+    try {
+        // Update order property based on new index
+        activeProgram.workoutDays.forEach((day, index) => {
+            day.order = index + 1;
+        });
+
+        const programDocRef = doc(db, 'users', user.value!.uid, 'trainingPrograms', activeProgram.id!);
+        // We need to save the new order to Firestore
+        // We'll map to the persistable structure (removing display-only fields is handled in saveActiveProgramBaseDetails but we can duplicate minimal logic here for speed or reuse)
+        
+        // Let's reuse the logic from saveActiveProgramBaseDetails or create a dedicate saveOrder function.
+        // For safety, let's just trigger a full update of the workoutDays structure.
+        
+        const workoutDaysToSave = activeProgram.workoutDays.map(day => ({
+             ...day,
+             exercises: day.exercises.map(ex => {
+                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                 const { currentPrescribedReps, currentPrescribedWeight, ...routineExerciseConfig } = ex;
+                 return routineExerciseConfig as ExerciseConfig;
+             })
+         }));
+
+         await updateDoc(programDocRef, { workoutDays: workoutDaysToSave, updatedAt: serverTimestamp() });
+
+    } catch (e: any) {
+        error.value = "Failed to save new order. " + e.message;
+        // Optionally revert order here if needed, but for MVP we just show error
+    } finally {
+        isSaving.value = false;
+    }
+};
+
+const onExerciseDragEnd = async (dayId: string) => {
+    // When exercises are reordered within a day (or between days if we enable that),
+    // we need to save the parent structure.
+    // v-model on nested draggable will have already updated the array in memory.
+    // We just need to persist it.
+    
+    // If we support dragging between days, we might need to update the dayId of the exercise if we track that? 
+    // In our structure, exercises are nested in the day object, so moving them in the UI moves them in the data structure automatically.
+    
+    await onDayDragEnd(); // Reusing the save logic since it saves the entire tree
+};
+
 const toggleExistingRoutineHelp = () => {
   showExistingRoutineHelpDialog.value = !showExistingRoutineHelpDialog.value;
   if (showExistingRoutineHelpDialog.value) {
@@ -449,112 +530,83 @@ const toggleNewRoutineHelp = () => {
   }
 };
 
-const toggleOverallEditMode = () => {
-  isInOverallEditMode.value = !isInOverallEditMode.value;
+const toggleOverallEditMode = async () => {
   if (isInOverallEditMode.value) {
+    // We are exiting edit mode - Auto Save
+    await saveActiveProgramBaseDetails();
+    if (!error.value) {
+        isInOverallEditMode.value = false;
+        showEditProgramDetailsForm.value = false; // Cleanup
+        cancelEditWorkoutDayName();
+        cancelAddOrEditExercise();
+        addingNewDay.value = false;
+    }
+  } else {
+    // Entering edit mode
     editableProgramDetails.programName = activeProgram.programName;
     editableProgramDetails.description = activeProgram.description;
+    isInOverallEditMode.value = true;
     showEditProgramDetailsForm.value = true;
-  } else {
-    showEditProgramDetailsForm.value = false;
-    cancelEditWorkoutDayName();
-    cancelAddOrEditExercise();
-    addingNewDay.value = false;
   }
 };
 
-const loadActiveProgram = async () => {
-  if (!user.value || !user.value.uid) { 
-    error.value = 'User not available.'; 
-    isLoading.value = false; 
-    return; 
-  }
-  isLoading.value = true; 
-  error.value = null;
-  
-  try {
-    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
-    const programSnap = await getDoc(programDocRef);
+// Local loadActiveProgram removed in favor of useTrainingProgram
 
-    if (programSnap.exists()) {
-      const programDataFromDb = programSnap.data() as Omit<TrainingProgram, 'id' | 'workoutDays'> & { workoutDays: WorkoutDay[] };
-      activeProgram.id = programSnap.id;
-      activeProgram.programName = programDataFromDb.programName || '';
-      activeProgram.description = programDataFromDb.description || '';
-      const tempWorkoutDays: WorkoutDay[] = [];
-
-      if (Array.isArray(programDataFromDb.workoutDays)) {
-        for (const dayConfig of programDataFromDb.workoutDays) {
-          let exercisesForDisplay: ExerciseConfigForDisplay[] = [];
-
-          if (Array.isArray(dayConfig.exercises) && dayConfig.exercises.length > 0) {
-            const exerciseProgressPromises = dayConfig.exercises.map(async (exConfig) => {
-              let currentPrescribedWeightVal: number | undefined = undefined;
-              let currentPrescribedRepsVal: number | undefined = exConfig.minReps; 
-
-              if (typeof exConfig.exerciseName === 'string' && exConfig.exerciseName.trim() !== '') {
-                const progressKey = exConfig.exerciseName.toLowerCase().replace(/\s+/g, '_');
-                const progressDocRef = doc(db, 'users', user.value!.uid, 'exerciseProgress', progressKey);
-                
-                try {
-                  const progressSnap = await getDoc(progressDocRef);
-                  if (progressSnap.exists()) {
-                    const progressData = progressSnap.data() as ExerciseProgress;
-                    currentPrescribedWeightVal = progressData?.currentWeightToAttempt;
-                    currentPrescribedRepsVal = progressData?.repsToAttemptNext;
-                  } else {
-                    currentPrescribedWeightVal = (exConfig as any).startingWeight ?? 0; 
-                  }
-                } catch (progressError) {
-                  console.warn(`Could not fetch progress for ${exConfig.exerciseName}:`, progressError);
-                  currentPrescribedWeightVal = (exConfig as any).startingWeight ?? 0;
-                }
-              } else {
-                console.warn('Exercise encountered with missing or invalid name:', exConfig);
-                currentPrescribedWeightVal = (exConfig as any).startingWeight ?? 0;
-              }
-              
-              return { 
-                ...exConfig, 
-                currentPrescribedWeight: currentPrescribedWeightVal, 
-                currentPrescribedReps: currentPrescribedRepsVal 
-              };
-            });
-
-            exercisesForDisplay = await Promise.all(exerciseProgressPromises);
-          } else {
-            exercisesForDisplay = [];
-          }
-          
-          tempWorkoutDays.push({ ...dayConfig, exercises: exercisesForDisplay });
-        }
-      }
-      activeProgram.workoutDays = tempWorkoutDays;
-      editableProgramDetails.programName = activeProgram.programName;
-      editableProgramDetails.description = activeProgram.description;
-    } else {
-      activeProgram.id = null; 
-      activeProgram.programName = ''; 
-      activeProgram.description = '';
-      activeProgram.workoutDays = []; 
-      editableProgramDetails.programName = ''; 
-      editableProgramDetails.description = '';
+const quickStartManualRoutine = async () => {
+    if (!user.value || !user.value.uid) { error.value = 'User not logged in.'; return; }
+    isSaving.value = true;
+    try {
+        const newProgramId = await createProgram("New Routine", "");
+        await loadProgram(newProgramId); // View it
+        
+        // Reset UI states
+        creationMode.value = null;
+        isInOverallEditMode.value = true;
+        
+        // Pre-fill edit forms
+        editableProgramDetails.programName = "New Routine";
+        editableProgramDetails.description = "";
+        showEditProgramDetailsForm.value = true;
+        
+        // Open Add Exercise for first day logic...
+        // We know createProgram makes 0 days. Wait, createProgram in useTrainingProgram makes empty workoutDays?
+        // Let's check. Yes `workoutDays: []`.
+        // So we need to add a day.
+        
+        addingNewDay.value = true; // Open the "Add Day" form
+        
+    } catch (e: any) {
+        error.value = "Failed to create routine. " + e.message;
+    } finally {
+        isSaving.value = false;
     }
-  } catch (e: any) {
-    error.value = "Failed to load routine data. " + e.message; 
-    console.error("Error in loadActiveProgram:", e); 
-  }
-  finally { 
-    isLoading.value = false; 
-  }
 };
 
 const saveActiveProgramBaseDetails = async () => {
   if (!user.value || !user.value.uid) { error.value = 'User not logged in.'; return; }
   if (!editableProgramDetails.programName.trim()) { error.value = 'Routine name is required.'; return; }
+  
+  const initialCreationMode = creationMode.value; // Capture mode at start
+  
   isSaving.value = true; error.value = null;
   try {
-    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
+    // If we don't have an ID, we should technically be creating a new one, but 
+    // saveActiveProgramBaseDetails is usually called when editing an EXISTING one.
+    // If it's called during "Quick Start Manual", we already created the program.
+    // If it's called via "AI Import", we should use createProgram.
+    
+    // However, for existing logic compatibility:
+    const programId = activeProgram.id;
+    if (!programId) {
+        throw new Error("No active routine to save to.");
+    }
+
+    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', programId);
+    
+    // We only need to save name/desc here, usually.
+    // But the original function saved workoutDays too?
+    // Let's keep it safe.
+    
     const workoutDaysToSave = activeProgram.workoutDays.map(day => ({
         ...day,
         exercises: day.exercises.map(ex => {
@@ -562,23 +614,30 @@ const saveActiveProgramBaseDetails = async () => {
             return routineExerciseConfig as ExerciseConfig;
         })
     }));
+    
     const dataToSave: any = {
       programName: editableProgramDetails.programName,
       description: editableProgramDetails.description,
+      workoutDays: workoutDaysToSave,
       updatedAt: serverTimestamp(),
     };
-    if (!activeProgram.id) { 
-      dataToSave.createdAt = serverTimestamp();
-      dataToSave.workoutDays = []; 
-      await setDoc(programDocRef, dataToSave);
-      activeProgram.id = ACTIVE_PROGRAM_ID; 
-    } else { 
-      dataToSave.workoutDays = workoutDaysToSave; 
-      await updateDoc(programDocRef, dataToSave);
-    }
+    
+    await updateDoc(programDocRef, dataToSave);
+
     activeProgram.programName = editableProgramDetails.programName;
     activeProgram.description = editableProgramDetails.description;
-    await loadActiveProgram(); 
+    
+    await loadProgram(programId); 
+    await fetchAllPrograms(); // Refresh list to show new name in switcher
+    
+    // After successful save, if we were in manual creation mode, transition to full edit mode
+    // AND automatically open the "Add Day" form
+    if (initialCreationMode === 'manual') {
+      creationMode.value = null;
+      isInOverallEditMode.value = true;
+      showEditProgramDetailsForm.value = false; 
+      addingNewDay.value = true; // <--- Auto-open the "Add Day" form
+    }
   } catch (e: any) { error.value = "Failed to save routine details. " + e.message; }
   finally { isSaving.value = false; }
 };
@@ -603,10 +662,13 @@ const importPastedRoutine = async () => {
         throw new Error("Invalid routine data structure. Missing programName or workoutDays array.");
     }
     
-    const programToSaveTemp: any = {
-        programName: importedData.programName,
-        description: importedData.description || "",
-        workoutDays: importedData.workoutDays.map((day: any) => ({
+    // Use createProgram to get an ID
+    const newId = await createProgram(importedData.programName, importedData.description || "");
+    
+    // Now update that program with the full workout days
+    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', newId);
+    
+    const workoutDaysToSave = importedData.workoutDays.map((day: any) => ({
             id: day.id || doc(collection(db, '_')).id,
             dayName: day.dayName || "Unnamed Day",
             order: typeof day.order === 'number' ? day.order : 0,
@@ -621,67 +683,23 @@ const importPastedRoutine = async () => {
                 customRestSeconds: (ex.customRestSeconds !== null && ex.customRestSeconds !== undefined && ex.customRestSeconds >=10) ? ex.customRestSeconds : null,
                 notesForExercise: ex.notesForExercise || null,
                 enableProgression: typeof ex.enableProgression === 'boolean' ? ex.enableProgression : true,
-                startingWeight: (ex.startingWeight !== null && ex.startingWeight !== undefined && typeof ex.startingWeight === 'number' && ex.startingWeight >=0) ? ex.startingWeight : undefined,
-            })) : [],
-        })).sort((a: WorkoutDay, b: WorkoutDay) => a.order - b.order),
-    };
-    programToSaveTemp.workoutDays.forEach((day: WorkoutDay, index: number) => day.order = index + 1);
+                isTimed: typeof ex.isTimed === 'boolean' ? ex.isTimed : false,
+                startingWeight: typeof ex.startingWeight === 'number' ? ex.startingWeight : 45
+            })) : []
+    }));
 
-    const finalProgramDataToSave: Omit<TrainingProgram, 'id' | 'createdAt' | 'updatedAt'> = {
-        programName: programToSaveTemp.programName,
-        description: programToSaveTemp.description,
-        workoutDays: programToSaveTemp.workoutDays.map((day: any) => ({
-            ...day,
-            exercises: day.exercises.map((ex: any) => {
-                const { startingWeight, ...exerciseConfig } = ex; 
-                return exerciseConfig as ExerciseConfig;
-            })
-        }))
-    };
+    await updateDoc(programDocRef, { workoutDays: workoutDaysToSave });
+    
+    // Load it
+    await loadProgram(newId);
 
-    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
-    const fullSaveData: any = { ...finalProgramDataToSave, createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
-
-    const batch = writeBatch(db);
-    batch.set(programDocRef, fullSaveData);
-
-    for (const day of importedData.workoutDays) { // Use original importedData to access startingWeight
-      if (Array.isArray(day.exercises)) {
-        for (const exConfig of day.exercises) { 
-            if (!exConfig.exerciseName) continue; 
-            const exerciseProgressKey = (exConfig.exerciseName as string).toLowerCase().replace(/\s+/g, '_');
-            const exerciseProgressRef = doc(db, 'users', user.value.uid, 'exerciseProgress', exerciseProgressKey);
-            
-            const progressSnap = await getDoc(exerciseProgressRef);
-            if (!progressSnap.exists()) {
-                let actualStartingWeight = 45; 
-                const importedStartingWeight = (exConfig as any).startingWeight;
-                if (importedStartingWeight !== null && importedStartingWeight !== undefined && typeof importedStartingWeight === 'number' && importedStartingWeight >= 0) {
-                    actualStartingWeight = importedStartingWeight;
-                }
-
-                const initialProgressData: ExerciseProgress = {
-                    exerciseName: exConfig.exerciseName,
-                    currentWeightToAttempt: actualStartingWeight,
-                    repsToAttemptNext: exConfig.minReps || 8,
-                    lastWorkoutAllSetsSuccessfulAtCurrentWeight: false,
-                    consecutiveFailedWorkoutsAtCurrentWeightAndReps: 0,
-                    lastPerformedDate: null,
-                };
-                batch.set(exerciseProgressRef, initialProgressData);
-            }
-        }
-      }
-    }
-
-    await batch.commit();
-    alert('Routine imported successfully!');
+    // Reset UI
     pastedRoutineJson.value = '';
-    await loadActiveProgram();
+    creationMode.value = null;
 
-  } catch (e: any) {
-    console.error("Error importing routine:", e);
-    error.value = "Failed to import routine. Ensure data is valid JSON and matches expected structure. " + e.message;
+ } catch (e: any) {
+    console.error("Import error:", e);
+    error.value = "Failed to import routine. " + (e.message || "Unknown error.");
   } finally {
     isSaving.value = false;
   }
@@ -760,6 +778,7 @@ const resetEditingExerciseForm = () => {
   Object.assign(editingExercise, {
     id: undefined, exerciseName: '', targetSets: 3, minReps: 8, maxReps: 12, repOverloadStep: 2,
     weightIncrement: 5, customRestSeconds: undefined, notesForExercise: '', enableProgression: true,
+    isTimed: false,
     startingWeight: 45, currentWeightToDisplayOrEdit: undefined, currentRepsToDisplayOrEdit: undefined,
   });
 };
@@ -793,12 +812,22 @@ const startEditExercise = async (dayId: string, exerciseToEdit: ExerciseConfigFo
     editingExercise.weightIncrement = exerciseToEdit.weightIncrement || 5;
     editingExercise.customRestSeconds = exerciseToEdit.customRestSeconds ?? undefined; // Use ?? for null/undefined
     editingExercise.notesForExercise = exerciseToEdit.notesForExercise || '';
-    editingExercise.enableProgression = typeof exerciseToEdit.enableProgression === 'boolean' ? exerciseToEdit.enableProgression : true;
+    editingExercise.enableProgression = exerciseToEdit.enableProgression !== false;
+    editingExercise.isTimed = exerciseToEdit.isTimed === true;
     
-    // These are specific to editing an existing exercise and its current progress state
-    editingExercise.currentWeightToDisplayOrEdit = exerciseToEdit.currentPrescribedWeight;
+    // Convert to display units
+    editingExercise.weightIncrement = toDisplay(exerciseToEdit.weightIncrement, settings.value.weightUnit);
+    editingExercise.startingWeight = toDisplay((exerciseToEdit as any).startingWeight, settings.value.weightUnit);
+    
+    // We already have the current prescriptions from fetchWorkoutData if they exist 
+    editingExercise.currentWeightToDisplayOrEdit = toDisplay(exerciseToEdit.currentPrescribedWeight, settings.value.weightUnit);
     editingExercise.currentRepsToDisplayOrEdit = exerciseToEdit.currentPrescribedReps;
-    editingExercise.startingWeight = undefined; // Not used when editing an existing exercise's config
+    // Note: startingWeight is not used when editing an existing exercise's config,
+    // but it might be populated if the exercise was newly added and then immediately edited.
+    // The line below ensures it's cleared if it's an existing exercise being edited.
+    if (exerciseToEdit.id) { // Only clear if it's an existing exercise
+        editingExercise.startingWeight = undefined; 
+    }
 
     // Fallback for fetching progress data if not available on exerciseToEdit or needs refresh
     if ((editingExercise.currentWeightToDisplayOrEdit === undefined || editingExercise.currentRepsToDisplayOrEdit === undefined) &&
@@ -811,15 +840,18 @@ const startEditExercise = async (dayId: string, exerciseToEdit: ExerciseConfigFo
           const progressData = progressSnap.data() as ExerciseProgress;
           // Only update if the form values are still undefined from exerciseToEdit
           if (editingExercise.currentWeightToDisplayOrEdit === undefined) {
-               editingExercise.currentWeightToDisplayOrEdit = progressData?.currentWeightToAttempt;
+               editingExercise.currentWeightToDisplayOrEdit = toDisplay(progressData?.currentWeightToAttempt, settings.value.weightUnit);
           }
           if (editingExercise.currentRepsToDisplayOrEdit === undefined) {
-              editingExercise.currentRepsToDisplayOrEdit = progressData?.repsToAttemptNext;
+               editingExercise.currentRepsToDisplayOrEdit = progressData?.repsToAttemptNext;
           }
         } else {
            // If no progress doc, and currentRepsToDisplayOrEdit is still undefined, default to minReps from config
            if (editingExercise.currentRepsToDisplayOrEdit === undefined) {
               editingExercise.currentRepsToDisplayOrEdit = editingExercise.minReps;
+           }
+           if (editingExercise.currentWeightToDisplayOrEdit === undefined) {
+              editingExercise.currentWeightToDisplayOrEdit = toDisplay((editingExercise as any).startingWeight, settings.value.weightUnit) || 0;
            }
         }
       } catch (e) { 
@@ -851,18 +883,18 @@ const addOrUpdateExercise = async (dayId: string) => {
   const exName = editingExercise.exerciseName?.trim();
   const sets = editingExercise.targetSets; const minR = editingExercise.minReps;
   const maxR = editingExercise.maxReps; const repStep = editingExercise.repOverloadStep;
-  const weightInc = editingExercise.weightIncrement; const formCustomRest = editingExercise.customRestSeconds;
+  const weightInc = fromInput(editingExercise.weightIncrement, settings.value.weightUnit); const formCustomRest = editingExercise.customRestSeconds;
   const formEnableProg = editingExercise.enableProgression; const formNotes = editingExercise.notesForExercise?.trim();
-  const formStartingWeight = editingExercise.startingWeight;
-  const formCurrentWeight = editingExercise.currentWeightToDisplayOrEdit;
+  const formStartingWeight = fromInput(editingExercise.startingWeight, settings.value.weightUnit);
+  const formCurrentWeight = fromInput(editingExercise.currentWeightToDisplayOrEdit, settings.value.weightUnit);
   const formCurrentReps = editingExercise.currentRepsToDisplayOrEdit;
 
   if (!exName) { error.value = "Exercise name is required."; return; }
   if (typeof sets !== 'number' || sets < 1) { error.value = "Target sets must be >= 1."; return; }
-  if (typeof minR !== 'number' || minR < 1) { error.value = "Min reps must be >= 1."; return; }
-  if (typeof maxR !== 'number' || maxR < minR) { error.value = "Max reps must be >= min reps."; return; }
-  if (typeof repStep !== 'number' || repStep < 1) { error.value = "Rep step must be >= 1."; return; }
-  if (typeof weightInc !== 'number' || weightInc <= 0) { error.value = "Weight increment must be > 0."; return; }
+  if (typeof minR !== 'number' || minR < 1) { error.value = editingExercise.isTimed ? "Min hold must be >= 1s." : "Min reps must be >= 1."; return; }
+  if (typeof maxR !== 'number' || maxR < minR) { error.value = editingExercise.isTimed ? "Max hold must be >= min hold." : "Max reps must be >= min reps."; return; }
+  if (typeof repStep !== 'number' || repStep < 0) { error.value = editingExercise.isTimed ? "Time step must be >= 0." : "Rep step must be >= 0."; return; }
+  if (typeof weightInc !== 'number' || weightInc < 0) { error.value = "Weight increment must be >= 0."; return; }
 
   let customRestForSave: number | null = null;
   if (formCustomRest !== null && formCustomRest !== undefined) {
@@ -896,6 +928,7 @@ const addOrUpdateExercise = async (dayId: string) => {
     exerciseName: exName, targetSets: sets, minReps: minR, maxReps: maxR,
     repOverloadStep: repStep, weightIncrement: weightInc, enableProgression: enableProgToSave,
     customRestSeconds: customRestForSave, notesForExercise: notesToSave,
+    isTimed: editingExercise.isTimed || false,
   };
 
   if (editingExercise.id) {
@@ -932,7 +965,7 @@ const addOrUpdateExercise = async (dayId: string) => {
   }));
 
   const batch = writeBatch(db);
-  const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
+  const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', activeProgram.id);
   batch.update(programDocRef, { workoutDays: workoutDaysToSaveForFirestore, updatedAt: serverTimestamp() });
 
   const exerciseProgressKey = exerciseDataToSaveForRoutine.exerciseName.toLowerCase().replace(/\s+/g, '_');
@@ -1003,7 +1036,7 @@ const removeExerciseFromDay = async (dayId: string, exerciseIdToRemove: string) 
   const updatedExercises = activeProgram.workoutDays[dayIndex].exercises.filter(ex => ex.id !== exerciseIdToRemove);
   const newWorkoutDaysArray = activeProgram.workoutDays.map(d => d.id === dayId ? { ...d, exercises: updatedExercises } : d);
   try {
-    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
+    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', activeProgram.id);
     const workoutDaysToSave = newWorkoutDaysArray.map(day => ({
       ...day, exercises: day.exercises.map(ex => {
         const { currentPrescribedReps, currentPrescribedWeight, ...config } = ex; return config as ExerciseConfig;
@@ -1015,84 +1048,378 @@ const removeExerciseFromDay = async (dayId: string, exerciseIdToRemove: string) 
   finally { isSaving.value = false; }
 };
 
-const confirmAndDeleteActiveProgram = () => {
-  if (!activeProgram.id) return; 
-  if (confirm(`Are you sure you want to delete the entire routine "${activeProgram.programName}"? This action cannot be undone.`)) {
-    deleteActiveProgramFromFirestore();
+const deleteActiveProgramFromFirestore = async (programId: string) => {
+    if (!user.value || !user.value.uid) return;
+    const programRef = doc(db, 'users', user.value.uid, 'trainingPrograms', programId);
+    await deleteDoc(programRef);
+};
+
+const requestDeleteRoutine = () => {
+    if (!activeProgram.id) return;
+    showDeleteConfirmation.value = true;
+};
+
+const cancelDeleteRoutine = () => {
+    showDeleteConfirmation.value = false;
+};
+
+const confirmDeleteRoutine = async () => {
+  showDeleteConfirmation.value = false; // Close immediately or wait? Better wait.
+  // Actually, keeping it open with loading state is better UX.
+  // But we reused `isSaving` for overall page...
+  
+  if (!activeProgram.id) return;
+  isSaving.value = true;
+  const idToDelete = activeProgram.id;
+
+  try {
+    console.log("Deleting program:", idToDelete);
+    await deleteActiveProgramFromFirestore(idToDelete);
+    
+    if (settings.value.activeProgramId === idToDelete) {
+         settings.value.activeProgramId = null;
+         saveSettings();
+    }
+    
+    await fetchAllPrograms();
+
+    activeProgram.id = null; 
+    activeProgram.programName = '';
+    activeProgram.description = '';
+    activeProgram.workoutDays = [];
+    isInOverallEditMode.value = false;
+    showDeleteConfirmation.value = false; // Close after success
+
+  } catch (e: any) {
+    console.error("Delete failed", e);
+    error.value = "Failed to delete routine: " + e.message;
+    // We can reopen modal or just show error on page
+  } finally {
+    isSaving.value = false;
+    // ensure modal is closed if it wasn't
+    showDeleteConfirmation.value = false;
   }
 };
 
-const deleteActiveProgramFromFirestore = async () => {
-  if (!user.value || !user.value.uid) { error.value = "User not logged in."; return; }
-  if (!activeProgram.id) { error.value = "No active routine to delete."; return; }
-  isSaving.value = true; error.value = null;
-  try {
-    const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', ACTIVE_PROGRAM_ID);
-    await deleteDoc(programDocRef);
-    activeProgram.id = null; activeProgram.programName = ''; activeProgram.description = ''; activeProgram.workoutDays = [];
-    editableProgramDetails.programName = ''; editableProgramDetails.description = '';
-    isInOverallEditMode.value = false; showEditProgramDetailsForm.value = false;
-    cancelEditWorkoutDayName(); cancelAddOrEditExercise(); addingNewDay.value = false;
-    alert('Routine deleted successfully.');
-  } catch (e: any) {
-    console.error("Error deleting routine:", e); error.value = "Failed to delete routine. " + e.message;
-  } finally { isSaving.value = false; }
-};
-
 // --- Lifecycle Hooks ---
-let userWatcherUnsubscribe: (() => void) | null = null;
-const previousUserRef = ref<typeof user.value | null>(null);
 onMounted(() => {
-  isLoading.value = true;
-  userWatcherUnsubscribe = watch(user, (currentUser) => {
-    if (currentUser && currentUser.uid) {
-      if (!activeProgram.id || previousUserRef.value?.uid !== currentUser.uid) {
-          loadActiveProgram();
-      } else { isLoading.value = false; }
-    } else {
-      isLoading.value = false; activeProgram.id = null; activeProgram.programName = '';
-      activeProgram.description = ''; activeProgram.workoutDays = [];
-      if (currentUser === null) { error.value = 'You must be logged in to manage routines.'; }
+    // We don't need to manually watch user here to load active program, 
+    // because useTrainingProgram does it.
+    // However, if we want to ensure we fetch the LIST of programs:
+    if (user.value) {
+        fetchAllPrograms();
     }
-    previousUserRef.value = currentUser;
-  }, { immediate: true });
+    
+    watch(user, (u) => {
+        if (u) fetchAllPrograms();
+    });
 });
 
 onUnmounted(() => {
-  if (userWatcherUnsubscribe) { userWatcherUnsubscribe(); }
+  // Cleanup if needed
 });
 </script>
 
 <style scoped>
-.routines-view {   padding: 20px; /* This is internal padding since the view itself is a card */
-  max-width: 800px;
-  margin: 20px auto; /* Includes vertical margin for spacing from nav/header */
-  background-color: var(--color-background-soft); /* Using CSS var */
+/* --- New Routine Creation UX Styles --- */
+.creation-choice-phase {
+  text-align: center;
+  padding: 40px 20px;
+}
+.choice-subtitle {
+  margin-bottom: 30px;
+  opacity: 0.8;
+  font-size: 1.1em;
+}
+.choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 20px;
+}
+.choice-card {
+  background: var(--color-card-mute);
+  border: 1px solid var(--color-card-border);
+  border-radius: 12px;
+  padding: 30px 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.choice-card:hover {
+  transform: translateY(-5px);
+  border-color: #007bff;
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+  background: var(--color-card-bg);
+}
+.choice-icon {
+  font-size: 3em;
+  line-height: 1;
+}
+.choice-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.3em;
+  color: var(--color-card-heading);
+}
+.choice-content p {
+  margin: 0;
+  font-size: 0.9em;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+.choice-arrow {
+  font-size: 1.5em;
+  color: #007bff;
+  opacity: 0;
+  transition: all 0.3s;
+  margin-top: 10px;
+}
+.choice-card:hover .choice-arrow {
+  opacity: 1;
+  transform: translateX(5px);
+}
+
+/* AI Creation Flow Specifics */
+.ai-nudge-section {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+.ai-nudge-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  border: 1px solid var(--color-border); }
-.routine-actions-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom:15px; border-bottom: 1px solid #eee;}
-.routine-actions-header h1 { margin: 0; font-size: 1.8em; }
-.card { background-color: #fff;   padding: 20px 25px;
-  border-radius: 6px; /* Slightly smaller radius for nested cards if desired */
-  margin-bottom: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: all 0.2s;
   text-align: left;
-  border: 1px solid var(--color-border); color: #333;  }
-.card-inset { background-color: #f9f9f9; color: #333; padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom:15px; border: 1px solid #e9ecef;}
-.active-routine-display h2, .active-routine-display h3, .active-routine-display h4, .active-routine-display h5 { text-align:left; margin-bottom: 0.5em; }
-.active-routine-display h3 { margin-top: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid #eee; }
-.routine-description { margin-top: 5px; margin-bottom: 15px; color: #555; font-style: italic; font-size: 0.95em; text-align:left;}
-.edit-details-form { margin-top: 10px; padding: 20px; border: 1px solid #e0e0e0; border-radius: 6px; background-color: #f0f0f0; }
+  width: 100%;
+}
+.ai-nudge-card:hover {
+  border-color: #007bff;
+  background: var(--color-card-mute);
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.1);
+}
+.nudge-icon { font-size: 1.5em; }
+.nudge-text { display: flex; flex-direction: column; }
+.nudge-text strong { color: var(--color-card-heading); font-size: 1.1em; }
+.nudge-text span { font-size: 0.9em; opacity: 0.8; }
+
+/* Flow Headers & Back Links */
+.flow-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid var(--color-card-border);
+  padding-bottom: 15px;
+}
+.back-link {
+  background: none;
+  border: none;
+  color: var(--color-interactive);
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.9em;
+  text-decoration: underline;
+}
+
+/* --- Routine Switcher Styles --- */
+.routine-switcher-container {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.tabs-scroll-area {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 5px 2px;
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+.tabs-scroll-area::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background-color: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  color: var(--color-text);
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.tab-chip:hover {
+  background-color: var(--color-card-mute);
+  border-color: #aaa;
+}
+
+.tab-chip.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4);
+}
+
+.tab-chip.is-main {
+  font-weight: 600;
+}
+
+.tab-chip .active-badge {
+  margin-left: 6px;
+  font-size: 0.8em;
+  color: #FFD700;
+}
+
+.tab-chip.create-new {
+  background-color: transparent;
+  border: 1px dashed #aaa;
+  color: var(--color-text-mute);
+}
+.tab-chip.create-new:hover {
+  border-color: #007bff;
+  color: #007bff;
+  background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Edit Routine Button - Font Boost */
+.active-routine-display .button-primary.small,
+.routine-info-display .button-primary.small {
+    font-size: 1rem;
+    padding: 8px 16px;
+}
+
+/* --- Routine List Styles --- */
+.routine-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--color-card-border);
+}
+.routine-list-item:last-child {
+    border-bottom: none;
+}
+.routine-name {
+    font-size: 1.05em;
+    color: var(--color-card-heading);
+}
+.active-badge-inline {
+    color: #FFD700;
+    font-size: 0.85em;
+    margin-left: 8px;
+    font-weight: normal;
+}
+.routine-actions {
+    display: flex;
+    gap: 8px;
+}
+
+@media (max-width: 500px) {
+    .routine-list-item {
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 5px; /* Reduce gap slightly */
+    }
+    .routine-info {
+        text-align: left;
+        flex: 1;
+        padding-right: 5px;
+    }
+    .routine-actions {
+        width: auto;
+        justify-content: flex-end !important;
+    }
+}
+.back-link:hover { text-decoration: underline; }
+.section-hint {
+  margin-bottom: 20px;
+  font-style: italic;
+  opacity: 0.8;
+  font-size: 0.95em;
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 500px) {
+  .choice-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.routines-view {
+  padding: 10px;
+  max-width: 700px;
+  margin: 20px auto;
+}
+.routines-view h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: var(--color-heading);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+}
+.routine-actions-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 20px; 
+  padding-bottom: 15px; 
+  border-bottom: 1px solid var(--color-card-border);
+}
+.card { 
+  background-color: var(--color-card-bg);   
+  padding: 20px 25px;
+  border-radius: 8px; /* Standardize with Home */
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08); /* Standardize with Home */
+  text-align: left;
+  border: 1px solid var(--color-card-border); 
+  color: var(--color-card-text);  
+}
+.card-inset { background-color: var(--color-card-mute); color: var(--color-card-text); padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom:15px; border: 1px solid var(--color-card-border);}
+.active-routine-display h2, .active-routine-display h3, .active-routine-display h4, .active-routine-display h5 { text-align:left; margin-bottom: 0.5em; color: var(--color-card-heading); }
+.active-routine-display h3 { margin-top: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--color-card-border); }
+.routine-description { margin-top: 5px; margin-bottom: 15px; color: var(--color-card-text); font-style: italic; font-size: 0.95em; text-align:left;}
+.edit-details-form { margin-top: 10px; padding: 20px; border: 1px solid var(--color-card-border); border-radius: 6px; background-color: var(--color-card-mute); }
 .form-group { margin-bottom: 12px; }
 .form-group-inline { display: flex; gap: 10px; flex-wrap: wrap; }
 .form-group-inline > div { flex: 1; min-width: 120px; }
-label { display: block; margin-bottom: 5px; font-weight: 500; font-size:0.9em; color: #333; }
-input[type="text"], input[type="number"], textarea { width: 100%; padding: 8px 10px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box; font-size: 0.95rem; }
+label { display: block; margin-bottom: 5px; font-weight: 500; font-size:0.9em; color: var(--color-card-text); }
+input[type="text"], input[type="number"], textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--color-card-border); border-radius: 4px; box-sizing: border-box; font-size: 0.95rem; background-color: var(--color-card-bg); color: var(--color-card-text); }
 textarea { min-height: 70px; resize: vertical; }
 .button-primary { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s; }
 .button-primary:hover:not(:disabled) { background-color: #0056b3; }
-.button-primary.small, .button-secondary.small { padding: 6px 10px; font-size: 0.85em; }
+.button-primary.small, .button-secondary.small { padding: 6px 10px; font-size: 0.85em; border: 1px solid transparent; }
+.button-primary-outline.small { padding: 6px 10px; font-size: 0.85em; margin-top: 0; }
 .button-primary-outline { padding: 8px 12px; background-color: transparent; color: #007bff; border: 1px solid #007bff; border-radius: 4px; cursor: pointer; font-size: 0.9em; transition: background-color 0.2s, color 0.2s; margin-top:10px; }
 .button-primary-outline:hover:not(:disabled) { background-color: #007bff; color:white; }
 .button-secondary { background-color: #6c757d; color:white; border:none; border-radius:4px; padding:10px 15px; cursor:pointer; font-size: 0.95rem; transition: background-color 0.2s;}
@@ -1110,15 +1437,15 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 .button-icon.success { color: #28a745; } .button-icon.success:hover { color: #218838; }
 .button-icon:hover { opacity: 0.7; }
 .exercise-list-display { list-style-type: none; padding-left: 0; margin-top:10px; margin-bottom: 10px; }
-.exercise-item-display { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.9em; border-bottom: 1px solid #f0f0f0; }
+.exercise-item-display { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 0.9em; border-bottom: 1px solid var(--color-card-border); }
 .exercise-item-display:last-child { border-bottom: none; }
-.exercise-info-text { text-align:left; flex-grow:1; }
-.ex-name { font-weight: 500; }
-.ex-details { color: #444; font-size: 0.9em; margin-left: 5px; }
+.exercise-info-text { text-align:left; flex-grow:1; color: var(--color-card-text);}
+.ex-name { font-weight: 500; color: var(--color-card-heading); }
+.ex-details { color: var(--color-card-text); opacity: 0.8; font-size: 0.9em; margin-left: 5px; }
 .no-progression-note { font-style: italic; color: #777; }
 .exercise-item-actions { white-space: nowrap; }
-.exercise-form-container { margin-top: 15px; padding-top:15px; border-top:1px dashed #ccc;}
-.add-exercise-form h5 { margin-top: 0; margin-bottom: 15px; font-size: 1.1em; text-align:left; }
+.exercise-form-container { margin-top: 15px; padding-top:15px; border-top:1px dashed var(--color-card-border);}
+.add-exercise-form h5 { margin-top: 0; margin-bottom: 15px; font-size: 1.1em; text-align:left; color: var(--color-card-heading); }
 .add-day-controls { text-align: center; padding-top: 10px; }
 .add-day-form-inline { display: flex; gap: 10px; align-items: center; margin-top:10px; }
 .add-day-form-inline input {flex-grow:1;}
@@ -1126,12 +1453,12 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 .no-items-message, .loading-message, .login-prompt { color: #6c757d; text-align: center; padding: 20px; }
 .no-items-message.small-text { font-size:0.9em; padding:10px 0; text-align:left; }
 .error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-top: 15px; }
-.checkbox-label { display: flex; align-items: center; font-weight: normal; color: #555; font-size: 0.9em; }
+.checkbox-label { display: flex; align-items: center; font-weight: normal; color: var(--color-card-text); font-size: 0.9em; }
 .checkbox-label input[type="checkbox"] { width: auto; margin-right: 8px; }
 
-.import-routine-section h4, .manual-create-section h4 { margin-top: 0; margin-bottom: 10px; }
-.import-routine-section textarea { width: 100%; min-height: 150px; font-family: monospace; font-size: 0.9em;}
-.section-divider { margin: 30px 0; border: 0; border-top: 1px solid #eee; }
+.import-routine-section h4, .manual-create-section h4 { margin-top: 0; margin-bottom: 10px; color: var(--color-card-heading); }
+.import-routine-section textarea { width: 100%; min-height: 150px; font-family: monospace; font-size: 0.9em; background-color: var(--color-card-bg); color: var(--color-card-text); }
+.section-divider { margin: 30px 0; border: 0; border-top: 1px solid var(--color-card-border); }
 
 .button-danger { padding: 10px 15px; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s; box-sizing: border-box;}
 .button-danger:hover:not(:disabled) { background-color: #c82333; }
@@ -1152,10 +1479,42 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 }
 
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;}
-.modal-content { background-color: #fff; padding: 25px 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 750px; max-height: 85vh; overflow-y: auto; position: relative; color: #333;}
+.modal-content { background-color: var(--color-card-bg); padding: 25px 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 750px; max-height: 85vh; overflow-y: auto; position: relative; color: var(--color-card-text);}
 .modal-close-button { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 2rem; line-height: 1; color: #888; cursor: pointer;}
-.modal-close-button:hover { color: #333; }
-.modal-content h3 { margin-top: 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;}
-.ai-instructions { margin-top: 10px; background-color: #f9f9f9; border: 1px solid #eee; padding: 15px; border-radius: 4px; font-size: 0.9em; color: #333;}
-.ai-instructions pre { white-space: pre-wrap; word-wrap: break-word; background-color: #eef; padding: 10px; border-radius: 4px; max-height: 40vh; overflow-y: auto; font-family: monospace; font-size: 0.90em; line-height: 1.4; color: #333;}
+.modal-close-button:hover { color: var(--color-card-text); }
+.modal-content h3 { margin-top: 0; color: var(--color-card-heading); border-bottom: 1px solid var(--color-card-border); padding-bottom: 10px; margin-bottom: 15px;}
+.ai-instructions { margin-top: 10px; background-color: var(--color-card-mute); border: 1px solid var(--color-card-border); padding: 15px; border-radius: 4px; font-size: 0.9em; color: var(--color-card-text);}
+.ai-instructions pre { white-space: pre-wrap; word-wrap: break-word; background-color: var(--color-card-bg); padding: 10px; border-radius: 4px; max-height: 40vh; overflow-y: auto; font-family: monospace; font-size: 0.90em; line-height: 1.4; color: var(--color-card-text);}
+
+@media (max-width: 600px) {
+  .routines-view {
+    padding: 5px;
+  }
+  /* Align header with card content (5px view + 10px header = 15px visual start, matching card text loosely) */
+  .routine-actions-header {
+    padding: 0 10px; 
+    margin-bottom: 10px;
+  }
+  .routine-actions-header h1 {
+    font-size: 1.5rem; /* Slightly smaller for mobile */
+  }
+  
+  .card {
+    padding: 15px 15px; /* Reduced from 20px 25px */
+    margin-bottom: 15px;
+  }
+  /* Reduce inset card padding to save even more space for lists */
+  .card-inset {
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .section-divider {
+    margin: 20px 0;
+  }
+  .import-routine-section textarea {
+    min-height: 100px;
+  }
+}
 </style>

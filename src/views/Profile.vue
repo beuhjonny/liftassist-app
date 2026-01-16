@@ -6,6 +6,74 @@
         <img v-if="user.photoURL" :src="user.photoURL" alt="User Photo" class="user-photo" />
         <p><strong>Name:</strong> {{ user.displayName || 'N/A' }}</p>
         <p><strong>Email:</strong> {{ user.email || 'N/A' }}</p>
+        
+        <div class="settings-section" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+            <h3>Settings ⚙️</h3>
+            
+            <div class="setting-item">
+                <label>Theme</label>
+                <div class="segmented-control">
+                    <button :class="{ active: settings.theme === 'original' }" @click="updateTheme('original')">Original</button>
+                    <button :class="{ active: settings.theme === 'system' }" @click="updateTheme('system')">System</button>
+                    <button :class="{ active: settings.theme === 'light' }" @click="updateTheme('light')">Light</button>
+                    <button :class="{ active: settings.theme === 'dark' }" @click="updateTheme('dark')">Dark</button>
+                </div>
+            </div>
+
+            <div class="setting-item timer-combined-row">
+                <label>Timer</label>
+                <div class="timer-controls">
+                    <select :value="settings.timerSound" @change="updateTimerSound($event)" class="sound-select">
+                        <option value="bell">🔔 Bell</option>
+                        <option value="beep">🤖 Beep</option>
+                        <option value="chime">✨ Chime</option>
+                        <option value="ding">🛎️ Ding</option>
+                        <option value="mute">🔕 Mute</option>
+                    </select>
+                    
+                    <div class="volume-control" v-if="settings.timerSound !== 'mute'" title="Volume">
+                        <span class="volume-icon">🔊</span>
+                        <input 
+                            type="range" 
+                            min="0" 
+                            max="1" 
+                            step="0.1" 
+                            :value="settings.timerVolume" 
+                            @input="updateVolume($event)" 
+                            class="volume-slider"
+                        />
+                    </div>
+
+                    <button v-if="settings.timerSound !== 'mute'" @click="previewSound" class="button-icon small" title="Preview Sound">▶️</button>
+                </div>
+            </div>
+
+             <div class="setting-item">
+                <label>Weight Unit</label>
+                <div class="segmented-control">
+                    <button :class="{ active: settings.weightUnit === 'lbs' }" @click="updateUnit('lbs')">lbs</button>
+                    <button :class="{ active: settings.weightUnit === 'kg' }" @click="updateUnit('kg')">kg</button>
+                </div>
+            </div>
+
+            <div class="setting-item">
+                <label style="white-space: nowrap;">Default Rest (sec)</label>
+                <div style="display: flex; align-items: center; justify-content: flex-end; width: 100%;">
+                    <input 
+                        type="number" 
+                        min="0" 
+                        step="5" 
+                        :value="settings.defaultRestTimer" 
+                        @change="updateRestTimer($event)"
+                        style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text); width: 80px; text-align: center;"
+                    />
+                </div>
+            </div>
+
+        </div>
+
+
+
         <button @click="handleLogout" class="logout-button">Logout</button>
       </div>
 
@@ -21,8 +89,9 @@
           <li>
             <span class="stat-icon">🏋️</span>
             <span class="stat-label">Total Volume Lifted:</span>
-            <span class="stat-value">{{ lifetimeStats.totalVolume.toLocaleString() }} lbs</span>
+            <span class="stat-value">{{ lifetimeStats.totalVolume.toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</span>
           </li>
+
           <li>
             <span class="stat-icon">🗓️</span>
             <span class="stat-label">Workouts Completed:</span>
@@ -59,45 +128,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, Timestamp, setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase'; // Adjust path if needed
 import useAuth from '../composables/useAuth'; // Adjust path if needed
+import useSettings, { type ThemeOption, type TimerSoundOption, type WeightUnitOption } from '../composables/useSettings'; 
+import { playTone } from '../utils/audio';
+import { toDisplay, displayUnit } from '../utils/weight';
 
-// --- START Interface Definitions (Consider moving to a shared types.ts file) ---
-interface LoggedSetData {
-  exerciseId: string;
-  exerciseName: string;
-  setNumber: number;
-  prescribedWeight: number;
-  prescribedReps: number;
-  actualWeight: number;
-  actualReps: number;
-  status: 'done' | 'failed';
-  timestamp: any; // Can be Timestamp from Firestore or Date object after conversion
-}
-
-interface PerformedExerciseInLog {
-  exerciseId: string;
-  exerciseName: string;
-  sets: LoggedSetData[];
-  isPR?: boolean;
-}
-
-interface LoggedWorkout {
-  id: string;
-  userId: string;
-  date: Timestamp | Date; // Data from Firestore is Timestamp, can be converted to Date
-  trainingProgramIdUsed: string;
-  workoutDayNameUsed: string;
-  workoutDayIdUsed: string;
-  performedExercises: PerformedExerciseInLog[];
-  trainingProgramNameUsed?: string;
-  overallSessionNotes?: string;
-  startTime?: any;
-  endTime?: any;
-  durationMinutes?: number;
-}
-// --- END Interface Definitions ---
+import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
 
 interface LifetimeStats {
   totalVolume: number;
@@ -155,11 +193,11 @@ const lifetimeStats = computed<LifetimeStats>(() => {
   }
 
   return {
-    totalVolume: volume,
+    totalVolume: toDisplay(volume, settings.value.weightUnit),
     totalWorkouts: workoutsCount,
     totalTimeMinutes: timeMinutes,
     totalPRs: prsCount,
-    firstWorkoutDate: firstDate,
+    firstWorkoutDate: firstDate
   };
 });
 
@@ -214,13 +252,13 @@ const formatDateForDisplay = (date: Date | null): string => {
     return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 };
 
+
 const handleLogout = async () => {
   try {
     await logout();
     router.push('/');
   } catch (error) {
     console.error('Error during profile logout:', error);
-    // Optionally, show an error message to the user
   }
 };
 
@@ -240,39 +278,72 @@ watch(user, (newUser) => {
   }
 }, { immediate: true }); // immediate:true will call it on component setup if user is already available
 
+// Settings Logic
+const { settings, saveSettings } = useSettings();
+
+const updateTheme = (theme: ThemeOption) => {
+    saveSettings({ theme });
+};
+
+const updateTimerSound = (event: Event) => {
+    const val = (event.target as HTMLSelectElement).value as TimerSoundOption;
+    saveSettings({ timerSound: val });
+};
+
+const updateVolume = (event: Event) => {
+    const val = parseFloat((event.target as HTMLInputElement).value);
+    saveSettings({ timerVolume: val });
+};
+
+const updateUnit = (unit: WeightUnitOption) => {
+    saveSettings({ weightUnit: unit });
+};
+
+const updateRestTimer = (event: Event) => {
+    const val = parseInt((event.target as HTMLInputElement).value);
+    if (!isNaN(val) && val >= 0) {
+        saveSettings({ defaultRestTimer: val });
+    }
+};
+
+const previewSound = () => {
+    playTone(settings.value.timerSound, settings.value.timerVolume);
+};
+
 </script>
 
 <style scoped>
 .profile-view {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
- width: 100%;
+  padding: 10px;
+  max-width: 700px;
+  margin: 20px auto;
 }
 
 .profile-view h1 {
-    margin-bottom: 20px;
-    color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+  margin-top: 0;
+  color: var(--color-heading);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
 }
 
 .user-details-container {
   width: 100%;
-  max-width: 800px; /* Or your preferred max-width for profile content cards */
-  margin: 20px auto; /* Centers this container and adds vertical spacing */
   display: flex;
   flex-direction: column;
-  gap: 25px; /* Space between cards */
+  gap: 25px; 
 }
 
 .card { /* General card styling */
-  background-color: #fff;
+  background-color: var(--color-card-bg);
   padding: 20px 25px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
   width: 100%; /* Make cards take full width of .user-details-container */
   box-sizing: border-box;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-card-border);
 }
 
 .user-details {
@@ -280,12 +351,12 @@ watch(user, (newUser) => {
 }
 
 .user-details p {
-  margin: 12px 0;
-  font-size: 1.05em;
-  color: #333;
+  margin: 10px 0;
+  font-size: 1.1em;
+  color: var(--color-card-text);
 }
 .user-details p strong {
-    color: #555;
+    color: var(--color-card-heading);
   min-width: 80px; /* Adjusted slightly */
   display: inline-block;
 
@@ -293,30 +364,31 @@ watch(user, (newUser) => {
 
 .user-photo {
   display: block;
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  margin: 0 auto 20px auto;
-  border: 3px solid #007bff; /* Primary color border */
+  margin: 0 auto 15px auto;
+  border: 2px solid var(--color-card-border);
   object-fit: cover;
 }
 
 .logout-button {
   display: block;
   margin: 25px auto 10px auto;
-  padding: 12px 25px;
+  padding: 10px 20px;
   font-size: 1em;
   font-weight: bold;
-  background-color: #DB4437;
+  background-color: #dc3545;
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
+  width: 100%;
 }
 
 .logout-button:hover {
-  background-color: #c23327;
+  background-color: #c82333;
 }
 
 /* Lifetime Stats Card */
@@ -324,7 +396,7 @@ watch(user, (newUser) => {
   text-align: center;
   margin-top: 0;
   margin-bottom: 25px;
-  color: #333;
+  color: var(--color-card-heading);
   font-size: 1.6em;
 }
 
@@ -338,9 +410,9 @@ watch(user, (newUser) => {
   display: flex;
   align-items: center;
   font-size: 1em;
-  color: var(--color-text);
+  color: var(--color-card-text);
   padding: 12px 5px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-card-border);
 }
 
 .lifetime-stats-card li:last-child {
@@ -358,9 +430,10 @@ watch(user, (newUser) => {
 .stat-label {
   font-weight: 500;
   margin-right: 8px;
-  color: #333;
+  color: var(--color-card-heading);
   flex-shrink: 0; /* Prevent label from shrinking */
 }
+
 
 .stat-value {
 font-weight: bold;
@@ -392,4 +465,185 @@ font-weight: bold;
   color: #6c757d;
 }
 
+/* Settings Styles */
+.settings-section h3 {
+    margin-bottom: 20px;
+    color: var(--color-card-heading);
+    border-bottom: 1px solid var(--color-card-border);
+    padding-bottom: 10px;
+}
+
+.setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.setting-item label {
+    font-weight: 500;
+    color: var(--color-card-text);
+}
+
+.segmented-control {
+    display: flex;
+    background: var(--color-card-mute);
+    padding: 3px;
+    border-radius: 8px;
+    border: 1px solid var(--color-card-border);
+}
+
+.segmented-control button {
+    background: none;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    color: var(--color-card-text);
+    transition: all 0.2s;
+}
+
+.segmented-control button.active {
+    background: #007bff;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+input[type="range"] {
+    width: 120px;
+    accent-color: #007bff;
+}
+
+select {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--color-card-border);
+    background: var(--color-card-bg);
+    color: var(--color-card-text);
+}
+
+/* Compact Timer Styles - Fixed Layout */
+.timer-combined-row {
+    display: flex;
+    align-items: center;
+    /* justify-content: space-between; -- existing setting-item handles this */
+    flex-wrap: nowrap; /* Prevent wrapping */
+    gap: 15px;
+}
+
+.timer-combined-row label {
+    margin-bottom: 0;
+    min-width: fit-content;
+    white-space: nowrap;
+}
+
+.timer-controls {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px; /* Slightly tighter gap */
+    width: 100%; /* Ensure it spans available space */
+}
+
+/* Select */
+.sound-select {
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid var(--color-card-border);
+    background-color: var(--color-card-bg);
+    color: var(--color-card-text);
+    /* Remove fixed max-width/flex-grow to just fit content comfortably */
+    width: auto;
+    min-width: 100px;
+    cursor: pointer;
+}
+
+/* Volume */
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background-color: var(--color-card-mute);
+    padding: 3px 6px;
+    border-radius: 20px;
+    border: 1px solid var(--color-card-border);
+    flex-shrink: 0; /* Don't shrink volume control */
+}
+
+.volume-icon {
+    font-size: 0.85em;
+    line-height: 1;
+}
+
+.volume-slider {
+    width: 70px; /* Slightly smaller */
+    margin: 0;
+    cursor: pointer;
+    vertical-align: middle;
+}
+
+/* Button */
+.button-icon.small {
+    padding: 5px 8px; /* Compact padding */
+    font-size: 1.1em;
+    width: auto;
+    background-color: var(--color-card-mute);
+    border: 1px solid var(--color-card-border);
+    border-radius: 4px;
+    flex-shrink: 0; /* Keep button size */
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.button-icon.small:hover {
+    background-color: var(--color-card-border);
+}
+
+.success-text { color: #28a745; }
+.error-text { color: #dc3545; }
+
+/* Mobile Adjustments */
+@media (max-width: 600px) {
+  .profile-view {
+    padding: 5px; 
+    margin: 10px auto;
+  }
+  .card {
+    padding: 15px; /* Reduced padding on mobile */
+  }
+  
+  /* Stack settings */
+  .setting-item, .timer-combined-row {
+     flex-direction: column;
+     align-items: flex-start;
+     gap: 8px;
+  }
+  
+  .setting-item label, .timer-combined-row label {
+      margin-bottom: 5px; 
+  }
+  
+  .timer-controls {
+      width: 100%;
+      justify-content: space-between; 
+  }
+  
+  .segmented-control {
+      width: 100%;
+      justify-content: center;
+  }
+  
+  .volume-control {
+      flex-grow: 1; 
+      justify-content: center;
+  }
+  .volume-slider {
+      width: 100%; 
+      max-width: 120px;
+  }
+}
 </style>

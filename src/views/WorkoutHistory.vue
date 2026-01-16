@@ -1,6 +1,6 @@
 <template>
   <div class="history-view">
-    <h1>Workout History</h1>
+    <h1>Training Progress</h1>
 
     <div class="calendar-heatmap-container" v-if="calendarWeeks.length > 0" @click.self="hideTooltip" ref="calendarRef">
       <div class="calendar-grid">
@@ -32,6 +32,43 @@
            :style="{ top: (activeTooltip.event.clientY + 10) + 'px', left: (activeTooltip.event.clientX + 10) + 'px' }">
         {{ activeTooltip.text }} - {{ activeTooltip.date }}
       </div>
+      </div>
+
+
+    <!-- Analytics Section -->
+    <div v-if="!isLoading && loggedWorkouts.length > 0" class="analytics-dashboard">
+        
+        <div class="chart-section card">
+            <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; line-height:1.2;">Weekly Volume</h3>
+                <select v-model="weeklyVolumeTimeRange" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 150px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-text); font-size: 0.9em;">
+                     <option value="12w">Last 12 Weeks</option>
+                     <option value="6m">Last 6 Months</option>
+                     <option value="1y">Last Year</option>
+                     <option value="all">All Time</option>
+                </select>
+            </div>
+            <WeeklyVolumeChart :workouts="loggedWorkouts" :weightUnit="settings?.weightUnit || 'lbs'" :timeRange="weeklyVolumeTimeRange" />
+        </div>
+
+        <div class="chart-section card">
+             <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                 <h3 style="margin:0;">Exercise Trends</h3>
+                 <select v-model="selectedExerciseForGraph" class="exercise-select" style="padding: 5px; border-radius:4px; max-width: 150px;">
+                     <option value="">Select Exercise</option>
+                     <option v-for="ex in uniqueExercises" :key="ex" :value="ex">{{ ex }}</option>
+                 </select>
+             </div>
+             <ExerciseProgressChart 
+                 v-if="selectedExerciseForGraph" 
+                 :exerciseName="selectedExerciseForGraph" 
+                 :workouts="loggedWorkouts" 
+                 :weightUnit="settings?.weightUnit || 'lbs'"
+             />
+             <div v-else class="placeholder-text" style="text-align:center; padding: 40px; color: var(--color-text); opacity: 0.6;">
+                 Select an exercise to view 1RM & Volume trends.
+             </div>
+        </div>
     </div>
 
     <div v-if="isLoading && loggedWorkouts.length === 0" class="loading-message">
@@ -47,7 +84,8 @@
     </div>
 
     <div v-if="!isLoading && !error && user && loggedWorkouts.length > 0" class="history-list">
-      <div v-for="workout in loggedWorkouts" :key="workout.id" class="history-item-card">
+      <h3 style="margin: 30px 0 20px 0; font-size: 1.5em; border-bottom: 1px solid var(--color-border); padding-bottom: 10px; color: var(--color-heading);">Recent Logs</h3>
+      <div v-for="workout in visibleWorkouts" :key="workout.id" class="history-item-card">
         <div class="history-item-header">
           <h2>{{ workout.workoutDayNameUsed || 'Workout Session' }}</h2>
           <p class="workout-date">
@@ -61,7 +99,7 @@
         <div class="workout-summary card-inset">
           <h4>Session Summary:</h4>
           <p><strong>Workout Time:</strong> {{ formatDuration(workout.durationMinutes) }}</p>
-          <p><strong>Total Volume:</strong> {{ calculateTotalVolume(workout.performedExercises).toLocaleString() }} lbs</p>
+          <p><strong>Total Volume:</strong> {{ calculateTotalVolume(workout.performedExercises).toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</p>
           <p><strong>Total Sets:</strong> {{ getConsolidatedSetsInfo(workout.performedExercises) }}</p>
 
           <div class="exercise-breakdown-header" v-if="workout.performedExercises && workout.performedExercises.length > 0">
@@ -79,7 +117,7 @@
               
               <ul v-if="allDetailsExpandedForWorkout[workout.id] && ex.sets && ex.sets.length > 0" class="set-details-list">
                 <li v-for="(set, setIndex) in ex.sets" :key="setIndex">
-                  Set {{ set.setNumber }}: {{ set.actualWeight }} lbs x {{ set.actualReps }} reps ({{set.status}})
+                  Set {{ set.setNumber }}: {{ toDisplay(set.actualWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }} x {{ set.actualReps }} {{ set.isTimed ? 'sec' : 'reps' }} ({{set.status}})
                 </li>
               </ul>
             </li>
@@ -91,6 +129,9 @@
           </div>
         </div>
       </div>
+
+      
+      <button v-if="hasMoreLogs" @click="loadMoreLogs" class="button-secondary full-width" style="margin-top: 10px;">Load More History</button>
     </div>
 
     <div v-if="!user && !isLoading" class="login-prompt">
@@ -104,41 +145,12 @@ import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
 import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase.js'; 
 import useAuth from '../composables/useAuth';
+import useSettings from '../composables/useSettings';
+import { toDisplay, displayUnit } from '../utils/weight';
+import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
 
-// --- Interfaces ---
-interface LoggedSetData {
-  exerciseId: string;
-  exerciseName: string;
-  setNumber: number;
-  prescribedWeight: number;
-  prescribedReps: number;
-  actualWeight: number;
-  actualReps: number;
-  status: 'done' | 'failed';
-  timestamp: any; 
-}
-
-interface PerformedExerciseInLog {
-  exerciseId: string;
-  exerciseName: string;
-  sets: LoggedSetData[];
-  isPR?: boolean;
-}
-
-interface LoggedWorkout {
-  id: string;
-  userId: string;
-  date: Timestamp;
-  trainingProgramIdUsed: string;
-  workoutDayNameUsed: string;
-  workoutDayIdUsed: string;
-  performedExercises: PerformedExerciseInLog[];
-  trainingProgramNameUsed?: string;
-  overallSessionNotes?: string;
-  startTime?: any; 
-  endTime?: any; 
-  durationMinutes?: number;
-}
+import WeeklyVolumeChart from '../components/WeeklyVolumeChart.vue';
+import ExerciseProgressChart from '../components/ExerciseProgressChart.vue';
 
 interface CalendarDay {
   date: Date;
@@ -151,10 +163,36 @@ interface CalendarDay {
 }
 
 const { user } = useAuth();
+const { settings } = useSettings();
 const isLoading = ref(true);
 const error = ref<string | null>(null);
 const loggedWorkouts = reactive<LoggedWorkout[]>([]);
 const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
+
+// Chart & Analytics State
+const selectedExerciseForGraph = ref<string>('');
+const weeklyVolumeTimeRange = ref('12w');
+const uniqueExercises = computed(() => {
+    const exercises = new Set<string>();
+    loggedWorkouts.forEach(w => {
+        if(w.performedExercises) {
+            w.performedExercises.forEach(ex => exercises.add(ex.exerciseName));
+        }
+    });
+    return Array.from(exercises).sort();
+});
+
+// Pagination State
+const logsLimit = ref(10);
+const visibleWorkouts = computed(() => {
+    return loggedWorkouts.slice(0, logsLimit.value);
+});
+const hasMoreLogs = computed(() => {
+    return logsLimit.value < loggedWorkouts.length;
+});
+const loadMoreLogs = () => {
+    logsLimit.value += 10;
+};
 
 const activeTooltip = ref<{ date: string; text: string; event: MouseEvent } | null>(null);
 const calendarRef = ref<HTMLElement | null>(null);
@@ -171,7 +209,7 @@ const daySequenceColorPalette = [
 const defaultWorkoutColor = 'hsla(160, 100%, 37%, 0.8)'; // Default (e.g., Vue green)
 
 const calendarWeeks = computed<CalendarDay[][]>(() => {
-  return generateCalendarGridData(loggedWorkouts.slice(), 12); // Show last 12 weeks
+  return generateCalendarGridData(loggedWorkouts.slice(), 52); // Show last 52 weeks (1 year)
 });
 
 const handleDayCellClick = (day: CalendarDay, event: MouseEvent) => {
@@ -336,7 +374,7 @@ const formatDuration = (minutes: number | undefined): string => {
 
 const calculateTotalVolume = (performedExercises: PerformedExerciseInLog[] | undefined): number => {
   if (!performedExercises) return 0;
-  return performedExercises.reduce((totalVolume, ex) => {
+  const volLbs = performedExercises.reduce((totalVolume, ex) => {
     const exerciseVolume = ex.sets.reduce((vol, set) => {
       if (typeof set.actualWeight === 'number' && typeof set.actualReps === 'number' && set.actualReps > 0) {
         return vol + (set.actualWeight * set.actualReps);
@@ -345,6 +383,7 @@ const calculateTotalVolume = (performedExercises: PerformedExerciseInLog[] | und
     }, 0);
     return totalVolume + exerciseVolume;
   }, 0);
+  return toDisplay(volLbs, settings.value.weightUnit);
 };
 
 const getTotalSetsLogged = (performedExercises: PerformedExerciseInLog[] | undefined): number => {
@@ -388,7 +427,7 @@ const getRepresentativeSetInfo = (sets: LoggedSetData[]): string => {
   }
 
   if (representativeSet && typeof representativeSet.actualWeight === 'number' && typeof representativeSet.actualReps === 'number') {
-    return `${representativeSet.actualWeight} lbs x ${representativeSet.actualReps} reps`;
+    return `${toDisplay(representativeSet.actualWeight, settings.value.weightUnit)} ${displayUnit(settings.value.weightUnit)} x ${representativeSet.actualReps} ${representativeSet.isTimed ? 'sec' : 'reps'}`;
   }
   return '';
 };
@@ -434,6 +473,16 @@ onMounted(() => {
   }, { immediate: true });
 
   document.addEventListener('click', handleClickOutsideTooltip);
+
+  // Scroll calendar to end (latest dates)
+  setTimeout(() => {
+    if (calendarRef.value) {
+        const scrollArea = calendarRef.value.querySelector('.calendar-main-area');
+        if (scrollArea) {
+            scrollArea.scrollLeft = scrollArea.scrollWidth;
+        }
+    }
+  }, 200);
 });
 
 onUnmounted(() => {
@@ -446,15 +495,16 @@ onUnmounted(() => {
 
 <style scoped>
 .history-view {
-  padding-top: 20px;
-  padding-bottom: 20px;
-  max-width: 800px;
-  margin: 0 auto;
+  padding: 10px;
+  max-width: 700px;
+  margin: 20px auto;
 }
 .history-view h1 {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   color: var(--color-heading);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
 }
 
 /* Calendar Heatmap Styles */
@@ -497,6 +547,11 @@ onUnmounted(() => {
   gap: 2px; 
   overflow-x: auto; 
   padding-bottom: 5px;
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+.calendar-main-area::-webkit-scrollbar { 
+    display: none;  /* Chrome/Safari */
 }
 
 .calendar-week {
@@ -550,55 +605,58 @@ onUnmounted(() => {
 
 /* General card style for loading/error/no-history messages */
 .card {
-  background-color: #fff;
+  background-color: var(--color-card-bg);
   padding: 20px 25px;
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
-  color: #333; 
+  color: var(--color-card-text);
+  border: 1px solid var(--color-card-border);
 }
 
 .history-item-card {
-  background-color: #fff; 
+  background-color: var(--color-card-bg);
   padding: 20px 25px;
   border-radius: 8px;
   margin-bottom: 25px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
   text-align: left;
-  border: 1px solid var(--color-border);
-  color: #333; 
+  border: 1px solid var(--color-card-border);
+  color: var(--color-card-text); 
 }
 
 .history-item-header {
-  border-bottom: 1px solid #e0e0e0; 
+  border-bottom: 1px solid var(--color-card-border); 
   padding-bottom: 15px;
   margin-bottom: 15px;
 }
 .history-item-header h2 {
   margin-top: 0;
   margin-bottom: 5px;
-  color: #333;
+  color: var(--color-card-heading);
   font-size: 1.5em;
 }
 .workout-date {
   font-size: 0.9em;
-  color: #6c757d;
+  color: var(--color-card-text);
+  opacity: 0.8;
   margin-bottom: 5px;
 }
 .program-name {
   font-size: 0.9em;
-  color: #555;
+  color: var(--color-card-text);
+  opacity: 0.8;
   font-style: italic;
 }
 
 .workout-summary { 
-  background-color: #f8f9fa;
+  background-color: var(--color-card-mute);
   padding: 20px;
   border-radius: 6px;
   margin-top: 20px;
-  border: 1px solid #e0e0e0;
-  color: #333; 
+  border: 1px solid var(--color-card-border);
+  color: var(--color-card-text); 
 }
 
 .workout-summary h4 { 
@@ -606,14 +664,17 @@ onUnmounted(() => {
   font-weight: 600;
   margin-top: 0;
   margin-bottom: 15px;
+  color: var(--color-card-heading);
 }
 .workout-summary p { 
   margin: 8px 0 8px 15px; 
   font-size: 0.95em;
   line-height: 1.5;
+  color: var(--color-card-text);
 }
 .workout-summary p strong {
   font-weight: 500; 
+  color: var(--color-card-heading);
 }
 
 .exercise-breakdown-header {
@@ -622,13 +683,13 @@ onUnmounted(() => {
   align-items: center;
   margin-top: 25px;
   padding-top: 20px;
-  border-top: 1px solid #d0d0d0; 
+  border-top: 1px solid var(--color-card-border); 
 }
 
 .workout-summary h5 { 
   font-size: 1.15em;
   font-weight: 600;
-  color: #333;
+  color: var(--color-card-heading);
   margin-top: 0;
   margin-bottom: 15px;
 }
@@ -645,13 +706,15 @@ onUnmounted(() => {
   font-size: 0.95em;
   padding: 10px 0 10px 15px; 
   margin-bottom: 0;
-  border-bottom: 1px dashed #e0e0e0; 
+  border-bottom: 1px dashed var(--color-card-border); 
+  color: var(--color-card-text);
 }
 .exercise-summary-list li:last-child {
   border-bottom: none;
 }
 .exercise-summary-list li strong { 
   font-weight: 500;
+  color: var(--color-card-heading);
 }
 
 .set-details-list {
@@ -659,7 +722,8 @@ onUnmounted(() => {
   padding-left: 20px; 
   margin-top: 8px;
   font-size: 0.9em; 
-  color: #555;
+  color: var(--color-card-text);
+  opacity: 0.9;
 }
 .set-details-list li {
   padding: 3px 0;
@@ -682,17 +746,18 @@ onUnmounted(() => {
 .session-notes-history {
   margin-top: 20px; 
   padding-top: 15px;
-  border-top: 1px solid #d0d0d0; 
+  border-top: 1px solid var(--color-card-border); 
 }
 .session-notes-history strong {
   display: block;
   margin-bottom: 8px; 
   font-weight: 600;
+  color: var(--color-card-heading);
 }
 .session-notes-history p {
   white-space: pre-wrap;
   font-size: 0.9em;
-  color: #444;
+  color: var(--color-card-text);
   line-height: 1.6;
 }
 
@@ -712,8 +777,29 @@ onUnmounted(() => {
   background-color: #0056b3;
 }
 
+.button-secondary {
+  padding: 10px 15px;
+  background-color: var(--color-background-soft);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+  display: inline-block;
+  text-align: center;
+}
+.button-secondary:hover:not(:disabled) {
+  background-color: var(--color-background-mute);
+  border-color: var(--color-heading);
+}
+.full-width {
+  width: 100%;
+  display: block;
+}
+
 .loading-message, .no-history, .login-prompt {
-  color: var(--color-text); 
+  color: var(--color-card-text); 
   text-align: center;
   padding: 20px;
 }
@@ -729,4 +815,22 @@ onUnmounted(() => {
     color: #007bff; 
 }
 
+@media (max-width: 600px) {
+  .history-view {
+    padding: 5px;
+    margin: 10px auto;
+    padding-bottom: 30px; /* Extra bottom space for nav */
+  }
+  .card, .history-item-card {
+    padding: 15px 15px;
+    margin-bottom: 15px;
+  }
+  .history-item-header h2 {
+    font-size: 1.3em;
+  }
+  .workout-summary {
+    padding: 15px;
+    margin-top: 15px;
+  }
+}
 </style>

@@ -34,6 +34,13 @@
   --color-text: var(--vt-c-text-light-1);
 
   --section-gap: 160px;
+
+  /* Default Light Mode Card Styles (System Light) */
+  --color-card-bg: var(--vt-c-white-soft);
+  --color-card-text: var(--vt-c-text-light-1);
+  --color-card-heading: var(--vt-c-text-light-1);
+  --color-card-border: var(--vt-c-divider-light-2);
+  --color-card-mute: var(--vt-c-white-mute);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,7 +54,72 @@
 
     --color-heading: var(--vt-c-text-dark-1);
     --color-text: var(--vt-c-text-dark-2);
+
+    /* Default Dark Mode Card Styles (True Dark) */
+    --color-card-bg: var(--vt-c-black-soft);
+    --color-card-text: var(--vt-c-text-dark-2);
+    --color-card-heading: var(--vt-c-text-dark-1);
+    --color-card-border: var(--vt-c-divider-dark-2);
+    --color-card-mute: var(--vt-c-black-mute);
   }
+}
+
+/* Manual Theme Overrides */
+[data-theme='dark'] {
+  --color-background: var(--vt-c-black);
+  --color-background-soft: var(--vt-c-black-soft);
+  --color-background-mute: var(--vt-c-black-mute);
+
+  --color-border: var(--vt-c-divider-dark-2);
+  --color-border-hover: var(--vt-c-divider-dark-1);
+
+  --color-heading: var(--vt-c-text-dark-1);
+  --color-text: var(--vt-c-text-dark-2);
+
+  --color-card-bg: var(--vt-c-black-soft);
+  --color-card-text: var(--vt-c-text-dark-2);
+  --color-card-heading: var(--vt-c-text-dark-1);
+  --color-card-border: var(--vt-c-divider-dark-2);
+  --color-card-mute: var(--vt-c-black-mute);
+}
+
+[data-theme='light'] {
+  --color-background: var(--vt-c-white);
+  --color-background-soft: var(--vt-c-white-soft);
+  --color-background-mute: var(--vt-c-white-mute);
+
+  --color-border: var(--vt-c-divider-light-2);
+  --color-border-hover: var(--vt-c-divider-light-1);
+
+  --color-heading: var(--vt-c-text-light-1);
+  --color-text: var(--vt-c-text-light-1);
+
+  --color-card-bg: var(--vt-c-white-soft);
+  /* or just white */
+  --color-card-text: var(--vt-c-text-light-1);
+  --color-card-heading: var(--vt-c-text-light-1);
+  --color-card-border: var(--vt-c-divider-light-2);
+  --color-card-mute: var(--vt-c-white-mute);
+}
+
+[data-theme='original'] {
+  /* "Original" is Dark Background... */
+  --color-background: var(--vt-c-black);
+  --color-background-soft: var(--vt-c-black-soft);
+  --color-background-mute: var(--vt-c-black-mute);
+
+  --color-border: var(--vt-c-divider-dark-2);
+  --color-border-hover: var(--vt-c-divider-dark-1);
+
+  --color-heading: var(--vt-c-text-dark-1);
+  --color-text: var(--vt-c-text-dark-2);
+
+  /* ...BUT White Cards (Like Light Mode) */
+  --color-card-bg: #ffffff;
+  --color-card-text: #333333;
+  --color-card-heading: #111111;
+  --color-card-border: #e0e0e0;
+  --color-card-mute: #f8f9fa;
 }
 
 *,
