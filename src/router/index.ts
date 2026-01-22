@@ -103,16 +103,9 @@ router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const user = await getCurrentUser(); // Make sure this function is robust
 
-  console.log('Navigation Guard:');
-  console.log('  To:', to.path);
-  console.log('  Requires Auth:', requiresAuth);
-  console.log('  User authenticated:', !!user);
-
   if (requiresAuth && !user) {
-    console.log('  Redirecting to /login');
     next({ name: 'Login' });
   } else if (to.name === 'Login' && user) {
-    console.log('  User logged in, redirecting from Login to /');
     next({ name: 'Home' });
   } else if (user && to.name === 'Home') {
     try {
@@ -123,7 +116,6 @@ router.beforeEach(async (to, from, next) => {
       const activeProgramSnap = await getDoc(activeProgramRef);
 
       if (!activeProgramSnap.exists() && (from.name === null || from.name === 'Login')) {
-        console.log('  New user detected (initial or login), auto-redirecting to /routines for setup');
         next({ name: 'Routines' });
         return;
       }
@@ -132,7 +124,6 @@ router.beforeEach(async (to, from, next) => {
     }
     next();
   } else {
-    console.log('  Allowing navigation.');
     next();
   }
 });

@@ -196,7 +196,7 @@
       </div>
       <div v-if="nextSetDetails" class="next-up-info card-inset">
         <h4>NEXT UP: {{ nextSetDetails.exerciseName }}</h4>
-        <p>Set {{ nextSetDetails.setNumber }} of {{ nextSetDetails.targetSets }}: {{ nextSetDetails.prescribedReps }} {{ (nextSetDetails as any).isTimed ? 'sec hold' : 'reps' }} @ {{ nextSetDetails.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}</p>
+        <p>Set {{ nextSetDetails.setNumber }} of {{ nextSetDetails.targetSets }}: {{ nextSetDetails.prescribedReps }} {{ nextSetDetails.isTimed ? 'sec hold' : 'reps' }} @ {{ nextSetDetails.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}</p>
       </div>
       <button @click="proceedToNextSet" class="button-primary start-next-set-button" :class="{ 'embiggened': settings.embiggenButtons }">
         {{ restCountdown > 0 ? 'Skip Rest & Start Next Set' : 'Start Next Set' }}
@@ -1700,8 +1700,6 @@ const correctLastSet = () => {
 
   showMobileTooltipForIndex.value = null;
   mobileTooltipText.value = '';
-
-  console.log("Correcting set:", setToCorrect.exerciseName, "Set", setToCorrect.setNumber);
 };
 
 

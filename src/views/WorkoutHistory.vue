@@ -41,6 +41,9 @@
         <div class="chart-section card">
             <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h3 style="margin:0; line-height:1.2;">Weekly Volume</h3>
+                <div style="font-size: 0.75em; color: var(--color-text); opacity: 0.7; margin-left: 10px;">
+                  (Load more history to see older data)
+                </div>
                 <select v-model="weeklyVolumeTimeRange" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 150px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-text); font-size: 0.9em;">
                      <option value="12w">Last 12 Weeks</option>
                      <option value="6m">Last 6 Months</option>
@@ -85,7 +88,7 @@
 
     <div v-if="!isLoading && !error && user && loggedWorkouts.length > 0" class="history-list">
       <h3 style="margin: 30px 0 20px 0; font-size: 1.5em; border-bottom: 1px solid var(--color-border); padding-bottom: 10px; color: var(--color-heading);">Recent Logs</h3>
-      <div v-for="workout in visibleWorkouts" :key="workout.id" class="history-item-card">
+      <div v-for="workout in loggedWorkouts" :key="workout.id" class="history-item-card">
         <div class="history-item-header">
           <h2>{{ workout.workoutDayNameUsed || 'Workout Session' }}</h2>
           <p class="workout-date">
@@ -131,7 +134,10 @@
       </div>
 
       
-      <button v-if="hasMoreLogs" @click="loadMoreLogs" class="button-secondary full-width" style="margin-top: 10px;">Load More History</button>
+      <button v-if="hasMoreDocs" @click="fetchMoreWorkouts" class="button-secondary full-width" style="margin-top: 10px;">
+        <span v-if="isLoading">Loading...</span>
+        <span v-else>Load Older Workouts</span>
+      </button>
     </div>
 
     <div v-if="!user && !isLoading" class="login-prompt">
@@ -165,7 +171,7 @@ interface CalendarDay {
 
 const { user } = useAuth();
 const { settings } = useSettings();
-const { loggedWorkouts, isLoading, error, fetchLoggedWorkouts } = useLoggedWorkouts();
+const { loggedWorkouts, isLoading, error, fetchLoggedWorkouts, fetchMoreWorkouts, hasMoreDocs } = useLoggedWorkouts();
 const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
 
 // Chart & Analytics State
@@ -182,16 +188,8 @@ const uniqueExercises = computed(() => {
 });
 
 // Pagination State
-const logsLimit = ref(10);
-const visibleWorkouts = computed(() => {
-    return loggedWorkouts.slice(0, logsLimit.value);
-});
-const hasMoreLogs = computed(() => {
-    return logsLimit.value < loggedWorkouts.length;
-});
-const loadMoreLogs = () => {
-    logsLimit.value += 10;
-};
+// Handled by useLoggedWorkouts composable
+
 
 const activeTooltip = ref<{ date: string; text: string; event: MouseEvent } | null>(null);
 const calendarRef = ref<HTMLElement | null>(null);
