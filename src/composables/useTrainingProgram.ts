@@ -79,10 +79,15 @@ export default function useTrainingProgram() {
 
                 if (programSnap.exists()) {
                     const data = programSnap.data() as Omit<TrainingProgram, 'id'>;
-                    activeProgram.id = programSnap.id;
+                    activeProgram.workoutDays = Array.isArray(data.workoutDays) ? data.workoutDays : [];
                     activeProgram.programName = data.programName || 'Training Routine';
                     activeProgram.description = data.description || '';
-                    activeProgram.workoutDays = Array.isArray(data.workoutDays) ? data.workoutDays : [];
+                    activeProgram.id = programSnap.id;
+
+                    // HYDRATION: Fetch current weights/reps for each exercise
+                    // This ensures the Routine Editor displays current progress, not just 0/defaults.
+                    await hydrateProgramWithProgress();
+
                 } else {
                     // If specifically requested ID doesn't exist, error. If auto-load, clear.
                     if (programId) {
@@ -99,6 +104,66 @@ export default function useTrainingProgram() {
             clearActiveProgram();
         } finally {
             isProgramLoading.value = false;
+        }
+    };
+
+    const hydrateProgramWithProgress = async () => {
+        if (!user.value || !user.value.uid || activeProgram.workoutDays.length === 0) return;
+
+        try {
+            // Collect all unique exercise identifiers to fetch
+            // We use the same key generation logic: standardizing name
+            const exercisesToFetch: { dayId: string; exId: string; name: string; key: string }[] = [];
+
+            activeProgram.workoutDays.forEach(day => {
+                day.exercises.forEach(ex => {
+                    if (ex.exerciseName) {
+                        const key = ex.exerciseName.toLowerCase().replace(/\s+/g, '_');
+                        exercisesToFetch.push({ dayId: day.id, exId: ex.id, name: ex.exerciseName, key });
+                    }
+                });
+            });
+
+            if (exercisesToFetch.length === 0) return;
+
+            // Fetch in parallel
+            // Note: If many exercises share the same name (duplicates?), we might fetch redundant docs. 
+            // Optimization: Unique keys map.
+            const uniqueKeys = [...new Set(exercisesToFetch.map(item => item.key))];
+
+            const progressDocs = await Promise.all(
+                uniqueKeys.map(key => getDoc(doc(db, 'users', user.value!.uid, 'exerciseProgress', key)))
+            );
+
+            const progressMap = new Map<string, any>();
+            progressDocs.forEach((snap, index) => {
+                if (snap.exists()) {
+                    progressMap.set(uniqueKeys[index], snap.data());
+                }
+            });
+
+            // Map back to activeProgram
+            activeProgram.workoutDays.forEach(day => {
+                day.exercises.forEach(ex => {
+                    if (ex.exerciseName) {
+                        const key = ex.exerciseName.toLowerCase().replace(/\s+/g, '_');
+                        const prog = progressMap.get(key);
+                        if (prog) {
+                            // Populate the display fields
+                            ex.currentPrescribedWeight = prog.currentWeightToAttempt;
+                            ex.currentPrescribedReps = prog.repsToAttemptNext;
+                        } else {
+                            // If no progress found, likely defaults (which might be 0 or undefined).
+                            // Leave as is or set defaults? Default to 0/minReps if undefined to avoid "undefined" in UI?
+                            // UI seems to handle undefined by showing defaults or 0.
+                        }
+                    }
+                });
+            });
+
+        } catch (e) {
+            console.error("Failed to hydrate program with progress:", e);
+            // Non-critical failure, app works but weights might show 0.
         }
     };
 
@@ -408,6 +473,7 @@ export default function useTrainingProgram() {
         if (newProgramId) {
             if (newProgramId !== oldProgramId || programWorkoutsHistory.value.length === 0) {
                 fetchProgramWorkoutsHistory();
+                checkForDraftWorkout();
             }
         } else {
             programWorkoutsHistory.value = [];

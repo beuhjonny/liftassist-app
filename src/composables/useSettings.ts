@@ -14,6 +14,7 @@ export interface UserSettings {
     weightUnit: WeightUnitOption;
     defaultRestTimer: number; // in seconds
     activeProgramId: string | null; // ID of the active training program
+    embiggenButtons: boolean; // Accessible / large buttons mode
 }
 
 const defaultSettings: UserSettings = {
@@ -23,6 +24,7 @@ const defaultSettings: UserSettings = {
     weightUnit: 'lbs',
     defaultRestTimer: 90,
     activeProgramId: null,
+    embiggenButtons: false,
 };
 
 const settings = ref<UserSettings>({ ...defaultSettings });

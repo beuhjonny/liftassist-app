@@ -23,6 +23,9 @@ export interface ExerciseConfig {
   notesForExercise?: string | null;
   enableProgression?: boolean;
   isTimed?: boolean;
+  isSupersetWithPrevious?: boolean;
+  fullRestAfterSuperset?: boolean;
+  isToFailure?: boolean;
   // startingWeight is only in the form model for new exercises, not stored in ExerciseConfig
 }
 

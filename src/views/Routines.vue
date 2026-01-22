@@ -79,6 +79,134 @@
       </div>
     </div>
 
+    <!-- AI/Import Help Modals -->
+
+    <div v-if="showExistingRoutineHelpDialog" class="modal-overlay">
+        <div class="modal-content" style="max-width: 700px; text-align: left;">
+            <button @click="showExistingRoutineHelpDialog = false" class="modal-close-button">&times;</button>
+            <h3 style="margin-top:0;">Import Existing Routine</h3>
+            <p style="font-size: 1.05em; line-height: 1.5; color: #444;">
+                This tool will help you take <strong>ANY</strong> workout routine you already have and convert it to a format you can import into LiftAssist.
+            </p>
+            
+            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
+                <div>
+                    <strong>Step 1:</strong> Find your existing routine. It can be text, a screenshot, or you can even just dictate it to your favorite AI (ChatGPT, Claude, Gemini).
+                </div>
+                <div>
+                    <strong>Step 2:</strong> Copy the instructions below and paste them into the AI along with your source workout.
+                </div>
+                
+                <div class="code-block-container" style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 0.8em; white-space: pre-wrap; font-family: monospace; color: #333;">
+<strong>System Prompt:</strong>
+You are an expert fitness data assistant for the LiftAssist app.
+I am providing a workout routine (text, notes, or image). Your goal is to convert it into the specific JSON format required by the app.
+
+<strong>GUIDELINES:</strong>
+1. <strong>Interpret intelligently:</strong> "Bench 3x10" means { "exerciseName": "Bench Press", "targetSets": 3, "minReps": 10, "maxReps": 10 }. If range is "8-12", set min 8, max 12.
+2. <strong>Fill gaps:</strong> If sets are missing, assume 3. If reps are missing, assume 8-12. 
+3. <strong>Estimate Weight:</strong> If no weight is mentioned, provide a reasonable ESTIMATE for a beginner (e.g. 135 for Bench, 45 for Curl). <strong>Do not use 0</strong> unless it is a bodyweight exercise.
+4. <strong>Clarify if needed:</strong> If input is unintelligible, ask for clarification.
+5. <strong>Format:</strong> Output <strong>ONLY valid raw JSON</strong>.
+
+<strong>REQUIRED JSON STRUCTURE:</strong>
+{
+  "programName": "Routine Name",
+  "description": "Short description",
+  "workoutDays": [
+    {
+      "dayName": "e.g. Push Day",
+      "order": 1,
+      "exercises": [
+        {
+          "exerciseName": "Exercise Name",
+          "targetSets": 3,
+          "minReps": 8,
+          "maxReps": 12,
+          "notesForExercise": "Optional notes",
+          // IMPORTANT: Provide a weight estimate!
+          "startingWeight": 135, 
+          "isTimed": false, 
+          "customRestSeconds": 60
+        }
+      ]
+    }
+  ]
+}
+                </div>
+                
+                <div>
+                    <strong>Step 3:</strong> Take the JSON output from the AI and paste it into the box on the previous screen. It may not be perfect, but it should get you close! You can edit the details after importing.
+                </div>
+            </div>
+            
+            <div class="form-actions" style="justify-content: flex-end; margin-top: 20px;">
+                <button @click="showExistingRoutineHelpDialog = false" class="button-primary small">Got it</button>
+            </div>
+        </div>
+    </div>
+
+    <div v-if="showNewRoutineHelpDialog" class="modal-overlay">
+        <div class="modal-content" style="max-width: 700px; text-align: left;">
+            <button @click="showNewRoutineHelpDialog = false" class="modal-close-button">&times;</button>
+            <h3 style="margin-top:0;">Design Fresh with AI</h3>
+            <p style="font-size: 1.05em; line-height: 1.5; color: #444;">
+                Have no idea where to start? Ask the AI to design a custom program for you from scratch.
+            </p>
+
+            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
+                <div>
+                    <strong>Step 1:</strong> Copy the instructions below to the AI.
+                </div>
+                <div>
+                    <strong>Step 2:</strong> Tell the AI what equipment you have, how many days you want to train, and what your main goal is. It will do its best to create a balanced plan for you, which you can fully customize after importing.
+                </div>
+
+                <div class="code-block-container" style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 0.8em; white-space: pre-wrap; font-family: monospace; color: #333;">
+<strong>Prompt:</strong>
+"Act as an expert strength coach. I want a new workout routine.
+<strong>My Profile:</strong>
+- Goal: [e.g. Hypertrophy, Strength, Weight Loss]
+- Level: [e.g. Beginner, Intermediate]
+- Equipment Access: [e.g. Full Gym, Dumbbells only, Bodyweight]
+- Frequency: [e.g. 3 days/week]
+
+<strong>Your Task:</strong>
+Design a balanced program for me and output it <strong>ONLY as strict JSON</strong> representing the plan.
+
+<strong>REQUIRED JSON FORMAT:</strong>
+{
+  "programName": "suggested name",
+  "description": "brief strategy summary",
+  "workoutDays": [
+    {
+      "dayName": "Day 1 - Focus",
+      "order": 1,
+      "exercises": [
+        {
+          "exerciseName": "Exercise",
+          "targetSets": 3,
+          "minReps": 8,
+          "maxReps": 12,
+          "startingWeight": 45 // Estimate appropriate weight (e.g. 45-135lbs). Do not use 0.
+        }
+      ]
+    }
+  ]
+}"
+                </div>
+
+                <div>
+                    <strong>Step 3:</strong> Paste the resulting JSON code into the import box on the previous screen.
+                </div>
+            </div>
+
+            <div class="form-actions" style="justify-content: flex-end; margin-top: 20px;">
+                <button @click="showNewRoutineHelpDialog = false" class="button-primary small">Got it</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Active Routine Display -->
     <div v-if="activeProgram.id && !isLoading && user" class="active-routine-display card">
       <div v-if="!isInOverallEditMode" class="routine-info-display">
@@ -145,16 +273,23 @@
                         handle=".drag-handle-exercise"
                         group="exercises" 
                         :disabled="!isInOverallEditMode"
-                        @end="() => onExerciseDragEnd(day.id)"
+                        @end="onExerciseDragEnd(day.id, $event)"
+                        @start="onExerciseDragStart(day.id, $event)"
+                        @change="() => onExerciseDragChange(day.id)"
                       >
-                        <template #item="{ element: exercise }">
-                            <div class="exercise-item-with-inline-form">
+                        <template #item="{ element: exercise, index }">
+                            <div class="exercise-item-with-inline-form" :class="{ 'is-superset-slave': exercise.isSupersetWithPrevious }">
+
                               <div class="exercise-item-display">
                                 <div class="exercise-info-text" style="display:flex; align-items:center;">
                                   <span v-if="isInOverallEditMode" class="drag-handle-exercise" style="cursor: grab; margin-right: 8px; color:#888;" title="Drag to reorder exercise">::</span>
+                                  <span v-if="exercise.isSupersetWithPrevious" class="superset-link-icon" title="Superset with previous">🔗</span>
                                   <span class="ex-name">{{ exercise.exerciseName }}</span>
                                   <span class="ex-details">
-                                    : {{ exercise.targetSets }} sets, {{ exercise.currentPrescribedReps ?? exercise.minReps }} {{ exercise.isTimed ? 'sec' : 'reps' }}, {{ toDisplay(exercise.currentPrescribedWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }}
+                                    : {{ exercise.targetSets }} sets, 
+                                    <template v-if="exercise.isToFailure">To Failure</template>
+                                    <template v-else>{{ exercise.currentPrescribedReps ?? exercise.minReps }} {{ exercise.isTimed ? 'sec' : 'reps' }}</template>, 
+                                    {{ toDisplay(exercise.currentPrescribedWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }}
                                     <span v-if="exercise.customRestSeconds">, {{ exercise.customRestSeconds }}s rest</span>
                                     <span v-else-if="isInOverallEditMode && (exercise.customRestSeconds === null || exercise.customRestSeconds === undefined)">, (Default Rest)</span>
                                     <span v-if="exercise.enableProgression === false" class="no-progression-note"> (No Auto-Progression)</span>
@@ -162,6 +297,7 @@
                                 </div>
                                 <div v-if="isInOverallEditMode" class="exercise-item-actions">
                                   <button @click="startEditExercise(day.id!, exercise)" class="button-icon extra-small" title="Edit Exercise">✏️</button>
+
                                   <button @click="removeExerciseFromDay(day.id!, exercise.id!)" :disabled="isSaving" class="button-icon extra-small danger" title="Remove Exercise">🗑️</button>
                                 </div>
                               </div>
@@ -189,18 +325,51 @@
                                     <div><label>Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
                                     <div><label>Rest (sec):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" :placeholder="'Default (' + settings.defaultRestTimer + 's)'" /></div>
                                   </div>
-                                  <div class="form-group form-group-inline">
+                                  
+                                  <div class="form-group">
+                                       <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.isToFailure" /> To Failure?</label>
+                                  </div>
+
+                                  <div class="form-group form-group-inline" v-if="!editingExercise.isToFailure">
                                     <div><label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
                                     <div><label>{{ editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:' }}</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
                                   </div>
                                   
-                                  <div class="form-group" style="display: flex; gap: 20px;">
-                                    <label class="checkbox-label">
-                                      <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?
-                                    </label>
-                                    <label class="checkbox-label">
-                                      <input type="checkbox" v-model="editingExercise.isTimed" /> Timed Exercise (e.g. Plank)
-                                    </label>
+                                  <div class="exercise-options-container card-inset" style="padding: 10px; margin-bottom: 15px; background-color: #f9f9f9; border: 1px solid #eee;">
+                                    <label class="form-section-label" style="font-weight:600; margin-bottom:8px; display:block;">Options</label>
+                                    
+                                    <div class="form-group" style="display: flex; gap: 20px; flex-wrap: wrap;">
+                                        <label class="checkbox-label">
+                                        <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression
+                                        </label>
+                                        <label class="checkbox-label">
+                                        <input type="checkbox" v-model="editingExercise.isTimed" /> Timed Exercise
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-group" v-if="day.exercises.findIndex((e: any) => e.id === exercise.id) > 0">
+                                        <label class="checkbox-label" title="Must match sets of previous exercise">
+                                            <input type="checkbox" v-model="editingExercise.isSupersetWithPrevious" /> Superset with Previous Exercise
+                                        </label>
+                                        
+                                        <div v-if="editingExercise.isSupersetWithPrevious">
+                                            <!-- Informational text -->
+                                            <div style="font-size:0.8em; color:#007bff; margin-left: 25px; margin-top: 2px;">
+                                                Sets locked to match previous exercise.
+                                            </div>
+
+                                            <!-- Full Rest Option -->
+                                            <div style="margin-top:8px;">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" v-model="editingExercise.fullRestAfterSuperset" /> Start timer after set (standard rest)
+                                                </label>
+                                                <div style="font-size:0.8em; color:#666; margin-left:25px;">
+                                                    If checked, the full rest timer starts after this exercise finishes.<br>
+                                                    If unchecked, the timer accounts for the time taken to do this exercise (smart deduction).
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                   </div>
 
                                   <div class="form-group form-group-inline">
@@ -235,13 +404,21 @@
                               <div><label>Target Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
                               <div><label>Rest (sec):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" :placeholder="'Default (' + settings.defaultRestTimer + 's)'" /></div>
                           </div>
-                          <div class="form-group form-group-inline">
+                          <div class="form-group">
+                              <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.isToFailure" /> To Failure?</label>
+                          </div>
+                          <div class="form-group form-group-inline" v-if="!editingExercise.isToFailure">
                             <div><label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
                             <div><label>{{ editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:' }}</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
                           </div>
                           <div class="form-group" style="display: flex; gap: 20px;">
                             <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?</label>
                             <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.isTimed" /> Timed Exercise</label>
+                          </div>
+                          <div class="form-group" v-if="day.exercises.length > 0">
+                              <label class="checkbox-label" title="Must match sets of previous exercise">
+                                <input type="checkbox" v-model="editingExercise.isSupersetWithPrevious" /> Superset with Previous Exercise?
+                              </label>
                           </div>
                           <div class="form-group form-group-inline">
                             <div><label>Starting Weight ({{ displayUnit(settings.weightUnit) }}):</label><input type="number" v-model.number="editingExercise.startingWeight" step="0.1" /></div>
@@ -264,14 +441,26 @@
       </div>
         
         <!-- Add New Session Logic -->
-        <div v-if="isInOverallEditMode" class="add-day-section card-inset" style="text-align: center; margin-top: 25px;">
-           <button v-if="!addingNewDay" @click="addingNewDay = true" class="button-primary full-width">+ Add Session</button>
-           <div v-if="addingNewDay" class="add-day-form-inline">
+         <div v-if="isInOverallEditMode" class="add-day-section card-inset" style="text-align: center; margin-top: 25px;">
+            <button v-if="!addingNewDay" @click="addingNewDay = true" class="button-primary full-width">+ Add Session</button>
+            
+            <div v-if="addingNewDay && !activeProgram.id" style="color:red; font-size:0.9em; margin-bottom:5px;">
+                (Save routine details above first)
+            </div>
+            
+            <div v-if="addingNewDay" class="add-day-form-inline">
                <input type="text" v-model="newWorkoutDayName" placeholder="New Session Name (e.g. Pull Day)" @keyup.enter="addWorkoutDayToList" />
                <button @click="addWorkoutDayToList" :disabled="isSaving" class="button-primary small" style="height: 38px;">Save</button>
                <button @click="addingNewDay = false" class="button-secondary small" style="height: 38px;">Cancel</button>
            </div>
         </div>
+      
+       <!-- Bottom Save Button for UX -->
+       <div v-if="isInOverallEditMode" class="bottom-save-bar" style="margin-top: 20px; text-align: center;">
+            <button @click="toggleOverallEditMode" class="button-primary full-width">
+                💾 Save Routine
+            </button>
+       </div>
       
       <!-- Routine Actions Footer -->
       <div v-if="isInOverallEditMode" class="routine-level-actions">
@@ -281,6 +470,7 @@
            </button>
            <p class="warning-text">This will delete the routine "{{ activeProgram.programName }}" and all its configuration. Exercise history will be preserved.</p>
       </div>
+
     
     </div> <!-- End active-routine-display -->
     
@@ -426,11 +616,13 @@ const handleSetAsActive = async (programId?: string) => {
 };
 
 const startCreatingNewRoutine = () => {
-    // Clear active program view to show the "Choice" screen, but we need to ensure we don't think we are loading.
-    // Actually, createProgram creates it then bumps us to it.
-    // But the UI currently uses (!activeProgram.id) to show the creation choice.
-    // So we can:
-    activeProgram.id = null; // Unsets current view
+    // Clear active program view to show the "Choice" screen.
+    // We set activeProgram.id to null to trigger the v-if="!activeProgram.id" check in template.
+    // Does NOT write to DB yet.
+    activeProgram.id = null;
+    activeProgram.programName = '';
+    activeProgram.description = '';
+    activeProgram.workoutDays = []; // Ensure empty
     creationMode.value = null; // Resets choice
 };
 
@@ -504,17 +696,7 @@ const onDayDragEnd = async () => {
     }
 };
 
-const onExerciseDragEnd = async (dayId: string) => {
-    // When exercises are reordered within a day (or between days if we enable that),
-    // we need to save the parent structure.
-    // v-model on nested draggable will have already updated the array in memory.
-    // We just need to persist it.
-    
-    // If we support dragging between days, we might need to update the dayId of the exercise if we track that? 
-    // In our structure, exercises are nested in the day object, so moving them in the UI moves them in the data structure automatically.
-    
-    await onDayDragEnd(); // Reusing the save logic since it saves the entire tree
-};
+
 
 const toggleExistingRoutineHelp = () => {
   showExistingRoutineHelpDialog.value = !showExistingRoutineHelpDialog.value;
@@ -553,27 +735,58 @@ const toggleOverallEditMode = async () => {
 // Local loadActiveProgram removed in favor of useTrainingProgram
 
 const quickStartManualRoutine = async () => {
+    // Instead of creating immediately, we just set up the LOCAL state for a new routine.
+    // It will be saved when the user clicks "Done Editing" or tries to add days/exercises? 
+    // Actually, adding days/exercises requires an ID in the current architecture (subcollections nested under program ID).
+    // So we HAVE to create the document if we want to add subcollections using the existing logic.
+    // BUT the user complaint is "immediately saves it as new routine... then creates a duplicate".
+    
+    // SOLUTION: We create the doc immediately (necessary for subcollections), BUT we ensure we rely on THAT ID.
+    // The issue might be that `startCreatingNewRoutine` was clearing the ID, and then maybe `createProgram` was called again?
+    // Or when they "saved", it created a NEW one instead of UPDATE?
+    
+    // Let's first make sure we are not creating duplicates.
+    // The previous implementation of `quickStartManualRoutine` called `createProgram`.
+    // The user says: "starting a new routine immediately saves it as new routine, then when you save the routine you were actually making it creates a duplicate"
+    
+    // This implies that `saveActiveProgramBaseDetails` might be doing `createProgram` too?
+    // Let's look at `saveActiveProgramBaseDetails`.
+    // It does `updateDoc` if `activeProgram.id` exists.
+    
+    // If `quickStartManualRoutine` sets `activeProgram.id`, then `save` handles it correctly.
+    // Maybe the user clicked "Add New Routine" (startCreatingNewRoutine) -> then clicked "Manual" (quickStart...) -> this created Doc A.
+    // Then they edited name "My Split".
+    // Then they clicked "Done Editing" -> `saveActiveProgramBaseDetails` -> Updates Doc A.
+    // This seems correct?
+    
+    // Unless... `createProgram` adds it to the list.
+    // Maybe the user is confused by the list updating?
+    
+    // OR: maybe they are clicking "+ Add New Routine" again?
+    
+    // Let's try to keep it local until they rename it?
+    // No, we need ID for subcollections.
+    // We will stick to `createProgram` but ensure we handle the UI better so they don't feel lost.
+    
     if (!user.value || !user.value.uid) { error.value = 'User not logged in.'; return; }
     isSaving.value = true;
     try {
         const newProgramId = await createProgram("New Routine", "");
-        await loadProgram(newProgramId); // View it
+        await loadProgram(newProgramId); 
         
         // Reset UI states
         creationMode.value = null;
         isInOverallEditMode.value = true;
         
         // Pre-fill edit forms
-        editableProgramDetails.programName = "New Routine";
+        editableProgramDetails.programName = ""; // Blank so they interpret it as 'new'
         editableProgramDetails.description = "";
         showEditProgramDetailsForm.value = true;
         
-        // Open Add Exercise for first day logic...
-        // We know createProgram makes 0 days. Wait, createProgram in useTrainingProgram makes empty workoutDays?
-        // Let's check. Yes `workoutDays: []`.
-        // So we need to add a day.
+        // We do NOT add a new day automatically yet, let them name the routine first.
+        // Or if we do, we must ensure it doesn't cause issues.
         
-        addingNewDay.value = true; // Open the "Add Day" form
+        addingNewDay.value = true; 
         
     } catch (e: any) {
         error.value = "Failed to create routine. " + e.message;
@@ -688,7 +901,97 @@ const importPastedRoutine = async () => {
             })) : []
     }));
 
-    await updateDoc(programDocRef, { workoutDays: workoutDaysToSave });
+    // Prepare batch for creating progress docs
+    const batch = writeBatch(db);
+    
+    // Create new ID for program if I haven't already (actually createProgram above made it)
+    // But we need to update it with the days.
+    
+    // We already have `workoutDaysToSave` prepared above.
+    // Let's iterate them to add Progress operations to the batch.
+    
+    for (const day of workoutDaysToSave) {
+        for (const ex of day.exercises) {
+            // Check if we have a starting weight to save
+            if (ex.startingWeight !== undefined && ex.startingWeight !== null) {
+                 const exerciseProgressKey = ex.exerciseName.toLowerCase().replace(/\s+/g, '_');
+                 const exerciseProgressRef = doc(db, 'users', user.value.uid, 'exerciseProgress', exerciseProgressKey);
+                 
+                 // We use set with merge:true or just set?
+                 // If it exists, we probably shouldn't overwrite it unless the user explicitly wants to reset?
+                 // But this is an IMPORT. Usually implies setting it up. 
+                 // However, if they share "Bench Press" with another routine, we generally want to KEEP the existing progress.
+                 // Manual add logic (lines 1123-1135) checks if it exists & only sets if NOT exists.
+                 // We cannot easily checks existence of ALL inside a loop without many reads.
+                 // But we can use `update` and ignore failure? No.
+                 // We can use `create`? Firestore doesn't have "create if not exists" easily in batch without reading.
+                 
+                 // Actually, for bulk import, reading all might be heavy if they import 50 exercises.
+                 // But standard routine is ~20 exercises. 20 reads is fine.
+                 // Let's read to be safe and avoid overwriting progress for existing exercises.
+                 
+                 // Note: we can't await inside mapping nicely, so we use a for loop.
+            }
+        }
+    }
+    
+    // Re-structure the logic to be async friendly
+    // We need to read existing progress to avoid overwriting.
+    
+    // 1. Collect all unique exercise names
+    const allExerciseNames = new Set<string>();
+    workoutDaysToSave.forEach((d: any) => d.exercises.forEach((e: any) => allExerciseNames.add(e.exerciseName)));
+    
+    // 2. We could fetch them, but simpler: just loop and getDoc. 
+    // It's client side, a few parallel reads is ok.
+    
+    const progressPromises = [];
+    
+    // We need to strip `startingWeight` from the config we save to the Program, 
+    // because ExerciseConfig doesn't officially support it (though Firestore creates it if we pass it).
+    // Types.ts says: startingWeight is only in form model.
+    // So strictly we should remove it from `workoutDaysToSave` before updating program, 
+    // but use it for the progress creation.
+    
+    const cleanedWorkoutDaysToSave = workoutDaysToSave.map((day: any) => ({
+        ...day,
+        exercises: day.exercises.map((ex: any) => {
+             const { startingWeight, ...rest } = ex;
+             return rest;
+        })
+    }));
+
+    // Add program update to batch
+    batch.update(programDocRef, { workoutDays: cleanedWorkoutDaysToSave });
+
+    // Handle Progress
+    const uid = user.value.uid; 
+    for (const day of workoutDaysToSave) {
+        for (const ex of day.exercises) {
+             if (ex.startingWeight !== undefined && ex.startingWeight !== null) {
+                 progressPromises.push((async () => {
+                     const exerciseProgressKey = ex.exerciseName.toLowerCase().replace(/\s+/g, '_');
+                     const exerciseProgressRef = doc(db, 'users', uid, 'exerciseProgress', exerciseProgressKey);
+                     const snap = await getDoc(exerciseProgressRef);
+                     
+                     if (!snap.exists()) {
+                         const initialProgressData: ExerciseProgress = {
+                            exerciseName: ex.exerciseName, 
+                            currentWeightToAttempt: ex.startingWeight,
+                            repsToAttemptNext: ex.minReps || 8, 
+                            lastWorkoutAllSetsSuccessfulAtCurrentWeight: false,
+                            consecutiveFailedWorkoutsAtCurrentWeightAndReps: 0, 
+                            lastPerformedDate: null,
+                         };
+                         batch.set(exerciseProgressRef, initialProgressData);
+                     }
+                 })());
+             }
+        }
+    }
+    
+    await Promise.all(progressPromises);
+    await batch.commit();
     
     // Load it
     await loadProgram(newId);
@@ -748,6 +1051,167 @@ const removeWorkoutDay = async (dayIdToRemove: string) => {
   finally { isSaving.value = false; }
 };
 
+const toggleSuperset = async (dayId: string, exerciseIndex: number) => {
+    if (!user.value || !user.value.uid || !activeProgram.id) return;
+    const day = activeProgram.workoutDays.find(d => d.id === dayId);
+    if (!day || !day.exercises) return;
+    
+    // Cannot make first exercise a superset slave
+    if (exerciseIndex === 0) return;
+
+    const exercise = day.exercises[exerciseIndex];
+    if (!exercise) return;
+
+    const newStatus = !exercise.isSupersetWithPrevious;
+    
+    // If enabling superset, we must match the sets of the previous exercise
+    let updatedSets = exercise.targetSets;
+    if (newStatus) {
+        const prevExercise = day.exercises[exerciseIndex - 1];
+        if (prevExercise) {
+            updatedSets = prevExercise.targetSets;
+        }
+    }
+
+    isSaving.value = true;
+    try {
+        const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', activeProgram.id);
+        
+        // Update local state first for responsiveness
+        exercise.isSupersetWithPrevious = newStatus;
+        if (newStatus) exercise.targetSets = updatedSets;
+
+        const newWorkoutDaysArray = activeProgram.workoutDays.map(d => {
+             if (d.id === dayId) {
+                 return {
+                     ...d,
+                     exercises: d.exercises.map((ex, idx) => {
+                         if (idx === exerciseIndex) {
+                             return { ...ex, isSupersetWithPrevious: newStatus, targetSets: updatedSets };
+                         }
+                         return ex;
+                     })
+                 };
+             }
+             return d;
+        });
+        
+        const workoutDaysToSave = newWorkoutDaysArray.map(day => ({
+          ...day, exercises: day.exercises.map(ex => {
+            const { currentPrescribedReps, currentPrescribedWeight, ...config } = ex; return config as ExerciseConfig;
+          })
+        }));
+
+        await updateDoc(programDocRef, { workoutDays: workoutDaysToSave, updatedAt: serverTimestamp() });
+        activeProgram.workoutDays = newWorkoutDaysArray;
+
+    } catch (e: any) {
+        error.value = "Failed to update superset status: " + e.message;
+        // Revert local change on error
+        exercise.isSupersetWithPrevious = !newStatus;
+    } finally {
+        isSaving.value = false;
+    }
+};
+
+const onExerciseDragChange = async (dayId: string) => {
+    if (!user.value || !user.value.uid || !activeProgram.id) return;
+  
+    // Sanitize Superset Status after reorder
+    const day = activeProgram.workoutDays.find(d => d.id === dayId);
+    if (day && day.exercises) {
+        if (day.exercises.length > 0) {
+            // First item cannot be superset
+            if (day.exercises[0].isSupersetWithPrevious) {
+                day.exercises[0].isSupersetWithPrevious = false;
+            }
+            
+            for (let i = 1; i < day.exercises.length; i++) {
+                const ex = day.exercises[i];
+                if (ex.isSupersetWithPrevious) {
+                    const prev = day.exercises[i-1];
+                    if (ex.targetSets !== prev.targetSets) {
+                        ex.targetSets = prev.targetSets;
+                    }
+                }
+            }
+        }
+    }
+
+    isSaving.value = true; error.value = null;
+    
+    try {
+        const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', activeProgram.id);
+        const workoutDaysToSave = activeProgram.workoutDays.map(d => ({
+        ...d, exercises: d.exercises.map(ex => {
+            const { currentPrescribedReps, currentPrescribedWeight, ...config } = ex; return config as ExerciseConfig;
+        })
+        }));
+        await updateDoc(programDocRef, { workoutDays: workoutDaysToSave, updatedAt: serverTimestamp() });
+    } catch (e: any) { error.value = "Failed to save exercise order. " + e.message; }
+    finally { isSaving.value = false; }
+};
+
+// --- Drag and Drop Grouping Logic ---
+const draggedSlaveId = ref<string | null>(null);
+
+const onExerciseDragStart = (dayId: string, evt: any) => {
+    const day = activeProgram.workoutDays.find(d => d.id === dayId);
+    if (!day) return;
+    
+    // Check if the item we are dragging is a Master (i.e., the NEXT item is a Slave)
+    const oldIndex = evt.oldIndex;
+    if (day.exercises && day.exercises.length > oldIndex + 1) {
+        const potentialSlave = day.exercises[oldIndex + 1];
+        if (potentialSlave.isSupersetWithPrevious) {
+            draggedSlaveId.value = potentialSlave.id;
+        } else {
+            draggedSlaveId.value = null;
+        }
+    } else {
+        draggedSlaveId.value = null;
+    }
+};
+
+const onExerciseDragEnd = (dayId: string, evt: any) => {
+    const day = activeProgram.workoutDays.find(d => d.id === dayId);
+    if (!day || !day.exercises) return;
+
+    // If we dragged a Master, we must move its Slave to follow it
+    if (draggedSlaveId.value) {
+        const slaveIndex = day.exercises.findIndex(e => e.id === draggedSlaveId.value);
+        if (slaveIndex !== -1) {
+             const masterNewIndex = evt.newIndex;
+             // Logic to handle indices shift if slave was before master (unlikely for slave)
+             // But if we move master UP, slave is "below" it, so slave index is > master index.
+             // If we move master DOWN, slave is "above" it? No, slave follows master.
+             
+             // Simple removal and re-insertion based on Current indices.
+             
+             const [slave] = day.exercises.splice(slaveIndex, 1);
+             
+             let targetInsertIndex = masterNewIndex + 1;
+             if (slaveIndex < masterNewIndex) {
+                 // If we removed something from BEFORE the insertion point, the insertion point index must decrement
+                 targetInsertIndex -= 1;
+             }
+             
+             // Safety bounds
+             if (targetInsertIndex > day.exercises.length) targetInsertIndex = day.exercises.length;
+             
+             day.exercises.splice(targetInsertIndex, 0, slave);
+
+             // CRITICAL: Restore the link status, because intermediate states (e.g. validtion during drag)
+             // might have stripped it if the slave was temporarily orphaned or at index 0.
+             slave.isSupersetWithPrevious = true;
+        }
+        draggedSlaveId.value = null;
+    }
+    
+    // Always validate linkage (fix orphans etc)
+    onExerciseDragChange(dayId);
+};
+
 const startEditWorkoutDayName = (day: WorkoutDay) => {
   cancelAddOrEditExercise(); editingDayNameId.value = day.id; editableDayName.value = day.dayName;
 };
@@ -780,6 +1244,7 @@ const resetEditingExerciseForm = () => {
     weightIncrement: 5, customRestSeconds: undefined, notesForExercise: '', enableProgression: true,
     isTimed: false,
     startingWeight: 45, currentWeightToDisplayOrEdit: undefined, currentRepsToDisplayOrEdit: undefined,
+    isSupersetWithPrevious: false,
   });
 };
 
@@ -813,7 +1278,9 @@ const startEditExercise = async (dayId: string, exerciseToEdit: ExerciseConfigFo
     editingExercise.customRestSeconds = exerciseToEdit.customRestSeconds ?? undefined; // Use ?? for null/undefined
     editingExercise.notesForExercise = exerciseToEdit.notesForExercise || '';
     editingExercise.enableProgression = exerciseToEdit.enableProgression !== false;
+    editingExercise.enableProgression = exerciseToEdit.enableProgression !== false;
     editingExercise.isTimed = exerciseToEdit.isTimed === true;
+    editingExercise.isSupersetWithPrevious = exerciseToEdit.isSupersetWithPrevious === true;
     
     // Convert to display units
     editingExercise.weightIncrement = toDisplay(exerciseToEdit.weightIncrement, settings.value.weightUnit);
@@ -929,7 +1396,38 @@ const addOrUpdateExercise = async (dayId: string) => {
     repOverloadStep: repStep, weightIncrement: weightInc, enableProgression: enableProgToSave,
     customRestSeconds: customRestForSave, notesForExercise: notesToSave,
     isTimed: editingExercise.isTimed || false,
+    isSupersetWithPrevious: editingExercise.isSupersetWithPrevious || false,
+    isToFailure: editingExercise.isToFailure || false,
+    fullRestAfterSuperset: editingExercise.fullRestAfterSuperset || false,
   };
+
+  // Enforce superset constraints (must match previous sets)
+  if (baseDataForRoutine.isSupersetWithPrevious) {
+      // Find previous exercise to sync sets
+      // This is tricky because we need the index relative to the list.
+       const currentExercises = activeProgram.workoutDays[dayIndex].exercises;
+       let prevExercise: ExerciseConfigForDisplay | undefined;
+       
+       if (editingExercise.id) {
+           // Editing existing: find its index
+           const myIndex = currentExercises.findIndex(ex => ex.id === editingExercise.id);
+           if (myIndex > 0) prevExercise = currentExercises[myIndex - 1];
+           else {
+               // First item cannot be superset
+               baseDataForRoutine.isSupersetWithPrevious = false; 
+           }
+       } else {
+           // Adding new: it will be at the end, so previous is the last current one
+           if (currentExercises.length > 0) prevExercise = currentExercises[currentExercises.length - 1];
+           else {
+               baseDataForRoutine.isSupersetWithPrevious = false;
+           }
+       }
+
+       if (baseDataForRoutine.isSupersetWithPrevious && prevExercise) {
+           baseDataForRoutine.targetSets = prevExercise.targetSets;
+       }
+  }
 
   if (editingExercise.id) {
     const existingEx = activeProgram.workoutDays[dayIndex].exercises.find(ex => ex.id === editingExercise.id);
@@ -1516,5 +2014,19 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
   .import-routine-section textarea {
     min-height: 100px;
   }
+}
+
+.is-superset-slave {
+    margin-left: 20px;
+    padding-left: 10px;
+}
+.superset-link-icon {
+    margin-right: 5px;
+    font-size: 1.1em;
+}
+.active-superset {
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-radius: 4px;
 }
 </style>

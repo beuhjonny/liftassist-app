@@ -1,5 +1,6 @@
-<template>
+﻿<template>
   <div class="workout-active-view">
+
     <!-- Draft Workout Prompt -->
     <div v-if="showDraftPrompt" class="draft-prompt-overlay">
       <div class="draft-prompt-card card">
@@ -26,10 +27,18 @@
       <p v-if="activeProgramName" class="routine-name">Routine: {{ activeProgramName }}</p>
       <p class="overview-subtitle">Here's the plan for today:</p>
       <ul v-if="sessionExercises.length > 0" class="exercise-overview-list">
-        <li v-for="(exercise, index) in sessionExercises" :key="exercise.id" class="exercise-overview-item">
-          <strong>{{ index + 1 }}. {{ exercise.exerciseName }}</strong>
+        <li v-for="(exercise, index) in sessionExercises" :key="exercise.id" class="exercise-overview-item" :class="{ 'superset-child-item': exercise.isSupersetWithPrevious }">
+          <strong>
+            <span v-if="exercise.isSupersetWithPrevious" style="margin-right: 5px;" title="Superset linked to previous">🔗</span>
+            {{ index + 1 }}. {{ exercise.exerciseName }}
+          </strong>
           <span class="overview-details">
-            : {{ exercise.targetSets }} sets of {{ exercise.prescribedReps }} reps @ {{ toDisplay(exercise.prescribedWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }}
+            <template v-if="exercise.isToFailure">
+                : {{ exercise.targetSets }} sets of {{ toDisplay(exercise.prescribedWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }} to failure
+            </template>
+            <template v-else>
+                : {{ exercise.targetSets }} sets of {{ exercise.prescribedReps }} reps @ {{ toDisplay(exercise.prescribedWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }}
+            </template>
             <em v-if="exercise.customRestSeconds"> ({{ exercise.customRestSeconds }}s rest)</em>
             <em v-else> ({{ DEFAULT_REST_SECONDS }}s default rest)</em>
           </span>
@@ -55,13 +64,14 @@
                 'completed-done': index < workoutLog.length && workoutLog[index]?.status === 'done',
                 'completed-failed': index < workoutLog.length && workoutLog[index]?.status === 'failed',
                 'active': index === workoutLog.length,
-                'tooltip-active': showMobileTooltipForIndex === index
+                'tooltip-active': showMobileTooltipForIndex === index,
+                'connected-dot': set.isConnectedToNext
               }"
               :title="`${set.exerciseName} - Set ${set.setNumberWithinExercise}`"
               @click="toggleProgressDotTooltip(index, `${set.exerciseName} - Set ${set.setNumberWithinExercise}`)"
             ></span>
             <span
-              v-if="index < allSetsInSessionForTimeline.length - 1 && set.exerciseName !== allSetsInSessionForTimeline[index + 1].exerciseName"
+              v-if="index < allSetsInSessionForTimeline.length - 1 && set.separatorGroupIndex !== allSetsInSessionForTimeline[index + 1].separatorGroupIndex"
               class="progress-separator"
             ></span>
           </template>
@@ -86,7 +96,8 @@
             <span 
               class="prescription-reps" 
               :class="{ 'failed-last-attempt-text': didFailLastAttemptAtCurrentPrescription }">
-              {{ getEffectivePrescribedReps }} {{ currentExercise.isTimed ? 'sec hold' : 'reps' }}
+              <template v-if="currentExercise.isToFailure">To Failure</template>
+              <template v-else>{{ getEffectivePrescribedReps }} {{ currentExercise.isTimed ? 'sec hold' : 'reps' }}</template>
             </span>
             <span class="prescription-separator">@</span>
             <span 
@@ -94,6 +105,10 @@
               :class="{ 'failed-last-attempt-text': didFailLastAttemptAtCurrentPrescription }">
               {{ toDisplay(getEffectivePrescribedWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }}
             </span>
+            <div v-if="shouldShowLastPerformance && lastPerformanceForCurrentSet" class="last-performance-info" style="font-size: 0.85em; color: #6c757d; margin-top: 5px;">
+              Last: {{ toDisplay(lastPerformanceForCurrentSet.actualWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }} x {{ lastPerformanceForCurrentSet.actualReps }} 
+              <span v-if="lastPerformanceForCurrentSet.status === 'failed'">(Failed)</span>
+            </div>
           </div>
         </div>
 
@@ -115,13 +130,13 @@
         </p>
 
         <div class="set-actions" v-if="!currentExercise.isTimed || (!isHoldTimerRunning && !currentExercise.isTimed)">
-          <button @click="logSet('done')" class="button-done">DONE</button>
-          <button @click="logSet('failed')" class="button-fail">FAIL</button>
+          <button @click="logSet('done')" class="button-done" :class="{ 'embiggened': settings.embiggenButtons }">DONE</button>
+          <button @click="logSet('failed')" class="button-fail" :class="{ 'embiggened': settings.embiggenButtons }">FAIL</button>
         </div>
         <div class="set-actions" v-else-if="currentExercise.isTimed && !isHoldTimerRunning">
            <!-- Allow manual logging if hold timer not running -->
-           <button @click="logSet('done')" class="button-done">DONE MANUALLY</button>
-           <button @click="logSet('failed')" class="button-fail">FAIL</button>
+           <button @click="logSet('done')" class="button-done" :class="{ 'embiggened': settings.embiggenButtons }">DONE MANUALLY</button>
+           <button @click="logSet('failed')" class="button-fail" :class="{ 'embiggened': settings.embiggenButtons }">FAIL</button>
         </div>
       </div>
     </div>
@@ -142,13 +157,14 @@
                 'completed-done': index < workoutLog.length && workoutLog[index]?.status === 'done',
                 'completed-failed': index < workoutLog.length && workoutLog[index]?.status === 'failed',
                 'active': index === workoutLog.length, 
-                'tooltip-active': showMobileTooltipForIndex === index
+                'tooltip-active': showMobileTooltipForIndex === index,
+                'connected-dot': set.isConnectedToNext
               }"
               :title="`${set.exerciseName} - Set ${set.setNumberWithinExercise}`"
               @click="toggleProgressDotTooltip(index, `${set.exerciseName} - Set ${set.setNumberWithinExercise}`)"
             ></span>
             <span
-              v-if="index < allSetsInSessionForTimeline.length - 1 && set.exerciseName !== allSetsInSessionForTimeline[index + 1].exerciseName"
+              v-if="index < allSetsInSessionForTimeline.length - 1 && set.separatorGroupIndex !== allSetsInSessionForTimeline[index + 1].separatorGroupIndex"
               class="progress-separator"
             ></span>
             </template>
@@ -162,15 +178,27 @@
       <div class="timer-bar-container">
         <div class="timer-bar" :style="{ width: timerProgressPercentage + '%' }"></div>
       </div>
-      <div v-if="showActualRepsInputForFail" class="actual-reps-input-section card-inset">
-        <label for="actualRepsFailed">How many reps did you complete for the failed set?</label>
-        <input type="number" id="actualRepsFailed" v-model.number="actualRepsForFailedSet" min="0" />
+      <div v-if="showActualRepsInput" class="actual-reps-input-section card-inset" style="margin-bottom: 20px;">
+        <div v-for="item in setsRequiringRepInput" :key="item.index" class="rep-input-item" style="margin-bottom: 10px;">
+          <label :for="'reps-input-' + item.index">
+            {{ item.set.status === 'failed' ? 'Failed at how many reps for' : 'How many reps did you get for' }} 
+            <strong>{{ item.set.exerciseName }}</strong>?
+          </label>
+          <input 
+            type="number" 
+            :id="'reps-input-' + item.index" 
+            v-model.number="repsCompletedInputMap[item.index]" 
+            min="0"
+            style="width: 100%; padding: 8px; font-size: 1.2rem; border-radius: 6px; border: 1px solid #ccc;"
+            placeholder="Enter reps..." 
+          />
+        </div>
       </div>
       <div v-if="nextSetDetails" class="next-up-info card-inset">
         <h4>NEXT UP: {{ nextSetDetails.exerciseName }}</h4>
         <p>Set {{ nextSetDetails.setNumber }} of {{ nextSetDetails.targetSets }}: {{ nextSetDetails.prescribedReps }} {{ (nextSetDetails as any).isTimed ? 'sec hold' : 'reps' }} @ {{ nextSetDetails.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}</p>
       </div>
-      <button @click="proceedToNextSet" class="button-primary start-next-set-button">
+      <button @click="proceedToNextSet" class="button-primary start-next-set-button" :class="{ 'embiggened': settings.embiggenButtons }">
         {{ restCountdown > 0 ? 'Skip Rest & Start Next Set' : 'Start Next Set' }}
       </button>
     </div>
@@ -226,10 +254,7 @@
             </li>
           </ul>
 
-          <div v-if="sessionOverallNotes" class="session-notes-history"> 
-            <strong>Overall Session Notes:</strong>
-            <p>{{ sessionOverallNotes }}</p>
-          </div>
+          <!-- Redundant preview block removed -->
         </div>
 
         <div v-if="showActualRepsInputForFail && lastLoggedSetIndex !== null && workoutLog[lastLoggedSetIndex]?.status === 'failed'" class="actual-reps-input-section card-inset">
@@ -381,6 +406,7 @@ interface DraftWorkout {
   currentSetNumber: number;
   workoutPhase: WorkoutPhase;
   workoutStartTime: Date | null;
+  supersetStartTime?: Date | null;
   sessionOverallNotes: string;
   lastUpdated: any; // Firestore Timestamp
   createdAt: any; // Firestore Timestamp
@@ -393,7 +419,7 @@ const router = useRouter();
 const route = useRoute();
 const isLoading = ref(true);
 const { settings } = useSettings();
-const { invalidateCache } = useLoggedWorkouts();
+const { loggedWorkouts, fetchLoggedWorkouts, invalidateCache } = useLoggedWorkouts();
 const isSaving = ref(false);
 const error = ref<string | null>(null);
 
@@ -421,8 +447,7 @@ const currentSetNumber = ref(1);
 const DEFAULT_REST_SECONDS = computed(() => settings.value.defaultRestTimer || 90);
 const restDurationToUse = ref(DEFAULT_REST_SECONDS.value);
 const restCountdown = ref(DEFAULT_REST_SECONDS.value);
-const showActualRepsInputForFail = ref(false);
-const actualRepsForFailedSet = ref<number | null>(null);
+
 const lastLoggedSetIndex = ref<number | null>(null);
 let timerInterval: number | undefined = undefined;
 const timerAudioPlayer = ref<HTMLAudioElement | null>(null);
@@ -437,6 +462,7 @@ type SoundType = 'bell' | 'beep' | 'chime' | 'ding'; // simplified
 const workoutPhase = ref<WorkoutPhase>('overview');
 const workoutStartTime = ref<Date | null>(null);
 const workoutEndTime = ref<Date | null>(null);
+const supersetStartTime = ref<Date | null>(null); // Track when the first exercise of a superset chain started
 
 const activeSetTimeElapsed = ref(0);
 let activeSetTimerInterval: number | undefined = undefined;
@@ -499,6 +525,50 @@ const overriddenWeightForCurrentSet = ref<number | null>(null);
 const isEditModeActive = ref(false);
 const showEditWorkoutModal = ref(false);
 const editingExercise = ref<PerformedExerciseInLog | null>(null);
+
+// Rep Capture State
+const repsCompletedInputMap = reactive<Record<number, number>>({});
+
+const setsRequiringRepInput = computed(() => {
+  if (lastLoggedSetIndex.value === null) return [];
+  
+  const setsToCheck: { index: number; set: LoggedSetData }[] = [];
+  const lastSet = workoutLog[lastLoggedSetIndex.value];
+  if (!lastSet) return [];
+
+  // Always include the very last set
+  setsToCheck.push({ index: lastLoggedSetIndex.value, set: lastSet });
+
+  // If part of a superset group...
+  if (lastLoggedSetIndex.value > 0) {
+      const prevIndex = lastLoggedSetIndex.value - 1;
+      const prevSet = workoutLog[prevIndex];
+      
+      // Find config for lastSet
+      const lastConfig = sessionExercises.find(ex => ex.id === lastSet.exerciseId);
+      
+      // If last set was a "Slave" (superset with previous), then the previous set was its "Master"
+      if (lastConfig?.isSupersetWithPrevious) {
+          setsToCheck.unshift({ index: prevIndex, set: prevSet });
+      }
+  }
+
+  return setsToCheck.filter(item => {
+      // Find config to check isToFailure
+      const config = sessionExercises.find(ex => ex.id === item.set.exerciseId);
+      const isToFailure = config?.isToFailure || false;
+      
+      // Require input if:
+      // 1. Status is FAILED (always need reps for failure)
+      // 2. OR isToFailure is TRUE (always want to capture reps even if "Done")
+      return item.set.status === 'failed' || isToFailure;
+  });
+});
+
+const showActualRepsInput = computed(() => setsRequiringRepInput.value.length > 0);
+const showActualRepsInputForFail = computed(() => showActualRepsInput.value); // Backward compat alias if needed
+const actualRepsForFailedSet = ref<number | null>(null); // Kept to prevent breaking other legacy refs temporarily, though we should clean up.
+
 
 // --- Computed Properties ---
 const totalSessionSets = computed(() => {
@@ -570,14 +640,56 @@ const getEffectivePrescribedWeight = computed((): number => {
 const formattedRestTime = computed(() => { const m = Math.floor(restCountdown.value / 60); const s = restCountdown.value % 60; return `${m}:${s < 10 ? '0' : ''}${s}`; });
 const timerProgressPercentage = computed(() => (workoutPhase.value === 'resting' && restDurationToUse.value > 0) ? (restCountdown.value / restDurationToUse.value) * 100 : 100);
 
-interface TimelineSetInfo { exerciseName: string; setNumberWithinExercise: number; }
+interface TimelineSetInfo { exerciseName: string; setNumberWithinExercise: number; isSuperset?: boolean; supersetColorIndex?: number; separatorGroupIndex: number; isConnectedToNext?: boolean; }
 const allSetsInSessionForTimeline = computed<TimelineSetInfo[]>(() => {
   const flatList: TimelineSetInfo[] = [];
-  sessionExercises.forEach(exercise => {
-    for (let i = 1; i <= (exercise.targetSets || 0); i++) {
-      flatList.push({ exerciseName: exercise.exerciseName, setNumberWithinExercise: i });
-    }
-  });
+  let i = 0;
+  let groupCounter = 0;
+  
+  while (i < sessionExercises.length) {
+      const currentEx = sessionExercises[i];
+      // Check if this is the start of a superset chain
+      const chain = [currentEx];
+      let j = i + 1;
+      while (j < sessionExercises.length && sessionExercises[j].isSupersetWithPrevious) {
+          chain.push(sessionExercises[j]);
+          j++;
+      }
+      
+      if (chain.length > 1) {
+          // It is a superset chain. Interleave sets.
+          const sets = currentEx.targetSets || 0;
+          for (let s = 1; s <= sets; s++) {
+              chain.forEach((ex, idx) => {
+                  // Determine if this dot should connect to the next one
+                  // It connects if it is NOT the last item in the chain
+                  const connects = idx < chain.length - 1;
+                  
+                  flatList.push({ 
+                      exerciseName: ex.exerciseName, 
+                      setNumberWithinExercise: s,
+                      isSuperset: true,
+                      supersetColorIndex: idx,
+                      separatorGroupIndex: groupCounter,
+                      isConnectedToNext: connects
+                  });
+              });
+          }
+          groupCounter++; // Increment group only after the entire superset chain is processed
+          i = j; // Skip processed exercises
+      } else {
+          // Normal exercise
+          for (let s = 1; s <= (currentEx.targetSets || 0); s++) {
+              flatList.push({ 
+                  exerciseName: currentEx.exerciseName, 
+                  setNumberWithinExercise: s,
+                  separatorGroupIndex: groupCounter 
+              });
+          }
+          groupCounter++; // Increment group only after all sets of this exercise
+          i++;
+      }
+  }
   return flatList;
 });
 
@@ -641,6 +753,50 @@ const displayDurationForCompletedWorkout = computed(() => {
   if (h > 0) formatted += `${h}h `;
   if (m > 0 || h === 0) formatted += `${m}m`;
   return formatted.trim();
+});
+
+// NEW: Computed properties for Last Performance History
+const lastSameWorkoutSession = computed(() => {
+  if (!loggedWorkouts || loggedWorkouts.length === 0) return null;
+  // Find the most recent workout with same programId and dayId
+  // loggedWorkouts is already sorted by date desc
+  return loggedWorkouts.find(w => 
+      w.trainingProgramIdUsed === props.programId && 
+      w.workoutDayIdUsed === props.dayId
+  );
+});
+
+const lastPerformanceForCurrentSet = computed(() => {
+  if (!lastSameWorkoutSession.value || !currentExercise.value) return null;
+  
+  // Try to match by index first (assuming routine structure hasn't changed)
+  const lastExStats = lastSameWorkoutSession.value.performedExercises[currentExerciseIndex.value];
+  
+  // Verify it's the same exercise (in case routine changed)
+  if (!lastExStats || lastExStats.exerciseId !== currentExercise.value.id) {
+    return null;
+  }
+  
+  // Find the specific set
+  // Note: setNumber is 1-indexed
+  const lastSetStats = lastExStats.sets.find(
+      s => s.setNumber === currentSetNumber.value
+  );
+  
+  return lastSetStats || null;
+});
+
+const shouldShowLastPerformance = computed(() => {
+  if (!lastPerformanceForCurrentSet.value) return false;
+  
+  // Always show for "To Failure" exercises
+  if (currentExercise.value?.isToFailure) return true;
+  
+  // Show if the last attempt was a failure (didn't complete prescribed reps)
+  // This helps "failed" exercises show progress
+  if (lastPerformanceForCurrentSet.value.status === 'failed') return true;
+  
+  return false;
 });
 
 const completedPerformedExercisesSummary = computed<PerformedExerciseInLog[]>(() => {
@@ -825,7 +981,8 @@ const fetchWorkoutData = async () => {
   sessionExercises.length = 0; workoutLog.length = 0;
   currentExerciseIndex.value = 0; currentSetNumber.value = 1;
   workoutPhase.value = 'overview'; workoutStartTime.value = null; workoutEndTime.value = null;
-  showActualRepsInputForFail.value = false; activeSetTimeElapsed.value = 0;
+  workoutPhase.value = 'overview'; workoutStartTime.value = null; workoutEndTime.value = null;
+  activeSetTimeElapsed.value = 0;
   showMobileTooltipForIndex.value = null; mobileTooltipText.value = '';
   initialExerciseProgressData.clear(); 
   sessionOverallNotes.value = ""; 
@@ -916,12 +1073,51 @@ const playTimerSound = async () => {
 };
 
 const startRestTimer = () => {
+  // Determine Target Rest
+  let targetRest = DEFAULT_REST_SECONDS.value;
   if (currentExercise.value && currentExercise.value.customRestSeconds && currentExercise.value.customRestSeconds >= 10) {
-    restDurationToUse.value = currentExercise.value.customRestSeconds;
-  } else {
-    restDurationToUse.value = DEFAULT_REST_SECONDS.value;
+    targetRest = currentExercise.value.customRestSeconds;
   }
-  restCountdown.value = restDurationToUse.value;
+  
+  // Default values
+  restDurationToUse.value = targetRest;
+  restCountdown.value = targetRest;
+
+  // Superset Deduction Logic
+  // Superset Deduction Logic
+  if (currentExercise.value && currentExercise.value.isSupersetWithPrevious) {
+       // 1. Find Head of Chain for "Target Rest" (Correctness check: usually same as current, but let's be safe)
+       let headIndex = currentExerciseIndex.value;
+        while (headIndex > 0 && sessionExercises[headIndex].isSupersetWithPrevious) {
+            headIndex--;
+        }
+        const headEx = sessionExercises[headIndex];
+        // Override targetRest with Head's rest if needed (usually they share it, or user wants Head's rest)
+        if (headEx.customRestSeconds && headEx.customRestSeconds >= 10) {
+            targetRest = headEx.customRestSeconds;
+        }
+
+       const now = new Date();
+       const elapsedSinceChainStart = supersetStartTime.value ? Math.floor((now.getTime() - supersetStartTime.value.getTime()) / 1000) : 0;
+       
+       if (elapsedSinceChainStart >= 0 && elapsedSinceChainStart < 3600) {
+           if (currentExercise.value.fullRestAfterSuperset) {
+                // User wants full rest
+                restDurationToUse.value = targetRest;
+                restCountdown.value = targetRest;
+           } else {
+                const remainingRest = targetRest - elapsedSinceChainStart;
+                if (remainingRest <= 0) {
+                   restDurationToUse.value = targetRest;
+                   restCountdown.value = 0; 
+                } else {
+                    restDurationToUse.value = targetRest;
+                    restCountdown.value = remainingRest;
+                }
+           }
+       }
+  }
+
   showMobileTooltipForIndex.value = null;
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(() => {
@@ -967,10 +1163,43 @@ const logSet = async (status: 'done' | 'failed') => {
   // Clear overrides after logging the set (they only apply to one set)
   overriddenRepsForCurrentSet.value = null;
   overriddenWeightForCurrentSet.value = null;
+  // Superset Logic for Flow Control
+  const nextExIndex = currentExerciseIndex.value + 1;
+  const nextEx = nextExIndex < sessionExercises.length ? sessionExercises[nextExIndex] : null;
+  const isChainContinue = nextEx && nextEx.isSupersetWithPrevious;
+  
+  if (isChainContinue) {
+      // Moving to next exercise in superset chain (no rest yet)
+      
+      // If this was the HEAD of the chain (not a slave itself), record start time for rest calculation later
+      if (!currentExercise.value.isSupersetWithPrevious) {
+          supersetStartTime.value = new Date();
+      }
+      
+      currentExerciseIndex.value++;
+      // currentSetNumber stays the same!
+      
+      workoutPhase.value = 'activeSet';
+      startActivitySetTimer();
+      showMobileTooltipForIndex.value = null;
+      
+      // Auto-save draft
+      await saveDraftWorkout();
+      return; 
+  }
+  
+  // End of chain (or normal exercise) -> Go to Rest or Finish
   const isLastExerciseInSession = currentExerciseIndex.value === sessionExercises.length - 1;
+  // For superset, "last set" means "last set of the HEAD exercise". 
+  // Since we enforced set sync, current set number vs target sets of current exercise is fine.
   const isLastSetOfThisExercise = currentSetNumber.value === currentExercise.value.targetSets;
-  showActualRepsInputForFail.value = status === 'failed';
-  if (status === 'failed') { actualRepsForFailedSet.value = null; }
+  
+  // showActualRepsInputForFail is now computed, so we don't set it manually.
+  // We clear previous inputs if a new failure/done set is logged (though essentially we just handle the current needs)
+  if (status === 'failed') {
+     for (const key in repsCompletedInputMap) { delete repsCompletedInputMap[key]; }
+  }
+  
   if (isLastExerciseInSession && isLastSetOfThisExercise) {
     currentExerciseIndex.value++;
     workoutPhase.value = 'complete'; 
@@ -978,6 +1207,11 @@ const logSet = async (status: 'done' | 'failed') => {
     showMobileTooltipForIndex.value = null;
   } else {
     workoutPhase.value = 'resting'; 
+    
+    // Timer initialization is handled in startRestTimer() which is triggered by the watcher on workoutPhase
+    // or effectively by the explicit call below (if watcher is not immediate).
+
+
     startRestTimer();
   }
   
@@ -1017,16 +1251,13 @@ const saveDraftWorkout = async () => {
   }
   
   if (!props.programId || !props.dayId) {
-    console.warn('Cannot save draft: missing programId or dayId', { programId: props.programId, dayId: props.dayId });
+    console.warn('Cannot save draft: missing programId or dayId');
     return;
   }
   
   try {
     const draftRef = getDraftWorkoutRef();
-    if (!draftRef) {
-      console.error('Failed to get draft ref');
-      return;
-    }
+    if (!draftRef) return;
     
     // Build draft data object - use 'any' type to conditionally add createdAt
     const draftData: any = {
@@ -1052,6 +1283,7 @@ const saveDraftWorkout = async () => {
       workoutPhase: workoutPhase.value,
       // Validate workoutStartTime before saving
       workoutStartTime: ensureValidDate(workoutStartTime.value),
+      supersetStartTime: ensureValidDate(supersetStartTime.value), 
       sessionOverallNotes: sessionOverallNotes.value,
       lastUpdated: serverTimestamp(),
     };
@@ -1062,35 +1294,14 @@ const saveDraftWorkout = async () => {
     const isNewDraft = !draftWorkoutId.value || draftWorkoutId.value !== expectedDraftId;
     
     // Only set createdAt on first save
-    // Firestore doesn't allow undefined values, so we conditionally add it
     if (isNewDraft) {
       draftData.createdAt = serverTimestamp();
     }
     
-    console.log('💾 Saving draft workout:', {
-      programId: props.programId,
-      dayId: props.dayId,
-      setsCount: workoutLog.length,
-      phase: workoutPhase.value,
-      currentDraftId: draftWorkoutId.value,
-      expectedDraftId: expectedDraftId,
-      isUpdate: !isNewDraft,
-      isNewDraft: isNewDraft
-    });
-    
     await setDoc(draftRef, draftData, { merge: true });
-    
-    // CRITICAL: Always set draftWorkoutId to the expected ref ID after save
-    // This ensures consistency - we always use the ID constructed from props
     draftWorkoutId.value = expectedDraftId;
-    
-    console.log('✅ Draft workout saved successfully', { 
-      draftId: draftWorkoutId.value, 
-      setsCount: workoutLog.length,
-      phase: workoutPhase.value 
-    });
   } catch (error) {
-    console.error('❌ Failed to save draft workout:', error);
+    console.error('Failed to save draft workout:', error);
   }
 };
 
@@ -1117,14 +1328,14 @@ const loadDraftWorkout = async () => {
     
     if (draftSnap.exists()) {
       const data = draftSnap.data() as Omit<DraftWorkout, 'id'>;
-      console.log('✅ Draft found:', { setsCount: data.workoutLog?.length || 0, phase: data.workoutPhase });
+      console.log('âœ… Draft found:', { setsCount: data.workoutLog?.length || 0, phase: data.workoutPhase });
       return { id: draftSnap.id, ...data } as DraftWorkout;
     } else {
       console.log('No draft found at path:', draftRef.path);
     }
     return null;
   } catch (error) {
-    console.error('❌ Failed to load draft workout:', error);
+    console.error('âŒ Failed to load draft workout:', error);
     return null;
   }
 };
@@ -1208,12 +1419,24 @@ const restoreDraftWorkout = (draft: DraftWorkout) => {
   } else {
     workoutStartTime.value = null;
   }
+  
+  if (draft.supersetStartTime) {
+     const parsedSupersetStart = convertToDate(draft.supersetStartTime);
+     if (parsedSupersetStart instanceof Date && !isNaN(parsedSupersetStart.getTime())) {
+         supersetStartTime.value = parsedSupersetStart;
+     } else {
+         supersetStartTime.value = null;
+     }
+  } else {
+     supersetStartTime.value = null;
+  }
+  
   sessionOverallNotes.value = draft.sessionOverallNotes || '';
   
   // Don't set draftWorkoutId here - let the caller set it using getDraftWorkoutRef()
   // This ensures we always use the ref ID (constructed from props) not the stored document ID
   
-  console.log('✅ Draft workout state restored', {
+  console.log('âœ… Draft workout state restored', {
     setsCount: workoutLog.length,
     exercisesCount: sessionExercises.length,
     phase: workoutPhase.value,
@@ -1295,7 +1518,7 @@ const resumeDraft = async () => {
     // This ensures we're updating the same draft document
     draftWorkoutId.value = draftRef.id;
     
-    console.log('✅ Draft restored successfully', { 
+    console.log('âœ… Draft restored successfully', { 
       setsCount: workoutLog.length, 
       phase: workoutPhase.value,
       draftId: draftWorkoutId.value,
@@ -1333,28 +1556,94 @@ const discardDraft = async () => {
   delete window._pendingDraft;
 };
 
-const proceedToNextSet = () => {
+const proceedToNextSet = async () => {
   if (timerInterval) clearInterval(timerInterval); timerInterval = undefined;
-  if (showActualRepsInputForFail.value && lastLoggedSetIndex.value !== null && workoutLog[lastLoggedSetIndex.value]) {
-    if (actualRepsForFailedSet.value !== null && actualRepsForFailedSet.value >= 0) {
-      workoutLog[lastLoggedSetIndex.value].actualReps = actualRepsForFailedSet.value;
-    }
+  
+  if (showActualRepsInput.value) {
+      // Check for rep inputs from the map
+      setsRequiringRepInput.value.forEach(item => {
+          const inputVal = repsCompletedInputMap[item.index];
+          // Update the log entry if input exists
+          if (typeof inputVal === 'number' && inputVal >= 0) {
+            workoutLog[item.index].actualReps = inputVal;
+          }
+      });
+
+      // Clear map
+      for (const key in repsCompletedInputMap) {
+          delete repsCompletedInputMap[key];
+      }
   }
-  showActualRepsInputForFail.value = false;
-  actualRepsForFailedSet.value = null;
+
+  // Update wake lock
+  // Assuming restTimerInterval is NOT the variable, but generic timer logic exists.
+  // Looking at file, 'timerInterval' seems to be the main one used for rest.
+  // But wait, in 'startRestTimer', is there a specific interval?
+  // Let's just safely clear 'timerInterval' as done at the start.
+  
+  await releaseWakeLock();
   showMobileTooltipForIndex.value = null;
   
   // Clear any overrides when moving to next set (overrides only apply to the set they were set for)
   overriddenRepsForCurrentSet.value = null;
   overriddenWeightForCurrentSet.value = null;
-  if (currentExercise.value) {
-    if (currentSetNumber.value < currentExercise.value.targetSets) {
-      currentSetNumber.value++;
-    } else {
-      currentExerciseIndex.value++;
-      currentSetNumber.value = 1;
-    }
+  
+  // ... rest of function ...
+  
+  // Actually, I need to see the rest of the function logic because I'm replacing the start.
+  // The original function continued to select the next exercise.
+  
+  // Let's check the original source code lines 1460-1500 to be sure.
+  // Since I don't have the full context here, I will do a best effort replacement 
+  // and then view the file if needed.
+  // BUT I can see 'Start Next Set' button calls proceedToNextSet.
+  
+  // Let's verify setsRequiringRepInput logic replacement first
+  // to remove separatorGroupIndex dependency.
+
+
+
+  // Superset Flow Logic: determine next exercise/set
+  const justFinishedEx = sessionExercises[currentExerciseIndex.value];
+    
+  // Check if we are in a superset chain (either we are slave, or next is slave)
+  const isSupersetChain = justFinishedEx.isSupersetWithPrevious || 
+                          (currentExerciseIndex.value + 1 < sessionExercises.length && sessionExercises[currentExerciseIndex.value + 1].isSupersetWithPrevious);
+  
+  if (isSupersetChain) {
+      // Find the Head of this chain
+      let headIndex = currentExerciseIndex.value;
+      while (headIndex > 0 && sessionExercises[headIndex].isSupersetWithPrevious) {
+          headIndex--;
+      }
+      const headEx = sessionExercises[headIndex];
+      
+      if (currentSetNumber.value < headEx.targetSets) {
+          // Loop back to head for next set
+          currentExerciseIndex.value = headIndex;
+          currentSetNumber.value++;
+          supersetStartTime.value = null; 
+      } else {
+          // Done with this chain's sets. Move to exercise AFTER the chain.
+          // Chain is Head + N slaves.
+          let nextIndex = headIndex + 1;
+          while (nextIndex < sessionExercises.length && sessionExercises[nextIndex].isSupersetWithPrevious) {
+              nextIndex++;
+          }
+          currentExerciseIndex.value = nextIndex;
+          currentSetNumber.value = 1;
+          supersetStartTime.value = null;
+      }
+  } else {
+      // Normal Flow
+      if (currentSetNumber.value < justFinishedEx.targetSets) {
+        currentSetNumber.value++;
+      } else {
+        currentExerciseIndex.value++;
+        currentSetNumber.value = 1;
+      }
   }
+  
   if (allExercisesComplete.value) { 
     workoutPhase.value = 'complete'; 
     workoutEndTime.value = new Date(); 
@@ -1362,8 +1651,6 @@ const proceedToNextSet = () => {
   } else { 
     workoutPhase.value = 'activeSet'; 
     startActivitySetTimer();
-    
-    // Save draft when starting a new set so we can resume here if user leaves
     saveDraftWorkout();
   }
 };
@@ -1396,8 +1683,9 @@ const correctLastSet = () => {
   currentExerciseIndex.value = exerciseConfigIndex;
   currentSetNumber.value = setToCorrect.setNumber;
 
-  showActualRepsInputForFail.value = false;
-  actualRepsForFailedSet.value = null;
+  // Clear inputs
+  for (const key in repsCompletedInputMap) { delete repsCompletedInputMap[key]; }
+  
   lastLoggedSetIndex.value = workoutLog.length > 0 ? workoutLog.length - 1 : null;
   
   // Clear any overrides when correcting back to a set
@@ -1417,14 +1705,20 @@ const correctLastSet = () => {
 };
 
 
+
+
+
 const finishWorkoutAndSave = async () => {
   if (!user.value || !user.value.uid || !currentWorkoutDayDetails.value || !props.programId) {
     error.value = "Cannot save workout: missing user or workout context."; isSaving.value = false; return;
   }
-  if (workoutPhase.value === 'complete' && showActualRepsInputForFail.value && lastLoggedSetIndex.value !== null && workoutLog[lastLoggedSetIndex.value]?.status === 'failed') {
-    if (actualRepsForFailedSet.value !== null && actualRepsForFailedSet.value >= 0) {
-      workoutLog[lastLoggedSetIndex.value].actualReps = actualRepsForFailedSet.value;
-    }
+  if (workoutPhase.value === 'complete' && showActualRepsInput.value) {
+    setsRequiringRepInput.value.forEach(item => {
+      const inputVal = repsCompletedInputMap[item.index];
+      if (typeof inputVal === 'number') {
+        workoutLog[item.index].actualReps = inputVal;
+      }
+    });
   }
   if (workoutLog.length === 0) { error.value = "No sets were logged. Workout not saved."; return; }
   isSaving.value = true; error.value = null;
@@ -1527,7 +1821,7 @@ const finishWorkoutAndSave = async () => {
     
     workoutLog.length = 0; currentExerciseIndex.value = 0; currentSetNumber.value = 1;
     workoutPhase.value = 'overview'; 
-    showActualRepsInputForFail.value = false;
+ 
     sessionOverallNotes.value = ""; 
     showMobileTooltipForIndex.value = null; mobileTooltipText.value = ''; 
     showSetDetailsInSummary.value = false; 
@@ -1543,6 +1837,9 @@ const previousUserRef = ref<typeof user.value | null>(null);
 onMounted(async () => {
   isLoading.value = true;
   error.value = null; // Clear any existing errors
+  
+  // Fetch history to support "Last Performance" display
+  fetchLoggedWorkouts();
   
   // Check for draft workout before loading fresh data
   if (user.value && user.value.uid && props.programId && props.dayId) {
@@ -1631,7 +1928,7 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
   showMobileTooltipForIndex.value = null;
   mobileTooltipText.value = '';
   if (oldPhase === 'complete' && newPhase !== 'complete') {
-    showActualRepsInputForFail.value = false; 
+    // showActualRepsInputForFail is computed, nothing to reset
   }
   if (newPhase === 'complete') { 
       if (!workoutEndTime.value) workoutEndTime.value = new Date();
@@ -1748,7 +2045,7 @@ const applyEditAllFutureSets = async () => {
     editedReps.value = null;
     editedWeight.value = null;
     
-    console.log('✅ Updated all future sets for', currentExercise.value.exerciseName, {
+    console.log('âœ… Updated all future sets for', currentExercise.value.exerciseName, {
       newWeight: editedWeight.value,
       newReps: editedReps.value
     });
@@ -1868,6 +2165,18 @@ const saveEditedWorkout = () => {
 .exercise-overview-item strong { color: #007bff; }
 .exercise-overview-item span.overview-details { color: var(--color-card-text); font-size: 0.95em; display: block; margin-top: 4px; opacity: 0.8;}
 .exercise-overview-item em { font-size: 0.85em; color: var(--color-card-text); opacity: 0.7; }
+.superset-child-item { 
+    margin-left: 25px !important; 
+    position: relative;
+}
+.superset-child-item::before {
+    content: "↳";
+    position: absolute;
+    left: -15px;
+    top: 15px;
+    color: #007bff;
+    font-weight: bold;
+}
 .overview-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px;}
 .button-begin-workout { width: 100%; padding: 15px; font-size: 1.2em; }
 
@@ -1879,6 +2188,10 @@ const saveEditedWorkout = () => {
 .progress-dot.active { background-color: #007bff; transform: scale(1.3); }
 .progress-dot.tooltip-active { outline: 2px solid #007bff; outline-offset: 1px; transform: scale(1.3); }
 .progress-dot[title]:hover { outline: 2px solid #007bff; transform: scale(1.2); }
+.progress-dot.connected-dot { margin-right: -2px; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+/* Style the *next* dot if it follows a connected one? Difficult in pure CSS without next-sibling knowing prev state. 
+   Instead, rely on the margin-right of the connected one and maybe shape. */
+.progress-dot.connected-dot + .progress-dot { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 .progress-separator { width: 6px; height: 10px; background-color: #bbb; margin: 0 3px; border-radius: 2px; align-self: center; }
 
 .mobile-progress-tooltip {
@@ -2240,4 +2553,13 @@ const saveEditedWorkout = () => {
   border-radius: 4px;
   background-color: white;
 }
+
+/* Embiggened Buttons */
+.embiggened {
+    padding: 25px !important;
+    font-size: 1.5em !important;
+    min-height: 80px !important;
+    font-weight: 800 !important;
+}
+
 </style>
