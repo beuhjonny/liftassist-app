@@ -34,21 +34,32 @@
 
       <div v-if="isProgramLoading" class="active-program-display card skeleton-card">
           <h2><SkeletonLoader width="60%" height="1.8em" /></h2>
-          <p class="routine-description">
-            <SkeletonLoader width="80%" height="1em" />
+          <p class="routine-description skeleton-text-gap">
+            <SkeletonLoader width="40%" height="1em" />
           </p>
-          <div class="program-insights" style="background: transparent; border: none; padding-left:0; padding-right:0;">
-             <div style="margin-bottom: 15px;">
-                <SkeletonLoader width="100%" height="100px" borderRadius="6px" />
-             </div>
-             <SkeletonLoader width="50%" height="1em" style="margin-bottom: 5px;" />
-             <SkeletonLoader width="40%" height="1em" />
+
+          <!-- Skeleton Insights Area: Uses the real container style to match appearance -->
+          <div class="program-insights">
+             <p class="insight-item">
+               <SkeletonLoader width="30%" height="1em" /> <SkeletonLoader width="40%" height="1em" />
+             </p>
+             <p class="insight-item">
+               <SkeletonLoader width="20%" height="1em" /> <SkeletonLoader width="20%" height="1em" />
+             </p>
           </div>
-          <h3><SkeletonLoader width="40%" height="1.4em" /></h3>
+
+          <h3>Start a Workout:</h3>
+          <!-- Skeleton Buttons: Match the button-workout-day dimensions -->
           <div class="workout-day-selection">
-             <SkeletonLoader width="100%" height="60px" borderRadius="6px" />
-             <SkeletonLoader width="100%" height="60px" borderRadius="6px" />
-             <SkeletonLoader width="100%" height="60px" borderRadius="6px" />
+             <div class="skeleton-button">
+                <SkeletonLoader width="100%" height="100%" borderRadius="6px" />
+             </div>
+             <div class="skeleton-button">
+                <SkeletonLoader width="100%" height="100%" borderRadius="6px" />
+             </div>
+             <div class="skeleton-button">
+                 <SkeletonLoader width="100%" height="100%" borderRadius="6px" />
+             </div>
           </div>
       </div>
       <div v-if="programLoadingError && !isProgramLoading" class="error-message">
@@ -454,4 +465,12 @@ const closeManifestoModal = () => { showManifestoModal.value = false; };
 }
 .modal-close-button:hover { color: var(--color-card-text); opacity: 1; }
 
+
+.skeleton-text-gap {
+  margin-bottom: 25px;
+}
+.skeleton-button {
+  height: 56px; /* Match approximate height of real buttons */
+  width: 100%;
+}
 </style>

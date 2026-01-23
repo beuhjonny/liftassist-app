@@ -46,41 +46,16 @@ const styleObject = computed(() => {
 
 <style scoped>
 .skeleton-loader {
-  background-color: #e0e0e0; /* Base color */
+  background-color: var(--color-skeleton-base, #e0e0e0);
   background-image: linear-gradient(
     90deg,
-    #e0e0e0 0px,
-    #f0f0f0 40px,
-    #e0e0e0 80px
+    var(--color-skeleton-base, #e0e0e0) 0px,
+    var(--color-skeleton-highlight, #f0f0f0) 40px,
+    var(--color-skeleton-base, #e0e0e0) 80px
   );
-  background-size: 600px; /* Large enough to slide across */
+  background-size: 600px;
   animation: skeleton-shimmer 1.6s infinite linear;
   display: inline-block;
-  /* Ensure it takes up space even if empty */
-}
-
-/* Dark mode support if applicable, or generic card bg contrast */
-@media (prefers-color-scheme: dark) {
-    .skeleton-loader {
-        background-color: #2a2a2a;
-        background-image: linear-gradient(
-            90deg,
-            #2a2a2a 0px,
-            #3a3a3a 40px,
-            #2a2a2a 80px
-        );
-    }
-}
-
-/* If app controls theme via class on body/html */
-:global(.dark-mode) .skeleton-loader {
-    background-color: #2a2a2a;
-    background-image: linear-gradient(
-        90deg,
-        #2a2a2a 0px,
-        #3a3a3a 40px,
-        #2a2a2a 80px
-    );
 }
 
 @keyframes skeleton-shimmer {
@@ -88,13 +63,11 @@ const styleObject = computed(() => {
     background-position: -100px;
   }
   100% {
-    background-position: 140px; /* Move past the width */
-    /* Note: for 100% width elements this might need to be larger or percentage based */
     background-position: calc(100% + 100px); 
   }
 }
 
 .type-text {
-  margin-bottom: 0.5em; /* Spacing like text lines */
+  margin-bottom: 0.5em;
 }
 </style>
