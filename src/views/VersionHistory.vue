@@ -79,14 +79,19 @@
 
                 <div class="log-entry">
                     <span class="log-date">Jan 23, 2026</span>
-                    <h4>Styling & Polish Hotfix</h4>
-                    <p>Restored the classic blue/green visual identity to the Active Workout timers and dots. Fixed font sizes and layout issues across the board.</p>
+                    <h4>The "Antigravity" Speed Run</h4>
+                    <p>A massive day of shipping features:</p>
+                    <ul class="feature-list">
+                         <li><strong>Offline Mode (PWA):</strong> The app now works without an internet connection, syncing data when you go back online.</li>
+                         <li><strong>Skeleton Loading:</strong> Smoother loading states with shimmering skeletons instead of jumping content.</li>
+                         <li><strong>Styling Polish:</strong> Restored the classic visual identity and fixed layout issues across the board.</li>
+                    </ul>
                 </div>
 
                 <div class="log-entry">
                     <span class="log-date">Jan 22, 2026</span>
                     <h4>"To Failure" Mode</h4>
-                    <p>Major update for intensity tracking. You can now mark sets as "To Failure" instead of a specific rep target. Includes "Get Ready" screen updates and rep capture logic even for completed sets.</p>
+                    <p>Major update for intensity tracking. You can now mark sets as "To Failure" instead of a specific rep target. Includes "Get Ready" screen updates and rep capture logic.</p>
                 </div>
 
                 <div class="log-entry">
@@ -96,21 +101,9 @@
                 </div>
 
                 <div class="log-entry">
-                     <span class="log-date">Jan 19, 2026</span>
-                    <h4>Toast Notifications</h4>
-                    <p>Replacing standard browser alerts with non-intrusive toast messages.</p>
-                </div>
-
-                <div class="log-entry">
                      <span class="log-date">Jan 18, 2026</span>
                     <h4>Embiggened Buttons</h4>
                     <p>Added collection settings for larger, easier-to-hit buttons during heavy sets.</p>
-                </div>
-
-                <div class="log-entry">
-                    <span class="log-date">Jan 17, 2026</span>
-                    <h4>Skeleton Loading & Component Split</h4>
-                    <p>Added smooth skeleton screens to the dashboard and broke the massive "Active Workout" view into modular components for better performance.</p>
                 </div>
 
                 <div class="log-entry">
@@ -118,19 +111,12 @@
                     <h4>Lift Logic v2.0: The "It Actually Works Now" Update</h4>
                     <p>A comprehensive overhaul moving from "Science Experiment" to "Real Product".</p>
                     <ul class="feature-list">
-                        <li><strong>Multiple Routines:</strong> Create distinct programs (Bulk, Cut, Focus) and switch instantly while syncing progress across shared exercises.</li>
-                        <li><strong>Smart Workouts:</strong> Resume state saved automatically. Live edit weights during sets. "Fix It Later" editing for completed workouts.</li>
-                        <li><strong>Routine Management:</strong> Drag-and-drop reordering, AI-assisted creation, and smarter logic (0 lbs allowed!).</li>
+                        <li><strong>Multiple Routines:</strong> Create distinct programs (Bulk, Cut, Focus) and switch instantly while syncing progress.</li>
+                        <li><strong>Smart Workouts:</strong> Resume state saved automatically. Live edit weights during sets. "Fix It Later" editing.</li>
+                        <li><strong>Routine Management:</strong> Drag-and-drop reordering, AI-assisted creation.</li>
                         <li><strong>Fresh Look:</strong> Montserrat typography, modern icons, and a refined "Progress" dashboard.</li>
                         <li><strong>Customization:</strong> Dark Mode default, custom timer sounds (Robot!), and Lbs/Kg support.</li>
-                        <li><strong>Performance:</strong> Faster loading, robust database, and offline PWA support.</li>
                     </ul>
-                </div>
-
-                 <div class="log-entry">
-                     <span class="log-date">Jan 15, 2026</span>
-                    <h4>Offline Mode (PWA)</h4>
-                    <p>The app now works without an internet connection, syncing data when you go back online.</p>
                 </div>
             </div>
         </div>

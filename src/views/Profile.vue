@@ -90,8 +90,6 @@
 
         <button @click="handleLogout" class="logout-button">Logout</button>
         
-        <AboutModal />
-
       </div>
 
       <div v-if="isLoadingStats" class="loading-message card">
@@ -135,7 +133,14 @@
           <p>Log some workouts to see your lifetime stats here!</p>
       </div>
 
+      <!-- About Modal properly placed INSIDE the container, below other cards -->
+      <div class="about-section-profile" style="text-align: center; margin-top: 20px;">
+          <AboutModal />
+      </div>
+
     </div>
+    
+    <!-- Loading State for User (v-else for v-if="user") -->
     <div v-else class="loading-message card">
       <p>Loading user information or not logged in...</p>
     </div>
@@ -656,6 +661,7 @@ select {
   .segmented-control {
       width: 100%;
       justify-content: center;
+      flex-wrap: wrap; /* Allow wrapping on very small screens */
   }
   
   .volume-control {
