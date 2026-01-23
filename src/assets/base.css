@@ -35,6 +35,16 @@
 
   --section-gap: 160px;
 
+  --section-gap: 160px;
+
+  /* Semantic Colors */
+  --color-primary: #007bff;
+  --color-primary-dark: #0056b3;
+  --color-secondary: #6c757d;
+  --color-success: #28a745;
+  --color-danger: #dc3545;
+  --color-warning: #ffc107;
+
   /* Default Light Mode Card Styles (System Light) */
   --color-card-bg: var(--vt-c-white-soft);
   --color-card-text: var(--vt-c-text-light-1);

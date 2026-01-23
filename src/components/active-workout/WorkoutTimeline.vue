@@ -70,92 +70,85 @@ const toggleTooltip = (index: number, text: string) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 6px; 
+  gap: 4px; /* Original gap */
+  flex-wrap: wrap; 
+  padding: 5px 0;
 }
+
 .progress-dot {
+  display: inline-block;
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background-color: var(--color-background-mute);
-  display: inline-block;
-  cursor: pointer; 
-  position: relative; 
-  transition: all 0.2s ease;
+  background-color: var(--color-card-border); /* Correct original color */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+  position: relative;
 }
 
-/* Connected Dots Logic (Supersets) */
-.connected-dot {
-    margin-right: -2px; /* Pull them closer */
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    width: 12px; /* Slightly oblong to look like a pill segment */
+.progress-dot.completed-done {
+  background-color: var(--color-success, #28a745); 
 }
-.connected-dot + .progress-dot {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+.progress-dot.completed-failed {
+  background-color: var(--color-warning, #ffc107);
 }
-/* Ensure the last one in a chain keeps its right radius if it was just a dot */
-.connected-dot + .progress-dot:not(.connected-dot) {
-    border-radius: 0 50% 50% 0; /* Cap key */
+.progress-dot.active {
+  background-color: var(--color-primary, #007bff);
+  transform: scale(1.3);
+  z-index: 2;
+  box-shadow: none; /* Original didn't have shadow in active state, adding none to be safe or just omit */
+}
+.progress-dot.tooltip-active {
+  outline: 2px solid var(--color-primary, #007bff);
+  outline-offset: 1px;
+  transform: scale(1.3);
+}
+.progress-dot[title]:hover {
+  outline: 2px solid var(--color-primary, #007bff);
+  transform: scale(1.2);
+}
+
+.progress-dot.connected-dot {
+  margin-right: -2px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  width: 12px;
+}
+.progress-dot.connected-dot + .progress-dot {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.progress-dot.connected-dot + .progress-dot:not(.connected-dot) {
+    border-radius: 0 50% 50% 0;
     width: 12px;
     margin-left: -2px;
 }
-/* If a dot is connected, but the previous one wasn't (start of chain) */
-/* This is hard to select with CSS alone without complex logic, 
-   but the class logic in JS handles 'isConnectedToNext' on the left element. 
-   So .connected-dot affects ITSELF. 
-   The logic we implemented: 'isConnectedToNext' is true for A in A->B. 
-   So A gets .connected-dot. B does not (unless B->C).
-   
-   Refined CSS for visual linking:
-*/
 .progress-dot.connected-dot {
-    margin-right: -4px; /* Stronger overlap */
+    margin-right: -2px; 
     z-index: 1;
 }
 
-.progress-dot:hover {
-  transform: scale(1.2);
-}
-.progress-dot.completed-done {
-  background-color: #4CAF50; 
-}
-.progress-dot.completed-failed {
-  background-color: #F44336; 
-}
-.progress-dot.active {
-  background-color: #2196F3; 
-  transform: scale(1.3);
-  box-shadow: 0 0 8px rgba(33, 150, 243, 0.6);
-  z-index: 2;
-}
-
-/* Specific styling for active tooltip to show user touch feedback */
-.progress-dot.tooltip-active {
-    outline: 2px solid var(--color-text);
-    outline-offset: 2px;
-}
-
 .progress-separator {
-  width: 1px;
-  height: 12px;
-  background-color: var(--color-border);
-  margin: 0 4px;
-  opacity: 0.5;
+  width: 6px;
+  height: 10px;
+  background-color: #bbb;
+  margin: 0 3px;
+  border-radius: 2px;
+  align-self: center;
 }
 
 .mobile-progress-tooltip {
-    margin-top: 8px;
-    padding: 6px 12px;
-    background-color: var(--color-background-soft);
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    font-size: 0.9em;
-    color: var(--color-text);
-    display: inline-block;
-    animation: fadeIn 0.2s ease-out;
+  display: inline-block; 
+  background-color: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  margin-top: 10px;
+  max-width: 90%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
+
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(-5px); }
     to { opacity: 1; transform: translateY(0); }

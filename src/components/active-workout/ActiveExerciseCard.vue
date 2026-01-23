@@ -87,131 +87,168 @@ defineEmits<{
 </script>
 
 <style scoped>
-/* Scoped styles extracted from WorkoutActive.vue active-set section */
 .current-exercise-block {
-    text-align: center;
+  text-align: center;
 }
-
+.current-exercise-block h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.6em;
+  color: var(--color-card-heading);
+  border-bottom: 2px solid var(--color-primary, #007bff);
+  padding-bottom: 10px;
+}
 .active-set-timer-display {
-    font-size: 0.9rem;
-    color: var(--color-text-light);
-    margin-bottom: 5px;
-    font-family: monospace;
+  text-align: right;
+  font-size: 0.9em;
+  color: var(--color-card-text);
+  margin-bottom: 15px;
+  padding-right: 5px;
+  opacity: 0.8;
 }
-
 .exercise-notes {
-    font-size: 0.9em;
-    color: var(--color-text-light);
-    margin-bottom: 15px;
-    background-color: var(--color-background-soft);
-    padding: 8px;
-    border-radius: 4px;
-    display: inline-block;
+  font-style: italic;
+  color: var(--color-card-text);
+  margin-bottom: 15px;
+  font-size: 0.9em;
+  opacity: 0.8;
 }
-
 .current-set-info {
-    margin-bottom: 20px;
-    padding: 15px;
+  background-color: var(--color-card-mute);
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border: 1px solid var(--color-card-border);
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
 }
-
 .current-set-info-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
 }
 .current-set-info-header h3 {
-    margin: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  font-size: 1.5em; /* Original size */
+  color: var(--color-card-heading);
+  font-weight: 600;
+  flex-grow: 1;
 }
 
 .prescription-details {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    font-weight: bold;
-    flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
 }
-
 .prescription-reps, .prescription-weight {
-    color: var(--color-primary);
+  font-size: 2.0em;
+  font-weight: bold;
+  color: var(--color-primary, #007bff);
+  display: block;
 }
-
 .prescription-separator {
-    margin: 0 10px;
-    color: var(--color-text-light);
-    font-weight: normal;
-    font-size: 1.5rem;
+  font-size: 1.6em;
+  font-weight: normal;
+  color: var(--color-card-text);
+  opacity: 0.6;
+  margin: 5px 0;
 }
 
-.last-performance-info {
-    width: 100%; /* Force new line */
-}
-
-/* Specific text colors */
+/* Failure Styles */
 .failed-last-attempt-text {
-    color: #e67e22; /* Orange-ish to indicate "warning/retry" */
+  color: var(--color-danger, #dc3545) !important;
 }
-
 .failure-streak-note {
-    color: #e74c3c;
-    font-weight: bold;
-    margin-bottom: 15px;
-    font-size: 0.9em;
-    padding: 8px;
-    background-color: rgba(231, 76, 60, 0.1);
-    border-radius: 4px;
+  color: var(--color-danger, #dc3545);
+  font-size: 0.85em;
+  font-style: italic;
+  text-align: center;
+  margin-top: 8px;
+  margin-bottom: 10px;
 }
 
+/* Set Actions */
 .set-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 10px;
+  display: flex;
+  justify-content: space-around;
+  margin-top: 25px;
+  gap: 20px;
 }
-
-.button-done, .button-fail {
-    padding: 20px;
-    font-size: 1.2rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    color: white;
-    transition: transform 0.1s;
-    display: flex; /* Centering content if needed */
-    justify-content: center;
-    align-items: center;
-    min-height: 60px; /* Ensure logical hit area */
+.set-actions button {
+  padding: 12px 0;
+  font-size: 1.1em;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  flex-grow: 1;
+  margin: 0;
+  max-width: 220px;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
-.button-done:active, .button-fail:active {
-    transform: scale(0.98);
-}
-
 .button-done {
-    background-color: var(--color-primary); /* Greenish usually, or brand primary */
-    /* If primary is blue, maybe make Done Green? 
-       Check style.css or user pref. 
-       Usually Done = Primary in this app based on logic.
-    */
-    background-color: #2ecc71; 
+  background-color: var(--color-success, #28a745);
+}
+.button-done:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
 }
 .button-fail {
-    background-color: #e74c3c; 
+  background-color: var(--color-danger, #dc3545);
+}
+.button-fail:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
 }
 
 /* Embiggen mode */
-.button-done.embiggened, .button-fail.embiggened {
-    min-height: 120px;
-    font-size: 2rem; 
+.embiggened {
+    padding: 25px !important;
+    font-size: 1.5em !important;
+    min-height: 80px !important;
+    font-weight: 800 !important;
 }
 
-/* Full width util */
+.button-primary {
+  background-color: var(--color-primary, #007bff);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.button-secondary {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: var(--color-secondary, #6c757d);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    cursor: pointer;
+}
 .full-width-button {
-    width: 100%;
-    padding: 15px;
-    font-size: 1.1rem;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.button-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1em;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.button-icon.extra-small {
+  font-size: 0.75em;
+  filter: grayscale(100%);
 }
 </style>

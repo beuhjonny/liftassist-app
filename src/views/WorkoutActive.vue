@@ -2013,19 +2013,7 @@ const saveEditedWorkout = () => {
 </script>
 
 <style scoped>
-/* NEW styles for failure indication */
-.failed-last-attempt-text {
-  color: #dc3545 !important; /* Red color, !important to override existing blue if needed */
-}
-
-.failure-streak-note {
-  color: #dc3545; 
-  font-size: 0.85em;
-  font-style: italic;
-  text-align: center;
-  margin-top: 8px; 
-  margin-bottom: 10px; 
-}
+/* Styles moved to ActiveExerciseCard.vue */
 
 /* Styles for the actions-top-bar and correct-last-set-action */
 .actions-top-bar {
@@ -2092,46 +2080,11 @@ const saveEditedWorkout = () => {
 .overview-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px;}
 .button-begin-workout { width: 100%; padding: 15px; font-size: 1.2em; }
 
-.workout-progress-indicator { margin-bottom: 20px; text-align: center; }
-.workout-progress-timeline { display: flex; justify-content: center; align-items: center; gap: 4px; margin-bottom: 5px; padding: 5px 0; flex-wrap: wrap; }
-.progress-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: var(--color-card-border); transition: background-color 0.3s ease, transform 0.2s ease; cursor: pointer; }
-.progress-dot.completed-done { background-color: #28a745; }
-.progress-dot.completed-failed { background-color: #ffc107; }
-.progress-dot.active { background-color: #007bff; transform: scale(1.3); }
-.progress-dot.tooltip-active { outline: 2px solid #007bff; outline-offset: 1px; transform: scale(1.3); }
-.progress-dot[title]:hover { outline: 2px solid #007bff; transform: scale(1.2); }
-.progress-dot.connected-dot { margin-right: -2px; border-top-right-radius: 0; border-bottom-right-radius: 0; }
-/* Style the *next* dot if it follows a connected one? Difficult in pure CSS without next-sibling knowing prev state. 
-   Instead, rely on the margin-right of the connected one and maybe shape. */
-.progress-dot.connected-dot + .progress-dot { border-top-left-radius: 0; border-bottom-left-radius: 0; }
-.progress-separator { width: 6px; height: 10px; background-color: #bbb; margin: 0 3px; border-radius: 2px; align-self: center; }
+/* Styles moved to WorkoutTimeline.vue */
 
-.mobile-progress-tooltip {
-  display: inline-block; 
-  background-color: #333;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 0.85em;
-  margin-top: 10px;
-  max-width: 90%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.current-exercise-block h2 { margin-top: 0; margin-bottom: 10px; font-size: 1.6em; color: var(--color-card-heading); border-bottom: 2px solid #007bff; padding-bottom: 10px;}
-.active-set-timer-display { text-align: right; font-size: 0.9em; color: var(--color-card-text); margin-bottom: 15px; padding-right: 5px; opacity: 0.8; }
-.exercise-notes { font-style: italic; color: var(--color-card-text); margin-bottom: 15px; font-size: 0.9em; opacity: 0.8; }
-.current-set-info h3 { margin-top: 0; margin-bottom: 8px; font-size: 1.3em; color: var(--color-card-heading);}
-.set-actions { display: flex; justify-content: space-around; margin-top: 25px; gap: 20px; }
-.set-actions button { padding: 12px 0; font-size: 1.1em; font-weight: bold; border: none; border-radius: 5px; color: white; cursor: pointer; flex-grow: 1; margin: 0; max-width: 220px; transition: background-color 0.2s, transform 0.1s; box-shadow: 0 2px 4px rgba(0,0,0,0.15); }
-.button-done { background-color: #28a745; }
-.button-done:hover { background-color: #218838; transform: translateY(-2px); }
-.button-fail { background-color: #dc3545; }
-.button-fail:hover { background-color: #c82333; transform: translateY(-2px); }
+/* Styles moved to ActiveExerciseCard.vue */
 .rest-screen-content h2 { font-size: 2em; margin-bottom: 10px; text-align: center; color: var(--color-card-heading); }
-.timer-display { font-size: 3.5em; font-weight: bold; margin: 20px 0; color: #007bff; text-align: center;}
-.timer-bar-container { width: 80%; max-width: 400px; height: 20px; background-color: var(--color-card-border); border-radius: 10px; margin: 0 auto 20px auto; overflow: hidden; }
-.timer-bar { height: 100%; background: linear-gradient(90deg, #007bff, #0056b3); border-radius: 10px; transition: width 1s linear; width: 100%; }
+/* Styles moved to TimerDisplay.vue */
 .actual-reps-input-section { margin: 20px 0; }
 .actual-reps-input-section label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--color-card-text); }
 .actual-reps-input-section input[type="number"] { padding: 8px; width: 80px; text-align: center; font-size: 1em; border: 1px solid var(--color-card-border); border-radius: 4px; background-color: var(--color-card-bg); color: var(--color-card-text); }
