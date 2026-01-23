@@ -32,8 +32,24 @@
         </div>
       </div>
 
-      <div v-if="isProgramLoading" class="loading-message">
-        <p>Loading your program...</p>
+      <div v-if="isProgramLoading" class="active-program-display card skeleton-card">
+          <h2><SkeletonLoader width="60%" height="1.8em" /></h2>
+          <p class="routine-description">
+            <SkeletonLoader width="80%" height="1em" />
+          </p>
+          <div class="program-insights" style="background: transparent; border: none; padding-left:0; padding-right:0;">
+             <div style="margin-bottom: 15px;">
+                <SkeletonLoader width="100%" height="100px" borderRadius="6px" />
+             </div>
+             <SkeletonLoader width="50%" height="1em" style="margin-bottom: 5px;" />
+             <SkeletonLoader width="40%" height="1em" />
+          </div>
+          <h3><SkeletonLoader width="40%" height="1.4em" /></h3>
+          <div class="workout-day-selection">
+             <SkeletonLoader width="100%" height="60px" borderRadius="6px" />
+             <SkeletonLoader width="100%" height="60px" borderRadius="6px" />
+             <SkeletonLoader width="100%" height="60px" borderRadius="6px" />
+          </div>
       </div>
       <div v-if="programLoadingError && !isProgramLoading" class="error-message">
         <p>Error loading program: {{ programLoadingError }}</p>
@@ -174,6 +190,7 @@ import useAuth from '../composables/useAuth';
 import useTrainingProgram from '../composables/useTrainingProgram';
 import { useRouter } from 'vue-router';
 import ManifestoComponent from '@/components/ManifestoComponent.vue';
+import SkeletonLoader from '@/components/SkeletonLoader.vue';
 import type { WorkoutDay, EnhancedWorkoutDay } from '@/types';
 
 const { user } = useAuth();

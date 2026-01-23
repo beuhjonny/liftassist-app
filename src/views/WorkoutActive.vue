@@ -56,89 +56,30 @@
     <div v-if="workoutPhase === 'activeSet' && !isLoading && !error && currentExercise && !allExercisesComplete" class="workout-content card">
       <h1 class="workout-day-title">{{ currentWorkoutDayDetails?.dayName }}</h1>
       <div v-if="totalSessionSets > 0" class="workout-progress-indicator">
-        <div class="workout-progress-timeline">
-          <template v-for="(set, index) in allSetsInSessionForTimeline" :key="`progress-${index}`">
-            <span
-              class="progress-dot"
-              :class="{
-                'completed-done': index < workoutLog.length && workoutLog[index]?.status === 'done',
-                'completed-failed': index < workoutLog.length && workoutLog[index]?.status === 'failed',
-                'active': index === workoutLog.length,
-                'tooltip-active': showMobileTooltipForIndex === index,
-                'connected-dot': set.isConnectedToNext
-              }"
-              :title="`${set.exerciseName} - Set ${set.setNumberWithinExercise}`"
-              @click="toggleProgressDotTooltip(index, `${set.exerciseName} - Set ${set.setNumberWithinExercise}`)"
-            ></span>
-            <span
-              v-if="index < allSetsInSessionForTimeline.length - 1 && set.separatorGroupIndex !== allSetsInSessionForTimeline[index + 1].separatorGroupIndex"
-              class="progress-separator"
-            ></span>
-          </template>
-        </div>
-         <div v-if="showMobileTooltipForIndex !== null && workoutPhase === 'activeSet'" class="mobile-progress-tooltip">
-          {{ mobileTooltipText }}
-        </div>
+        <WorkoutTimeline 
+          :timelineData="allSetsInSessionForTimeline" 
+          :workoutLog="workoutLog" 
+        />
       </div>
 
-      <div class="current-exercise-block">
-        <div class="active-set-timer-display">Set Timer: {{ formattedActiveSetTime }}</div>
-        <h2>{{ currentExercise.exerciseName }}</h2>
-        <p v-if="currentExercise.notesForExercise" class="exercise-notes">
-          <em>Notes: {{ currentExercise.notesForExercise }}</em>
-        </p>
-        <div class="current-set-info card-inset">
-          <div class="current-set-info-header">
-            <h3>Set {{ currentSetNumber }} of {{ currentExercise.targetSets }}</h3>
-            <button @click="openEditPrescriptionModal" class="button-icon extra-small" title="Edit Weight/Reps">✏️</button>
-          </div>
-          <div class="prescription-details">
-            <span 
-              class="prescription-reps" 
-              :class="{ 'failed-last-attempt-text': didFailLastAttemptAtCurrentPrescription }">
-              <template v-if="currentExercise.isToFailure">To Failure</template>
-              <template v-else>{{ getEffectivePrescribedReps }} {{ currentExercise.isTimed ? 'sec hold' : 'reps' }}</template>
-            </span>
-            <span class="prescription-separator">@</span>
-            <span 
-              class="prescription-weight" 
-              :class="{ 'failed-last-attempt-text': didFailLastAttemptAtCurrentPrescription }">
-              {{ toDisplay(getEffectivePrescribedWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }}
-            </span>
-            <div v-if="shouldShowLastPerformance && lastPerformanceForCurrentSet" class="last-performance-info" style="font-size: 0.85em; color: #6c757d; margin-top: 5px;">
-              Last: {{ toDisplay(lastPerformanceForCurrentSet.actualWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }} x {{ lastPerformanceForCurrentSet.actualReps }} 
-              <span v-if="lastPerformanceForCurrentSet.status === 'failed'">(Failed)</span>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="currentExercise.isTimed" class="timed-exercise-controls card-inset" style="margin-top: 20px; text-align: center;">
-          <div v-if="!isHoldTimerRunning" class="hold-timer-prep">
-            <button @click="startHoldTimer" class="button-primary full-width-button">START HOLD TIMER</button>
-          </div>
-          <div v-else class="hold-timer-active">
-            <div class="hold-timer-display" style="font-size: 3rem; font-weight: bold; margin-bottom: 10px; color: var(--color-primary);">{{ formattedHoldTime }}</div>
-            <button @click="stopHoldTimer(false)" class="button-secondary full-width-button">Cancel Timer</button>
-          </div>
-        </div>
-        
-        <p v-if="didFailLastAttemptAtCurrentPrescription && currentExerciseProgress?.consecutiveFailedWorkoutsAtCurrentWeightAndReps" 
-           class="failure-streak-note">
-          Failed last {{ currentExerciseProgress.consecutiveFailedWorkoutsAtCurrentWeightAndReps }} 
-          attempt{{ currentExerciseProgress.consecutiveFailedWorkoutsAtCurrentWeightAndReps > 1 ? 's' : '' }} 
-          at this prescription. Time to break the cycle!
-        </p>
-
-        <div class="set-actions" v-if="!currentExercise.isTimed || (!isHoldTimerRunning && !currentExercise.isTimed)">
-          <button @click="logSet('done')" class="button-done" :class="{ 'embiggened': settings.embiggenButtons }">DONE</button>
-          <button @click="logSet('failed')" class="button-fail" :class="{ 'embiggened': settings.embiggenButtons }">FAIL</button>
-        </div>
-        <div class="set-actions" v-else-if="currentExercise.isTimed && !isHoldTimerRunning">
-           <!-- Allow manual logging if hold timer not running -->
-           <button @click="logSet('done')" class="button-done" :class="{ 'embiggened': settings.embiggenButtons }">DONE MANUALLY</button>
-           <button @click="logSet('failed')" class="button-fail" :class="{ 'embiggened': settings.embiggenButtons }">FAIL</button>
-        </div>
-      </div>
+      <ActiveExerciseCard
+        :exercise="currentExercise"
+        :setNumber="currentSetNumber"
+        :activeSetTime="formattedActiveSetTime"
+        :effectiveReps="getEffectivePrescribedReps"
+        :displayWeight="toDisplay(getEffectivePrescribedWeight, settings.weightUnit)"
+        :weightUnit="settings.weightUnit"
+        :didFailLastAttempt="didFailLastAttemptAtCurrentPrescription"
+        :lastPerformance="lastPerformanceForCurrentSet || null"
+        :failureStreak="currentExerciseProgress?.consecutiveFailedWorkoutsAtCurrentWeightAndReps"
+        :isHoldTimerRunning="isHoldTimerRunning"
+        :formattedHoldTime="formattedHoldTime"
+        :embiggenButtons="settings.embiggenButtons"
+        @openEdit="openEditPrescriptionModal"
+        @startHold="startHoldTimer"
+        @cancelHold="stopHoldTimer(false)"
+        @logSet="logSet"
+      />
     </div>
 
     <div v-if="workoutPhase === 'resting' && !allExercisesComplete" class="rest-screen-content card">
@@ -149,35 +90,16 @@
       </div>
       <h1 class="workout-day-title">{{ currentWorkoutDayDetails?.dayName }}</h1>
       <div v-if="totalSessionSets > 0" class="workout-progress-indicator">
-        <div class="workout-progress-timeline">
-            <template v-for="(set, index) in allSetsInSessionForTimeline" :key="`progress-rest-${index}`">
-            <span
-              class="progress-dot"
-              :class="{
-                'completed-done': index < workoutLog.length && workoutLog[index]?.status === 'done',
-                'completed-failed': index < workoutLog.length && workoutLog[index]?.status === 'failed',
-                'active': index === workoutLog.length, 
-                'tooltip-active': showMobileTooltipForIndex === index,
-                'connected-dot': set.isConnectedToNext
-              }"
-              :title="`${set.exerciseName} - Set ${set.setNumberWithinExercise}`"
-              @click="toggleProgressDotTooltip(index, `${set.exerciseName} - Set ${set.setNumberWithinExercise}`)"
-            ></span>
-            <span
-              v-if="index < allSetsInSessionForTimeline.length - 1 && set.separatorGroupIndex !== allSetsInSessionForTimeline[index + 1].separatorGroupIndex"
-              class="progress-separator"
-            ></span>
-            </template>
-        </div>
-        <div v-if="showMobileTooltipForIndex !== null && workoutPhase === 'resting'" class="mobile-progress-tooltip">
-          {{ mobileTooltipText }}
-        </div>
+        <WorkoutTimeline 
+          :timelineData="allSetsInSessionForTimeline" 
+          :workoutLog="workoutLog" 
+        />
       </div>
       <h2>RESTING...</h2>
-      <div class="timer-display">{{ formattedRestTime }}</div>
-      <div class="timer-bar-container">
-        <div class="timer-bar" :style="{ width: timerProgressPercentage + '%' }"></div>
-      </div>
+      <TimerDisplay 
+        :timeText="formattedRestTime" 
+        :progress="timerProgressPercentage" 
+      />
       <div v-if="showActualRepsInput" class="actual-reps-input-section card-inset" style="margin-bottom: 20px;">
         <div v-for="item in setsRequiringRepInput" :key="item.index" class="rep-input-item" style="margin-bottom: 10px;">
           <label :for="'reps-input-' + item.index">
@@ -368,7 +290,13 @@ import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import useHistoryIndex from '../composables/useHistoryIndex';
 import { toDisplay, fromInput, displayUnit } from '../utils/weight';
 import { playTone } from '../utils/audio';
-import type { LoggedSetData, PerformedExerciseInLog, ExerciseProgress, SessionExercise } from '@/types';
+import type { LoggedSetData, PerformedExerciseInLog, ExerciseProgress, SessionExercise, TimelineSetInfo } from '@/types';
+import WorkoutTimeline from '../components/active-workout/WorkoutTimeline.vue';
+import TimerDisplay from '../components/active-workout/TimerDisplay.vue';
+import ActiveExerciseCard from '../components/active-workout/ActiveExerciseCard.vue';
+
+
+
 
 type WorkoutPhase = 'overview' | 'activeSet' | 'resting' | 'complete';
 
@@ -467,9 +395,6 @@ const supersetStartTime = ref<Date | null>(null); // Track when the first exerci
 
 const activeSetTimeElapsed = ref(0);
 let activeSetTimerInterval: number | undefined = undefined;
-
-const showMobileTooltipForIndex = ref<number | null>(null);
-const mobileTooltipText = ref<string>('');
 
 const initialExerciseProgressData = reactive<Map<string, ExerciseProgress>>(new Map());
 const sessionOverallNotes = ref("");
@@ -641,7 +566,7 @@ const getEffectivePrescribedWeight = computed((): number => {
 const formattedRestTime = computed(() => { const m = Math.floor(restCountdown.value / 60); const s = restCountdown.value % 60; return `${m}:${s < 10 ? '0' : ''}${s}`; });
 const timerProgressPercentage = computed(() => (workoutPhase.value === 'resting' && restDurationToUse.value > 0) ? (restCountdown.value / restDurationToUse.value) * 100 : 100);
 
-interface TimelineSetInfo { exerciseName: string; setNumberWithinExercise: number; isSuperset?: boolean; supersetColorIndex?: number; separatorGroupIndex: number; isConnectedToNext?: boolean; }
+
 const allSetsInSessionForTimeline = computed<TimelineSetInfo[]>(() => {
   const flatList: TimelineSetInfo[] = [];
   let i = 0;
@@ -944,16 +869,6 @@ const handleVisibilityChange = async () => {
 };
 
 // --- Functions ---
-const toggleProgressDotTooltip = (index: number, text: string) => {
-  if (showMobileTooltipForIndex.value === index) {
-    showMobileTooltipForIndex.value = null;
-    mobileTooltipText.value = '';
-  } else {
-    showMobileTooltipForIndex.value = index;
-    mobileTooltipText.value = text;
-  }
-};
-
 const toggleSetDetailsInSummary = () => {
   showSetDetailsInSummary.value = !showSetDetailsInSummary.value;
 };
@@ -984,7 +899,6 @@ const fetchWorkoutData = async () => {
   workoutPhase.value = 'overview'; workoutStartTime.value = null; workoutEndTime.value = null;
   workoutPhase.value = 'overview'; workoutStartTime.value = null; workoutEndTime.value = null;
   activeSetTimeElapsed.value = 0;
-  showMobileTooltipForIndex.value = null; mobileTooltipText.value = '';
   initialExerciseProgressData.clear(); 
   sessionOverallNotes.value = ""; 
   showSetDetailsInSummary.value = false;
@@ -1040,7 +954,6 @@ const beginActiveWorkout = async () => {
   workoutStartTime.value = new Date();
   workoutPhase.value = 'activeSet'; 
   startActivitySetTimer();
-  showMobileTooltipForIndex.value = null;
   
   // Create initial draft workout
   await saveDraftWorkout();
@@ -1119,7 +1032,7 @@ const startRestTimer = () => {
        }
   }
 
-  showMobileTooltipForIndex.value = null;
+  if (timerInterval) clearInterval(timerInterval);
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     if (restCountdown.value > 0) {
@@ -1182,7 +1095,6 @@ const logSet = async (status: 'done' | 'failed') => {
       
       workoutPhase.value = 'activeSet';
       startActivitySetTimer();
-      showMobileTooltipForIndex.value = null;
       
       // Auto-save draft
       await saveDraftWorkout();
@@ -1204,8 +1116,7 @@ const logSet = async (status: 'done' | 'failed') => {
   if (isLastExerciseInSession && isLastSetOfThisExercise) {
     currentExerciseIndex.value++;
     workoutPhase.value = 'complete'; 
-    workoutEndTime.value = new Date(); 
-    showMobileTooltipForIndex.value = null;
+    workoutEndTime.value = new Date();
   } else {
     workoutPhase.value = 'resting'; 
     
@@ -1583,7 +1494,7 @@ const proceedToNextSet = async () => {
   // Let's just safely clear 'timerInterval' as done at the start.
   
   await releaseWakeLock();
-  showMobileTooltipForIndex.value = null;
+
   
   // Clear any overrides when moving to next set (overrides only apply to the set they were set for)
   overriddenRepsForCurrentSet.value = null;
@@ -1698,10 +1609,8 @@ const correctLastSet = () => {
   
   // Save draft when correcting to active set so we can resume here if user leaves
   saveDraftWorkout();
-
-  showMobileTooltipForIndex.value = null;
-  mobileTooltipText.value = '';
 };
+
 
 
 
@@ -1826,7 +1735,7 @@ const finishWorkoutAndSave = async () => {
     workoutPhase.value = 'overview'; 
  
     sessionOverallNotes.value = ""; 
-    showMobileTooltipForIndex.value = null; mobileTooltipText.value = ''; 
+
     showSetDetailsInSummary.value = false; 
     router.push('/');
   } catch (e: any) { console.error("Error finishing workout:", e); error.value = "Failed to save. " + e.message; }
@@ -1873,7 +1782,7 @@ onMounted(async () => {
     } else {
       isLoading.value = false; activeProgramName.value = null; currentWorkoutDayDetails.value = null;
       sessionExercises.length = 0; workoutLog.length = 0; workoutPhase.value = 'overview';
-      showMobileTooltipForIndex.value = null; mobileTooltipText.value = ''; 
+  
       initialExerciseProgressData.clear(); sessionOverallNotes.value = "";
       showSetDetailsInSummary.value = false; 
       if (currentUser === null) { error.value = "Please log in."; }
@@ -1928,8 +1837,8 @@ watch(() => [route.params.programId, route.params.dayId], async ([newProgramId, 
 }, { immediate: false });
 
 watch(workoutPhase, async (newPhase, oldPhase) => {
-  showMobileTooltipForIndex.value = null;
-  mobileTooltipText.value = '';
+
+
   if (oldPhase === 'complete' && newPhase !== 'complete') {
     // showActualRepsInputForFail is computed, nothing to reset
   }

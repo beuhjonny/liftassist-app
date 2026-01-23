@@ -96,3 +96,12 @@ export interface EnhancedWorkoutDay extends WorkoutDay {
   skipIndicatorCount: number;
   lastCompletedThisDayDate: Date | null;
 }
+
+export interface TimelineSetInfo {
+  exerciseName: string;
+  setNumberWithinExercise: number;
+  isSuperset?: boolean;
+  supersetColorIndex?: number;
+  separatorGroupIndex: number;
+  isConnectedToNext?: boolean;
+}
