@@ -56,7 +56,7 @@
             </p>
             <div class="death-notice">
                 <span class="skull">💀</span>
-                <p><strong>The Google Murder:</strong> Tragically killed by Google's automated systems because a "Password" input field was placed too close to a "Sign In" button. RIP.</p>
+                <p><strong>The Bot Murder:</strong> Tragically killed by AI automated systems because a "Password" input field was placed too close to a "Sign In" button. AI brought it in and AI took it out. RIP.</p>
             </div>
         </div>
       </div>
