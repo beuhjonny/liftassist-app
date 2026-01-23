@@ -125,9 +125,14 @@
             <span class="stat-value">{{ formatLifetimeDuration(lifetimeStats.totalTimeMinutes) }}</span>
           </li>
           <li>
-            <span class="stat-icon">🏆</span>
-            <span class="stat-label">Personal Records Smashed:</span>
-            <span class="stat-value">{{ lifetimeStats.totalPRs }}</span>
+            <span class="stat-icon">📈</span>
+            <span class="stat-label">Overloads Triggered:</span>
+            <span class="stat-value">{{ lifetimeStats.totalOverloads }}</span>
+          </li>
+          <li>
+            <span class="stat-icon">🦍</span>
+            <span class="stat-label">Heaviest Lift Ever:</span>
+            <span class="stat-value">{{ lifetimeStats.heaviestLift.toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</span>
           </li>
           <li v-if="lifetimeStats.firstWorkoutDate">
             <span class="stat-icon">🚀</span>
@@ -171,9 +176,10 @@ interface LifetimeStats {
   totalVolume: number;
   totalWorkouts: number;
   totalTimeMinutes: number;
-  totalPRs: number;
+  totalOverloads: number;
   firstWorkoutDate: Date | null;
   weeklyStreak: number;
+  heaviestLift: number;
 }
 
 const { user, logout } = useAuth();
@@ -203,7 +209,8 @@ const lifetimeStats = computed<LifetimeStats>(() => {
   let volume = 0;
   let workoutsCount = 0;
   let timeMinutes = 0;
-  let prsCount = 0;
+  let overloadsCount = 0;
+  let maxWeight = 0;
   let firstDate: Date | null = null;
   
   // Streak Calculation
@@ -229,10 +236,15 @@ const lifetimeStats = computed<LifetimeStats>(() => {
         ex.sets.forEach(set => {
           if (typeof set.actualWeight === 'number' && typeof set.actualReps === 'number' && set.actualReps > 0) {
             volume += set.actualWeight * set.actualReps;
+            
+            // Allow 0 reps? No, valid lift needs reps.
+            if (set.status === 'done' && set.actualWeight > maxWeight) {
+                maxWeight = set.actualWeight;
+            }
           }
         });
         if (ex.isPR) {
-          prsCount++;
+          overloadsCount++;
         }
       });
 
@@ -267,9 +279,10 @@ const lifetimeStats = computed<LifetimeStats>(() => {
     totalVolume: toDisplay(volume, settings.value.weightUnit),
     totalWorkouts: workoutsCount,
     totalTimeMinutes: timeMinutes,
-    totalPRs: prsCount,
+    totalOverloads: overloadsCount,
     firstWorkoutDate: firstDate,
-    weeklyStreak: streak
+    weeklyStreak: streak,
+    heaviestLift: toDisplay(maxWeight, settings.value.weightUnit)
   };
 });
 
