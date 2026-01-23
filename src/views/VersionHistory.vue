@@ -84,9 +84,33 @@
                 </div>
 
                 <div class="log-entry">
+                    <span class="log-date">Jan 22, 2026</span>
+                    <h4>"To Failure" Mode</h4>
+                    <p>Major update for intensity tracking. You can now mark sets as "To Failure" instead of a specific rep target. Includes "Get Ready" screen updates and rep capture logic even for completed sets.</p>
+                </div>
+
+                <div class="log-entry">
                     <span class="log-date">Jan 20, 2026</span>
                     <h4>Super Support for Supersets</h4>
-                    <p>A massive update affecting every part of the app. You can now link exercises (Master/Slave), share timers, and visualize connections in the timeline.</p>
+                    <p>A massive update affecting every part of the app. You can now link exercises (Linked Exercises), share timers, and visualize connections in the timeline.</p>
+                </div>
+
+                <div class="log-entry">
+                     <span class="log-date">Jan 19, 2026</span>
+                    <h4>Toast Notifications</h4>
+                    <p>Replacing standard browser alerts with non-intrusive toast messages.</p>
+                </div>
+
+                <div class="log-entry">
+                     <span class="log-date">Jan 18, 2026</span>
+                    <h4>Embiggened Buttons</h4>
+                    <p>Added collection settings for larger, easier-to-hit buttons during heavy sets.</p>
+                </div>
+
+                <div class="log-entry">
+                    <span class="log-date">Jan 17, 2026</span>
+                    <h4>Skeleton Loading & Component Split</h4>
+                    <p>Added smooth skeleton screens to the dashboard and broke the massive "Active Workout" view into modular components for better performance.</p>
                 </div>
 
                 <div class="log-entry">
@@ -102,13 +126,19 @@
                         <li><strong>Performance:</strong> Faster loading, robust database, and offline PWA support.</li>
                     </ul>
                 </div>
+
+                 <div class="log-entry">
+                     <span class="log-date">Jan 15, 2026</span>
+                    <h4>Offline Mode (PWA)</h4>
+                    <p>The app now works without an internet connection, syncing data when you go back online.</p>
+                </div>
             </div>
         </div>
       </div>
     </div>
     
     <div class="back-action">
-        <router-link to="/profile" class="button-secondary">Back to Profile</router-link>
+        <button @click="$router.back()" class="button-secondary">Close</button>
     </div>
 
   </div>

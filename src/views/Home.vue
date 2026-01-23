@@ -171,26 +171,13 @@
       </div>
     </div>
 
-      <div class="about-section-logged-in">
-        <button @click="toggleManifestoModal" class="button-about">
-          <span class="info-icon" aria-hidden="true">ⓘ</span> About <span style="font-family: 'Montserrat', sans-serif; margin-left:4px;"><span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span></span>
-        </button>
-      </div>
-    <div v-if="user && !activeProgram.id && isProgramLoading" class="loading-message">
-        <p>Loading your program details...</p>
+    <!-- About / Manifesto Modal Button (Reusable) -->
+    <div v-if="user" class="about-section-wrapper">
+        <AboutModal />
     </div>
 
-    <div v-if="user && showManifestoModal" class="manifesto-modal-overlay" @click.self="closeManifestoModal">
-      <div class="manifesto-modal-content card">
-        <button @click="closeManifestoModal" class="modal-close-button" aria-label="Close manifesto">&times;</button>
-        <div style="text-align: center; margin-bottom: 20px;">
-             <h1 class="welcome-title" style="font-size: 2.2em; margin-top: 0; margin-bottom: 5px; display: flex; justify-content: center; align-items: center;">
-               <span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span>
-             </h1>
-             <p class="welcome-subtitle" style="margin-bottom: 15px;">Get Stronger Progressively.</p>
-        </div>
-        <ManifestoComponent />
-      </div>
+    <div v-if="user && !activeProgram.id && isProgramLoading" class="loading-message">
+        <p>Loading your program details...</p>
     </div>
   </div>
 </template>
@@ -200,8 +187,9 @@ import { ref } from 'vue';
 import useAuth from '../composables/useAuth';
 import useTrainingProgram from '../composables/useTrainingProgram';
 import { useRouter } from 'vue-router';
-import ManifestoComponent from '@/components/ManifestoComponent.vue';
+import ManifestoComponent from '@/components/ManifestoComponent.vue'; // Can remove this if only used in AboutModal now, but wait, check if used in unauth view
 import SkeletonLoader from '@/components/SkeletonLoader.vue';
+import AboutModal from '@/components/AboutModal.vue';
 import type { WorkoutDay, EnhancedWorkoutDay } from '@/types';
 
 const { user } = useAuth();
@@ -265,9 +253,6 @@ const startWorkout = (day: WorkoutDay | EnhancedWorkoutDay) => {
   }
   router.push({ name: 'WorkoutActive', params: { programId: activeProgram.id, dayId: day.id } });
 };
-
-const toggleManifestoModal = () => { showManifestoModal.value = !showManifestoModal.value; };
-const closeManifestoModal = () => { showManifestoModal.value = false; };
 
 </script>
 

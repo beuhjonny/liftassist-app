@@ -90,11 +90,7 @@
 
         <button @click="handleLogout" class="logout-button">Logout</button>
         
-        <div style="text-align: center; margin-top: 30px;">
-           <router-link to="/version-history" class="about-link" style="color: var(--color-card-text); opacity: 0.6; font-size: 0.9em; text-decoration: none;">
-             About & History
-           </router-link>
-        </div>
+        <AboutModal />
 
       </div>
 
@@ -155,6 +151,7 @@ import useAuth from '../composables/useAuth'; // Adjust path if needed
 import useSettings, { type ThemeOption, type TimerSoundOption, type WeightUnitOption } from '../composables/useSettings'; 
 import { playTone } from '../utils/audio';
 import { toDisplay, displayUnit } from '../utils/weight';
+import AboutModal from '@/components/AboutModal.vue';
 
 import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
 
