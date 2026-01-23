@@ -112,6 +112,13 @@
             <span class="stat-label">Workouts Completed:</span>
             <span class="stat-value">{{ lifetimeStats.totalWorkouts }}</span>
           </li>
+          
+          <li :class="{ 'stat-highlight': lifetimeStats.weeklyStreak > 1 }">
+            <span class="stat-icon">🔥</span>
+            <span class="stat-label">Weekly Streak (2+):</span>
+            <span class="stat-value">{{ lifetimeStats.weeklyStreak }} {{ lifetimeStats.weeklyStreak === 1 ? 'Week' : 'Weeks' }}</span>
+          </li>
+
           <li>
             <span class="stat-icon">⏱️</span>
             <span class="stat-label">Total Training Time:</span>
@@ -166,6 +173,7 @@ interface LifetimeStats {
   totalTimeMinutes: number;
   totalPRs: number;
   firstWorkoutDate: Date | null;
+  weeklyStreak: number;
 }
 
 const { user, logout } = useAuth();
@@ -182,12 +190,24 @@ const ensureDateObject = (dateInput: Timestamp | Date): Date => {
   return new Date(dateInput.getTime()); // Create a new Date instance from milliseconds
 };
 
+const getWeekStart = (date: Date): number => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is sunday
+    d.setDate(diff);
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+};
+
 const lifetimeStats = computed<LifetimeStats>(() => {
   let volume = 0;
   let workoutsCount = 0;
   let timeMinutes = 0;
   let prsCount = 0;
   let firstDate: Date | null = null;
+  
+  // Streak Calculation
+  const workoutsByWeek = new Map<number, number>();
 
   if (loggedWorkouts.value.length > 0) {
     workoutsCount = loggedWorkouts.value.length;
@@ -198,6 +218,13 @@ const lifetimeStats = computed<LifetimeStats>(() => {
     }
 
     loggedWorkouts.value.forEach(workout => {
+        // Group by week for streak
+        if (workout.date) {
+            const dateObj = ensureDateObject(workout.date);
+            const weekStart = getWeekStart(dateObj);
+            workoutsByWeek.set(weekStart, (workoutsByWeek.get(weekStart) || 0) + 1);
+        }
+
       workout.performedExercises?.forEach(ex => {
         ex.sets.forEach(set => {
           if (typeof set.actualWeight === 'number' && typeof set.actualReps === 'number' && set.actualReps > 0) {
@@ -215,12 +242,34 @@ const lifetimeStats = computed<LifetimeStats>(() => {
     });
   }
 
+  // Calculate Streak
+  let streak = 0;
+  const currentWeekStart = getWeekStart(new Date());
+  const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+
+  // Check current week
+  if ((workoutsByWeek.get(currentWeekStart) || 0) >= 2) {
+      streak++;
+  }
+
+  // Check past weeks consecutively
+  let checkWeek = currentWeekStart - oneWeekMs;
+  while (true) {
+      if ((workoutsByWeek.get(checkWeek) || 0) >= 2) {
+          streak++;
+          checkWeek -= oneWeekMs;
+      } else {
+          break;
+      }
+  }
+
   return {
     totalVolume: toDisplay(volume, settings.value.weightUnit),
     totalWorkouts: workoutsCount,
     totalTimeMinutes: timeMinutes,
     totalPRs: prsCount,
-    firstWorkoutDate: firstDate
+    firstWorkoutDate: firstDate,
+    weeklyStreak: streak
   };
 });
 
@@ -681,5 +730,10 @@ select {
 
 .switch input:focus + .slider {
   box-shadow: 0 0 1px #2196F3;
+}
+
+.stat-highlight {
+    background-color: rgba(255, 193, 7, 0.1); /* Subtle Gold BG */
+    border-radius: 4px;
 }
 </style>
