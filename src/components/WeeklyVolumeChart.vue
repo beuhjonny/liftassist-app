@@ -9,12 +9,12 @@
 import { computed } from 'vue';
 import { Line } from 'vue-chartjs';
 import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale } from 'chart.js';
-import type { LoggedWorkout } from '@/types';
+
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale);
 
 const props = defineProps<{
-  workouts: LoggedWorkout[];
+  volumeIndex: any; // CalendarIndexData loosely typed to avoid strict import dependency here if simple
   weightUnit: 'lbs' | 'kg';
   timeRange: string;
 }>();
@@ -22,15 +22,16 @@ const props = defineProps<{
 const chartData = computed(() => {
   const volumeByWeek: Record<string, number> = {};
   
-  // Robust Date Parsing
-  const getObjDate = (dateVal: any): Date => {
-      if (dateVal && typeof dateVal.toDate === 'function') {
-          return dateVal.toDate(); 
-      }
-      return new Date(dateVal);
+  if (!props.volumeIndex) return { labels: [], datasets: [] };
+
+  const validDateKeys = Object.keys(props.volumeIndex).filter(k => k !== 'lastUpdated' && k !== 'version');
+  
+  // Robust Date Parsing helper is simpler now, keys are already YYYY-MM-DD
+  const getDateFromKey = (key: string): Date => {
+      return new Date(key);
   };
 
-  let sorted = [...props.workouts].sort((a,b) => getObjDate(a.date).getTime() - getObjDate(b.date).getTime());
+  let sortedKeys = validDateKeys.sort((a,b) => getDateFromKey(a).getTime() - getDateFromKey(b).getTime());
 
   // Filter by Time Range
   const now = new Date();
@@ -48,11 +49,14 @@ const chartData = computed(() => {
   }
 
   if (cutoffDate) {
-      sorted = sorted.filter(w => getObjDate(w.date) >= cutoffDate);
+      sortedKeys = sortedKeys.filter(k => getDateFromKey(k) >= cutoffDate!);
   }
 
-  sorted.forEach(w => {
-    const d = getObjDate(w.date);
+  sortedKeys.forEach(key => {
+    const entry = props.volumeIndex[key];
+    if (!entry || !entry.hasWorkout) return;
+
+    const d = getDateFromKey(key);
     if (isNaN(d.getTime())) return;
 
     const year = d.getFullYear();
@@ -61,16 +65,7 @@ const chartData = computed(() => {
     const week = Math.ceil((((millis / 86400000) + onejan.getDay() + 1) / 7));
     const label = `${year}-W${week.toString().padStart(2, '0')}`;
 
-    let totalVol = 0;
-    if (w.performedExercises) {
-       w.performedExercises.forEach(ex => {
-         ex.sets.forEach(s => {
-            if (s.status === 'done' && s.actualWeight && s.actualReps) {
-                totalVol += (s.actualWeight * s.actualReps);
-            }
-         });
-       });
-    }
+    const totalVol = entry.totalVolume || 0;
 
     volumeByWeek[label] = (volumeByWeek[label] || 0) + totalVol;
   });

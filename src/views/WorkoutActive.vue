@@ -365,6 +365,7 @@ import useAuth from '../composables/useAuth';
 import { useRouter, useRoute } from 'vue-router';
 import useSettings from '../composables/useSettings'; 
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
+import useHistoryIndex from '../composables/useHistoryIndex';
 import { toDisplay, fromInput, displayUnit } from '../utils/weight';
 import { playTone } from '../utils/audio';
 import type { LoggedSetData, PerformedExerciseInLog, ExerciseProgress, SessionExercise } from '@/types';
@@ -1771,6 +1772,10 @@ const finishWorkoutAndSave = async () => {
 
   const batch = writeBatch(db);
   batch.set(newLoggedWorkoutRef, loggedWorkoutData);
+
+  // Update the lightweight calendar index
+  const { updateCalendarIndex } = useHistoryIndex();
+  updateCalendarIndex(loggedWorkoutData as any); // Cast because LoggedWorkout has stricter types than the initial object
 
   try {
     for (const performedEx of performedExercisesForDatabase) { 

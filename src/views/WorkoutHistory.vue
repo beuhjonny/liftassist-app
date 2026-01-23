@@ -41,9 +41,6 @@
         <div class="chart-section card">
             <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h3 style="margin:0; line-height:1.2;">Weekly Volume</h3>
-                <div style="font-size: 0.75em; color: var(--color-text); opacity: 0.7; margin-left: 10px;">
-                  (Load more history to see older data)
-                </div>
                 <select v-model="weeklyVolumeTimeRange" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 150px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-text); font-size: 0.9em;">
                      <option value="12w">Last 12 Weeks</option>
                      <option value="6m">Last 6 Months</option>
@@ -51,7 +48,7 @@
                      <option value="all">All Time</option>
                 </select>
             </div>
-            <WeeklyVolumeChart :workouts="loggedWorkouts" :weightUnit="settings?.weightUnit || 'lbs'" :timeRange="weeklyVolumeTimeRange" />
+            <WeeklyVolumeChart :volumeIndex="calendarIndex" :weightUnit="settings?.weightUnit || 'lbs'" :timeRange="weeklyVolumeTimeRange" />
         </div>
 
         <div class="chart-section card">
@@ -153,6 +150,7 @@ import { db } from '../firebase.js';
 import useAuth from '../composables/useAuth';
 import useSettings from '../composables/useSettings';
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
+import useHistoryIndex, { type CalendarIndexData } from '../composables/useHistoryIndex';
 import { toDisplay, displayUnit } from '../utils/weight';
 import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
 
@@ -172,6 +170,7 @@ interface CalendarDay {
 const { user } = useAuth();
 const { settings } = useSettings();
 const { loggedWorkouts, isLoading, error, fetchLoggedWorkouts, fetchMoreWorkouts, hasMoreDocs } = useLoggedWorkouts();
+const { calendarIndex, fetchCalendarIndex } = useHistoryIndex();
 const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
 
 // Chart & Analytics State
@@ -206,7 +205,7 @@ const daySequenceColorPalette = [
 const defaultWorkoutColor = 'hsla(160, 100%, 37%, 0.8)'; // Default (e.g., Vue green)
 
 const calendarWeeks = computed<CalendarDay[][]>(() => {
-  return generateCalendarGridData(loggedWorkouts.slice(), 52); // Show last 52 weeks (1 year)
+  return generateCalendarGridData(calendarIndex, 52); // Show last 52 weeks (1 year)
 });
 
 const handleDayCellClick = (day: CalendarDay, event: MouseEvent) => {
@@ -242,7 +241,7 @@ const handleClickOutsideTooltip = (event: MouseEvent) => {
 };
 
 const generateCalendarGridData = (
-  rawLoggedWorkouts: LoggedWorkout[],
+  idxData: CalendarIndexData, // Now takes the index map
   numWeeksToShow: number
 ): CalendarDay[][] => {
   const weeksData: CalendarDay[][] = [];
@@ -258,22 +257,20 @@ const generateCalendarGridData = (
   const programDayTypeEncounterOrder: Record<string, Record<string, number>> = {};
   const programNextAvailableColorIndex: Record<string, number> = {};
   
-  // Sort workouts oldest to newest to establish encounter order for coloring
-  const sortedWorkoutsForColorLogic = [...rawLoggedWorkouts].sort((a, b) => {
-    const dateA = (a.date instanceof Timestamp) ? a.date.toMillis() : new Date(a.date).getTime();
-    const dateB = (b.date instanceof Timestamp) ? b.date.toMillis() : new Date(b.date).getTime();
-    return dateA - dateB;
-  });
+  // Convert index map to array for sorting to establish color order
+  // map keys are YYYY-MM-DD
+  const sortedDateKeys = Object.keys(idxData).sort().filter(k => k !== 'lastUpdated');
 
   const workoutsByDate: Record<string, { name: string; color: string }> = {};
 
-  for (const workout of sortedWorkoutsForColorLogic) {
-    const programId = workout.trainingProgramIdUsed || 'UNKNOWN_PROGRAM';
-    const dayName = workout.workoutDayNameUsed || 'Unknown Day';
-    const workoutDate = (workout.date instanceof Timestamp) ? workout.date.toDate() : new Date(workout.date);
-    workoutDate.setHours(0,0,0,0);
-    const dateString = workoutDate.toISOString().split('T')[0];
+  for (const dateKey of sortedDateKeys) {
+    const entry = idxData[dateKey];
+    if (!entry || !entry.hasWorkout) continue;
 
+    const programId = entry.programId || 'UNKNOWN_PROGRAM';
+    const dayName = entry.dayName || 'Unknown Day';
+    
+    // Logic to assign color based on first encounter of (Program + DayName)
     if (!programDayTypeEncounterOrder[programId]) {
       programDayTypeEncounterOrder[programId] = {};
       programNextAvailableColorIndex[programId] = 0;
@@ -293,8 +290,7 @@ const generateCalendarGridData = (
       color = daySequenceColorPalette[assignedOrderIndex];
     }
 
-    // Store the latest workout's info for a given day if multiple exist (though coloring is program-day specific)
-    workoutsByDate[dateString] = { name: dayName, color: color };
+    workoutsByDate[dateKey] = { name: dayName, color: color };
   }
   
   let currentDayIter = new Date(calendarStartDate);
@@ -427,10 +423,12 @@ let userWatcherUnsubscribe: (() => void) | null = null;
 
 onMounted(() => {
   fetchLoggedWorkouts(); 
+  fetchCalendarIndex();
   
   userWatcherUnsubscribe = watch(user, (currentUser) => {
     if (currentUser?.uid) {
         fetchLoggedWorkouts();
+        fetchCalendarIndex();
     } else {
       // User logged out, clear data
       loggedWorkouts.length = 0;
