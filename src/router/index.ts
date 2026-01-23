@@ -81,6 +81,11 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/version-history',
+    name: 'VersionHistory',
+    component: () => import('../views/VersionHistory.vue')
+  },
+  {
     path: '/profile',
     name: 'Profile',
     component: () => import('../views/Profile.vue'), // Dynamic import

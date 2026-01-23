@@ -1,5 +1,17 @@
 # What's New in LiftLogic 🚀
 
+**Smoother Loading 🌊**
+*   **Skeleton Screens:** Say goodbye to "Loading..." text and jumping content. The dashboard now loads with a smooth, shimmering skeleton UI that perfectly matches the layout. It feels native and instant.
+*   **Theme Aware:** Whether you rock Dark Mode or the Original styling, the skeletons adapt to match your cards perfectly. No jagged edges.
+
+**Active Workout Polish ✨**
+*   **Refactored Core:** We completely rebuilt the Active Workout engine under the hood. It’s cleaner, faster, and more robust.
+*   **Visual Fixes:** Restored the crisp blue timer, correct timeline dot colors (Green/Yellow/Blue), and proper font sizes after the rebuild.
+*   **Safety First:** If you accidentally navigate away, your draft is waiting for you with a much nicer prompt.
+
+---
+
+
 **Failure Mode & Supersets**
 *   **Smarter "To Failure" Targets:** The "Get Ready" screen now clearly spells out the plan (e.g., "3 sets of 45 lbs to failure").
 *   **Superset Failure Support:** We can now track failure properly even when you're super-setting. Whether you fail the first or second exercise, the app handles the inputs correctly.

@@ -89,6 +89,13 @@
 
 
         <button @click="handleLogout" class="logout-button">Logout</button>
+        
+        <div style="text-align: center; margin-top: 30px;">
+           <router-link to="/version-history" class="about-link" style="color: var(--color-card-text); opacity: 0.6; font-size: 0.9em; text-decoration: none;">
+             About & History
+           </router-link>
+        </div>
+
       </div>
 
       <div v-if="isLoadingStats" class="loading-message card">

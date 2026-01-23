@@ -23,6 +23,12 @@
     </p>
 
     <p><strong>Consistent, intelligent progression guarantees results.</strong></p>
+    
+    <div class="manifesto-actions">
+        <router-link to="/version-history" class="button-history">
+            📜 View Version History & Changelog
+        </router-link>
+    </div>
   </div>
 </template>
 
@@ -68,5 +74,31 @@
 .manifesto-content strong {
   color: #007bff;
   font-weight: 700;
+}
+
+.manifesto-actions {
+  margin-top: 30px;
+  text-align: center;
+  border-top: 1px solid var(--color-card-border);
+  padding-top: 20px;
+}
+
+.button-history {
+  display: inline-block;
+  color: var(--color-card-text);
+  text-decoration: none;
+  font-size: 0.9em;
+  opacity: 0.8;
+  padding: 8px 15px;
+  border: 1px solid var(--color-card-border);
+  border-radius: 4px;
+  transition: all 0.2s;
+  background-color: var(--color-card-mute);
+}
+.button-history:hover {
+  background-color: var(--color-card-bg);
+  opacity: 1;
+  border-color: #007bff;
+  color: #007bff;
 }
 </style>
