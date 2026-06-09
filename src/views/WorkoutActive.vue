@@ -84,12 +84,27 @@
     </div>
 
     <div v-if="workoutPhase === 'resting' && !allExercisesComplete" class="rest-screen-content card">
-      <div class="actions-top-bar" v-if="workoutLog.length > 0">
-        <span @click="correctLastSet" class="correct-last-set-action">
-          &larr; Correct Last Set
-        </span>
+      <!-- Header Grid: Back Action | Day Title | Timer -->
+      <div class="card-header-grid">
+          <div class="header-spacer">
+              <span v-if="workoutLog.length > 0" @click="correctLastSet" class="correct-last-set-action">
+                &larr; Correct Last Set
+              </span>
+          </div>
+          
+          <div class="header-content">
+              <h1 class="workout-day-title" style="margin: 0;">{{ currentWorkoutDayDetails?.dayName }}</h1>
+          </div>
+
+          <div class="header-timer">
+              <div class="timer-float-container">
+                  <div class="timer-row">
+                      <span class="timer-label">Total:</span>
+                      <span class="timer-value">{{ activeWorkoutDuration }}</span>
+                  </div>
+              </div>
+          </div>
       </div>
-      <h1 class="workout-day-title">{{ currentWorkoutDayDetails?.dayName }}</h1>
       <div v-if="totalSessionSets > 0" class="workout-progress-indicator">
         <WorkoutTimeline 
           :timelineData="allSetsInSessionForTimeline" 
@@ -2143,6 +2158,50 @@ const saveEditedWorkout = () => {
 
 <style scoped>
 /* Styles moved to ActiveExerciseCard.vue */
+
+/* Header Grid Layout */
+.card-header-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr; /* Center takes content width, sides split remainder */
+    align-items: center; /* Vertically center items */
+    gap: 10px;
+    border-bottom: 2px solid var(--color-primary, #007bff);
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+/* Spacer (Left) */
+.header-spacer { width: 100%; }
+
+/* Content (Center) */
+.header-content { 
+    text-align: center; 
+    min-width: 0;
+}
+
+/* Timer (Right) */
+.header-timer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.timer-float-container {
+    text-align: right;
+    font-size: 0.9em;
+    padding: 8px 12px;
+    background-color: var(--color-card-mute);
+    border: 1px solid var(--color-card-border);
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    min-width: 100px;
+}
+.timer-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+.timer-label { font-weight: normal; opacity: 0.8; color: var(--color-card-text); }
+.timer-value { font-family: monospace; font-weight: bold; color: var(--color-card-heading); }
 
 /* Styles for the actions-top-bar and correct-last-set-action */
 .actions-top-bar {
