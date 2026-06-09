@@ -133,4 +133,36 @@ router.beforeEach(async (to, from, next) => {
   }
 });
 
+router.onError((error, to) => {
+  const pattern = /Loading chunk [\d]+ failed|Failed to fetch dynamically imported module/i;
+  const isChunkLoadFailed = error.message && error.message.match(pattern);
+
+  if (isChunkLoadFailed) {
+    const targetPath = to?.fullPath;
+    if (targetPath) {
+      // Prevent infinite reload loops if the chunk is permanently broken
+      const lastReloadedPath = sessionStorage.getItem('last_chunk_load_error_path');
+      const lastReloadTime = sessionStorage.getItem('last_chunk_load_error_time');
+      const timeSinceLastReload = lastReloadTime ? Date.now() - parseInt(lastReloadTime) : Infinity;
+
+      // If we just reloaded for this same path < 10 seconds ago, stop.
+      if (lastReloadedPath === targetPath && timeSinceLastReload < 10000) {
+        console.error('Chunk load failed recursively, stopping reload loop for:', targetPath);
+        return;
+      }
+
+      console.log('Chunk load fail detected, forcing reload to target:', targetPath);
+      sessionStorage.setItem('last_chunk_load_error_path', targetPath);
+      sessionStorage.setItem('last_chunk_load_error_time', Date.now().toString());
+
+      // Force a full browser reload to the target path.
+      // This fetches a fresh index.html (with correct hash references) and loads the page.
+      window.location.assign(targetPath);
+    } else {
+      // Fallback if target is unknown
+      window.location.reload();
+    }
+  }
+});
+
 export default router;

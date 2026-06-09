@@ -135,6 +135,14 @@
         <span v-if="isLoading">Loading...</span>
         <span v-else>Load Older Workouts</span>
       </button>
+
+      <div class="maintenance-actions" style="margin-top: 40px; padding: 20px; text-align: center; opacity: 0.7; font-size: 0.85em; border-top: 1px dashed var(--color-border);">
+        <p>Missing workouts in the calendar? 
+          <button @click="fetchCalendarIndex(true)" class="button-link" :disabled="isIndexLoading" style="font-size: 1em; text-decoration: underline;">
+            {{ isIndexLoading ? 'Rebuilding...' : 'Repair Calendar Index' }}
+          </button>
+        </p>
+      </div>
     </div>
 
     <div v-if="!user && !isLoading" class="login-prompt">
@@ -170,7 +178,7 @@ interface CalendarDay {
 const { user } = useAuth();
 const { settings } = useSettings();
 const { loggedWorkouts, isLoading, error, fetchLoggedWorkouts, fetchMoreWorkouts, hasMoreDocs } = useLoggedWorkouts();
-const { calendarIndex, fetchCalendarIndex } = useHistoryIndex();
+const { calendarIndex, fetchCalendarIndex, isIndexLoading } = useHistoryIndex();
 const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
 
 // Chart & Analytics State
@@ -293,13 +301,16 @@ const generateCalendarGridData = (
     workoutsByDate[dateKey] = { name: dayName, color: color };
   }
   
-  let currentDayIter = new Date(calendarStartDate);
+  const currentDayIter = new Date(calendarStartDate);
   for (let w = 0; w < numWeeksToShow; w++) {
     const week: CalendarDay[] = [];
     for (let d = 0; d < 7; d++) {
       const normalizedCurrentDayIter = new Date(currentDayIter);
       normalizedCurrentDayIter.setHours(0,0,0,0);
-      const dateString = normalizedCurrentDayIter.toISOString().split('T')[0];
+      const year = normalizedCurrentDayIter.getFullYear();
+      const month = String(normalizedCurrentDayIter.getMonth() + 1).padStart(2, '0');
+      const day = String(normalizedCurrentDayIter.getDate()).padStart(2, '0');
+      const dateString = `${year}-${month}-${day}`;
       
       const workoutInfo = workoutsByDate[dateString];
       

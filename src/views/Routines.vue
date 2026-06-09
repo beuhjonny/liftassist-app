@@ -312,11 +312,11 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
                                   
                                   <div class="form-group form-group-inline" v-if="editingExercise.id">
                                     <div>
-                                        <label>Current Weight to Attempt Next ({{ displayUnit(settings.weightUnit) }}):</label>
+                                        <label>Current Weight ({{ displayUnit(settings.weightUnit) }}):</label>
                                         <input type="number" v-model.number="editingExercise.currentWeightToDisplayOrEdit" step="0.1" />
                                     </div>
                                     <div>
-                                        <label>{{ editingExercise.isTimed ? 'Current Hold to Attempt Next (sec):' : 'Current Reps to Attempt Next:' }}</label>
+                                        <label>{{ editingExercise.isTimed ? 'Current Hold (sec):' : 'Current Reps:' }}</label>
                                         <input type="number" v-model.number="editingExercise.currentRepsToDisplayOrEdit" step="1" min="1" />
                                     </div>
                                   </div>
@@ -326,25 +326,45 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
                                     <div><label>Rest (sec):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" :placeholder="'Default (' + settings.defaultRestTimer + 's)'" /></div>
                                   </div>
                                   
-                                  <div class="form-group">
-                                       <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.isToFailure" /> To Failure?</label>
-                                  </div>
-
-                                  <div class="form-group form-group-inline" v-if="!editingExercise.isToFailure">
-                                    <div><label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
-                                    <div><label>{{ editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:' }}</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
-                                  </div>
-                                  
                                   <div class="exercise-options-container card-inset" style="padding: 10px; margin-bottom: 15px; background-color: #f9f9f9; border: 1px solid #eee;">
-                                    <label class="form-section-label" style="font-weight:600; margin-bottom:8px; display:block;">Options</label>
-                                    
-                                    <div class="form-group" style="display: flex; gap: 20px; flex-wrap: wrap;">
+                                    <label class="form-section-label" style="font-weight:600; margin-bottom:8px; display:block;">Configuration</label>
+
+                                    <div class="form-group" style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
                                         <label class="checkbox-label">
-                                        <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression
+                                            <input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression
                                         </label>
                                         <label class="checkbox-label">
-                                        <input type="checkbox" v-model="editingExercise.isTimed" /> Timed Exercise
+                                            <input type="checkbox" v-model="editingExercise.isToFailure" /> To Failure
                                         </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" v-model="editingExercise.isTimed" /> Timed Exercise
+                                        </label>
+                                    </div>
+
+                                    <div v-if="editingExercise.enableProgression">
+                                        <div class="form-group form-group-inline" v-if="!editingExercise.isToFailure || editingExercise.enableProgression" style="margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                                            <div v-if="!editingExercise.isToFailure">
+                                                <label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label>
+                                                <input type="number" v-model.number="editingExercise.minReps" min="1" required />
+                                            </div>
+                                            <div :style="editingExercise.isToFailure ? 'width: 100%' : ''">
+                                                <label>
+                                                    {{ editingExercise.isToFailure ? (editingExercise.isTimed ? 'Progression Trigger (Max Hold sec):' : 'Progression Trigger (Max Reps):') : (editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:') }}
+                                                    <span v-if="editingExercise.isToFailure" @click.prevent="showFailureProgressionHelp = !showFailureProgressionHelp" style="cursor: pointer; margin-left: 5px;">
+                                                        💡
+                                                    </span>
+                                                </label>
+                                                <input type="number" v-model.number="editingExercise.maxReps" min="1" required />
+                                                <div v-if="showFailureProgressionHelp && editingExercise.isToFailure" style="font-size: 0.85em; color: #666; background: #fff3cd; padding: 5px; border-radius: 4px; margin-top: 5px; border: 1px solid #ffeeba;">
+                                                    If you exceed this rep count on <strong>all sets</strong> during a workout, the weight will automatically increase for the next session.
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="editingExercise.enableProgression" class="form-group form-group-inline">
+                                        <div><label>Weight Progression ({{ displayUnit(settings.weightUnit) }}):</label><input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required /></div>
+                                        <div v-if="!editingExercise.isToFailure"><label>{{ editingExercise.isTimed ? 'Hold Progression (sec):' : 'Rep Progression:' }}</label><input type="number" v-model.number="editingExercise.repOverloadStep" min="1" required /></div>
                                     </div>
                                     
                                     <div class="form-group" v-if="day.exercises.findIndex((e: any) => e.id === exercise.id) > 0">
@@ -353,31 +373,21 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
                                         </label>
                                         
                                         <div v-if="editingExercise.isSupersetWithPrevious">
-                                            <!-- Informational text -->
                                             <div style="font-size:0.8em; color:#007bff; margin-left: 25px; margin-top: 2px;">
                                                 Sets locked to match previous exercise.
                                             </div>
-
-                                            <!-- Full Rest Option -->
                                             <div style="margin-top:8px;">
                                                 <label class="checkbox-label">
                                                     <input type="checkbox" v-model="editingExercise.fullRestAfterSuperset" /> Start timer after set (standard rest)
                                                 </label>
-                                                <div style="font-size:0.8em; color:#666; margin-left:25px;">
-                                                    If checked, the full rest timer starts after this exercise finishes.<br>
-                                                    If unchecked, the timer accounts for the time taken to do this exercise (smart deduction).
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                   </div>
 
-                                  <div class="form-group form-group-inline">
-                                    <div v-if="!editingExercise.id">
-                                        <label>Starting Weight ({{ displayUnit(settings.weightUnit) }}):</label>
-                                        <input type="number" v-model.number="editingExercise.startingWeight" step="0.1" :required="!editingExercise.id" />
-                                    </div>
-                                    <div><label>Weight Increment ({{ displayUnit(settings.weightUnit) }}):</label><input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required /></div>
+                                  <div class="form-group" v-if="!editingExercise.id">
+                                      <label>Starting Weight ({{ displayUnit(settings.weightUnit) }}):</label>
+                                      <input type="number" v-model.number="editingExercise.startingWeight" step="0.1" :required="!editingExercise.id" />
                                   </div>
                                   <div class="form-group"><label>Notes:</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
 
@@ -404,25 +414,69 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
                               <div><label>Target Sets:</label><input type="number" v-model.number="editingExercise.targetSets" min="1" required /></div>
                               <div><label>Rest (sec):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" :placeholder="'Default (' + settings.defaultRestTimer + 's)'" /></div>
                           </div>
+                          
+                          <div class="exercise-options-container card-inset" style="padding: 10px; margin-bottom: 15px; background-color: #f9f9f9; border: 1px solid #eee;">
+                            <label class="form-section-label" style="font-weight:600; margin-bottom:8px; display:block;">Configuration</label>
+                            
+                            <div class="form-group" style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
+                                <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression</label>
+                                <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.isToFailure" /> To Failure</label>
+                                <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.isTimed" /> Timed Exercise</label>
+                            </div>
+
+                            <div v-if="editingExercise.enableProgression">
+                                <div class="form-group form-group-inline" v-if="!editingExercise.isToFailure || editingExercise.enableProgression" style="margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                                    <div v-if="!editingExercise.isToFailure">
+                                        <label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label>
+                                        <input type="number" v-model.number="editingExercise.minReps" min="1" required />
+                                    </div>
+                                    <div :style="editingExercise.isToFailure ? 'width: 100%' : ''">
+                                        <label>
+                                            {{ editingExercise.isToFailure ? (editingExercise.isTimed ? 'Progression Trigger (Max Hold sec):' : 'Progression Trigger (Max Reps):') : (editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:') }}
+                                            <span v-if="editingExercise.isToFailure" @click.prevent="showFailureProgressionHelp = !showFailureProgressionHelp" style="cursor: pointer; margin-left: 5px;">
+                                                💡
+                                            </span>
+                                        </label>
+                                        <input type="number" v-model.number="editingExercise.maxReps" min="1" required />
+                                        <div v-if="showFailureProgressionHelp && editingExercise.isToFailure" style="font-size: 0.85em; color: #666; background: #fff3cd; padding: 5px; border-radius: 4px; margin-top: 5px; border: 1px solid #ffeeba;">
+                                            If you exceed this rep count on <strong>all sets</strong> during a workout, the weight will automatically increase for the next session.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div v-if="editingExercise.enableProgression" class="form-group form-group-inline">
+                                <div><label>Weight Progression ({{ displayUnit(settings.weightUnit) }}):</label><input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required /></div>
+                                <div v-if="!editingExercise.isToFailure"><label>{{ editingExercise.isTimed ? 'Hold Progression (sec):' : 'Rep Progression:' }}</label><input type="number" v-model.number="editingExercise.repOverloadStep" min="1" required /></div>
+                            </div>
+
+                            <div class="form-group" v-if="day.exercises.length > 0">
+                                <label class="checkbox-label" title="Must match sets of previous exercise">
+                                  <input type="checkbox" v-model="editingExercise.isSupersetWithPrevious" /> Superset with Previous Exercise
+                                </label>
+                            </div>
+                          </div>
+                          
                           <div class="form-group">
-                              <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.isToFailure" /> To Failure?</label>
+                            <label>Starting Weight ({{ displayUnit(settings.weightUnit) }}):</label>
+                            <input type="number" v-model.number="editingExercise.startingWeight" step="0.1" />
                           </div>
-                          <div class="form-group form-group-inline" v-if="!editingExercise.isToFailure">
-                            <div><label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label><input type="number" v-model.number="editingExercise.minReps" min="1" required /></div>
-                            <div><label>{{ editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:' }}</label><input type="number" v-model.number="editingExercise.maxReps" min="1" required /></div>
-                          </div>
-                          <div class="form-group" style="display: flex; gap: 20px;">
-                            <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression?</label>
-                            <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.isTimed" /> Timed Exercise</label>
-                          </div>
-                          <div class="form-group" v-if="day.exercises.length > 0">
-                              <label class="checkbox-label" title="Must match sets of previous exercise">
-                                <input type="checkbox" v-model="editingExercise.isSupersetWithPrevious" /> Superset with Previous Exercise?
-                              </label>
-                          </div>
-                          <div class="form-group form-group-inline">
-                            <div><label>Starting Weight ({{ displayUnit(settings.weightUnit) }}):</label><input type="number" v-model.number="editingExercise.startingWeight" step="0.1" /></div>
-                            <div><label>Weight Increment ({{ displayUnit(settings.weightUnit) }}):</label><input type="number" v-model.number="editingExercise.weightIncrement" step="0.1" required /></div>
+                          
+                          <div class="form-group form-group-inline" v-if="!editingExercise.id">
+                              <!-- No longer grouping these here if we moved them to config.. but wait, this is the inline form logic from before? -->
+                              <!-- Actually, looking at previous edit: lines 440-444 were simple Starting Weight. -->
+                              <!-- The user previously asked for inline "Rep Incr" but we moved it to config block. -->
+                              <!-- So we just need to make sure the CONFIG block change (above) covered it. -->
+                              <!-- The replace above covered the Config block. This specific block seems to be just starting weight now. -->
+                              <!-- Wait, I see "repOverloadStep" in my previous edits was REMOVED from the bottom form group and put in the config group. -->
+                              <!-- So this replacement might be unnecessary if I only touched the config block. -->
+                              <!-- Checking context... -->
+                              <!-- The target content shows what's currently there. -->
+                              <!-- Lines 440-444 are: -->
+                              <!-- <div class="form-group"> -->
+                              <!-- <label>Starting Weight... -->
+                              <!-- </div> -->
+                              <!-- That looks correct. I don't need to change this block if the previous edits moved the increment fields to the config block. -->
                           </div>
                           <div class="form-group"><label>Notes:</label><textarea v-model="editingExercise.notesForExercise"></textarea></div>
                           <div class="form-actions">
@@ -585,6 +639,7 @@ const showDeleteConfirmation = ref(false);
 const showExerciseDeleteConfirmation = ref(false); // Potential future use, but let's stick to routine for now
 const itemToDelete = ref<any>(null); // For generic delete if needed
 const showProgressionHint = ref(false);
+const showFailureProgressionHelp = ref(false);
 
 const validPrograms = computed(() => {
   return allPrograms.value.filter(p => p.id !== null) as (TrainingProgram & { id: string })[];
@@ -1335,6 +1390,8 @@ const startEditExercise = async (dayId: string, exerciseToEdit: ExerciseConfigFo
         editingExercise.currentRepsToDisplayOrEdit = editingExercise.minReps;
     }
 
+    showFailureProgressionHelp.value = false;
+
     addingExerciseToDayId.value = null; // Ensure we are not in "add new exercise" mode for this day
   }
 };
@@ -1342,6 +1399,7 @@ const startEditExercise = async (dayId: string, exerciseToEdit: ExerciseConfigFo
 const cancelAddOrEditExercise = () => {
   editingExerciseDayId.value = null; addingExerciseToDayId.value = null;
   resetEditingExerciseForm();
+  showFailureProgressionHelp.value = false;
 };
 
 const addOrUpdateExercise = async (dayId: string) => {

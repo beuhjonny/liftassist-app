@@ -126,6 +126,7 @@ export default function useLoggedWorkouts() {
         isLoaded.value = false;
         lastVisibleDoc.value = null;
         hasMoreDocs.value = true;
+        globalLoggedWorkouts.length = 0; // Clear the list so it refetches and doesn't show old data
     };
 
     /**

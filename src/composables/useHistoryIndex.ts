@@ -21,21 +21,56 @@ const calendarIndex = reactive<CalendarIndexData>({});
 const isIndexLoaded = ref(false);
 const isIndexLoading = ref(false);
 
-const CURRENT_INDEX_VERSION = 2; // Bumped because we added totalVolume
+const CURRENT_INDEX_VERSION = 3; // Maintenance rebuild to repair missing logs during index bug
 
 export default function useHistoryIndex() {
     const { user } = useAuth();
+
+    const getLocalDateKey = (val: any): string => {
+        if (!val) return '';
+        let dateObj: Date | null = null;
+        if (val instanceof Timestamp) {
+            dateObj = val.toDate();
+        } else if (val instanceof Date && !isNaN(val.getTime())) {
+            dateObj = val;
+        } else if (typeof val.toDate === 'function') {
+            dateObj = val.toDate();
+        } else if (typeof val.seconds === 'number') {
+            dateObj = new Date(val.seconds * 1000);
+        } else {
+            try {
+                const parsed = new Date(val);
+                if (!isNaN(parsed.getTime())) {
+                    dateObj = parsed;
+                }
+            } catch (e) {}
+        }
+        
+        if (dateObj) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        return '';
+    };
 
     /**
      * Fetches the calendar index. 
      * If it doesn't exist OR is outdated (version mismatch), it refetches history.
      */
-    const fetchCalendarIndex = async () => {
+    const fetchCalendarIndex = async (forceRefresh = false) => {
         if (!user.value || !user.value.uid) return;
-        if (isIndexLoaded.value) return;
+        if (isIndexLoaded.value && !forceRefresh) return;
 
         isIndexLoading.value = true;
         try {
+            if (forceRefresh) {
+                console.log("Repairing Calendar Index - Rebuilding from history...");
+                await buildIndexFromScratch();
+                return;
+            }
+
             const indexRef = doc(db, 'users', user.value.uid, 'indexes', 'calendar');
             const indexSnap = await getDoc(indexRef);
 
@@ -82,16 +117,7 @@ export default function useHistoryIndex() {
 
             snapshot.forEach(docSnap => {
                 const data = docSnap.data();
-                let dateKey = '';
-
-                // Handle Firestore Timestamp or standard Date
-                if (data.date instanceof Timestamp) {
-                    dateKey = data.date.toDate().toISOString().split('T')[0];
-                } else if (data.date instanceof Date) {
-                    dateKey = data.date.toISOString().split('T')[0];
-                } else if (data.startTime instanceof Timestamp) {
-                    dateKey = data.startTime.toDate().toISOString().split('T')[0];
-                }
+                const dateKey = getLocalDateKey(data.date) || getLocalDateKey(data.startTime) || getLocalDateKey(data.endTime);
 
                 // Calculate Volume safely
                 let vol = 0;
@@ -122,10 +148,11 @@ export default function useHistoryIndex() {
             const indexRef = doc(db, 'users', user.value.uid, 'indexes', 'calendar');
             await setDoc(indexRef, newIndex);
 
-            // Update local state
+            // Update local state - clear first to ensure full replacement
+            for (const key in calendarIndex) delete calendarIndex[key];
             Object.assign(calendarIndex, newIndex);
             isIndexLoaded.value = true;
-            console.log("Calendar Index built successfully with Volume.");
+            console.log("Calendar Index rebuilt successfully with Volume.");
 
         } catch (e) {
             console.error("Migration failed:", e);
@@ -138,12 +165,7 @@ export default function useHistoryIndex() {
     const updateCalendarIndex = async (workout: LoggedWorkout, computedVolume?: number) => {
         if (!user.value || !user.value.uid) return;
 
-        let dateKey = '';
-        if (workout.date instanceof Timestamp) {
-            dateKey = workout.date.toDate().toISOString().split('T')[0];
-        } else if (workout.date instanceof Date) {
-            dateKey = workout.date.toISOString().split('T')[0];
-        }
+        const dateKey = getLocalDateKey(workout.date) || getLocalDateKey(workout.startTime) || getLocalDateKey(new Date());
 
         if (!dateKey) return;
 

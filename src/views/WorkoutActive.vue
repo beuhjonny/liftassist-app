@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="workout-active-view">
 
     <!-- Draft Workout Prompt -->
@@ -66,6 +66,7 @@
         :exercise="currentExercise"
         :setNumber="currentSetNumber"
         :activeSetTime="formattedActiveSetTime"
+        :workoutDuration="activeWorkoutDuration"
         :effectiveReps="getEffectivePrescribedReps"
         :displayWeight="toDisplay(getEffectivePrescribedWeight, settings.weightUnit)"
         :weightUnit="settings.weightUnit"
@@ -116,12 +117,16 @@
           />
         </div>
       </div>
-      <div v-if="nextSetDetails" class="next-up-info card-inset">
-        <h4>NEXT UP: {{ nextSetDetails.exerciseName }}</h4>
-        <p>Set {{ nextSetDetails.setNumber }} of {{ nextSetDetails.targetSets }}: {{ nextSetDetails.prescribedReps }} {{ nextSetDetails.isTimed ? 'sec hold' : 'reps' }} @ {{ nextSetDetails.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}</p>
+      <div v-if="nextSetDetails" class="next-up-info card-inset" :class="{ 'new-exercise-upcoming': currentExercise && nextSetDetails.exerciseName !== currentExercise.exerciseName }">
+        <h4>{{ currentExercise && nextSetDetails.exerciseName !== currentExercise.exerciseName ? 'NEXT EXERCISE:' : 'NEXT UP:' }} {{ nextSetDetails.exerciseName }}</h4>
+        <p class="next-up-details">
+          Set {{ nextSetDetails.setNumber }} of {{ nextSetDetails.targetSets }}: 
+          <strong>{{ nextSetDetails.prescribedReps }} {{ nextSetDetails.isTimed ? 'sec hold' : 'reps' }} @ {{ nextSetDetails.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}</strong>
+        </p>
       </div>
       <button @click="proceedToNextSet" class="button-primary start-next-set-button" :class="{ 'embiggened': settings.embiggenButtons }">
-        {{ restCountdown > 0 ? 'Skip Rest & Start Next Set' : 'Start Next Set' }}
+        <template v-if="!nextSetDetails">Finish Workout</template>
+        <template v-else>{{ restCountdown > 0 ? 'Skip Rest & Start Next Set' : 'Start Next Set' }}</template>
       </button>
     </div>
 
@@ -179,9 +184,16 @@
           <!-- Redundant preview block removed -->
         </div>
 
-        <div v-if="showActualRepsInputForFail && lastLoggedSetIndex !== null && workoutLog[lastLoggedSetIndex]?.status === 'failed'" class="actual-reps-input-section card-inset">
-          <label :for="'finalActualRepsFailed'">Reps completed for last failed set of {{ workoutLog[lastLoggedSetIndex]?.exerciseName }}:</label>
-          <input type="number" :id="'finalActualRepsFailed'" v-model.number="actualRepsForFailedSet" min="0" />
+        <div v-if="setsRequiringRepInput.length > 0" class="actual-reps-input-section card-inset">
+          <div v-for="item in setsRequiringRepInput" :key="item.index" class="rep-input-item" style="margin-bottom: 15px;">
+             <label style="display:block; margin-bottom:5px;">Reps for <strong>{{ item.set.exerciseName }}</strong> (Set {{ item.set.setNumber }} - {{ item.set.status === 'failed' ? 'Failed' : 'To Failure' }}):</label>
+             <input type="number" v-model.number="repsCompletedInputMap[item.index]" min="0" style="width: 80px; padding: 8px; font-size: 1.1em; text-align: center;" />
+             
+             <!-- Optional: Add helper text if to failure -->
+             <p v-if="!item.set.status || item.set.status === 'done'" style="font-size: 0.8em; margin-top: 5px; opacity: 0.8;">
+               "To Failure" target requires actual reps log.
+             </p>
+          </div>
         </div>
 
         <div class="overall-notes-section card-inset">
@@ -311,6 +323,8 @@ interface ExerciseConfigInRoutine {
   customRestSeconds?: number | null;
   notesForExercise?: string | null;
   enableProgression?: boolean;
+  isToFailure?: boolean;
+  isTimed?: boolean;
   startingWeight?: number;
 }
 interface WorkoutDayInRoutine {
@@ -381,7 +395,7 @@ const lastLoggedSetIndex = ref<number | null>(null);
 let timerInterval: number | undefined = undefined;
 const timerAudioPlayer = ref<HTMLAudioElement | null>(null);
 let audioContext: AudioContext | null = null;
-let audioBuffer: AudioBuffer | null = null; // For loaded MP3 file
+const audioBuffer: AudioBuffer | null = null; // For loaded MP3 file
 
 // Sound type options - can be extended later
 type SoundType = 'bell' | 'beep' | 'chime' | 'ding'; // simplified
@@ -435,6 +449,27 @@ const stopHoldTimer = (autoAdvance = false) => {
   }
 };
 
+// Global Timer for Workout Duration
+let workoutGlobalTimer: number | null = null;
+
+onMounted(() => {
+    if (user.value) {
+        // ... existing mount logic if any
+    }
+    
+    // Start global clock ticks
+    workoutGlobalTimer = setInterval(() => {
+        currentTime.value = new Date();
+    }, 1000);
+});
+
+onUnmounted(() => {
+    if (workoutGlobalTimer) clearInterval(workoutGlobalTimer);
+    if (activeSetTimerInterval) clearInterval(activeSetTimerInterval);
+    if (timerInterval) clearInterval(timerInterval);
+    // ... other cleanups
+});
+
 const wakeLockSentinel = ref<WakeLockSentinel | null>(null);
 
 const showSetDetailsInSummary = ref(false);
@@ -465,17 +500,28 @@ const setsRequiringRepInput = computed(() => {
   // Always include the very last set
   setsToCheck.push({ index: lastLoggedSetIndex.value, set: lastSet });
 
-  // If part of a superset group...
-  if (lastLoggedSetIndex.value > 0) {
-      const prevIndex = lastLoggedSetIndex.value - 1;
-      const prevSet = workoutLog[prevIndex];
+  // Check for superset chain relative to the last set
+  let currentIndex = lastLoggedSetIndex.value;
+  let currentSet = lastSet;
+  
+  while (currentIndex > 0) {
+      const currentConfig = sessionExercises.find(ex => ex.id === currentSet.exerciseId);
       
-      // Find config for lastSet
-      const lastConfig = sessionExercises.find(ex => ex.id === lastSet.exerciseId);
-      
-      // If last set was a "Slave" (superset with previous), then the previous set was its "Master"
-      if (lastConfig?.isSupersetWithPrevious) {
-          setsToCheck.unshift({ index: prevIndex, set: prevSet });
+      // If current set is connected to previous (isSupersetWithPrevious), capture previous
+      if (currentConfig?.isSupersetWithPrevious) {
+          const prevIndex = currentIndex - 1;
+          const prevSet = workoutLog[prevIndex];
+          if (prevSet) {
+             setsToCheck.unshift({ index: prevIndex, set: prevSet });
+             // Move pointer back
+             currentIndex = prevIndex;
+             currentSet = prevSet;
+          } else {
+             break; // Should not happen
+          }
+      } else {
+          // Chain broken or reached head
+          break;
       }
   }
 
@@ -503,18 +549,26 @@ const totalSessionSets = computed(() => {
 const completedSetsCount = computed(() => workoutLog.filter(s => s.status === 'done').length);
 const failedSetsCount = computed(() => workoutLog.filter(s => s.status === 'failed').length);
 
-const workoutDurationFormatted = computed(() => {
-  if (!workoutStartTime.value || !workoutEndTime.value) return 'N/A';
-  const durationMs = workoutEndTime.value.getTime() - workoutStartTime.value.getTime();
-  if (durationMs < 0) return 'N/A';
+const currentTime = ref(new Date());
+
+const activeWorkoutDuration = computed(() => {
+  if (!workoutStartTime.value) return '00:00';
+  const end = workoutPhase.value === 'complete' && workoutEndTime.value ? workoutEndTime.value : currentTime.value;
+  const durationMs = end.getTime() - workoutStartTime.value.getTime();
+  if (durationMs < 0) return '00:00';
+  
   const totalSeconds = Math.floor(durationMs / 1000);
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  let formatted = '';
-  if (hours > 0) formatted += `${hours}h `;
-  formatted += `${minutes}m ${seconds}s`;
-  return formatted.trim() || '0s';
+  
+  const mStr = minutes.toString().padStart(2, '0');
+  const sStr = seconds.toString().padStart(2, '0');
+  
+  if (hours > 0) {
+      return `${hours}:${mStr}:${sStr}`;
+  }
+  return `${mStr}:${sStr}`;
 });
 
 const totalWorkoutVolume = computed(() => {
@@ -562,10 +616,8 @@ const getEffectivePrescribedWeight = computed((): number => {
   return currentExercise.value?.prescribedWeight || 0;
 });
 
-
 const formattedRestTime = computed(() => { const m = Math.floor(restCountdown.value / 60); const s = restCountdown.value % 60; return `${m}:${s < 10 ? '0' : ''}${s}`; });
 const timerProgressPercentage = computed(() => (workoutPhase.value === 'resting' && restDurationToUse.value > 0) ? (restCountdown.value / restDurationToUse.value) * 100 : 100);
-
 
 const allSetsInSessionForTimeline = computed<TimelineSetInfo[]>(() => {
   const flatList: TimelineSetInfo[] = [];
@@ -666,19 +718,7 @@ const formattedActiveSetTime = computed(() => {
 });
 
 const displayDurationForCompletedWorkout = computed(() => {
-  if (workoutPhase.value !== 'complete' || !workoutStartTime.value || !workoutEndTime.value) return 'N/A';
-  const durationMs = workoutEndTime.value.getTime() - workoutStartTime.value.getTime();
-  if (durationMs < 0) return 'N/A';
-  const minutes = Math.floor(durationMs / 60000);
-  
-  if (minutes === undefined || minutes === null || isNaN(minutes) || minutes < 0) return 'N/A';
-  if (minutes === 0) return '0m';
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  let formatted = '';
-  if (h > 0) formatted += `${h}h `;
-  if (m > 0 || h === 0) formatted += `${m}m`;
-  return formatted.trim();
+  return activeWorkoutDuration.value;
 });
 
 // NEW: Computed properties for Last Performance History
@@ -1240,14 +1280,14 @@ const loadDraftWorkout = async () => {
     
     if (draftSnap.exists()) {
       const data = draftSnap.data() as Omit<DraftWorkout, 'id'>;
-      console.log('âœ… Draft found:', { setsCount: data.workoutLog?.length || 0, phase: data.workoutPhase });
+      console.log('Draft found:', { setsCount: data.workoutLog?.length || 0, phase: data.workoutPhase });
       return { id: draftSnap.id, ...data } as DraftWorkout;
     } else {
       console.log('No draft found at path:', draftRef.path);
     }
     return null;
   } catch (error) {
-    console.error('âŒ Failed to load draft workout:', error);
+    console.error('Failed to load draft workout:', error);
     return null;
   }
 };
@@ -1348,7 +1388,7 @@ const restoreDraftWorkout = (draft: DraftWorkout) => {
   // Don't set draftWorkoutId here - let the caller set it using getDraftWorkoutRef()
   // This ensures we always use the ref ID (constructed from props) not the stored document ID
   
-  console.log('âœ… Draft workout state restored', {
+  console.log('✅ Draft workout state restored', {
     setsCount: workoutLog.length,
     exercisesCount: sessionExercises.length,
     phase: workoutPhase.value,
@@ -1430,7 +1470,7 @@ const resumeDraft = async () => {
     // This ensures we're updating the same draft document
     draftWorkoutId.value = draftRef.id;
     
-    console.log('âœ… Draft restored successfully', { 
+    console.log('✅ Draft restored successfully', { 
       setsCount: workoutLog.length, 
       phase: workoutPhase.value,
       draftId: draftWorkoutId.value,
@@ -1686,6 +1726,10 @@ const finishWorkoutAndSave = async () => {
   const { updateCalendarIndex } = useHistoryIndex();
   updateCalendarIndex(loggedWorkoutData as any); // Cast because LoggedWorkout has stricter types than the initial object
 
+  // Invalidate workout history cache so the list updates when user goes to History
+  const { invalidateCache } = useLoggedWorkouts();
+  invalidateCache();
+
   try {
     for (const performedEx of performedExercisesForDatabase) { 
       const exConfigFromRoutine = currentWorkoutDayDetails.value?.exercises.find(cfg => cfg.id === performedEx.exerciseId);
@@ -1698,27 +1742,112 @@ const finishWorkoutAndSave = async () => {
       if (!currentProgress) { console.warn(`No initial progress found for ${performedEx.exerciseName} during save's progression update. Skipping.`); continue; }
       
       const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
-
+      
+      // Determine if progression criteria met
+      let criteriaMet = false;
       let allSetsMarkedDone = true;
-      if (performedEx.sets.length < exConfigFromRoutine.targetSets) { allSetsMarkedDone = false; }
-      else { for (const set of performedEx.sets) { if (set.status !== 'done') { allSetsMarkedDone = false; break; } } }
+
+      // Check for valid sets
+      const performedSets = performedEx.sets;
+
+      // Default logic: All sets must be "done" (unless it's failure mode where "done" logic is different)
+      if (performedSets.length < exConfigFromRoutine.targetSets) { 
+        allSetsMarkedDone = false; 
+      } else { 
+        for (const set of performedSets) { 
+          // For failure mode, status might be 'failed' or 'done', but we care about the rep count threshold
+          if (exConfigFromRoutine.isToFailure) {
+             // For failure, we don't strictly require 'done' status if we are using the rep threshold logic
+             // But usually user logs 'done' or 'failed'.
+             // Let's rely on the Rep Threshold check primarily for failure mode.
+          } else {
+             if (set.status !== 'done') { allSetsMarkedDone = false; break; } 
+          }
+        } 
+      }
+
+      if (exConfigFromRoutine.isToFailure) {
+          // Failure Mode Logic: Check Max Reps Threshold
+          // If all sets exceeded the maxReps, we progress.
+          const threshold = exConfigFromRoutine.maxReps;
+          let allSetsExceededThreshold = true;
+          
+          if (performedSets.length < exConfigFromRoutine.targetSets) {
+              allSetsExceededThreshold = false;
+          } else {
+              for (const set of performedSets) {
+                  const reps = set.actualReps || 0; // Handle partials or 0
+                  if (reps <= threshold) { // Must be GREATER than threshold? User said: "able to go above that number"
+                      allSetsExceededThreshold = false;
+                      break;
+                  }
+              }
+          }
+          
+          if (allSetsExceededThreshold) {
+              criteriaMet = true;
+          }
+      } else {
+          // Standard Logic
+          if (allSetsMarkedDone && currentProgress.repsToAttemptNext >= exConfigFromRoutine.maxReps) {
+              criteriaMet = true;
+          }
+      }
 
       const newProgressUpdate: Partial<ExerciseProgress> = { lastPerformedDate: serverTimestamp() };
-      if (allSetsMarkedDone) {
+      
+      if (criteriaMet) {
         newProgressUpdate.consecutiveFailedWorkoutsAtCurrentWeightAndReps = 0;
-        newProgressUpdate.lastWorkoutAllSetsSuccessfulAtCurrentWeight = true;
-        if (currentProgress.repsToAttemptNext >= exConfigFromRoutine.maxReps) {
-          newProgressUpdate.currentWeightToAttempt = currentProgress.currentWeightToAttempt + exConfigFromRoutine.weightIncrement;
-          newProgressUpdate.repsToAttemptNext = exConfigFromRoutine.minReps;
+        newProgressUpdate.lastWorkoutAllSetsSuccessfulAtCurrentWeight = true; // Use this flag to mean "Progression Triggered" contextually
+        
+        // Increase Weight
+        newProgressUpdate.currentWeightToAttempt = currentProgress.currentWeightToAttempt + exConfigFromRoutine.weightIncrement;
+        
+        // Reset Reps
+        if (exConfigFromRoutine.isToFailure) {
+            // For failure, we don't really have a "reps to attempt", but maybe reset to minReps just in case?
+            // Or keep it at maxReps? Usually resetting to bottom of range is standard.
+            newProgressUpdate.repsToAttemptNext = exConfigFromRoutine.minReps || 1; 
         } else {
-          newProgressUpdate.currentWeightToAttempt = currentProgress.currentWeightToAttempt;
-          newProgressUpdate.repsToAttemptNext = Math.min(currentProgress.repsToAttemptNext + exConfigFromRoutine.repOverloadStep, exConfigFromRoutine.maxReps);
+            newProgressUpdate.repsToAttemptNext = exConfigFromRoutine.minReps;
         }
       } else {
-        newProgressUpdate.lastWorkoutAllSetsSuccessfulAtCurrentWeight = false;
-        newProgressUpdate.consecutiveFailedWorkoutsAtCurrentWeightAndReps = (currentProgress.consecutiveFailedWorkoutsAtCurrentWeightAndReps || 0) + 1;
-        newProgressUpdate.currentWeightToAttempt = currentProgress.currentWeightToAttempt;
-        newProgressUpdate.repsToAttemptNext = currentProgress.repsToAttemptNext;
+        // Progression NOT met
+        // For standard:
+        if (!exConfigFromRoutine.isToFailure) {
+           if (allSetsMarkedDone) {
+               // Good workout, just building reps
+               newProgressUpdate.lastWorkoutAllSetsSuccessfulAtCurrentWeight = true;
+               newProgressUpdate.currentWeightToAttempt = currentProgress.currentWeightToAttempt;
+               newProgressUpdate.repsToAttemptNext = Math.min(currentProgress.repsToAttemptNext + exConfigFromRoutine.repOverloadStep, exConfigFromRoutine.maxReps);
+               newProgressUpdate.consecutiveFailedWorkoutsAtCurrentWeightAndReps = 0;
+           } else {
+               // Failed a set
+               newProgressUpdate.lastWorkoutAllSetsSuccessfulAtCurrentWeight = false;
+               newProgressUpdate.consecutiveFailedWorkoutsAtCurrentWeightAndReps = (currentProgress.consecutiveFailedWorkoutsAtCurrentWeightAndReps || 0) + 1;
+               newProgressUpdate.currentWeightToAttempt = currentProgress.currentWeightToAttempt;
+               newProgressUpdate.repsToAttemptNext = currentProgress.repsToAttemptNext;
+           }
+        } else {
+           // Failure Mode - Not met threshold
+           // Treat as "maintenance" or "failed" depending on view, but for progression sys:
+           // If they didn't hit the jump, they stay at current weight.
+           // We'll mark consecutive failures only if they performed poorly? 
+           // Or just standard "stay same".
+           // Let's just keep weight same.
+           newProgressUpdate.currentWeightToAttempt = currentProgress.currentWeightToAttempt;
+           
+           // For failure, we don't increment reps target usually.
+           newProgressUpdate.repsToAttemptNext = currentProgress.repsToAttemptNext; 
+           
+           // Mark as successful workout conceptually (didn't "fail" fail), just didn't progress?
+           // Or should we track "failure" to progress?
+           // Let's just reset consecutive fails if they logged sets.
+           if (performedSets.length >= exConfigFromRoutine.targetSets) {
+                newProgressUpdate.consecutiveFailedWorkoutsAtCurrentWeightAndReps = 0; // You did the work
+           }
+           newProgressUpdate.lastWorkoutAllSetsSuccessfulAtCurrentWeight = false; // Didn't trigger progression
+        }
       }
       batch.update(progressDocRef, newProgressUpdate);
     }
@@ -1957,7 +2086,7 @@ const applyEditAllFutureSets = async () => {
     editedReps.value = null;
     editedWeight.value = null;
     
-    console.log('âœ… Updated all future sets for', currentExercise.value.exerciseName, {
+    console.log('✅ Updated all future sets for', currentExercise.value.exerciseName, {
       newWeight: editedWeight.value,
       newReps: editedReps.value
     });
@@ -2091,6 +2220,29 @@ const saveEditedWorkout = () => {
 .next-up-info { margin: 25px 0; text-align: center;}
 .next-up-info h4 { margin-top: 0; color: var(--color-card-heading); font-size: 1.2em; }
 .start-next-set-button { width: auto; padding: 12px 30px; font-size: 1.1em; display: block; margin-left: auto; margin-right: auto;}
+
+.next-up-info.new-exercise-upcoming {
+  /* No special box styling, just a container for the boost */
+}
+.new-exercise-upcoming h4 {
+  color: var(--color-primary, #007bff); /* Keep blue text for the header */
+}
+.new-exercise-upcoming .next-up-details {
+  font-size: 1.4em; /* Boost the whole line size uniformly */
+  transition: font-size 0.2s;
+}
+.new-exercise-upcoming .next-up-details strong {
+  font-size: 1em; /* Ensure it matches parent size */
+}
+.next-up-details {
+  font-size: 1.1em;
+  line-height: 1.4;
+  color: var(--color-card-text); /* Ensure slightly greyer/standard text */
+}
+.next-up-details strong {
+  font-size: 1em; /* Match parent */
+  color: var(--color-card-heading); /* Bold/Darker */
+}
 
 .workout-summary { color: var(--color-card-text); }
 .workout-summary h4 { font-size: 1.2em; font-weight: 600; margin-top: 0; margin-bottom: 15px; color: var(--color-card-heading); }

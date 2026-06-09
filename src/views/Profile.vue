@@ -84,6 +84,27 @@
                 </div>
             </div>
 
+            <div class="setting-item device-pairing-section">
+                <label>Connect Device</label>
+                <div class="pairing-control">
+                    <input 
+                        v-model="pairingCodeInput"
+                        placeholder="Garmin Code" 
+                        maxlength="6"
+                        class="pairing-input"
+                        :disabled="isPairing"
+                        @keyup.enter="handlePairing"
+                    />
+                    <button @click="handlePairing" class="button-primary small" :disabled="!pairingCodeInput || isPairing">
+                        {{ isPairing ? '...' : 'Link' }}
+                    </button>
+                    <!-- Status Icons -->
+                    <span v-if="pairingStatus === 'success'" class="pairing-result success">✅</span>
+                    <span v-if="pairingStatus === 'error'" class="pairing-result error">❌</span>
+                </div>
+            </div>
+            <p v-if="pairingMessage" :class="pairingStatus === 'success' ? 'success-text' : 'error-text'" style="font-size: 0.85em; margin-top: -15px; text-align: right;">{{ pairingMessage }}</p>
+
         </div>
 
 
@@ -163,6 +184,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { collection, query, getDocs, orderBy, Timestamp, setDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../firebase'; // Adjust path if needed
 import useAuth from '../composables/useAuth'; // Adjust path if needed
 import useSettings, { type ThemeOption, type TimerSoundOption, type WeightUnitOption } from '../composables/useSettings'; 
@@ -398,6 +420,41 @@ const previewSound = () => {
 const toggleEmbiggen = (event: Event) => {
     const isChecked = (event.target as HTMLInputElement).checked;
     saveSettings({ embiggenButtons: isChecked });
+};
+
+// Device Pairing Logic
+const pairingCodeInput = ref('');
+const isPairing = ref(false);
+const pairingStatus = ref<'idle' | 'success' | 'error'>('idle');
+const pairingMessage = ref('');
+
+const handlePairing = async () => {
+    if (!pairingCodeInput.value || pairingCodeInput.value.length < 6) return;
+    
+    isPairing.value = true;
+    pairingStatus.value = 'idle';
+    pairingMessage.value = '';
+
+    try {
+        const functions = getFunctions();
+        const claimFunc = httpsCallable(functions, 'claimPairingCode');
+        
+        await claimFunc({ code: pairingCodeInput.value });
+        
+        pairingStatus.value = 'success';
+        pairingMessage.value = 'Device linked successfully!';
+        pairingCodeInput.value = ''; // Clear input
+        
+        // Clear message after 3s
+        setTimeout(() => { pairingStatus.value = 'idle'; pairingMessage.value = ''; }, 3000);
+
+    } catch (e: any) {
+        console.error("Pairing failed:", e);
+        pairingStatus.value = 'error';
+        pairingMessage.value = e.message || "Failed to link device.";
+    } finally {
+        isPairing.value = false;
+    }
 };
 
 </script>
@@ -748,5 +805,34 @@ select {
 .stat-highlight {
     background-color: rgba(255, 193, 7, 0.1); /* Subtle Gold BG */
     border-radius: 4px;
+}
+
+/* Pairing Styles */
+.pairing-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pairing-input {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid var(--color-card-border);
+    background: var(--color-card-bg);
+    color: var(--color-card-text);
+    width: 80px;
+    text-align: center;
+    text-transform: uppercase;
+    font-family: monospace;
+    font-size: 1.1em;
+}
+
+.button-primary.small {
+    padding: 8px 12px;
+    font-size: 0.9em;
+}
+
+.pairing-result {
+    font-size: 1.2em;
 }
 </style>
