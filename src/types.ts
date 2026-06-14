@@ -39,6 +39,7 @@ export interface WorkoutDay {
   dayName: string;
   order: number;
   exercises: ExerciseConfigForDisplay[]; // Uses the display version
+  color?: string;
 }
 
 export interface TrainingProgram {

@@ -78,6 +78,22 @@
                 <h3>Change Log</h3>
 
                 <div class="log-entry">
+                    <span class="log-date">Jun 14, 2026</span>
+                    <h4>The "New Laptop" Expansion & Strava Sync</h4>
+                    <p>A massive update containing all features shipped since transitioning to the new laptop. Focused on Strava integration, custom routine colors, UI enhancements, and improved analytics:</p>
+                    <ul class="feature-list">
+                         <li><strong>Strava Two-Way Sync:</strong> Completed weightlifting sessions are automatically pushed to Strava as WeightTraining activities with comprehensive set breakdowns, while external cardio activities (runs, rides, etc.) are pulled in.</li>
+                         <li><strong>Cardio Distance Settings & Stats:</strong> Added a cardio distance unit preference (miles vs km). Tooltips convert runs dynamically, and connected users see a dedicated cardio stats card (Total Runs & Lifetime Distance) in their profile.</li>
+                         <li><strong>Custom Session Colors:</strong> Routine editors now feature inline color pickers for customized session colors, which automatically propagate to the calendar heatmap and legends.</li>
+                         <li><strong>Heatmap Calendar Polish:</strong> Cardio-only days render with a clean bottom-right orange triangle. Inset outlines replace standard borders to prevent gradient bleeding, and tooltips auto-shift to avoid viewport clipping.</li>
+                         <li><strong>Volume Trend Aggregation:</strong> Added weekly and monthly aggregation options in the volume trend chart for better long-term progress tracking.</li>
+                         <li><strong>Rest Screen Overall Timer:</strong> The active workout resting screen now displays the overall workout elapsed timer alongside the rest countdown.</li>
+                         <li><strong>UI Restructuring & Theme Fixes:</strong> Reorganized profile settings into separate Account, Settings, Connections, and Stats cards with collapsible menus, and fixed secondary button text contrast in the 'Original' theme.</li>
+                         <li><strong>Stats Refinement:</strong> Renamed PRs to "Overloads Triggered" and added a "Heaviest Lift" tracker.</li>
+                    </ul>
+                </div>
+
+                <div class="log-entry">
                     <span class="log-date">Jan 23, 2026</span>
                     <h4>The "Antigravity" Speed Run</h4>
                     <p>A massive day of shipping features:</p>

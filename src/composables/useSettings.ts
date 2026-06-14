@@ -6,6 +6,7 @@ import useAuth from './useAuth';
 export type ThemeOption = 'original' | 'system' | 'light' | 'dark';
 export type TimerSoundOption = 'bell' | 'ding' | 'chime' | 'beep' | 'mute';
 export type WeightUnitOption = 'lbs' | 'kg';
+export type CardioDistanceUnitOption = 'mi' | 'km';
 
 export interface UserSettings {
     theme: ThemeOption;
@@ -15,6 +16,7 @@ export interface UserSettings {
     defaultRestTimer: number; // in seconds
     activeProgramId: string | null; // ID of the active training program
     embiggenButtons: boolean; // Accessible / large buttons mode
+    cardioDistanceUnit?: CardioDistanceUnitOption;
 }
 
 const defaultSettings: UserSettings = {
@@ -25,6 +27,7 @@ const defaultSettings: UserSettings = {
     defaultRestTimer: 90,
     activeProgramId: null,
     embiggenButtons: false,
+    cardioDistanceUnit: 'mi',
 };
 
 const settings = ref<UserSettings>({ ...defaultSettings });

@@ -249,11 +249,19 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
             <template #item="{ element: day }">
                 <div class="workout-day-entry card-inset">
                   <div class="workout-day-entry-header">
-                    <div class="header-left-group" style="display:flex; align-items:center;">
+                    <div class="header-left-group" style="display:flex; align-items: baseline;">
                         <span v-if="isInOverallEditMode" class="drag-handle-day" style="cursor: grab; margin-right: 10px; font-size: 1.2rem;" title="Drag to reorder session">☰</span>
-                        <h4 v-if="!(isInOverallEditMode && editingDayNameId === day.id)" class="day-name-display">{{ day.dayName }}</h4>
+                        <span 
+                          v-if="!(isInOverallEditMode && editingDayNameId === day.id)" 
+                          class="day-color-badge" 
+                          :style="{ backgroundColor: day.color || daySequenceColorPalette[(day.order - 1) % daySequenceColorPalette.length] || '#10B981' }" 
+                          style="width: 15px; height: 15px; border-radius: 3px; margin-right: 8px; display: inline-block; flex-shrink: 0; border: 1px solid var(--color-card-border);"
+                          title="Workout Day Color"
+                        ></span>
+                        <h4 v-if="!(isInOverallEditMode && editingDayNameId === day.id)" class="day-name-display" style="margin: 0;">{{ day.dayName }}</h4>
                         <div v-if="isInOverallEditMode && editingDayNameId === day.id" class="day-name-edit-form">
                           <input type="text" v-model="editableDayName" @keyup.enter="saveWorkoutDayName(day.id)" @keyup.esc="cancelEditWorkoutDayName()" placeholder="Session Name"/>
+                          <input type="color" v-model="editableDayColor" title="Choose Session Color" style="width: 40px; height: 38px; padding: 2px; border: 1px solid var(--color-card-border); border-radius: 4px; cursor: pointer; background: none; flex-shrink: 0; margin-right: 5px;" />
                           <button @click="saveWorkoutDayName(day.id)" :disabled="isSaving" class="button-icon success small" title="Save Name">✔️</button>
                           <button @click="cancelEditWorkoutDayName()" class="button-icon danger small" title="Cancel Edit Name">❌</button>
                         </div>
@@ -496,7 +504,7 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
         
         <!-- Add New Session Logic -->
          <div v-if="isInOverallEditMode" class="add-day-section card-inset" style="text-align: center; margin-top: 25px;">
-            <button v-if="!addingNewDay" @click="addingNewDay = true" class="button-primary full-width">+ Add Session</button>
+            <button v-if="!addingNewDay" @click="prepareAddNewDay" class="button-primary full-width">+ Add Session</button>
             
             <div v-if="addingNewDay && !activeProgram.id" style="color:red; font-size:0.9em; margin-bottom:5px;">
                 (Save routine details above first)
@@ -504,6 +512,7 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
             
             <div v-if="addingNewDay" class="add-day-form-inline">
                <input type="text" v-model="newWorkoutDayName" placeholder="New Session Name (e.g. Pull Day)" @keyup.enter="addWorkoutDayToList" />
+               <input type="color" v-model="newWorkoutDayColor" title="Choose Session Color" style="width: 40px; height: 38px; padding: 2px; border: 1px solid var(--color-card-border); border-radius: 4px; cursor: pointer; background: none; flex-shrink: 0;" />
                <button @click="addWorkoutDayToList" :disabled="isSaving" class="button-primary small" style="height: 38px;">Save</button>
                <button @click="addingNewDay = false" class="button-secondary small" style="height: 38px;">Cancel</button>
            </div>
@@ -617,6 +626,15 @@ import {
 } from '../types';
 import draggable from 'vuedraggable';
 
+const daySequenceColorPalette = [
+  '#FF5252', // Vibrant Red
+  '#2ECC71', // Vibrant Green
+  '#2979FF', // Vibrant Blue
+  '#FFD600', // Vibrant Gold/Yellow
+  '#9C27B0', // Vibrant Purple
+  '#FF9100', // Vibrant Orange
+];
+
 // --- Core State ---
 const router = useRouter();
 const { user } = useAuth();
@@ -696,9 +714,16 @@ const editableProgramDetails = reactive({ programName: '', description: '' });
 
 // --- Workout Day Management State ---
 const newWorkoutDayName = ref('');
+const newWorkoutDayColor = ref('#10B981');
 const addingNewDay = ref(false);
 const editingDayNameId = ref<string | null>(null);
 const editableDayName = ref('');
+const editableDayColor = ref('#10B981');
+
+const prepareAddNewDay = () => {
+  addingNewDay.value = true;
+  newWorkoutDayColor.value = daySequenceColorPalette[activeProgram.workoutDays.length % daySequenceColorPalette.length] || '#10B981';
+};
 
 // --- Exercise Management State ---
 const editingExerciseDayId = ref<string | null>(null);
@@ -940,6 +965,7 @@ const importPastedRoutine = async () => {
             id: day.id || doc(collection(db, '_')).id,
             dayName: day.dayName || "Unnamed Day",
             order: typeof day.order === 'number' ? day.order : 0,
+            color: day.color || null,
             exercises: Array.isArray(day.exercises) ? day.exercises.map((ex: any) => ({
                 id: ex.id || doc(collection(db, '_')).id,
                 exerciseName: ex.exerciseName || "Unnamed Exercise",
@@ -1069,7 +1095,13 @@ const addWorkoutDayToList = async () => {
   isSaving.value = true; error.value = null;
   const newDayId = doc(collection(db, '_')).id;
   const newOrder = activeProgram.workoutDays.length + 1;
-  const dayToAdd: WorkoutDay = { id: newDayId, dayName: newWorkoutDayName.value.trim(), order: newOrder, exercises: [] };
+  const dayToAdd: WorkoutDay = { 
+    id: newDayId, 
+    dayName: newWorkoutDayName.value.trim(), 
+    order: newOrder, 
+    exercises: [],
+    color: newWorkoutDayColor.value
+  };
   const updatedWorkoutDaysList = [...activeProgram.workoutDays, dayToAdd];
   try {
     const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', activeProgram.id);
@@ -1268,16 +1300,23 @@ const onExerciseDragEnd = (dayId: string, evt: any) => {
 };
 
 const startEditWorkoutDayName = (day: WorkoutDay) => {
-  cancelAddOrEditExercise(); editingDayNameId.value = day.id; editableDayName.value = day.dayName;
+  cancelAddOrEditExercise(); 
+  editingDayNameId.value = day.id; 
+  editableDayName.value = day.dayName;
+  editableDayColor.value = day.color || daySequenceColorPalette[(day.order - 1) % daySequenceColorPalette.length] || '#10B981';
 };
-const cancelEditWorkoutDayName = () => { editingDayNameId.value = null; editableDayName.value = ''; };
+const cancelEditWorkoutDayName = () => { 
+  editingDayNameId.value = null; 
+  editableDayName.value = ''; 
+  editableDayColor.value = '#10B981';
+};
 
 const saveWorkoutDayName = async (dayIdToSave: string) => {
   if (!user.value || !user.value.uid || !activeProgram.id) return;
   if (!editableDayName.value.trim()) { error.value = "Day name cannot be empty."; return; }
   isSaving.value = true; error.value = null;
   const updatedWorkoutDaysList = activeProgram.workoutDays.map(d =>
-    d.id === dayIdToSave ? { ...d, dayName: editableDayName.value.trim() } : d
+    d.id === dayIdToSave ? { ...d, dayName: editableDayName.value.trim(), color: editableDayColor.value } : d
   );
   try {
     const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', activeProgram.id);
@@ -1983,7 +2022,7 @@ textarea { min-height: 70px; resize: vertical; }
 button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; border-color: #ced4da !important; }
 .workout-day-entry { margin-bottom: 15px; text-align:left; }
 .workout-day-entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.day-name-display { font-weight: 600; font-size: 1.1em; color: #0056b3; flex-grow: 1; }
+.day-name-display { font-weight: 600; font-size: 1.1em; color: #0056b3; flex-grow: 1; margin: 0; }
 .day-name-edit-form { display: flex; align-items: center; flex-grow: 1; gap: 5px; }
 .day-name-edit-form input[type="text"] { flex-grow: 1; }
 .day-header-actions .button-icon { margin-left: 5px; }

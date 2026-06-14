@@ -190,6 +190,14 @@
                 </label>
             </div>
             
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--color-card-border); padding-top: 10px; margin-top: 5px;">
+                <label style="font-weight: 500;">Cardio Distance Unit</label>
+                <div class="segmented-control" style="max-width: 120px; margin: 0;">
+                    <button :class="{ active: settings.cardioDistanceUnit !== 'km' }" @click="updateCardioUnit('mi')" style="padding: 4px 10px; font-size: 0.85em;">mi</button>
+                    <button :class="{ active: settings.cardioDistanceUnit === 'km' }" @click="updateCardioUnit('km')" style="padding: 4px 10px; font-size: 0.85em;">km</button>
+                </div>
+            </div>
+            
             <!-- Actions Group inside Settings -->
             <div class="strava-actions" style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: flex-end; border-top: 1px solid var(--color-card-border); padding-top: 10px;">
                 <button @click="handleStravaSync(false)" class="button-primary small" :disabled="isStravaLoading" style="flex-grow: 1; min-width: 100px;">
@@ -256,6 +264,23 @@
             <span class="stat-label">Lifting Since:</span>
             <span class="stat-value">{{ formatDateForDisplay(lifetimeStats.firstWorkoutDate) }}</span>
           </li>
+          
+          <template v-if="isConnected">
+            <li style="border-top: 1px dashed var(--color-card-border); font-weight: 600; color: #FC4C02; justify-content: center; padding-top: 18px; margin-top: 5px;">
+              <span class="stat-icon" style="color: #FC4C02;">🏃</span>
+              <span class="stat-label" style="color: #FC4C02; margin-right: 0;">Strava Cardio Stats</span>
+            </li>
+            <li>
+              <span class="stat-icon" style="color: #FC4C02;">👟</span>
+              <span class="stat-label">Total Runs:</span>
+              <span class="stat-value" style="color: var(--color-card-text);">{{ lifetimeCardioStats.runsCount }}</span>
+            </li>
+            <li>
+              <span class="stat-icon" style="color: #FC4C02;">🗺️</span>
+              <span class="stat-label">Lifetime Cardio Distance:</span>
+              <span class="stat-value" style="color: var(--color-card-text);">{{ lifetimeCardioStats.formattedDistance }}</span>
+            </li>
+          </template>
         </ul>
       </div>
       <div v-else class="no-stats card">
@@ -497,9 +522,65 @@ watch([clientId, clientSecret], ([newId, newSec]) => {
   if (newSec) stravaClientSecretField.value = newSec;
 }, { immediate: true });
 
+const externalActivities = ref<any[]>([]);
+
+const fetchAllExternalActivitiesForStats = async () => {
+  if (!user.value || !user.value.uid) return;
+  try {
+    const extCollectionRef = collection(db, 'users', user.value.uid, 'externalActivities');
+    const snap = await getDocs(extCollectionRef);
+    const list: any[] = [];
+    snap.forEach(docSnap => {
+      list.push(docSnap.data());
+    });
+    externalActivities.value = list;
+  } catch (e) {
+    console.warn("Could not load external activities for profile stats:", e);
+  }
+};
+
+const lifetimeCardioStats = computed(() => {
+  let runsCount = 0;
+  let totalDistanceMiles = 0;
+
+  externalActivities.value.forEach(act => {
+    if (act.type?.toLowerCase() === 'run') {
+      runsCount++;
+    }
+    if (act.distanceMiles) {
+      totalDistanceMiles += act.distanceMiles;
+    }
+  });
+
+  const distanceUnit = settings.value.cardioDistanceUnit || 'mi';
+  let formattedDistance = '';
+  if (distanceUnit === 'km') {
+    const distanceKm = totalDistanceMiles * 1.60934;
+    formattedDistance = `${distanceKm.toLocaleString(undefined, { maximumFractionDigits: 1 })} km`;
+  } else {
+    formattedDistance = `${totalDistanceMiles.toLocaleString(undefined, { maximumFractionDigits: 1 })} mi`;
+  }
+
+  return {
+    runsCount,
+    formattedDistance
+  };
+});
+
+watch(isConnected, async (connected) => {
+  if (connected) {
+    await fetchAllExternalActivitiesForStats();
+  } else {
+    externalActivities.value = [];
+  }
+});
+
 onMounted(async () => {
   if (user.value) {
     fetchAllWorkoutHistoryForStats();
+    if (isConnected.value) {
+      fetchAllExternalActivitiesForStats();
+    }
   }
 
   // Handle Strava OAuth callback redirects
@@ -568,8 +649,12 @@ const handlePrefChange = async () => {
 watch(user, (newUser) => {
   if (newUser && newUser.uid) { // Ensure newUser has uid before fetching
     fetchAllWorkoutHistoryForStats();
+    if (isConnected.value) {
+      fetchAllExternalActivitiesForStats();
+    }
   } else {
     loggedWorkouts.value = [];
+    externalActivities.value = [];
     isLoadingStats.value = true; // Reset for next potential login
     statsError.value = null;
   }
@@ -594,6 +679,10 @@ const updateVolume = (event: Event) => {
 
 const updateUnit = (unit: WeightUnitOption) => {
     saveSettings({ weightUnit: unit });
+};
+
+const updateCardioUnit = (unit: 'mi' | 'km') => {
+    saveSettings({ cardioDistanceUnit: unit });
 };
 
 const updateRestTimer = (event: Event) => {
@@ -755,7 +844,7 @@ const handlePairing = async () => {
 
 .button-secondary {
   background-color: transparent;
-  color: var(--color-text);
+  color: var(--color-card-text);
   border: 1px solid var(--color-card-border);
   border-radius: 6px;
   padding: 10px 16px;

@@ -30,23 +30,31 @@
 
       <!-- Heatmap Legend -->
       <div class="calendar-legend">
-        <div class="legend-item">
-          <span class="legend-color-box weights"></span>
-          <span>Weights (LiftLogic)</span>
-        </div>
+        <!-- Render each workout day in the active program -->
+        <template v-if="activeProgram.workoutDays && activeProgram.workoutDays.length > 0">
+          <div class="legend-item" v-for="day in activeProgram.workoutDays" :key="day.id">
+            <span class="legend-color-box" :style="{ backgroundColor: day.color || daySequenceColorPalette[(day.order - 1) % daySequenceColorPalette.length] || '#10B981' }"></span>
+            <span>{{ day.dayName }}</span>
+          </div>
+        </template>
+        <!-- Fallback if no active program is set up yet -->
+        <template v-else>
+          <div class="legend-item">
+            <span class="legend-color-box weights"></span>
+            <span>Weights</span>
+          </div>
+        </template>
+
+        <!-- Cardio (Strava) -->
         <div class="legend-item">
           <span class="legend-color-box cardio"></span>
-          <span>Cardio (Strava)</span>
-        </div>
-        <div class="legend-item">
-          <span class="legend-color-box combined"></span>
-          <span>Weights + Cardio</span>
+          <span>Cardio</span>
         </div>
       </div>
 
       <div v-if="activeTooltip"
            class="calendar-tooltip"
-           :style="{ top: (activeTooltip.event.clientY + 10) + 'px', left: (activeTooltip.event.clientX + 10) + 'px' }">
+           :style="tooltipStyle">
         {{ activeTooltip.text }} - {{ activeTooltip.date }}
       </div>
       </div>
@@ -188,6 +196,7 @@ import useSettings from '../composables/useSettings';
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import useHistoryIndex, { type CalendarIndexData } from '../composables/useHistoryIndex';
 import useStrava from '../composables/useStrava';
+import useTrainingProgram from '../composables/useTrainingProgram';
 import { toDisplay, displayUnit } from '../utils/weight';
 import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
 
@@ -210,6 +219,7 @@ const { user } = useAuth();
 const { settings } = useSettings();
 const { loggedWorkouts, isLoading, error, fetchLoggedWorkouts, fetchMoreWorkouts, hasMoreDocs } = useLoggedWorkouts();
 const { calendarIndex, fetchCalendarIndex, isIndexLoading } = useHistoryIndex();
+const { activeProgram } = useTrainingProgram();
 const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
 
 // Chart & Analytics State
@@ -232,6 +242,20 @@ const uniqueExercises = computed(() => {
 
 const activeTooltip = ref<{ date: string; text: string; event: MouseEvent } | null>(null);
 const calendarRef = ref<HTMLElement | null>(null);
+
+const tooltipStyle = computed(() => {
+  if (!activeTooltip.value) return {};
+  const { event } = activeTooltip.value;
+  const x = event.clientX;
+  const y = event.clientY;
+  const isRightHalf = x > window.innerWidth / 2;
+  
+  return {
+    top: (y + 10) + 'px',
+    left: isRightHalf ? 'auto' : (x + 10) + 'px',
+    right: isRightHalf ? (window.innerWidth - x + 10) + 'px' : 'auto',
+  };
+});
 
 // Palette for workout day sequence (up to 6 days, then default) - Vibrant, saturated colors
 const daySequenceColorPalette = [
@@ -263,7 +287,15 @@ const handleDayCellClick = (day: CalendarDay, event: MouseEvent) => {
   if (day.isExternalActivity && day.externalActivities && day.externalActivities.length > 0) {
     if (tooltipText) tooltipText += ' + ';
     const extTexts = day.externalActivities.map(act => {
-      const distStr = act.distanceMiles ? ` (${act.distanceMiles} mi)` : '';
+      let distStr = '';
+      if (act.distanceMiles) {
+        if (settings.value?.cardioDistanceUnit === 'km') {
+          const distKm = (act.distanceMiles * 1.60934).toFixed(1);
+          distStr = ` (${distKm} km)`;
+        } else {
+          distStr = ` (${act.distanceMiles} mi)`;
+        }
+      }
       return `${act.type}: ${act.name}${distStr}`;
     }).join(', ');
     tooltipText += extTexts;
@@ -304,7 +336,8 @@ const getDayCellStyle = (day: CalendarDay) => {
   } else if (day.isWorkoutDay) {
     styles.backgroundColor = day.workoutDayColor || defaultWorkoutColor;
   } else if (day.isExternalActivity) {
-    styles.backgroundColor = 'rgba(252, 76, 2, 0.85)';
+    styles.backgroundColor = 'transparent';
+    styles.background = 'linear-gradient(135deg, transparent 50%, #FC4C02 50%)';
   }
 
   return styles;
@@ -347,24 +380,27 @@ const generateCalendarGridData = (
       const programId = entry.programId || 'UNKNOWN_PROGRAM';
       const dayName = entry.dayName || 'Unknown Day';
       
-      // Logic to assign color based on first encounter of (Program + DayName)
-      if (!programDayTypeEncounterOrder[programId]) {
-        programDayTypeEncounterOrder[programId] = {};
-        programNextAvailableColorIndex[programId] = 0;
-      }
-
-      if (programDayTypeEncounterOrder[programId][dayName] === undefined) {
-        const colorIndex = programNextAvailableColorIndex[programId];
-        programDayTypeEncounterOrder[programId][dayName] = colorIndex;
-        if (colorIndex < daySequenceColorPalette.length) { // Only increment if we used a palette color
-            programNextAvailableColorIndex[programId]++;
+      let color = entry.workoutColor;
+      if (!color) {
+        // Logic to assign color based on first encounter of (Program + DayName)
+        if (!programDayTypeEncounterOrder[programId]) {
+          programDayTypeEncounterOrder[programId] = {};
+          programNextAvailableColorIndex[programId] = 0;
         }
-      }
-      
-      const assignedOrderIndex = programDayTypeEncounterOrder[programId][dayName];
-      let color = defaultWorkoutColor;
-      if (assignedOrderIndex < daySequenceColorPalette.length) {
-        color = daySequenceColorPalette[assignedOrderIndex];
+
+        if (programDayTypeEncounterOrder[programId][dayName] === undefined) {
+          const colorIndex = programNextAvailableColorIndex[programId];
+          programDayTypeEncounterOrder[programId][dayName] = colorIndex;
+          if (colorIndex < daySequenceColorPalette.length) { // Only increment if we used a palette color
+              programNextAvailableColorIndex[programId]++;
+          }
+        }
+        
+        const assignedOrderIndex = programDayTypeEncounterOrder[programId][dayName];
+        color = defaultWorkoutColor;
+        if (assignedOrderIndex < daySequenceColorPalette.length) {
+          color = daySequenceColorPalette[assignedOrderIndex];
+        }
       }
       workoutInfo = { name: dayName, color: color };
     }
@@ -642,12 +678,11 @@ onUnmounted(() => {
   border-radius: 3px;
   cursor: pointer;
   transition: transform 0.1s ease-out, background-color 0.2s;
-  border: 1px solid transparent; 
 }
 
 .calendar-day-cell:hover:not(.future-day):not(.placeholder-day) {
-  border-color: var(--color-text); 
-
+  outline: 1px solid var(--color-text);
+  outline-offset: -1px;
 }
 
 .calendar-day-cell.future-day {
@@ -662,7 +697,8 @@ onUnmounted(() => {
 }
 
 .calendar-day-cell.today {
-  border: 1px solid var(--color-heading); 
+  outline: 1px solid var(--color-heading);
+  outline-offset: -1px;
 }
 
 /* Heatmap Legend */
@@ -697,7 +733,7 @@ onUnmounted(() => {
 }
 
 .legend-color-box.cardio {
-  background-color: #FC4C02;
+  background: linear-gradient(135deg, transparent 50%, #FC4C02 50%);
 }
 
 .legend-color-box.combined {

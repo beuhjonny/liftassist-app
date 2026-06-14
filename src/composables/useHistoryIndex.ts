@@ -106,6 +106,30 @@ export default function useHistoryIndex() {
         if (!user.value || !user.value.uid) return;
 
         try {
+            // Fetch all training programs to map workoutDayId/dayName to custom color
+            const programsMap: Record<string, string> = {};
+            try {
+                const programsCollectionRef = collection(db, 'users', user.value.uid, 'trainingPrograms');
+                const progSnapshot = await getDocs(programsCollectionRef);
+                progSnapshot.forEach(docSnap => {
+                    const progData = docSnap.data();
+                    if (progData.workoutDays) {
+                        progData.workoutDays.forEach((day: any) => {
+                            if (day.color) {
+                                if (day.id) {
+                                    programsMap[day.id] = day.color;
+                                }
+                                if (day.dayName) {
+                                    programsMap[day.dayName.toLowerCase()] = day.color;
+                                }
+                            }
+                        });
+                    }
+                });
+            } catch (err) {
+                console.warn("Could not load programs for color mapping:", err);
+            }
+
             const historyCollectionRef = collection(db, 'users', user.value.uid, 'loggedWorkouts');
             const q = query(historyCollectionRef, orderBy('date', 'desc')); // Fetch ALL
 
@@ -134,11 +158,16 @@ export default function useHistoryIndex() {
                 }
 
                 if (dateKey) {
+                    const dayId = data.workoutDayIdUsed;
+                    const dayName = data.workoutDayNameUsed;
+                    const workoutColor = (dayId && programsMap[dayId]) || (dayName && programsMap[dayName.toLowerCase()]) || null;
+
                     newIndex[dateKey] = {
                         hasWorkout: true,
                         programId: data.trainingProgramIdUsed,
-                        dayName: data.workoutDayNameUsed,
+                        dayName: dayName,
                         workoutId: docSnap.id,
+                        workoutColor: workoutColor,
                         totalVolume: vol // Store it!
                     };
                 }
@@ -203,6 +232,30 @@ export default function useHistoryIndex() {
 
         if (!dateKey) return;
 
+        // Fetch all training programs to map workoutDayId/dayName to custom color in incremental updates
+        const programsMap: Record<string, string> = {};
+        try {
+            const programsCollectionRef = collection(db, 'users', user.value.uid, 'trainingPrograms');
+            const progSnapshot = await getDocs(programsCollectionRef);
+            progSnapshot.forEach(docSnap => {
+                const progData = docSnap.data();
+                if (progData.workoutDays) {
+                    progData.workoutDays.forEach((day: any) => {
+                        if (day.color) {
+                            if (day.id) {
+                                programsMap[day.id] = day.color;
+                            }
+                            if (day.dayName) {
+                                programsMap[day.dayName.toLowerCase()] = day.color;
+                            }
+                        }
+                    });
+                }
+            });
+        } catch (err) {
+            console.warn("Could not load programs for color mapping in update:", err);
+        }
+
         // If volume isn't pre-calculated, calculate it now
         let vol = 0;
         if (computedVolume !== undefined) {
@@ -217,11 +270,16 @@ export default function useHistoryIndex() {
             });
         }
 
+        const dayId = workout.workoutDayIdUsed;
+        const dayName = workout.workoutDayNameUsed;
+        const workoutColor = (dayId && programsMap[dayId]) || (dayName && programsMap[dayName.toLowerCase()]) || null;
+
         const entry = {
             hasWorkout: true,
             programId: workout.trainingProgramIdUsed,
-            dayName: workout.workoutDayNameUsed,
+            dayName: dayName,
             workoutId: workout.id,
+            workoutColor: workoutColor,
             totalVolume: vol,
             hasExternalActivity: calendarIndex[dateKey]?.hasExternalActivity || false,
             externalActivities: calendarIndex[dateKey]?.externalActivities || []
