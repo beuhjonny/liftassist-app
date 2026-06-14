@@ -14,12 +14,13 @@
               v-for="(day, dayIndex) in week"
               :key="dayIndex"
               :class="{
-                'workout-day-presence': day.isWorkoutDay && !day.isFuture, // Class to indicate presence, not for bg color
+                'workout-day-presence': day.isWorkoutDay && !day.isFuture,
+                'external-activity-presence': day.isExternalActivity && !day.isFuture,
                 'future-day': day.isFuture,
                 'placeholder-day': day.isPlaceholder,
                 'today': day.date.toDateString() === new Date().toDateString() && !day.isFuture && !day.isPlaceholder
               }"
-              :style="day.isWorkoutDay && day.workoutDayColor ? { backgroundColor: day.workoutDayColor } : {}"
+              :style="getDayCellStyle(day)"
               @click.stop="handleDayCellClick(day, $event)"
             >
             </div>
@@ -159,6 +160,7 @@ import useAuth from '../composables/useAuth';
 import useSettings from '../composables/useSettings';
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import useHistoryIndex, { type CalendarIndexData } from '../composables/useHistoryIndex';
+import useStrava from '../composables/useStrava';
 import { toDisplay, displayUnit } from '../utils/weight';
 import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
 
@@ -173,6 +175,8 @@ interface CalendarDay {
   isPlaceholder: boolean;
   dayOfMonth: number;
   workoutDayColor?: string | null; // For dynamic coloring
+  isExternalActivity?: boolean;
+  externalActivities?: any[];
 }
 
 const { user } = useAuth();
@@ -222,18 +226,29 @@ const handleDayCellClick = (day: CalendarDay, event: MouseEvent) => {
     return;
   }
   const tooltipDateStr = day.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  
+  let tooltipText = '';
   if (day.isWorkoutDay && day.workoutNameTooltip) {
-    if (activeTooltip.value && activeTooltip.value.date === tooltipDateStr && activeTooltip.value.text === day.workoutNameTooltip) {
-      activeTooltip.value = null; 
-    } else {
-      activeTooltip.value = { date: tooltipDateStr, text: day.workoutNameTooltip, event: event };
-    }
+    tooltipText += `Workout: ${day.workoutNameTooltip}`;
+  }
+  
+  if (day.isExternalActivity && day.externalActivities && day.externalActivities.length > 0) {
+    if (tooltipText) tooltipText += ' + ';
+    const extTexts = day.externalActivities.map(act => {
+      const distStr = act.distanceMiles ? ` (${act.distanceMiles} mi)` : '';
+      return `${act.type}: ${act.name}${distStr}`;
+    }).join(', ');
+    tooltipText += extTexts;
+  }
+  
+  if (!tooltipText) {
+    tooltipText = 'No activity';
+  }
+
+  if (activeTooltip.value && activeTooltip.value.date === tooltipDateStr && activeTooltip.value.text === tooltipText) {
+    activeTooltip.value = null; 
   } else {
-    if (activeTooltip.value && activeTooltip.value.date === tooltipDateStr && activeTooltip.value.text === "No workout") {
-        activeTooltip.value = null;
-    } else {
-        activeTooltip.value = { date: tooltipDateStr, text: "No workout", event: event };
-    }
+    activeTooltip.value = { date: tooltipDateStr, text: tooltipText, event: event };
   }
 };
 
@@ -246,6 +261,25 @@ const handleClickOutsideTooltip = (event: MouseEvent) => {
     const targetIsDayCell = (event.target as HTMLElement)?.closest('.calendar-day-cell');
     if(!targetIsDayCell) hideTooltip();
   }
+};
+
+const getDayCellStyle = (day: CalendarDay) => {
+  if (day.isPlaceholder) return {};
+  if (day.isFuture) return {};
+
+  const styles: Record<string, string> = {};
+
+  if (day.isWorkoutDay && day.isExternalActivity) {
+    const workoutColor = day.workoutDayColor || defaultWorkoutColor;
+    const runColor = '#FC4C02'; // Strava Orange
+    styles.background = `linear-gradient(135deg, ${workoutColor} 50%, ${runColor} 50%)`;
+  } else if (day.isWorkoutDay) {
+    styles.backgroundColor = day.workoutDayColor || defaultWorkoutColor;
+  } else if (day.isExternalActivity) {
+    styles.backgroundColor = 'rgba(252, 76, 2, 0.85)';
+  }
+
+  return styles;
 };
 
 const generateCalendarGridData = (
@@ -266,39 +300,54 @@ const generateCalendarGridData = (
   const programNextAvailableColorIndex: Record<string, number> = {};
   
   // Convert index map to array for sorting to establish color order
-  // map keys are YYYY-MM-DD
   const sortedDateKeys = Object.keys(idxData).sort().filter(k => k !== 'lastUpdated');
 
-  const workoutsByDate: Record<string, { name: string; color: string }> = {};
+  const activitiesByDate: Record<string, {
+    isWorkoutDay: boolean;
+    workoutName?: string;
+    workoutColor?: string;
+    isExternalActivity: boolean;
+    externalActivities: any[];
+  }> = {};
 
   for (const dateKey of sortedDateKeys) {
     const entry = idxData[dateKey];
-    if (!entry || !entry.hasWorkout) continue;
+    if (!entry) continue;
 
-    const programId = entry.programId || 'UNKNOWN_PROGRAM';
-    const dayName = entry.dayName || 'Unknown Day';
-    
-    // Logic to assign color based on first encounter of (Program + DayName)
-    if (!programDayTypeEncounterOrder[programId]) {
-      programDayTypeEncounterOrder[programId] = {};
-      programNextAvailableColorIndex[programId] = 0;
-    }
-
-    if (programDayTypeEncounterOrder[programId][dayName] === undefined) {
-      const colorIndex = programNextAvailableColorIndex[programId];
-      programDayTypeEncounterOrder[programId][dayName] = colorIndex;
-      if (colorIndex < daySequenceColorPalette.length) { // Only increment if we used a palette color
-          programNextAvailableColorIndex[programId]++;
+    let workoutInfo = null;
+    if (entry.hasWorkout) {
+      const programId = entry.programId || 'UNKNOWN_PROGRAM';
+      const dayName = entry.dayName || 'Unknown Day';
+      
+      // Logic to assign color based on first encounter of (Program + DayName)
+      if (!programDayTypeEncounterOrder[programId]) {
+        programDayTypeEncounterOrder[programId] = {};
+        programNextAvailableColorIndex[programId] = 0;
       }
-    }
-    
-    const assignedOrderIndex = programDayTypeEncounterOrder[programId][dayName];
-    let color = defaultWorkoutColor;
-    if (assignedOrderIndex < daySequenceColorPalette.length) {
-      color = daySequenceColorPalette[assignedOrderIndex];
+
+      if (programDayTypeEncounterOrder[programId][dayName] === undefined) {
+        const colorIndex = programNextAvailableColorIndex[programId];
+        programDayTypeEncounterOrder[programId][dayName] = colorIndex;
+        if (colorIndex < daySequenceColorPalette.length) { // Only increment if we used a palette color
+            programNextAvailableColorIndex[programId]++;
+        }
+      }
+      
+      const assignedOrderIndex = programDayTypeEncounterOrder[programId][dayName];
+      let color = defaultWorkoutColor;
+      if (assignedOrderIndex < daySequenceColorPalette.length) {
+        color = daySequenceColorPalette[assignedOrderIndex];
+      }
+      workoutInfo = { name: dayName, color: color };
     }
 
-    workoutsByDate[dateKey] = { name: dayName, color: color };
+    activitiesByDate[dateKey] = {
+      isWorkoutDay: !!entry.hasWorkout,
+      workoutName: workoutInfo?.name,
+      workoutColor: workoutInfo?.color,
+      isExternalActivity: !!entry.hasExternalActivity,
+      externalActivities: entry.externalActivities || []
+    };
   }
   
   const currentDayIter = new Date(calendarStartDate);
@@ -312,13 +361,15 @@ const generateCalendarGridData = (
       const day = String(normalizedCurrentDayIter.getDate()).padStart(2, '0');
       const dateString = `${year}-${month}-${day}`;
       
-      const workoutInfo = workoutsByDate[dateString];
+      const dayInfo = activitiesByDate[dateString];
       
       week.push({
         date: new Date(normalizedCurrentDayIter),
-        isWorkoutDay: !!workoutInfo,
-        workoutNameTooltip: workoutInfo ? workoutInfo.name : null,
-        workoutDayColor: workoutInfo ? workoutInfo.color : null,
+        isWorkoutDay: !!(dayInfo && dayInfo.isWorkoutDay),
+        workoutNameTooltip: dayInfo?.workoutName || null,
+        workoutDayColor: dayInfo?.workoutColor || null,
+        isExternalActivity: !!(dayInfo && dayInfo.isExternalActivity),
+        externalActivities: dayInfo?.externalActivities || [],
         isFuture: normalizedCurrentDayIter > today,
         isPlaceholder: false, 
         dayOfMonth: normalizedCurrentDayIter.getDate(),
@@ -432,9 +483,28 @@ const toggleAllDetailsForWorkout = (workoutId: string) => {
 
 let userWatcherUnsubscribe: (() => void) | null = null;
 
+const { isConnected: isStravaConnected, syncNow: stravaSyncNow } = useStrava();
+
 onMounted(() => {
   fetchLoggedWorkouts(); 
   fetchCalendarIndex();
+
+  // Watch connection state to run auto-sync on load
+  watch(isStravaConnected, (connected) => {
+     if (connected) {
+         const lastSyncTimeStr = localStorage.getItem('last_strava_sync_time');
+         const oneHour = 60 * 60 * 1000;
+         const now = Date.now();
+         if (!lastSyncTimeStr || (now - parseInt(lastSyncTimeStr)) > oneHour) {
+             console.log("Auto-syncing Strava activities...");
+             stravaSyncNow().then(() => {
+                 localStorage.setItem('last_strava_sync_time', now.toString());
+             }).catch((err) => {
+                 console.warn("Strava auto-sync failed:", err);
+             });
+         }
+     }
+  }, { immediate: true });
   
   userWatcherUnsubscribe = watch(user, (currentUser) => {
     if (currentUser?.uid) {

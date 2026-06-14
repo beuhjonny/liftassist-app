@@ -144,6 +144,40 @@ export default function useHistoryIndex() {
                 }
             });
 
+            // Fetch external activities (cardio, runs, etc. from Strava)
+            try {
+                const externalCollectionRef = collection(db, 'users', user.value.uid, 'externalActivities');
+                const extSnapshot = await getDocs(externalCollectionRef);
+                extSnapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const dateKey = getLocalDateKey(data.date) || getLocalDateKey(data.startDate);
+
+                    if (dateKey) {
+                        if (!newIndex[dateKey]) {
+                            newIndex[dateKey] = {
+                                hasWorkout: false,
+                                hasExternalActivity: true,
+                                externalActivities: []
+                            };
+                        } else {
+                            newIndex[dateKey].hasExternalActivity = true;
+                            if (!newIndex[dateKey].externalActivities) {
+                                newIndex[dateKey].externalActivities = [];
+                            }
+                        }
+                        newIndex[dateKey].externalActivities.push({
+                            id: docSnap.id,
+                            name: data.name,
+                            type: data.type || 'Run',
+                            durationMinutes: data.durationMinutes || 0,
+                            distanceMiles: data.distanceMiles || 0
+                        });
+                    }
+                });
+            } catch (extError) {
+                console.warn("Could not load external activities for index:", extError);
+            }
+
             // Save to Firestore
             const indexRef = doc(db, 'users', user.value.uid, 'indexes', 'calendar');
             await setDoc(indexRef, newIndex);
@@ -188,7 +222,9 @@ export default function useHistoryIndex() {
             programId: workout.trainingProgramIdUsed,
             dayName: workout.workoutDayNameUsed,
             workoutId: workout.id,
-            totalVolume: vol
+            totalVolume: vol,
+            hasExternalActivity: calendarIndex[dateKey]?.hasExternalActivity || false,
+            externalActivities: calendarIndex[dateKey]?.externalActivities || []
         };
 
         // Update local

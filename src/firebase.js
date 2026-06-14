@@ -2,6 +2,7 @@
 import { initializeApp } from 'firebase/app';
 // 1. Import initializeFirestore and persistentLocalCache
 import { initializeFirestore, persistentLocalCache, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
+import { getFunctions } from 'firebase/functions';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -63,4 +64,16 @@ try {
 // its own messages to the console regarding success or fallback (e.g., if browser
 // doesn't support it or multiple tabs are open).
 
-export { db, app };
+let functions;
+try {
+  if (isFirebaseInitialized && app) {
+    functions = getFunctions(app);
+  } else {
+    functions = null;
+  }
+} catch (error) {
+  console.error('❌ Failed to initialize Firebase Functions:', error);
+  functions = null;
+}
+
+export { db, app, functions };

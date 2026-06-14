@@ -105,6 +105,82 @@
             </div>
             <p v-if="pairingMessage" :class="pairingStatus === 'success' ? 'success-text' : 'error-text'" style="font-size: 0.85em; margin-top: -15px; text-align: right;">{{ pairingMessage }}</p>
 
+            <!-- Strava Integration Setting Item -->
+            <div class="setting-item strava-section-item" style="border-top: 1px dashed var(--color-card-border); padding-top: 15px; margin-top: 15px;">
+                <label>Strava Sync</label>
+                <div class="strava-control">
+                    <template v-if="isConnected">
+                        <span class="strava-status connected">Connected as <strong>{{ athleteName }}</strong></span>
+                        <div class="strava-actions" style="display: flex; gap: 8px; margin-top: 5px;">
+                            <button @click="handleStravaSync" class="button-primary small" :disabled="isStravaLoading">
+                                {{ isStravaLoading ? 'Syncing...' : 'Sync Runs' }}
+                            </button>
+                            <button @click="handleStravaDisconnect" class="button-secondary small" :disabled="isStravaLoading">
+                                Disconnect
+                            </button>
+                        </div>
+                    </template>
+                    <template v-else-if="isConfigured">
+                        <span class="strava-status configured">API Configured. Ready.</span>
+                        <div class="strava-actions" style="display: flex; gap: 8px; margin-top: 5px;">
+                            <button @click="handleStravaConnect" class="button-primary small" :disabled="isStravaLoading">
+                                Connect Strava
+                            </button>
+                            <button @click="handleStravaDisconnect" class="button-secondary small" :disabled="isStravaLoading">
+                                Reset
+                            </button>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <button @click="showStravaConfigForm = !showStravaConfigForm" class="button-secondary small">
+                            {{ showStravaConfigForm ? 'Hide Config' : 'Configure Strava' }}
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Strava Config Form -->
+            <div v-if="showStravaConfigForm && !isConnected && !isConfigured" class="strava-config-form card-inset" style="margin-top: 10px; padding: 15px; background: var(--color-card-mute); border-radius: 8px; font-size: 0.9em; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--color-card-border);">
+                <p style="margin: 0; opacity: 0.8; line-height: 1.4;">
+                    Create a developer app at <a href="https://www.strava.com/settings/api" target="_blank" style="color: var(--color-primary); text-decoration: underline;">strava.com/settings/api</a>.
+                    Set authorization callback domain to <code>localhost</code> (local) or <code>lift-logic-app.web.app</code> (prod).
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-weight: bold;">Client ID</label>
+                    <input v-model="stravaClientIdField" placeholder="e.g. 258025" style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text);" />
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-weight: bold;">Client Secret</label>
+                    <input v-model="stravaClientSecretField" type="password" placeholder="Client Secret" style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text);" />
+                </div>
+                <button @click="handleStravaConnect" class="button-primary small" :disabled="!stravaClientIdField || !stravaClientSecretField" style="width: 100%; margin-top: 5px;">
+                    Save & Connect
+                </button>
+            </div>
+
+            <!-- Strava Preferences Toggles when Connected -->
+            <div v-if="isConnected" class="strava-preferences card-inset" style="margin-top: 10px; padding: 15px; background: var(--color-card-mute); border-radius: 8px; font-size: 0.9em; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--color-card-border);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="font-weight: 500;">Upload lifts to Strava</label>
+                    <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                        <input type="checkbox" v-model="enablePushToStrava" @change="handlePrefChange" style="opacity: 0; width: 0; height: 0;">
+                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                        <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: enablePushToStrava ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                    </label>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="font-weight: 500;">Fetch runs from Strava</label>
+                    <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                        <input type="checkbox" v-model="enablePullFromStrava" @change="handlePrefChange" style="opacity: 0; width: 0; height: 0;">
+                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                        <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: enablePullFromStrava ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Strava Status Messages -->
+            <p v-if="stravaMessage" :class="stravaStatusType === 'success' ? 'success-text' : 'error-text'" style="font-size: 0.85em; margin-top: 5px; text-align: right; font-weight: 500;">{{ stravaMessage }}</p>
+
         </div>
 
 
@@ -182,7 +258,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { collection, query, getDocs, orderBy, Timestamp, setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../firebase'; // Adjust path if needed
@@ -191,6 +267,7 @@ import useSettings, { type ThemeOption, type TimerSoundOption, type WeightUnitOp
 import { playTone } from '../utils/audio';
 import { toDisplay, displayUnit } from '../utils/weight';
 import AboutModal from '@/components/AboutModal.vue';
+import useStrava from '../composables/useStrava';
 
 import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
 
@@ -369,11 +446,103 @@ const handleLogout = async () => {
   }
 };
 
-onMounted(() => {
+const route = useRoute();
+
+const {
+  isConfigured,
+  isConnected,
+  athleteName,
+  enablePushToStrava,
+  enablePullFromStrava,
+  clientId,
+  clientSecret,
+  isLoading: isStravaLoading,
+  connect: stravaConnect,
+  disconnect: stravaDisconnect,
+  exchangeCode: stravaExchangeCode,
+  syncNow: stravaSyncNow,
+  updatePreferences: stravaUpdatePreferences
+} = useStrava();
+
+const showStravaConfigForm = ref(false);
+const stravaClientIdField = ref('');
+const stravaClientSecretField = ref('');
+const stravaStatusType = ref<'success' | 'error' | 'info'>('info');
+const stravaMessage = ref('');
+
+// Prepopulate config fields if client credentials exist
+watch([clientId, clientSecret], ([newId, newSec]) => {
+  if (newId) stravaClientIdField.value = newId;
+  if (newSec) stravaClientSecretField.value = newSec;
+}, { immediate: true });
+
+onMounted(async () => {
   if (user.value) {
     fetchAllWorkoutHistoryForStats();
   }
+
+  // Handle Strava OAuth callback redirects
+  const code = route.query.code as string;
+  if (code) {
+    stravaStatusType.value = 'info';
+    stravaMessage.value = 'Exchanging authorization code with Strava...';
+    try {
+      await stravaExchangeCode(code);
+      stravaStatusType.value = 'success';
+      stravaMessage.value = 'Strava connected successfully!';
+      // Clear query parameters from URL
+      router.replace({ query: {} });
+      setTimeout(() => { stravaMessage.value = ''; }, 4000);
+    } catch (e: any) {
+      stravaStatusType.value = 'error';
+      stravaMessage.value = e.message || 'Failed to authorize with Strava.';
+    }
+  }
 });
+
+const handleStravaConnect = async () => {
+  stravaStatusType.value = 'info';
+  stravaMessage.value = 'Redirecting to Strava...';
+  
+  const cId = stravaClientIdField.value || clientId.value;
+  const cSec = stravaClientSecretField.value || clientSecret.value;
+
+  if (!cId || !cSec) {
+    stravaStatusType.value = 'error';
+    stravaMessage.value = 'Client ID and Client Secret are required.';
+    return;
+  }
+
+  await stravaConnect(cId, cSec);
+};
+
+const handleStravaDisconnect = async () => {
+  await stravaDisconnect();
+  showStravaConfigForm.value = false;
+  stravaClientIdField.value = '';
+  stravaClientSecretField.value = '';
+  stravaStatusType.value = 'success';
+  stravaMessage.value = 'Strava connection disconnected.';
+  setTimeout(() => { stravaMessage.value = ''; }, 3000);
+};
+
+const handleStravaSync = async () => {
+  stravaStatusType.value = 'info';
+  stravaMessage.value = 'Syncing activities from Strava...';
+  try {
+    const count = await stravaSyncNow();
+    stravaStatusType.value = 'success';
+    stravaMessage.value = `Sync complete! Synced ${count} runs/cardio activities.`;
+    setTimeout(() => { stravaMessage.value = ''; }, 3000);
+  } catch (e: any) {
+    stravaStatusType.value = 'error';
+    stravaMessage.value = e.message || 'Sync failed.';
+  }
+};
+
+const handlePrefChange = async () => {
+  await stravaUpdatePreferences(enablePushToStrava.value, enablePullFromStrava.value);
+};
 
 watch(user, (newUser) => {
   if (newUser && newUser.uid) { // Ensure newUser has uid before fetching
@@ -834,5 +1003,30 @@ select {
 
 .pairing-result {
     font-size: 1.2em;
+}
+
+/* Strava Styles */
+.strava-status {
+    font-size: 0.9em;
+    display: block;
+    line-height: 1.4;
+}
+.strava-status.connected {
+    color: var(--color-success, #28a745);
+}
+.strava-status.configured {
+    color: var(--color-primary, #007bff);
+}
+.strava-control {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+@media (max-width: 600px) {
+  .strava-control {
+      align-items: flex-start;
+      width: 100%;
+  }
 }
 </style>

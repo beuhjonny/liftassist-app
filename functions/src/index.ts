@@ -4,6 +4,7 @@
  */
 
 import { onRequest, onCall, HttpsError } from "firebase-functions/v2/https";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
@@ -381,5 +382,371 @@ export const submitWorkoutSession = onRequest({ cors: true }, async (request, re
     } catch (error) {
         logger.error("Error in submitWorkoutSession", error);
         response.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+/**
+ * ------------------------------------------------------------
+ * Strava Sync Integration Functions
+ * ------------------------------------------------------------
+ */
+
+const fetch = (globalThis as any).fetch;
+
+/**
+ * 5. Exchange Strava Authorization Code (Called by PWA)
+ * Exchanges a temporary authorization code for access and refresh tokens.
+ */
+export const exchangeStravaCode = onCall(async (request) => {
+    if (!request.auth) {
+        throw new HttpsError("unauthenticated", "User must be logged in.");
+    }
+    const uid = request.auth.uid;
+    const code = request.data.code;
+    if (!code || typeof code !== 'string') {
+        throw new HttpsError("invalid-argument", "Missing or invalid authorization code.");
+    }
+
+    try {
+        // 1. Fetch user's registered Client ID and Secret
+        const configSnap = await db.collection("users").doc(uid).collection("strava").doc("config").get();
+        if (!configSnap.exists) {
+            throw new HttpsError("failed-precondition", "Strava credentials not configured in settings.");
+        }
+        const { clientId, clientSecret } = configSnap.data()!;
+
+        // 2. Post to Strava OAuth token endpoint
+        const response = await fetch("https://www.strava.com/oauth/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                client_id: clientId,
+                client_secret: clientSecret,
+                code: code,
+                grant_type: "authorization_code"
+            })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text();
+            logger.error("Strava token exchange failed", errText);
+            throw new HttpsError("internal", "Failed to exchange token with Strava API.");
+        }
+
+        const data = await response.json() as any;
+
+        // 3. Save athlete tokens securely in the user's private document
+        const athleteName = `${data.athlete?.firstname || ""} ${data.athlete?.lastname || ""}`.trim() || "Athlete";
+        const authData = {
+            accessToken: data.access_token,
+            refreshToken: data.refresh_token,
+            expiresAt: data.expires_at, // Epoch seconds
+            athleteId: data.athlete?.id || null,
+            athleteName,
+            connectedAt: FieldValue.serverTimestamp()
+        };
+
+        await db.collection("users").doc(uid).collection("strava").doc("auth").set(authData);
+
+        return { success: true, athleteName };
+    } catch (error: any) {
+        logger.error("exchangeStravaCode error", error);
+        if (error instanceof HttpsError) throw error;
+        throw new HttpsError("internal", error.message || "Failed to exchange authorization code.");
+    }
+});
+
+/**
+ * 6. Sync Strava Activities (Called by PWA - Manual or Auto)
+ * Fetches last 30 days of activities, filters for cardio (runs/rides/walks), and saves to Firestore.
+ */
+export const syncStravaActivities = onCall(async (request) => {
+    if (!request.auth) {
+        throw new HttpsError("unauthenticated", "User must be logged in.");
+    }
+    const uid = request.auth.uid;
+
+    try {
+        const authRef = db.collection("users").doc(uid).collection("strava").doc("auth");
+        const authSnap = await authRef.get();
+        if (!authSnap.exists) {
+            throw new HttpsError("failed-precondition", "Strava account not connected.");
+        }
+
+        const configRef = db.collection("users").doc(uid).collection("strava").doc("config");
+        const configSnap = await configRef.get();
+        if (!configSnap.exists) {
+            throw new HttpsError("failed-precondition", "Strava configuration not found.");
+        }
+
+        const authData = authSnap.data()!;
+        const configData = configSnap.data()!;
+
+        // Check pull preference
+        if (configData.enablePullFromStrava === false) {
+            logger.info("Strava pull disabled for user", uid);
+            return { success: true, count: 0 };
+        }
+
+        let accessToken = authData.accessToken;
+        let expiresAt = authData.expiresAt;
+        let refreshToken = authData.refreshToken;
+
+        const currentTimeSec = Math.floor(Date.now() / 1000);
+        // Refresh token if expired (5 minutes buffer)
+        if (currentTimeSec >= (expiresAt - 300)) {
+            logger.info("Refreshing Strava token for user", uid);
+            const refreshResponse = await fetch("https://www.strava.com/oauth/token", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    client_id: configData.clientId,
+                    client_secret: configData.clientSecret,
+                    grant_type: "refresh_token",
+                    refresh_token: refreshToken
+                })
+            });
+
+            if (!refreshResponse.ok) {
+                const errText = await refreshResponse.text();
+                logger.error("Strava token refresh failed", errText);
+                throw new HttpsError("internal", "Failed to refresh expired Strava access token.");
+            }
+
+            const refreshData = await refreshResponse.json() as any;
+            accessToken = refreshData.access_token;
+            refreshToken = refreshData.refresh_token || refreshToken;
+            expiresAt = refreshData.expires_at;
+
+            await authRef.update({
+                accessToken,
+                refreshToken,
+                expiresAt
+            });
+        }
+
+        // Fetch activities from Strava for last 30 days
+        const thirtyDaysAgoSec = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000);
+        const activitiesResponse = await fetch(
+            `https://www.strava.com/api/v3/athlete/activities?after=${thirtyDaysAgoSec}&per_page=100`,
+            {
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            }
+        );
+
+        if (!activitiesResponse.ok) {
+            const errText = await activitiesResponse.text();
+            logger.error("Failed to fetch Strava activities", errText);
+            throw new HttpsError("internal", "Failed to fetch athlete activities from Strava API.");
+        }
+
+        const activities = await activitiesResponse.json() as any[];
+        
+        // Filter out weight training (we only pull runs and general cardio)
+        // Strava activity types: Run, Ride, Walk, Hike, Swim, etc.
+        const cardioActivities = activities.filter(act => act.sport_type !== "WeightTraining" && act.type !== "WeightTraining");
+
+        const batch = db.batch();
+        for (const act of cardioActivities) {
+            const actDocId = `strava_${act.id}`;
+            const actRef = db.collection("users").doc(uid).collection("externalActivities").doc(actDocId);
+
+            // Parse start date safely
+            const startDate = act.start_date ? new Date(act.start_date) : new Date();
+
+            const actData = {
+                id: actDocId,
+                source: "strava",
+                externalId: act.id,
+                name: act.name || `${act.type} Activity`,
+                type: act.type || "Run",
+                date: startDate,
+                durationMinutes: Math.round((act.moving_time || act.elapsed_time || 0) / 60),
+                distanceMiles: act.distance ? Math.round((act.distance / 1609.344) * 100) / 100 : 0,
+                elapsedTime: act.elapsed_time || 0,
+                movingTime: act.moving_time || 0,
+                averageSpeed: act.average_speed || 0,
+                syncedAt: FieldValue.serverTimestamp()
+            };
+
+            batch.set(actRef, actData, { merge: true });
+        }
+
+        if (cardioActivities.length > 0) {
+            await batch.commit();
+        }
+
+        logger.info(`Synced ${cardioActivities.length} cardio activities for user`, uid);
+        return { success: true, count: cardioActivities.length };
+
+    } catch (error: any) {
+        logger.error("syncStravaActivities error", error);
+        if (error instanceof HttpsError) throw error;
+        throw new HttpsError("internal", error.message || "Failed to synchronize Strava activities.");
+    }
+});
+
+/**
+ * 7. Background Trigger: Upload Workout to Strava
+ * Automatically runs whenever a new logged workout is created.
+ */
+export const onWorkoutLogged = onDocumentCreated("users/{userId}/loggedWorkouts/{workoutId}", async (event) => {
+    const params = event.params;
+    const userId = params.userId;
+    const workoutId = params.workoutId;
+
+    try {
+        // 1. Check connection
+        const authRef = db.collection("users").doc(userId).collection("strava").doc("auth");
+        const authSnap = await authRef.get();
+        if (!authSnap.exists) {
+            logger.info(`Strava connection not active for user ${userId}. Skipping upload.`);
+            return;
+        }
+
+        const configRef = db.collection("users").doc(userId).collection("strava").doc("config");
+        const configSnap = await configRef.get();
+        if (!configSnap.exists) {
+            logger.info(`Strava config not found for user ${userId}. Skipping upload.`);
+            return;
+        }
+
+        const authData = authSnap.data()!;
+        const configData = configSnap.data()!;
+
+        // Verify user preference
+        if (configData.enablePushToStrava === false) {
+            logger.info(`Strava push disabled by user preferences for user ${userId}. Skipping upload.`);
+            return;
+        }
+
+        // 2. Fetch the created workout
+        const workoutRef = db.collection("users").doc(userId).collection("loggedWorkouts").doc(workoutId);
+        const workoutSnap = await workoutRef.get();
+        if (!workoutSnap.exists) {
+            logger.error(`Workout document ${workoutId} not found in database.`);
+            return;
+        }
+        const workoutData = workoutSnap.data()!;
+
+        // Prevent double uploading
+        if (workoutData.stravaActivityId) {
+            logger.info(`Workout ${workoutId} already contains a Strava ID. Skipping upload.`);
+            return;
+        }
+
+        let accessToken = authData.accessToken;
+        let expiresAt = authData.expiresAt;
+        let refreshToken = authData.refreshToken;
+
+        const currentTimeSec = Math.floor(Date.now() / 1000);
+        // Refresh token if expired (5 minutes buffer)
+        if (currentTimeSec >= (expiresAt - 300)) {
+            logger.info(`Refreshing Strava token for user ${userId} inside Firestore trigger.`);
+            const refreshResponse = await fetch("https://www.strava.com/oauth/token", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    client_id: configData.clientId,
+                    client_secret: configData.clientSecret,
+                    grant_type: "refresh_token",
+                    refresh_token: refreshToken
+                })
+            });
+
+            if (!refreshResponse.ok) {
+                logger.error(`Failed to refresh token inside background trigger for user ${userId}.`);
+                return;
+            }
+
+            const refreshData = await refreshResponse.json() as any;
+            accessToken = refreshData.access_token;
+            refreshToken = refreshData.refresh_token || refreshToken;
+            expiresAt = refreshData.expires_at;
+
+            await authRef.update({
+                accessToken,
+                refreshToken,
+                expiresAt
+            });
+        }
+
+        // 3. Format description and title
+        const dayName = workoutData.workoutDayNameUsed || "Workout Session";
+        const programName = workoutData.trainingProgramNameUsed || "";
+        const title = `LiftLogic: ${dayName}${programName ? ` (${programName})` : ""}`;
+
+        let description = "";
+        if (workoutData.overallSessionNotes) {
+            description += `${workoutData.overallSessionNotes}\n\n`;
+        }
+
+        if (workoutData.performedExercises && Array.isArray(workoutData.performedExercises)) {
+            description += "Exercises Completed:\n";
+            workoutData.performedExercises.forEach((ex: any) => {
+                description += `\n• ${ex.exerciseName}\n`;
+                if (ex.sets && Array.isArray(ex.sets)) {
+                    ex.sets.forEach((set: any, idx: number) => {
+                        const statusStr = set.status === "failed" ? " (failed)" : "";
+                        const weight = set.actualWeight;
+                        const reps = set.actualReps;
+                        const unit = set.weightUnit || workoutData.weightUnit || "lbs";
+                        const isTimed = set.isTimed || false;
+                        description += `  Set ${idx + 1}: ${reps}${isTimed ? " sec" : " reps"} @ ${weight} ${unit}${statusStr}\n`;
+                    });
+                }
+            });
+        }
+        description += "\nLogged via LiftLogic.";
+
+        // Parse start date safely
+        const startRaw = workoutData.startTime || workoutData.date || new Date();
+        let startDateObj: Date;
+        if (startRaw.seconds) {
+            startDateObj = new Date(startRaw.seconds * 1000);
+        } else if (startRaw.toDate && typeof startRaw.toDate === "function") {
+            startDateObj = startRaw.toDate();
+        } else {
+            startDateObj = new Date(startRaw);
+        }
+
+        const elapsedSeconds = (workoutData.durationMinutes || 0) * 60 || 1800; // default 30 mins
+
+        // 4. Submit to Strava endpoint
+        const uploadResponse = await fetch("https://www.strava.com/api/v3/activities", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({
+                name: title,
+                sport_type: "WeightTraining",
+                start_date_local: startDateObj.toISOString(),
+                elapsed_time: elapsedSeconds,
+                description: description
+            })
+        });
+
+        if (!uploadResponse.ok) {
+            const errText = await uploadResponse.text();
+            logger.error(`Failed to create Strava activity for workout ${workoutId}`, errText);
+            return;
+        }
+
+        const resData = await uploadResponse.json() as any;
+        const stravaId = resData.id;
+
+        // 5. Save Strava Activity ID in workout doc
+        await workoutRef.update({
+            stravaActivityId: stravaId
+        });
+
+        logger.info(`Successfully pushed workout ${workoutId} to Strava. Activity ID: ${stravaId}`);
+
+    } catch (err) {
+        logger.error("onWorkoutLogged trigger failed", err);
     }
 });
