@@ -67,11 +67,11 @@
             <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
                 <h3 style="margin:0; line-height:1.2;">Volume Trend</h3>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    <select v-model="volumeAggregation" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 100px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-card-text); font-size: 0.9em;">
+                    <select v-model="volumeAggregation" class="history-select" style="max-width: 100px;">
                          <option value="weekly">Weekly</option>
                          <option value="monthly">Monthly</option>
                     </select>
-                    <select v-model="weeklyVolumeTimeRange" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 120px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-card-text); font-size: 0.9em;">
+                    <select v-model="weeklyVolumeTimeRange" class="history-select" style="max-width: 120px;">
                          <option value="12w">Last 12 Weeks</option>
                          <option value="6m">Last 6 Months</option>
                          <option value="1y">Last Year</option>
@@ -90,7 +90,7 @@
         <div class="chart-section card">
              <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                  <h3 style="margin:0;">Exercise Trends</h3>
-                 <select v-model="selectedExerciseForGraph" class="exercise-select" style="padding: 5px; border-radius:4px; max-width: 150px;">
+                 <select v-model="selectedExerciseForGraph" class="history-select" style="max-width: 200px; min-width: 150px;">
                      <option value="">Select Exercise</option>
                      <option v-for="ex in uniqueExercises" :key="ex" :value="ex">{{ ex }}</option>
                  </select>
@@ -925,6 +925,23 @@ onUnmounted(() => {
 }
 .button-primary:hover:not(:disabled) {
   background-color: #0056b3;
+}
+
+.history-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--color-card-border);
+  background-color: var(--color-card-bg);
+  color: var(--color-card-text);
+  font-size: 0.9em;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.history-select:hover {
+  border-color: var(--color-heading);
+  background-color: var(--color-background-soft);
 }
 
 .button-secondary {
