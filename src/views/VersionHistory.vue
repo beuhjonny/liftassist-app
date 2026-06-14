@@ -7,63 +7,6 @@
 
     <div class="timeline-container">
       
-      <!-- The Stone Age -->
-      <div class="timeline-item stone-age">
-        <div class="timeline-marker">🪨</div>
-        <div class="timeline-content card">
-            <div class="era-header">
-                <h2>The Stone Age</h2>
-                <span class="era-date">Pre-2025</span>
-            </div>
-            <p><strong>The Chalk Board.</strong></p>
-            <p>
-                Before the algorithms, there was just dust and friction. Double progression was manual—erasing yesterday's numbers and rewriting today's targets. 
-                It was effective, primitive, and honest. But it was missing a timer.
-            </p>
-            <button @click="showStoneAgeModal = true" class="button-pic">
-              📷 View Original Chalkboard
-            </button>
-        </div>
-      </div>
-
-      <!-- The Spreadsheet Era -->
-      <div class="timeline-item sheets-era">
-        <div class="timeline-marker">📊</div>
-        <div class="timeline-content card">
-             <div class="era-header">
-                <h2>The Prototype</h2>
-                <span class="era-date">Feb 11, 2025 - May 28, 2025</span>
-            </div>
-            <p><strong>Google Sheets + ActionScript.</strong></p>
-            <p>
-                The first step into automation. This era introduced the core <strong>Auto-Double Progression</strong> logic, a "Fail" button, and finally, a built-in timer.
-            </p>
-            <p>
-                It had simple buttons, and it worked! This proof of concept version drove many workouts and lots of gains. But it wasn't great on mobile, and the UX was barebones at best.
-            </p>
-        </div>
-      </div>
-
-      <!-- Lift Assist -->
-      <div class="timeline-item prototype-era">
-         <div class="timeline-marker">🤖</div>
-        <div class="timeline-content card">
-             <div class="era-header">
-                <h2>Lift Assist (The First Web App)</h2>
-                <span class="era-date">June 2025 - Jan 2026</span>
-            </div>
-            <p><strong>Built with Gemini & Copy-Paste.</strong></p>
-            <p>
-                The first true web app, hand-assembled entirely by pasting code from Gemini. It featured a Routine Editor, Active Workout Mode, and comprehensive History, all while maintaining the core double progression logic.
-                It was powerful, usable, and mostly stable.
-            </p>
-            <div class="death-notice">
-                <span class="skull">💀</span>
-                <p><strong>The Bot Murder:</strong> Tragically killed by AI automated systems because a "Password" input field was placed too close to a "Sign In" button. AI brought it in and AI took it out. RIP.</p>
-            </div>
-        </div>
-      </div>
-
       <!-- Lift Logic -->
       <div class="timeline-item modern-era">
          <div class="timeline-marker">🚀</div>
@@ -130,28 +73,89 @@
                     <h4>Lift Logic v2.0: The "It Actually Works Now" Update</h4>
                     <p>A comprehensive overhaul moving from "Science Experiment" to "Real Product".</p>
                     <ul class="feature-list">
-                        <li><strong>Multiple Routines:</strong> Create distinct programs (Bulk, Cut, Focus) and switch instantly while syncing progress.</li>
-                        <li><strong>Smart Workouts:</strong> Resume state saved automatically. Live edit weights during sets. "Fix It Later" editing.</li>
-                        <li><strong>Routine Management:</strong> Drag-and-drop reordering, AI-assisted creation.</li>
-                        <li><strong>Fresh Look:</strong> Montserrat typography, modern icons, and a refined "Progress" dashboard.</li>
-                        <li><strong>Customization:</strong> Dark Mode default, custom timer sounds (Robot!), and Lbs/Kg support.</li>
+                         <li><strong>Multiple Routines:</strong> Create distinct programs (Bulk, Cut, Focus) and switch instantly while syncing progress.</li>
+                         <li><strong>Smart Workouts:</strong> Resume state saved automatically. Live edit weights during sets. "Fix It Later" editing.</li>
+                         <li><strong>Routine Management:</strong> Drag-and-drop reordering, AI-assisted creation.</li>
+                         <li><strong>Fresh Look:</strong> Montserrat typography, modern icons, and a refined "Progress" dashboard.</li>
+                         <li><strong>Customization:</strong> Dark Mode default, custom timer sounds (Robot!), and Lbs/Kg support.</li>
                     </ul>
                 </div>
             </div>
         </div>
       </div>
+
+      <!-- Lift Assist -->
+      <div class="timeline-item prototype-era">
+         <div class="timeline-marker">🤖</div>
+        <div class="timeline-content card">
+             <div class="era-header">
+                <h2>Lift Assist (The First Web App)</h2>
+                <span class="era-date">June 2025 - Jan 2026</span>
+            </div>
+            <p><strong>Built with Gemini & Copy-Paste.</strong></p>
+            <p>
+                The first true web app, hand-assembled entirely by pasting code from Gemini. It featured a Routine Editor, Active Workout Mode, and comprehensive History, all while maintaining the core double progression logic.
+                It was powerful, usable, and mostly stable.
+            </p>
+            <div class="death-notice">
+                <span class="skull">💀</span>
+                <p><strong>The Bot Murder:</strong> Tragically killed by AI automated systems because a "Password" input field was placed too close to a "Sign In" button. AI brought it in and AI took it out. RIP.</p>
+            </div>
+        </div>
+      </div>
+
+      <!-- The Spreadsheet Era -->
+      <div class="timeline-item sheets-era">
+        <div class="timeline-marker">📊</div>
+        <div class="timeline-content card">
+             <div class="era-header">
+                <h2>The Prototype</h2>
+                <span class="era-date">Feb 11, 2025 - May 28, 2025</span>
+            </div>
+            <p><strong>Google Sheets + ActionScript.</strong></p>
+            <p>
+                The first step into automation. This era introduced the core <strong>Auto-Double Progression</strong> logic, a "Fail" button, and finally, a built-in timer.
+            </p>
+            <p>
+                It had simple buttons, and it worked! This proof of concept version drove many workouts and lots of gains. But it wasn't great on mobile, and the UX was barebones at best.
+            </p>
+            <button @click="openImageModal('/prototype-spreadsheet.png', 'The original LiftAssist prototype built using Google Sheets and Google Apps Script.')" class="button-pic">
+              📷 View Original Spreadsheet
+            </button>
+        </div>
+      </div>
+
+      <!-- The Stone Age -->
+      <div class="timeline-item stone-age">
+        <div class="timeline-marker">🪨</div>
+        <div class="timeline-content card">
+            <div class="era-header">
+                <h2>The Stone Age</h2>
+                <span class="era-date">Pre-2025</span>
+            </div>
+            <p><strong>The Chalk Board.</strong></p>
+            <p>
+                Before the algorithms, there was just dust and friction. Double progression was manual—erasing yesterday's numbers and rewriting today's targets. 
+                It was effective, primitive, and honest. But it was missing a timer.
+            </p>
+            <button @click="openImageModal('/stone-age-chalkboard.jpg', 'The original LiftLogic workout routine, handwritten on the chalkboard.')" class="button-pic">
+              📷 View Original Chalkboard
+            </button>
+        </div>
+      </div>
+
     </div>
     
     <div class="back-action">
         <button @click="$router.back()" class="button-secondary">Close</button>
     </div>
 
-    <!-- Chalkboard Picture Modal -->
-    <div v-if="showStoneAgeModal" class="image-modal-overlay" @click="showStoneAgeModal = false">
+    <!-- History Picture Modal -->
+    <div v-if="modalImage" class="image-modal-overlay" @click="closeImageModal">
       <div class="image-modal-content" @click.stop>
-        <button class="image-modal-close" @click="showStoneAgeModal = false">&times;</button>
-        <img src="/stone-age-chalkboard.jpg" alt="Original Chalkboard Workout Routine" class="chalkboard-img" />
-        <p class="image-modal-caption">The original LiftLogic workout routine, handwritten on the chalkboard.</p>
+        <button class="image-modal-close" @click="closeImageModal">&times;</button>
+        <img :src="modalImage" alt="LiftLogic History Picture" class="chalkboard-img" />
+        <p v-if="modalCaption" class="image-modal-caption">{{ modalCaption }}</p>
       </div>
     </div>
 
@@ -161,7 +165,18 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const showStoneAgeModal = ref(false);
+const modalImage = ref<string | null>(null);
+const modalCaption = ref<string | null>(null);
+
+const openImageModal = (imagePath: string, caption: string) => {
+  modalImage.value = imagePath;
+  modalCaption.value = caption;
+};
+
+const closeImageModal = () => {
+  modalImage.value = null;
+  modalCaption.value = null;
+};
 </script>
 
 <style scoped>
