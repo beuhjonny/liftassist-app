@@ -941,7 +941,6 @@ onUnmounted(() => {
 }
 .history-select:hover {
   border-color: var(--color-heading);
-  background-color: var(--color-background-soft);
 }
 
 .button-secondary {
