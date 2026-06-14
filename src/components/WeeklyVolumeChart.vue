@@ -13,20 +13,25 @@ import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, Ca
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale);
 
-const props = defineProps<{
-  volumeIndex: any; // CalendarIndexData loosely typed to avoid strict import dependency here if simple
-  weightUnit: 'lbs' | 'kg';
-  timeRange: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    volumeIndex: any; // CalendarIndexData loosely typed
+    weightUnit: 'lbs' | 'kg';
+    timeRange: string;
+    aggregation?: 'weekly' | 'monthly';
+  }>(),
+  {
+    aggregation: 'weekly'
+  }
+);
 
 const chartData = computed(() => {
-  const volumeByWeek: Record<string, number> = {};
+  const volumeByGroup: Record<string, number> = {};
   
   if (!props.volumeIndex) return { labels: [], datasets: [] };
 
   const validDateKeys = Object.keys(props.volumeIndex).filter(k => k !== 'lastUpdated' && k !== 'version');
   
-  // Robust Date Parsing helper is simpler now, keys are already YYYY-MM-DD
   const getDateFromKey = (key: string): Date => {
       return new Date(key);
   };
@@ -59,27 +64,43 @@ const chartData = computed(() => {
     const d = getDateFromKey(key);
     if (isNaN(d.getTime())) return;
 
-    const year = d.getFullYear();
-    const onejan = new Date(year, 0, 1);
-    const millis = d.getTime() - onejan.getTime();
-    const week = Math.ceil((((millis / 86400000) + onejan.getDay() + 1) / 7));
-    const label = `${year}-W${week.toString().padStart(2, '0')}`;
+    let label = '';
+    if (props.aggregation === 'monthly') {
+      const year = d.getFullYear();
+      const monthNum = d.getMonth() + 1;
+      label = `${year}-${monthNum.toString().padStart(2, '0')}`;
+    } else {
+      const year = d.getFullYear();
+      const onejan = new Date(year, 0, 1);
+      const millis = d.getTime() - onejan.getTime();
+      const week = Math.ceil((((millis / 86400000) + onejan.getDay() + 1) / 7));
+      label = `${year}-W${week.toString().padStart(2, '0')}`;
+    }
 
     const totalVol = entry.totalVolume || 0;
-
-    volumeByWeek[label] = (volumeByWeek[label] || 0) + totalVol;
+    volumeByGroup[label] = (volumeByGroup[label] || 0) + totalVol;
   });
 
-  const labels = Object.keys(volumeByWeek).sort();
+  const rawLabels = Object.keys(volumeByGroup).sort();
+  
+  const displayLabels = rawLabels.map(l => {
+    if (props.aggregation === 'monthly') {
+      const [year, monthStr] = l.split('-');
+      const monthIdx = parseInt(monthStr) - 1;
+      const date = new Date(parseInt(year), monthIdx, 1);
+      return date.toLocaleDateString(undefined, { month: 'short', year: '2-digit' });
+    }
+    return l;
+  });
 
   return {
-    labels: labels,
+    labels: displayLabels,
     datasets: [
       {
-        label: `Weekly Volume (${props.weightUnit})`,
+        label: `${props.aggregation === 'monthly' ? 'Monthly' : 'Weekly'} Volume (${props.weightUnit})`,
         borderColor: '#007bff',
         backgroundColor: 'rgba(0, 123, 255, 0.1)',
-        data: labels.map(l => volumeByWeek[l]),
+        data: rawLabels.map(l => volumeByGroup[l]),
         tension: 0.3,
         fill: true,
         pointRadius: 4,

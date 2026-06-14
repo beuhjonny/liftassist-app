@@ -56,16 +56,27 @@
     <div v-if="!isLoading && loggedWorkouts.length > 0" class="analytics-dashboard">
         
         <div class="chart-section card">
-            <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="margin:0; line-height:1.2;">Weekly Volume</h3>
-                <select v-model="weeklyVolumeTimeRange" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 150px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-text); font-size: 0.9em;">
-                     <option value="12w">Last 12 Weeks</option>
-                     <option value="6m">Last 6 Months</option>
-                     <option value="1y">Last Year</option>
-                     <option value="all">All Time</option>
-                </select>
+            <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="margin:0; line-height:1.2;">Volume Trend</h3>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <select v-model="volumeAggregation" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 100px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-text); font-size: 0.9em;">
+                         <option value="weekly">Weekly</option>
+                         <option value="monthly">Monthly</option>
+                    </select>
+                    <select v-model="weeklyVolumeTimeRange" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 120px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-text); font-size: 0.9em;">
+                         <option value="12w">Last 12 Weeks</option>
+                         <option value="6m">Last 6 Months</option>
+                         <option value="1y">Last Year</option>
+                         <option value="all">All Time</option>
+                    </select>
+                </div>
             </div>
-            <WeeklyVolumeChart :volumeIndex="calendarIndex" :weightUnit="settings?.weightUnit || 'lbs'" :timeRange="weeklyVolumeTimeRange" />
+            <WeeklyVolumeChart 
+                :volumeIndex="calendarIndex" 
+                :weightUnit="settings?.weightUnit || 'lbs'" 
+                :timeRange="weeklyVolumeTimeRange" 
+                :aggregation="volumeAggregation"
+            />
         </div>
 
         <div class="chart-section card">
@@ -204,6 +215,7 @@ const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
 // Chart & Analytics State
 const selectedExerciseForGraph = ref<string>('');
 const weeklyVolumeTimeRange = ref('12w');
+const volumeAggregation = ref<'weekly' | 'monthly'>('weekly');
 const uniqueExercises = computed(() => {
     const exercises = new Set<string>();
     loggedWorkouts.forEach(w => {
