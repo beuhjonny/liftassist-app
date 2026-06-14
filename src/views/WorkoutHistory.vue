@@ -67,11 +67,11 @@
             <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
                 <h3 style="margin:0; line-height:1.2;">Volume Trend</h3>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    <select v-model="volumeAggregation" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 100px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-text); font-size: 0.9em;">
+                    <select v-model="volumeAggregation" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 100px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-card-text); font-size: 0.9em;">
                          <option value="weekly">Weekly</option>
                          <option value="monthly">Monthly</option>
                     </select>
-                    <select v-model="weeklyVolumeTimeRange" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 120px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-text); font-size: 0.9em;">
+                    <select v-model="weeklyVolumeTimeRange" class="time-select" style="padding: 4px 8px; border-radius:4px; max-width: 120px; border: 1px solid var(--color-border); background: var(--color-background-soft); color: var(--color-card-text); font-size: 0.9em;">
                          <option value="12w">Last 12 Weeks</option>
                          <option value="6m">Last 6 Months</option>
                          <option value="1y">Last Year</option>
@@ -101,7 +101,7 @@
                  :workouts="loggedWorkouts" 
                  :weightUnit="settings?.weightUnit || 'lbs'"
              />
-             <div v-else class="placeholder-text" style="text-align:center; padding: 40px; color: var(--color-text); opacity: 0.6;">
+             <div v-else class="placeholder-text" style="text-align:center; padding: 40px; color: var(--color-card-text); opacity: 0.6;">
                  Select an exercise to view 1RM & Volume trends.
              </div>
         </div>
