@@ -20,6 +20,9 @@
                 Before the algorithms, there was just dust and friction. Double progression was manual—erasing yesterday's numbers and rewriting today's targets. 
                 It was effective, primitive, and honest. But it was missing a timer.
             </p>
+            <button @click="showStoneAgeModal = true" class="button-pic">
+              📷 View Original Chalkboard
+            </button>
         </div>
       </div>
 
@@ -143,11 +146,22 @@
         <button @click="$router.back()" class="button-secondary">Close</button>
     </div>
 
+    <!-- Chalkboard Picture Modal -->
+    <div v-if="showStoneAgeModal" class="image-modal-overlay" @click="showStoneAgeModal = false">
+      <div class="image-modal-content" @click.stop>
+        <button class="image-modal-close" @click="showStoneAgeModal = false">&times;</button>
+        <img src="/stone-age-chalkboard.jpg" alt="Original Chalkboard Workout Routine" class="chalkboard-img" />
+        <p class="image-modal-caption">The original LiftLogic workout routine, handwritten on the chalkboard.</p>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup lang="ts">
-// No logic needed, purely presentational
+import { ref } from 'vue';
+
+const showStoneAgeModal = ref(false);
 </script>
 
 <style scoped>
@@ -352,5 +366,106 @@
     text-decoration: none;
     border-radius: 4px;
     font-weight: 500;
+}
+
+/* Image Modal Styles */
+.image-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.image-modal-content {
+  position: relative;
+  background-color: var(--color-card-bg);
+  border: 1px solid var(--color-card-border);
+  padding: 15px;
+  border-radius: 12px;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.image-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: var(--color-card-heading);
+  font-size: 2rem;
+  cursor: pointer;
+  line-height: 1;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.image-modal-close:hover {
+  transform: scale(1.1);
+  color: var(--color-primary);
+}
+
+.chalkboard-img {
+  max-width: 100%;
+  max-height: 70vh;
+  border-radius: 8px;
+  object-fit: contain;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.image-modal-caption {
+  margin-top: 12px;
+  font-size: 0.95em;
+  color: var(--color-card-text);
+  opacity: 0.9;
+  text-align: center;
+  font-style: italic;
+}
+
+.button-pic {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background-color: var(--color-primary, #007bff);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9em;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: transform 0.1s ease, background-color 0.2s;
+}
+
+.button-pic:hover {
+  background-color: var(--color-primary-hover, #0056b3);
+  transform: translateY(-1px);
+}
+
+.button-pic:active {
+  transform: translateY(0);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
 </style>
