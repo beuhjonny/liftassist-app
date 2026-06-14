@@ -84,107 +84,123 @@
                 </div>
             </div>
 
-            <div class="setting-item device-pairing-section">
-                <label>Connect Device</label>
-                <div class="pairing-control">
-                    <input 
-                        v-model="pairingCodeInput"
-                        placeholder="Garmin Code" 
-                        maxlength="6"
-                        class="pairing-input"
-                        :disabled="isPairing"
-                        @keyup.enter="handlePairing"
-                    />
-                    <button @click="handlePairing" class="button-primary small" :disabled="!pairingCodeInput || isPairing">
-                        {{ isPairing ? '...' : 'Link' }}
-                    </button>
-                    <!-- Status Icons -->
-                    <span v-if="pairingStatus === 'success'" class="pairing-result success">✅</span>
-                    <span v-if="pairingStatus === 'error'" class="pairing-result error">❌</span>
-                </div>
-            </div>
-            <p v-if="pairingMessage" :class="pairingStatus === 'success' ? 'success-text' : 'error-text'" style="font-size: 0.85em; margin-top: -15px; text-align: right;">{{ pairingMessage }}</p>
+        </div>
 
-            <!-- Strava Integration Setting Item -->
-            <div class="setting-item strava-section-item" style="border-top: 1px dashed var(--color-card-border); padding-top: 15px; margin-top: 15px;">
-                <label>Strava Sync</label>
-                <div class="strava-control">
-                    <template v-if="isConnected">
+        <button @click="handleLogout" class="logout-button">Logout</button>
+        
+      </div>
+
+      <!-- Connections Card -->
+      <div class="connections-card card">
+        <h2 style="text-align: center; margin-top: 0; margin-bottom: 25px; color: var(--color-card-heading); font-size: 1.6em; font-family: 'Montserrat', sans-serif; font-weight: 400;">Connections 🔗</h2>
+        
+        <!-- Garmin Pairing Section -->
+        <div class="setting-item device-pairing-section">
+            <label>Garmin Link</label>
+            <div class="pairing-control">
+                <input 
+                    v-model="pairingCodeInput"
+                    placeholder="Garmin Code" 
+                    maxlength="6"
+                    class="pairing-input"
+                    :disabled="isPairing"
+                    @keyup.enter="handlePairing"
+                />
+                <button @click="handlePairing" class="button-primary small" :disabled="!pairingCodeInput || isPairing">
+                    {{ isPairing ? '...' : 'Link' }}
+                </button>
+                <!-- Status Icons -->
+                <span v-if="pairingStatus === 'success'" class="pairing-result success">✅</span>
+                <span v-if="pairingStatus === 'error'" class="pairing-result error">❌</span>
+            </div>
+        </div>
+        <p v-if="pairingMessage" :class="pairingStatus === 'success' ? 'success-text' : 'error-text'" style="font-size: 0.85em; margin-top: -10px; text-align: right; margin-bottom: 15px;">{{ pairingMessage }}</p>
+
+        <!-- Strava Integration Setting Item -->
+        <div class="setting-item strava-section-item" style="border-top: 1px dashed var(--color-card-border); padding-top: 15px; margin-top: 15px;">
+            <label>Strava Sync</label>
+            <div class="strava-control">
+                <template v-if="isConnected">
+                    <div style="display: flex; align-items: center; gap: 10px; justify-content: flex-end; width: 100%;">
                         <span class="strava-status connected">Connected as <strong>{{ athleteName }}</strong></span>
-                        <div class="strava-actions" style="display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap;">
-                            <button @click="handleStravaSync(false)" class="button-primary small" :disabled="isStravaLoading">
-                                {{ isStravaLoading ? 'Syncing...' : 'Sync Runs' }}
-                            </button>
-                            <button @click="handleStravaSync(true)" class="button-secondary small" :disabled="isStravaLoading" title="Sync entire history of runs (up to 1000 activities)">
-                                Full History Sync
-                            </button>
-                            <button @click="handleStravaDisconnect" class="button-secondary small" :disabled="isStravaLoading">
-                                Disconnect
-                            </button>
-                        </div>
-                    </template>
-                    <template v-else-if="isConfigured">
-                        <span class="strava-status configured">API Configured. Ready.</span>
-                        <div class="strava-actions" style="display: flex; gap: 8px; margin-top: 5px;">
-                            <button @click="handleStravaConnect" class="button-primary small" :disabled="isStravaLoading">
-                                Connect Strava
-                            </button>
-                            <button @click="handleStravaDisconnect" class="button-secondary small" :disabled="isStravaLoading">
-                                Reset
-                            </button>
-                        </div>
-                    </template>
-                    <template v-else>
-                        <button @click="showStravaConfigForm = !showStravaConfigForm" class="button-secondary small">
-                            {{ showStravaConfigForm ? 'Hide Config' : 'Configure Strava' }}
+                        <button @click="showStravaManagement = !showStravaManagement" class="button-secondary small" style="padding: 4px 8px; font-size: 0.85em;">
+                            {{ showStravaManagement ? 'Hide' : 'Manage' }}
                         </button>
-                    </template>
-                </div>
+                    </div>
+                </template>
+                <template v-else-if="isConfigured">
+                    <span class="strava-status configured">API Configured. Ready.</span>
+                    <div class="strava-actions" style="display: flex; gap: 8px; margin-top: 5px;">
+                        <button @click="handleStravaConnect" class="button-primary small" :disabled="isStravaLoading">
+                            Connect Strava
+                        </button>
+                        <button @click="handleStravaDisconnect" class="button-secondary small" :disabled="isStravaLoading">
+                            Reset
+                        </button>
+                    </div>
+                </template>
+                <template v-else>
+                    <button @click="showStravaConfigForm = !showStravaConfigForm" class="button-secondary small">
+                        {{ showStravaConfigForm ? 'Hide Config' : 'Configure Strava' }}
+                    </button>
+                </template>
             </div>
+        </div>
 
-            <!-- Strava Config Form -->
-            <div v-if="showStravaConfigForm && !isConnected && !isConfigured" class="strava-config-form card-inset" style="margin-top: 10px; padding: 15px; background: var(--color-card-mute); border-radius: 8px; font-size: 0.9em; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--color-card-border);">
-                <p style="margin: 0; opacity: 0.8; line-height: 1.4;">
-                    Create a developer app at <a href="https://www.strava.com/settings/api" target="_blank" style="color: var(--color-primary); text-decoration: underline;">strava.com/settings/api</a>.
-                    Set authorization callback domain to <code>localhost</code> (local) or <code>lift-logic-app.web.app</code> (prod).
-                </p>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <label style="font-weight: bold;">Client ID</label>
-                    <input v-model="stravaClientIdField" placeholder="e.g. 258025" style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text);" />
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 5px;">
-                    <label style="font-weight: bold;">Client Secret</label>
-                    <input v-model="stravaClientSecretField" type="password" placeholder="Client Secret" style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text);" />
-                </div>
-                <button @click="handleStravaConnect" class="button-primary small" :disabled="!stravaClientIdField || !stravaClientSecretField" style="width: 100%; margin-top: 5px;">
-                    Save & Connect
+        <!-- Strava Config Form -->
+        <div v-if="showStravaConfigForm && !isConnected && !isConfigured" class="strava-config-form card-inset" style="margin-top: 10px; padding: 15px; background: var(--color-card-mute); border-radius: 8px; font-size: 0.9em; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--color-card-border);">
+            <p style="margin: 0; opacity: 0.8; line-height: 1.4;">
+                Create a developer app at <a href="https://www.strava.com/settings/api" target="_blank" style="color: var(--color-primary); text-decoration: underline;">strava.com/settings/api</a>.
+                Set authorization callback domain to <code>localhost</code> (local) or <code>lift-logic-app.web.app</code> (prod).
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-weight: bold;">Client ID</label>
+                <input v-model="stravaClientIdField" placeholder="e.g. 258025" style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text);" />
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+                <label style="font-weight: bold;">Client Secret</label>
+                <input v-model="stravaClientSecretField" type="password" placeholder="Client Secret" style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text);" />
+            </div>
+            <button @click="handleStravaConnect" class="button-primary small" :disabled="!stravaClientIdField || !stravaClientSecretField" style="width: 100%; margin-top: 5px;">
+                Save & Connect
+            </button>
+        </div>
+
+        <!-- Strava Preferences Toggles when Connected (Collapsible) -->
+        <div v-if="isConnected && showStravaManagement" class="strava-preferences card-inset" style="margin-top: 10px; padding: 15px; background: var(--color-card-mute); border-radius: 8px; font-size: 0.9em; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--color-card-border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-weight: 500;">Upload lifts to Strava</label>
+                <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                    <input type="checkbox" v-model="enablePushToStrava" @change="handlePrefChange" style="opacity: 0; width: 0; height: 0;">
+                    <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                    <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: enablePushToStrava ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                </label>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-weight: 500;">Fetch runs from Strava</label>
+                <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                    <input type="checkbox" v-model="enablePullFromStrava" @change="handlePrefChange" style="opacity: 0; width: 0; height: 0;">
+                    <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                    <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: enablePullFromStrava ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                </label>
+            </div>
+            
+            <!-- Actions Group inside Settings -->
+            <div class="strava-actions" style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: flex-end; border-top: 1px solid var(--color-card-border); padding-top: 10px;">
+                <button @click="handleStravaSync(false)" class="button-primary small" :disabled="isStravaLoading" style="flex-grow: 1; min-width: 100px;">
+                    {{ isStravaLoading ? 'Syncing...' : 'Sync Runs' }}
+                </button>
+                <button @click="handleStravaSync(true)" class="button-secondary small" :disabled="isStravaLoading" style="flex-grow: 1; min-width: 100px;" title="Sync entire history of runs (up to 1000 activities)">
+                    Full Sync
+                </button>
+                <button @click="handleStravaDisconnect" class="button-secondary small" :disabled="isStravaLoading" style="flex-grow: 1; min-width: 100px; background-color: #dc3545; color: white; border-color: #dc3545;">
+                    Disconnect
                 </button>
             </div>
-
-            <!-- Strava Preferences Toggles when Connected -->
-            <div v-if="isConnected" class="strava-preferences card-inset" style="margin-top: 10px; padding: 15px; background: var(--color-card-mute); border-radius: 8px; font-size: 0.9em; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--color-card-border);">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <label style="font-weight: 500;">Upload lifts to Strava</label>
-                    <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
-                        <input type="checkbox" v-model="enablePushToStrava" @change="handlePrefChange" style="opacity: 0; width: 0; height: 0;">
-                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-                        <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: enablePushToStrava ? 'translateX(16px)' : 'translateX(0)' }"></span>
-                    </label>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <label style="font-weight: 500;">Fetch runs from Strava</label>
-                    <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
-                        <input type="checkbox" v-model="enablePullFromStrava" @change="handlePrefChange" style="opacity: 0; width: 0; height: 0;">
-                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-                        <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: enablePullFromStrava ? 'translateX(16px)' : 'translateX(0)' }"></span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Strava Status Messages -->
-            <p v-if="stravaMessage" :class="stravaStatusType === 'success' ? 'success-text' : 'error-text'" style="font-size: 0.85em; margin-top: 5px; text-align: right; font-weight: 500;">{{ stravaMessage }}</p>
-
         </div>
+
+        <!-- Strava Status Messages -->
+        <p v-if="stravaMessage" :class="stravaStatusType === 'success' ? 'success-text' : 'error-text'" style="font-size: 0.85em; margin-top: 5px; text-align: right; font-weight: 500;">{{ stravaMessage }}</p>
 
 
 
@@ -467,6 +483,7 @@ const {
   updatePreferences: stravaUpdatePreferences
 } = useStrava();
 
+const showStravaManagement = ref(false);
 const showStravaConfigForm = ref(false);
 const stravaClientIdField = ref('');
 const stravaClientSecretField = ref('');
