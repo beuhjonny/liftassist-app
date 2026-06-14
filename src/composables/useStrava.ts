@@ -18,14 +18,14 @@ export interface StravaAuth {
   connectedAt: any;
 }
 
-const isConfigured = ref(false);
+const isConfigured = ref(!!import.meta.env.VITE_STRAVA_CLIENT_ID);
 const isConnected = ref(false);
 const athleteName = ref('');
 const enablePushToStrava = ref(true);
 const enablePullFromStrava = ref(true);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
-const clientId = ref('');
+const clientId = ref(import.meta.env.VITE_STRAVA_CLIENT_ID || '');
 const clientSecret = ref('');
 
 export default function useStrava() {
@@ -37,23 +37,19 @@ export default function useStrava() {
     isLoading.value = true;
     error.value = null;
     try {
-      // 1. Load config
+      // 1. Load config (preferences only)
       const configRef = doc(db, 'users', user.value.uid, 'strava', 'config');
       const configSnap = await getDoc(configRef);
       if (configSnap.exists()) {
         const data = configSnap.data() as StravaConfig;
-        isConfigured.value = true;
-        clientId.value = data.clientId;
-        clientSecret.value = data.clientSecret;
         enablePushToStrava.value = data.enablePushToStrava !== false;
         enablePullFromStrava.value = data.enablePullFromStrava !== false;
       } else {
-        isConfigured.value = false;
-        clientId.value = '';
-        clientSecret.value = '';
         enablePushToStrava.value = true;
         enablePullFromStrava.value = true;
       }
+      isConfigured.value = !!import.meta.env.VITE_STRAVA_CLIENT_ID;
+      clientId.value = import.meta.env.VITE_STRAVA_CLIENT_ID || '';
 
       // 2. Load auth
       const authRef = doc(db, 'users', user.value.uid, 'strava', 'auth');
@@ -75,28 +71,7 @@ export default function useStrava() {
   };
 
   const saveCredentials = async (cId: string, cSecret: string) => {
-    if (!user.value) return;
-    isLoading.value = true;
-    error.value = null;
-    try {
-      const configRef = doc(db, 'users', user.value.uid, 'strava', 'config');
-      const payload: StravaConfig = {
-        clientId: cId.trim(),
-        clientSecret: cSecret.trim(),
-        enablePushToStrava: enablePushToStrava.value,
-        enablePullFromStrava: enablePullFromStrava.value
-      };
-      await setDoc(configRef, payload, { merge: true });
-      clientId.value = cId.trim();
-      clientSecret.value = cSecret.trim();
-      isConfigured.value = true;
-    } catch (e: any) {
-      console.error('Failed to save Strava credentials:', e);
-      error.value = e.message || 'Failed to save credentials';
-      throw e;
-    } finally {
-      isLoading.value = false;
-    }
+    // Deprecated in centralized OAuth flow
   };
 
   const updatePreferences = async (push: boolean, pull: boolean) => {
@@ -114,10 +89,14 @@ export default function useStrava() {
     }
   };
 
-  const connect = async (cId: string, cSecret: string) => {
+  const connect = async () => {
     if (!user.value) return;
+    const cId = import.meta.env.VITE_STRAVA_CLIENT_ID;
+    if (!cId) {
+      error.value = 'Strava Client ID is not configured on the app.';
+      return;
+    }
     try {
-      await saveCredentials(cId, cSecret);
       // Redirect to Strava authorize page
       const redirectUri = `${window.location.origin}/profile`;
       const scope = 'activity:read_all,activity:write';
@@ -138,10 +117,7 @@ export default function useStrava() {
       await deleteDoc(configRef);
       await deleteDoc(authRef);
 
-      isConfigured.value = false;
       isConnected.value = false;
-      clientId.value = '';
-      clientSecret.value = '';
       athleteName.value = '';
     } catch (e: any) {
       console.error('Failed to disconnect Strava:', e);

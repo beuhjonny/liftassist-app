@@ -131,45 +131,18 @@
                         </button>
                     </div>
                 </template>
-                <template v-else-if="isConfigured">
+                <template v-else>
                     <div style="display: flex; align-items: center; gap: 10px; justify-content: flex-end; width: 100%;">
-                        <span class="strava-status configured">Ready to Connect</span>
-                        <div class="strava-actions" style="display: flex; gap: 8px;">
-                            <button @click="handleStravaConnect" class="button-primary small" :disabled="isStravaLoading">
-                                Connect
-                            </button>
-                            <button @click="handleStravaDisconnect" class="button-secondary small" :disabled="isStravaLoading">
-                                Reset
-                            </button>
-                        </div>
+                        <button @click="handleStravaConnect" class="button-primary small" :disabled="isStravaLoading || !isConfigured" style="background-color: #FC4C02; border-color: #FC4C02; color: white; display: inline-flex; align-items: center; gap: 5px;">
+                            Connect with Strava 🏃
+                        </button>
                     </div>
                 </template>
-                <template v-else>
-                    <button @click="showStravaConfigForm = !showStravaConfigForm" class="button-secondary small">
-                        {{ showStravaConfigForm ? 'Hide Config' : 'Configure Strava' }}
-                    </button>
-                </template>
             </div>
         </div>
-
-        <!-- Strava Config Form -->
-        <div v-if="showStravaConfigForm && !isConnected && !isConfigured" class="strava-config-form card-inset" style="margin-top: 10px; padding: 15px; background: var(--color-card-mute); border-radius: 8px; font-size: 0.9em; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--color-card-border);">
-            <p style="margin: 0; opacity: 0.8; line-height: 1.4;">
-                Create a developer app at <a href="https://www.strava.com/settings/api" target="_blank" style="color: var(--color-primary); text-decoration: underline;">strava.com/settings/api</a>.
-                Set authorization callback domain to <code>localhost</code> (local) or <code>lift-logic-app.web.app</code> (prod).
-            </p>
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label style="font-weight: bold;">Client ID</label>
-                <input v-model="stravaClientIdField" placeholder="e.g. 258025" style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text);" />
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-                <label style="font-weight: bold;">Client Secret</label>
-                <input v-model="stravaClientSecretField" type="password" placeholder="Client Secret" style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text);" />
-            </div>
-            <button @click="handleStravaConnect" class="button-primary small" :disabled="!stravaClientIdField || !stravaClientSecretField" style="width: 100%; margin-top: 5px;">
-                Save & Connect
-            </button>
-        </div>
+        <p v-if="!isConfigured && !isConnected" class="error-text" style="font-size: 0.85em; margin-top: 5px; text-align: right;">
+            Strava integration client ID is not configured.
+        </p>
 
         <!-- Strava Preferences Toggles when Connected (Collapsible) -->
         <div v-if="isConnected && showStravaManagement" class="strava-preferences card-inset" style="margin-top: 10px; padding: 15px; background: var(--color-card-mute); border-radius: 8px; font-size: 0.9em; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--color-card-border);">
@@ -510,17 +483,8 @@ const {
 } = useStrava();
 
 const showStravaManagement = ref(false);
-const showStravaConfigForm = ref(false);
-const stravaClientIdField = ref('');
-const stravaClientSecretField = ref('');
 const stravaStatusType = ref<'success' | 'error' | 'info'>('info');
 const stravaMessage = ref('');
-
-// Prepopulate config fields if client credentials exist
-watch([clientId, clientSecret], ([newId, newSec]) => {
-  if (newId) stravaClientIdField.value = newId;
-  if (newSec) stravaClientSecretField.value = newSec;
-}, { immediate: true });
 
 const externalActivities = ref<any[]>([]);
 
@@ -606,23 +570,11 @@ const handleStravaConnect = async () => {
   stravaStatusType.value = 'info';
   stravaMessage.value = 'Redirecting to Strava...';
   
-  const cId = stravaClientIdField.value || clientId.value;
-  const cSec = stravaClientSecretField.value || clientSecret.value;
-
-  if (!cId || !cSec) {
-    stravaStatusType.value = 'error';
-    stravaMessage.value = 'Client ID and Client Secret are required.';
-    return;
-  }
-
-  await stravaConnect(cId, cSec);
+  await stravaConnect();
 };
 
 const handleStravaDisconnect = async () => {
   await stravaDisconnect();
-  showStravaConfigForm.value = false;
-  stravaClientIdField.value = '';
-  stravaClientSecretField.value = '';
   stravaStatusType.value = 'success';
   stravaMessage.value = 'Strava connection disconnected.';
   setTimeout(() => { stravaMessage.value = ''; }, 3000);

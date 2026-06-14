@@ -408,12 +408,12 @@ export const exchangeStravaCode = onCall(async (request) => {
     }
 
     try {
-        // 1. Fetch user's registered Client ID and Secret
-        const configSnap = await db.collection("users").doc(uid).collection("strava").doc("config").get();
-        if (!configSnap.exists) {
-            throw new HttpsError("failed-precondition", "Strava credentials not configured in settings.");
+        // 1. Use the centralized Strava Client ID and Secret from environment variables
+        const clientId = process.env.STRAVA_CLIENT_ID;
+        const clientSecret = process.env.STRAVA_CLIENT_SECRET;
+        if (!clientId || !clientSecret) {
+            throw new HttpsError("failed-precondition", "Centralized Strava credentials not configured on the backend.");
         }
-        const { clientId, clientSecret } = configSnap.data()!;
 
         // 2. Post to Strava OAuth token endpoint
         const response = await fetch("https://www.strava.com/oauth/token", {
@@ -474,17 +474,20 @@ export const syncStravaActivities = onCall(async (request) => {
             throw new HttpsError("failed-precondition", "Strava account not connected.");
         }
 
-        const configRef = db.collection("users").doc(uid).collection("strava").doc("config");
-        const configSnap = await configRef.get();
-        if (!configSnap.exists) {
-            throw new HttpsError("failed-precondition", "Strava configuration not found.");
+        const clientId = process.env.STRAVA_CLIENT_ID;
+        const clientSecret = process.env.STRAVA_CLIENT_SECRET;
+        if (!clientId || !clientSecret) {
+            throw new HttpsError("failed-precondition", "Centralized Strava credentials not configured on the backend.");
         }
 
+        const configRef = db.collection("users").doc(uid).collection("strava").doc("config");
+        const configSnap = await configRef.get();
+        const configData = configSnap.exists ? configSnap.data() : null;
+
         const authData = authSnap.data()!;
-        const configData = configSnap.data()!;
 
         // Check pull preference
-        if (configData.enablePullFromStrava === false) {
+        if (configData && configData.enablePullFromStrava === false) {
             logger.info("Strava pull disabled for user", uid);
             return { success: true, count: 0 };
         }
@@ -501,8 +504,8 @@ export const syncStravaActivities = onCall(async (request) => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    client_id: configData.clientId,
-                    client_secret: configData.clientSecret,
+                    client_id: clientId,
+                    client_secret: clientSecret,
                     grant_type: "refresh_token",
                     refresh_token: refreshToken
                 })
@@ -643,18 +646,21 @@ export const onWorkoutLogged = onDocumentCreated("users/{userId}/loggedWorkouts/
             return;
         }
 
-        const configRef = db.collection("users").doc(userId).collection("strava").doc("config");
-        const configSnap = await configRef.get();
-        if (!configSnap.exists) {
-            logger.info(`Strava config not found for user ${userId}. Skipping upload.`);
+        const clientId = process.env.STRAVA_CLIENT_ID;
+        const clientSecret = process.env.STRAVA_CLIENT_SECRET;
+        if (!clientId || !clientSecret) {
+            logger.info(`Centralized Strava credentials not configured on backend. Skipping upload.`);
             return;
         }
 
+        const configRef = db.collection("users").doc(userId).collection("strava").doc("config");
+        const configSnap = await configRef.get();
+        const configData = configSnap.exists ? configSnap.data() : null;
+
         const authData = authSnap.data()!;
-        const configData = configSnap.data()!;
 
         // Verify user preference
-        if (configData.enablePushToStrava === false) {
+        if (configData && configData.enablePushToStrava === false) {
             logger.info(`Strava push disabled by user preferences for user ${userId}. Skipping upload.`);
             return;
         }
@@ -686,8 +692,8 @@ export const onWorkoutLogged = onDocumentCreated("users/{userId}/loggedWorkouts/
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    client_id: configData.clientId,
-                    client_secret: configData.clientSecret,
+                    client_id: clientId,
+                    client_secret: clientSecret,
                     grant_type: "refresh_token",
                     refresh_token: refreshToken
                 })
