@@ -178,18 +178,18 @@ export default function useStrava() {
     }
   };
 
-  const syncNow = async () => {
+  const syncNow = async (fullSync = false) => {
     if (!functions) {
       throw new Error('Firebase Functions is not initialized');
     }
     isLoading.value = true;
     error.value = null;
     try {
-      const syncFunc = httpsCallable<void, { success: boolean; count: number }>(
+      const syncFunc = httpsCallable<{ fullSync: boolean }, { success: boolean; count: number }>(
         functions,
         'syncStravaActivities'
       );
-      const res = await syncFunc();
+      const res = await syncFunc({ fullSync });
       if (res.data.success) {
         // Trigger local calendar index rebuild
         await fetchCalendarIndex(true);

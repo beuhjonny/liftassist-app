@@ -111,9 +111,12 @@
                 <div class="strava-control">
                     <template v-if="isConnected">
                         <span class="strava-status connected">Connected as <strong>{{ athleteName }}</strong></span>
-                        <div class="strava-actions" style="display: flex; gap: 8px; margin-top: 5px;">
-                            <button @click="handleStravaSync" class="button-primary small" :disabled="isStravaLoading">
+                        <div class="strava-actions" style="display: flex; gap: 8px; margin-top: 5px; flex-wrap: wrap;">
+                            <button @click="handleStravaSync(false)" class="button-primary small" :disabled="isStravaLoading">
                                 {{ isStravaLoading ? 'Syncing...' : 'Sync Runs' }}
+                            </button>
+                            <button @click="handleStravaSync(true)" class="button-secondary small" :disabled="isStravaLoading" title="Sync entire history of runs (up to 1000 activities)">
+                                Full History Sync
                             </button>
                             <button @click="handleStravaDisconnect" class="button-secondary small" :disabled="isStravaLoading">
                                 Disconnect
@@ -526,14 +529,14 @@ const handleStravaDisconnect = async () => {
   setTimeout(() => { stravaMessage.value = ''; }, 3000);
 };
 
-const handleStravaSync = async () => {
+const handleStravaSync = async (fullSync = false) => {
   stravaStatusType.value = 'info';
-  stravaMessage.value = 'Syncing activities from Strava...';
+  stravaMessage.value = fullSync ? 'Performing a full history sync from Strava (this may take a few seconds)...' : 'Syncing activities from Strava...';
   try {
-    const count = await stravaSyncNow();
+    const count = await stravaSyncNow(fullSync);
     stravaStatusType.value = 'success';
     stravaMessage.value = `Sync complete! Synced ${count} runs/cardio activities.`;
-    setTimeout(() => { stravaMessage.value = ''; }, 3000);
+    setTimeout(() => { stravaMessage.value = ''; }, 4000);
   } catch (e: any) {
     stravaStatusType.value = 'error';
     stravaMessage.value = e.message || 'Sync failed.';

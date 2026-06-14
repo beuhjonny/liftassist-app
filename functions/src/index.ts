@@ -465,6 +465,7 @@ export const syncStravaActivities = onCall(async (request) => {
         throw new HttpsError("unauthenticated", "User must be logged in.");
     }
     const uid = request.auth.uid;
+    const fullSync = request.data?.fullSync === true;
 
     try {
         const authRef = db.collection("users").doc(uid).collection("strava").doc("auth");
@@ -525,24 +526,60 @@ export const syncStravaActivities = onCall(async (request) => {
             });
         }
 
-        // Fetch activities from Strava for last 30 days
-        const thirtyDaysAgoSec = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000);
-        const activitiesResponse = await fetch(
-            `https://www.strava.com/api/v3/athlete/activities?after=${thirtyDaysAgoSec}&per_page=100`,
-            {
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`
+        let activities: any[] = [];
+
+        if (fullSync) {
+            logger.info("Performing full Strava history sync for user", uid);
+            let page = 1;
+            const perPage = 100;
+            // Limit to 10 pages (1000 activities) to stay safely within rate limits and execution time
+            while (page <= 10) {
+                const pageResponse = await fetch(
+                    `https://www.strava.com/api/v3/athlete/activities?page=${page}&per_page=${perPage}`,
+                    {
+                        headers: {
+                            "Authorization": `Bearer ${accessToken}`
+                        }
+                    }
+                );
+
+                if (!pageResponse.ok) {
+                    const errText = await pageResponse.text();
+                    logger.error(`Failed to fetch Strava page ${page}`, errText);
+                    break;
                 }
+
+                const pageData = await pageResponse.json() as any[];
+                if (!pageData || pageData.length === 0) {
+                    break;
+                }
+
+                activities = activities.concat(pageData);
+                if (pageData.length < perPage) {
+                    break; // No more activities on subsequent pages
+                }
+                page++;
             }
-        );
+        } else {
+            // Fetch activities from Strava for last 30 days
+            const thirtyDaysAgoSec = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000);
+            const activitiesResponse = await fetch(
+                `https://www.strava.com/api/v3/athlete/activities?after=${thirtyDaysAgoSec}&per_page=100`,
+                {
+                    headers: {
+                        "Authorization": `Bearer ${accessToken}`
+                    }
+                }
+            );
 
-        if (!activitiesResponse.ok) {
-            const errText = await activitiesResponse.text();
-            logger.error("Failed to fetch Strava activities", errText);
-            throw new HttpsError("internal", "Failed to fetch athlete activities from Strava API.");
+            if (!activitiesResponse.ok) {
+                const errText = await activitiesResponse.text();
+                logger.error("Failed to fetch Strava activities", errText);
+                throw new HttpsError("internal", "Failed to fetch athlete activities from Strava API.");
+            }
+
+            activities = await activitiesResponse.json() as any[];
         }
-
-        const activities = await activitiesResponse.json() as any[];
         
         // Filter out weight training (we only pull runs and general cardio)
         // Strava activity types: Run, Ride, Walk, Hike, Swim, etc.
@@ -578,7 +615,7 @@ export const syncStravaActivities = onCall(async (request) => {
             await batch.commit();
         }
 
-        logger.info(`Synced ${cardioActivities.length} cardio activities for user`, uid);
+        logger.info(`Synced ${cardioActivities.length} cardio activities for user ${uid} (fullSync: ${fullSync})`);
         return { success: true, count: cardioActivities.length };
 
     } catch (error: any) {
