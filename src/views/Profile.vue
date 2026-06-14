@@ -2,97 +2,100 @@
   <div class="profile-view">
     <h1>Profile</h1>
     <div v-if="user" class="user-details-container">
+      
+      <!-- Account Card -->
       <div class="user-details card">
-        <img v-if="user.photoURL" :src="user.photoURL" alt="User Photo" class="user-photo" />
-        <p><strong>Name:</strong> {{ user.displayName || 'N/A' }}</p>
-        <p><strong>Email:</strong> {{ user.email || 'N/A' }}</p>
+        <h2>Account 👤</h2>
+        <div class="account-info">
+          <img v-if="user.photoURL" :src="user.photoURL" alt="User Photo" class="user-photo" />
+          <div class="account-details">
+            <p><strong>Name:</strong> {{ user.displayName || 'N/A' }}</p>
+            <p><strong>Email:</strong> {{ user.email || 'N/A' }}</p>
+          </div>
+        </div>
+        <button @click="handleLogout" class="logout-button">Logout</button>
+      </div>
+
+      <!-- Settings Card -->
+      <div class="settings-card card">
+        <h2>Settings ⚙️</h2>
         
-        <div class="settings-section" style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
-            <h3>Settings ⚙️</h3>
-            
-            <div class="setting-item">
-                <label>Theme</label>
-                <div class="segmented-control">
-                    <button :class="{ active: settings.theme === 'original' }" @click="updateTheme('original')">Original</button>
-                    <button :class="{ active: settings.theme === 'system' }" @click="updateTheme('system')">System</button>
-                    <button :class="{ active: settings.theme === 'light' }" @click="updateTheme('light')">Light</button>
-                    <button :class="{ active: settings.theme === 'dark' }" @click="updateTheme('dark')">Dark</button>
-                </div>
+        <div class="setting-item">
+            <label>Theme</label>
+            <div class="segmented-control">
+                <button :class="{ active: settings.theme === 'original' }" @click="updateTheme('original')">Original</button>
+                <button :class="{ active: settings.theme === 'system' }" @click="updateTheme('system')">System</button>
+                <button :class="{ active: settings.theme === 'light' }" @click="updateTheme('light')">Light</button>
+                <button :class="{ active: settings.theme === 'dark' }" @click="updateTheme('dark')">Dark</button>
             </div>
-
-            <div class="setting-item timer-combined-row">
-                <label>Timer</label>
-                <div class="timer-controls">
-                    <select :value="settings.timerSound" @change="updateTimerSound($event)" class="sound-select">
-                        <option value="bell">🔔 Bell</option>
-                        <option value="beep">🤖 Beep</option>
-                        <option value="chime">✨ Chime</option>
-                        <option value="ding">🛎️ Ding</option>
-                        <option value="mute">🔕 Mute</option>
-                    </select>
-                    
-                    <div class="volume-control" v-if="settings.timerSound !== 'mute'" title="Volume">
-                        <span class="volume-icon">🔊</span>
-                        <input 
-                            type="range" 
-                            min="0" 
-                            max="1" 
-                            step="0.1" 
-                            :value="settings.timerVolume" 
-                            @input="updateVolume($event)" 
-                            class="volume-slider"
-                        />
-                    </div>
-
-                    <button v-if="settings.timerSound !== 'mute'" @click="previewSound" class="button-icon small" title="Preview Sound">▶️</button>
-                </div>
-            </div>
-
-             <div class="setting-item">
-                <label>Weight Unit</label>
-                <div class="segmented-control">
-                    <button :class="{ active: settings.weightUnit === 'lbs' }" @click="updateUnit('lbs')">lbs</button>
-                    <button :class="{ active: settings.weightUnit === 'kg' }" @click="updateUnit('kg')">kg</button>
-                </div>
-            </div>
-
-            <div class="setting-item">
-                <label style="white-space: nowrap;">Default Rest (sec)</label>
-                <div style="display: flex; align-items: center; justify-content: flex-end; width: 100%;">
-                    <input 
-                        type="number" 
-                        min="0" 
-                        step="5" 
-                        :value="settings.defaultRestTimer" 
-                        @change="updateRestTimer($event)"
-                        style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text); width: 80px; text-align: center;"
-                    />
-                </div>
-            </div>
-
-
-
-             <div class="setting-item">
-                <label>Embiggen Buttons</label>
-                <div style="display: flex; align-items: center;">
-                    <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
-                        <input type="checkbox" :checked="settings.embiggenButtons" @change="toggleEmbiggen" style="opacity: 0; width: 0; height: 0;">
-                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-                        <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.embiggenButtons ? 'translateX(16px)' : 'translateX(0)' }"></span>
-                    </label>
-                    <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.embiggenButtons ? 'On' : 'Off' }}</span>
-                </div>
-            </div>
-
         </div>
 
-        <button @click="handleLogout" class="logout-button">Logout</button>
-        
+        <div class="setting-item timer-combined-row">
+            <label>Timer</label>
+            <div class="timer-controls">
+                <select :value="settings.timerSound" @change="updateTimerSound($event)" class="sound-select">
+                    <option value="bell">🔔 Bell</option>
+                    <option value="beep">🤖 Beep</option>
+                    <option value="chime">✨ Chime</option>
+                    <option value="ding">🛎️ Ding</option>
+                    <option value="mute">🔕 Mute</option>
+                </select>
+                
+                <div class="volume-control" v-if="settings.timerSound !== 'mute'" title="Volume">
+                    <span class="volume-icon">🔊</span>
+                    <input 
+                        type="range" 
+                        min="0" 
+                        max="1" 
+                        step="0.1" 
+                        :value="settings.timerVolume" 
+                        @input="updateVolume($event)" 
+                        class="volume-slider"
+                    />
+                </div>
+
+                <button v-if="settings.timerSound !== 'mute'" @click="previewSound" class="button-icon small" title="Preview Sound">▶️</button>
+            </div>
+        </div>
+
+         <div class="setting-item">
+            <label>Weight Unit</label>
+            <div class="segmented-control">
+                <button :class="{ active: settings.weightUnit === 'lbs' }" @click="updateUnit('lbs')">lbs</button>
+                <button :class="{ active: settings.weightUnit === 'kg' }" @click="updateUnit('kg')">kg</button>
+            </div>
+        </div>
+
+        <div class="setting-item">
+            <label style="white-space: nowrap;">Default Rest (sec)</label>
+            <div style="display: flex; align-items: center; justify-content: flex-end; width: 100%;">
+                <input 
+                    type="number" 
+                    min="0" 
+                    step="5" 
+                    :value="settings.defaultRestTimer" 
+                    @change="updateRestTimer($event)"
+                    style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text); width: 80px; text-align: center;"
+                />
+            </div>
+        </div>
+
+         <div class="setting-item">
+            <label>Embiggen Buttons</label>
+            <div style="display: flex; align-items: center;">
+                <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                    <input type="checkbox" :checked="settings.embiggenButtons" @change="toggleEmbiggen" style="opacity: 0; width: 0; height: 0;">
+                    <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                    <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.embiggenButtons ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                </label>
+                <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.embiggenButtons ? 'On' : 'Off' }}</span>
+            </div>
+        </div>
       </div>
 
       <!-- Connections Card -->
       <div class="connections-card card">
-        <h2 style="text-align: center; margin-top: 0; margin-bottom: 25px; color: var(--color-card-heading); font-size: 1.6em; font-family: 'Montserrat', sans-serif; font-weight: 400;">Connections 🔗</h2>
+        <h2>Connections 🔗</h2>
         
         <!-- Garmin Pairing Section -->
         <div class="setting-item device-pairing-section">
@@ -124,19 +127,21 @@
                     <div style="display: flex; align-items: center; gap: 10px; justify-content: flex-end; width: 100%;">
                         <span class="strava-status connected">Connected as <strong>{{ athleteName }}</strong></span>
                         <button @click="showStravaManagement = !showStravaManagement" class="button-secondary small" style="padding: 4px 8px; font-size: 0.85em;">
-                            {{ showStravaManagement ? 'Hide' : 'Manage' }}
+                            {{ showStravaManagement ? 'Hide ⚙️' : 'Manage ⚙️' }}
                         </button>
                     </div>
                 </template>
                 <template v-else-if="isConfigured">
-                    <span class="strava-status configured">API Configured. Ready.</span>
-                    <div class="strava-actions" style="display: flex; gap: 8px; margin-top: 5px;">
-                        <button @click="handleStravaConnect" class="button-primary small" :disabled="isStravaLoading">
-                            Connect Strava
-                        </button>
-                        <button @click="handleStravaDisconnect" class="button-secondary small" :disabled="isStravaLoading">
-                            Reset
-                        </button>
+                    <div style="display: flex; align-items: center; gap: 10px; justify-content: flex-end; width: 100%;">
+                        <span class="strava-status configured">Ready to Connect</span>
+                        <div class="strava-actions" style="display: flex; gap: 8px;">
+                            <button @click="handleStravaConnect" class="button-primary small" :disabled="isStravaLoading">
+                                Connect
+                            </button>
+                            <button @click="handleStravaDisconnect" class="button-secondary small" :disabled="isStravaLoading">
+                                Reset
+                            </button>
+                        </div>
                     </div>
                 </template>
                 <template v-else>
@@ -193,7 +198,7 @@
                 <button @click="handleStravaSync(true)" class="button-secondary small" :disabled="isStravaLoading" style="flex-grow: 1; min-width: 100px;" title="Sync entire history of runs (up to 1000 activities)">
                     Full Sync
                 </button>
-                <button @click="handleStravaDisconnect" class="button-secondary small" :disabled="isStravaLoading" style="flex-grow: 1; min-width: 100px; background-color: #dc3545; color: white; border-color: #dc3545;">
+                <button @click="handleStravaDisconnect" class="button-danger small" :disabled="isStravaLoading" style="flex-grow: 1; min-width: 100px;">
                     Disconnect
                 </button>
             </div>
@@ -202,10 +207,6 @@
         <!-- Strava Status Messages -->
         <p v-if="stravaMessage" :class="stravaStatusType === 'success' ? 'success-text' : 'error-text'" style="font-size: 0.85em; margin-top: 5px; text-align: right; font-weight: 500;">{{ stravaMessage }}</p>
 
-
-
-        <button @click="handleLogout" class="logout-button">Logout</button>
-        
       </div>
 
       <div v-if="isLoadingStats" class="loading-message card">
@@ -682,18 +683,34 @@ const handlePairing = async () => {
   border: 1px solid var(--color-card-border);
 }
 
+.card h2 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 25px;
+  color: var(--color-card-heading);
+  font-size: 1.6em;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+}
 
+/* Account Card Layout */
+.account-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 15px;
+}
 
-.user-details p {
-  margin: 10px 0;
+.account-details p {
+  margin: 5px 0;
   font-size: 1.1em;
   color: var(--color-card-text);
 }
-.user-details p strong {
-    color: var(--color-card-heading);
-  min-width: 80px; /* Adjusted slightly */
-  display: inline-block;
 
+.account-details p strong {
+  color: var(--color-card-heading);
+  min-width: 70px;
+  display: inline-block;
 }
 
 .user-photo {
@@ -701,14 +718,99 @@ const handlePairing = async () => {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  margin: 0 auto 15px auto;
+  margin: 0;
   border: 2px solid var(--color-card-border);
   object-fit: cover;
 }
 
+/* Button Styles to match the rest of the app */
+.button-primary {
+  background-color: var(--color-primary, #007bff);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: background-color 0.2s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-dark, #0056b3);
+}
+
+.button-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.button-primary:disabled, .button-secondary:disabled, .button-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-secondary {
+  background-color: transparent;
+  color: var(--color-text);
+  border: 1px solid var(--color-card-border);
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 500;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-secondary:hover:not(:disabled) {
+  background-color: var(--color-card-mute);
+  border-color: var(--color-card-text);
+}
+
+.button-secondary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.button-danger {
+  background-color: var(--color-danger, #dc3545);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: background-color 0.2s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-danger:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.button-danger:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.button-primary.small, .button-secondary.small, .button-danger.small {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 4px;
+}
+
 .logout-button {
   display: block;
-  margin: 25px auto 10px auto;
+  margin: 15px auto 0 auto;
   padding: 10px 20px;
   font-size: 1em;
   font-weight: bold;
@@ -723,15 +825,6 @@ const handlePairing = async () => {
 
 .logout-button:hover {
   background-color: #c82333;
-}
-
-/* Lifetime Stats Card */
-.lifetime-stats-card h2 {
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 25px;
-  color: var(--color-card-heading);
-  font-size: 1.6em;
 }
 
 .lifetime-stats-card ul {
@@ -1016,10 +1109,6 @@ select {
     font-size: 1.1em;
 }
 
-.button-primary.small {
-    padding: 8px 12px;
-    font-size: 0.9em;
-}
 
 .pairing-result {
     font-size: 1.2em;
