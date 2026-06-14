@@ -28,6 +28,22 @@
         </div>
       </div>
 
+      <!-- Heatmap Legend -->
+      <div class="calendar-legend">
+        <div class="legend-item">
+          <span class="legend-color-box weights"></span>
+          <span>Weights (LiftLogic)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color-box cardio"></span>
+          <span>Cardio (Strava)</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-color-box combined"></span>
+          <span>Weights + Cardio</span>
+        </div>
+      </div>
+
       <div v-if="activeTooltip"
            class="calendar-tooltip"
            :style="{ top: (activeTooltip.event.clientY + 10) + 'px', left: (activeTooltip.event.clientX + 10) + 'px' }">
@@ -205,16 +221,16 @@ const uniqueExercises = computed(() => {
 const activeTooltip = ref<{ date: string; text: string; event: MouseEvent } | null>(null);
 const calendarRef = ref<HTMLElement | null>(null);
 
-// Palette for workout day sequence (up to 6 days, then default)
+// Palette for workout day sequence (up to 6 days, then default) - Vibrant, saturated colors
 const daySequenceColorPalette = [
-  '#EF9A9A', // Light Red - Day 1 type
-  '#A5D6A7', // Light Green - Day 2 type
-  '#90CAF9', // Light Blue - Day 3 type
-  '#FFF59D', // Light Yellow - Day 4 type
-  '#CE93D8', // Light Purple - Day 5 type
-  '#FFCC80', // Light Orange - Day 6 type
+  '#FF5252', // Vibrant Red - Day 1 type
+  '#2ECC71', // Vibrant Green - Day 2 type
+  '#2979FF', // Vibrant Blue - Day 3 type
+  '#FFD600', // Vibrant Gold/Yellow - Day 4 type
+  '#9C27B0', // Vibrant Purple - Day 5 type
+  '#FF9100', // Vibrant Orange - Day 6 type
 ];
-const defaultWorkoutColor = 'hsla(160, 100%, 37%, 0.8)'; // Default (e.g., Vue green)
+const defaultWorkoutColor = '#10B981'; // Vibrant Vue/emerald green
 
 const calendarWeeks = computed<CalendarDay[][]>(() => {
   return generateCalendarGridData(calendarIndex, 52); // Show last 52 weeks (1 year)
@@ -635,6 +651,45 @@ onUnmounted(() => {
 
 .calendar-day-cell.today {
   border: 1px solid var(--color-heading); 
+}
+
+/* Heatmap Legend */
+.calendar-legend {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+  font-size: 0.8em;
+  opacity: 0.85;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text);
+}
+
+.legend-color-box {
+  width: 12px;
+  height: 12px;
+  border-radius: 2.5px;
+  border: 1px solid var(--color-card-border);
+  flex-shrink: 0;
+}
+
+.legend-color-box.weights {
+  background: linear-gradient(90deg, #FF5252, #2ECC71, #2979FF);
+}
+
+.legend-color-box.cardio {
+  background-color: #FC4C02;
+}
+
+.legend-color-box.combined {
+  background: linear-gradient(135deg, #2ECC71 50%, #FC4C02 50%);
 }
 
 .calendar-tooltip {
