@@ -120,9 +120,6 @@
         <h3 class="input-section-title">
           <span class="warning-icon">💪</span> Log Actual Reps
         </h3>
-        <p class="input-section-subtitle">
-          Please log the actual reps completed.
-        </p>
 
         <div v-for="item in setsRequiringRepInput" :key="item.index" class="rep-input-row-item" :class="{ 'is-confirmed-row': confirmedRepsMap[item.index] }">
           <div class="rep-input-meta">
@@ -190,9 +187,6 @@
           <h3 class="input-section-title">
             <span class="warning-icon">⚠️</span> Action Required: Log Actual Reps
           </h3>
-          <p class="input-section-subtitle">
-            Please log the actual reps completed for the sets below to save your progress correctly.
-          </p>
 
           <div v-for="item in setsRequiringRepInput" :key="item.index" class="rep-input-row-item" :class="{ 'is-confirmed-row': confirmedRepsMap[item.index] }">
             <div class="rep-input-meta">
@@ -2745,17 +2739,10 @@ const saveEditedWorkout = () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 5px 0;
+  margin: 0 0 15px 0;
   font-size: 1.2em;
   font-weight: 600;
   color: var(--color-warning);
-}
-
-.input-section-subtitle {
-  font-size: 0.9em;
-  margin: 0 0 15px 0;
-  color: var(--color-card-text);
-  opacity: 0.9;
 }
 
 .rep-input-row-item {
