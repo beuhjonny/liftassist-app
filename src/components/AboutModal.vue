@@ -14,6 +14,11 @@
              <p class="welcome-subtitle" style="margin-bottom: 15px;">Get Stronger Progressively.</p>
         </div>
         <ManifestoComponent />
+        <div class="modal-footer-links" style="text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px dashed var(--color-card-border); font-size: 0.85em; display: flex; justify-content: center; gap: 15px;">
+          <router-link to="/privacy" @click="closeModal" style="color: #007bff; text-decoration: underline; padding: 0;">Privacy Policy</router-link>
+          <span style="opacity: 0.5;">|</span>
+          <router-link to="/terms" @click="closeModal" style="color: #007bff; text-decoration: underline; padding: 0;">Terms of Service</router-link>
+        </div>
       </div>
     </div>
   </div>

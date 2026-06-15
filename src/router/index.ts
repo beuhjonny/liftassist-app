@@ -95,6 +95,16 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue') // Dynamic import
+  },
+  {
+    path: '/privacy',
+    name: 'Privacy',
+    component: () => import('../views/Privacy.vue')
+  },
+  {
+    path: '/terms',
+    name: 'Terms',
+    component: () => import('../views/Terms.vue')
   }
 ];
 
