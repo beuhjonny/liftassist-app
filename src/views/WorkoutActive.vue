@@ -121,46 +121,41 @@
           <span class="warning-icon">💪</span> Log Actual Reps
         </h3>
         <p class="input-section-subtitle">
-          Please log the actual reps completed for this set.
+          Please log the actual reps completed.
         </p>
 
-        <div v-for="item in setsRequiringRepInput" :key="item.index" class="rep-input-card" :class="{ 'is-confirmed': confirmedRepsMap[item.index] }">
-          <div class="rep-input-header">
+        <div v-for="item in setsRequiringRepInput" :key="item.index" class="rep-input-row-item" :class="{ 'is-confirmed-row': confirmedRepsMap[item.index] }">
+          <div class="rep-input-meta">
             <span class="exercise-name">{{ item.set.exerciseName }}</span>
-            <span class="set-badge">Set {{ item.set.setNumber }}</span>
-            <span class="type-badge" :class="item.set.status === 'failed' ? 'failed-badge' : 'failure-badge'">
-              {{ item.set.status === 'failed' ? 'Failed Attempt' : 'To Failure' }}
+            <span class="prescribed-details">
+              Prescribed: Set {{ item.set.setNumber }} — {{ item.set.prescribedReps }} reps @ {{ item.set.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}
+              <span v-if="item.set.status === 'failed'" class="status-textfailed">(Failed Attempt)</span>
+              <span v-else class="status-textfailure">(To Failure)</span>
             </span>
           </div>
           
-          <div class="rep-input-body">
-            <div class="prescribed-details">
-              Prescribed: {{ item.set.prescribedReps }} reps @ {{ item.set.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}
-            </div>
+          <div class="input-control-row">
+            <button type="button" class="btn-adjust minus" @click="decrementRepInput(item.index)">−</button>
+            <input 
+              type="number" 
+              :id="'reps-input-' + item.index" 
+              v-model.number="repsCompletedInputMap[item.index]" 
+              min="0"
+              placeholder="Reps"
+              class="rep-number-input"
+              @input="onRepInputChanged(item.index)"
+            />
+            <button type="button" class="btn-adjust plus" @click="incrementRepInput(item.index)">+</button>
             
-            <div class="input-control-row">
-              <button type="button" class="btn-adjust minus" @click="decrementRepInput(item.index)">−</button>
-              <input 
-                type="number" 
-                :id="'reps-input-' + item.index" 
-                v-model.number="repsCompletedInputMap[item.index]" 
-                min="0"
-                placeholder="Reps"
-                class="rep-number-input"
-                @input="onRepInputChanged(item.index)"
-              />
-              <button type="button" class="btn-adjust plus" @click="incrementRepInput(item.index)">+</button>
-              
-              <button 
-                type="button" 
-                class="btn-confirm-reps" 
-                :class="{ 'confirmed': confirmedRepsMap[item.index] }"
-                @click="confirmReps(item.index)"
-              >
-                <span v-if="confirmedRepsMap[item.index]">Confirmed ✓</span>
-                <span v-else>Confirm</span>
-              </button>
-            </div>
+            <button 
+              type="button" 
+              class="btn-confirm-reps" 
+              :class="{ 'confirmed': confirmedRepsMap[item.index] }"
+              @click="confirmReps(item.index)"
+            >
+              <span v-if="confirmedRepsMap[item.index]">Confirmed ✓</span>
+              <span v-else>Confirm</span>
+            </button>
           </div>
         </div>
       </div>
@@ -199,46 +194,37 @@
             Please log the actual reps completed for the sets below to save your progress correctly.
           </p>
 
-          <div v-for="item in setsRequiringRepInput" :key="item.index" class="rep-input-card" :class="{ 'is-confirmed': confirmedRepsMap[item.index] }">
-            <div class="rep-input-header">
+          <div v-for="item in setsRequiringRepInput" :key="item.index" class="rep-input-row-item" :class="{ 'is-confirmed-row': confirmedRepsMap[item.index] }">
+            <div class="rep-input-meta">
               <span class="exercise-name">{{ item.set.exerciseName }}</span>
-              <span class="set-badge">Set {{ item.set.setNumber }}</span>
-              <span class="type-badge" :class="item.set.status === 'failed' ? 'failed-badge' : 'failure-badge'">
-                {{ item.set.status === 'failed' ? 'Failed Attempt' : 'To Failure' }}
+              <span class="prescribed-details">
+                Prescribed: Set {{ item.set.setNumber }} — {{ item.set.prescribedReps }} reps @ {{ item.set.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}
+                <span v-if="item.set.status === 'failed'" class="status-textfailed">(Failed Attempt)</span>
+                <span v-else class="status-textfailure">(To Failure)</span>
               </span>
             </div>
             
-            <div class="rep-input-body">
-              <div class="prescribed-details">
-                Prescribed: {{ item.set.prescribedReps }} reps @ {{ item.set.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}
-              </div>
+            <div class="input-control-row">
+              <button type="button" class="btn-adjust minus" @click="decrementRepInput(item.index)">−</button>
+              <input 
+                type="number" 
+                v-model.number="repsCompletedInputMap[item.index]" 
+                min="0"
+                placeholder="Reps"
+                class="rep-number-input"
+                @input="onRepInputChanged(item.index)"
+              />
+              <button type="button" class="btn-adjust plus" @click="incrementRepInput(item.index)">+</button>
               
-              <div class="input-control-row">
-                <button type="button" class="btn-adjust minus" @click="decrementRepInput(item.index)">−</button>
-                <input 
-                  type="number" 
-                  v-model.number="repsCompletedInputMap[item.index]" 
-                  min="0"
-                  placeholder="Reps"
-                  class="rep-number-input"
-                  @input="onRepInputChanged(item.index)"
-                />
-                <button type="button" class="btn-adjust plus" @click="incrementRepInput(item.index)">+</button>
-                
-                <button 
-                  type="button" 
-                  class="btn-confirm-reps" 
-                  :class="{ 'confirmed': confirmedRepsMap[item.index] }"
-                  @click="confirmReps(item.index)"
-                >
-                  <span v-if="confirmedRepsMap[item.index]">Confirmed ✓</span>
-                  <span v-else>Confirm</span>
-                </button>
-              </div>
-            </div>
-            
-            <div class="rep-input-footer" v-if="!item.set.status || item.set.status === 'done'">
-               <span class="helper-text">"To Failure" sets require recording the actual reps achieved to failure.</span>
+              <button 
+                type="button" 
+                class="btn-confirm-reps" 
+                :class="{ 'confirmed': confirmedRepsMap[item.index] }"
+                @click="confirmReps(item.index)"
+              >
+                <span v-if="confirmedRepsMap[item.index]">Confirmed ✓</span>
+                <span v-else>Confirm</span>
+              </button>
             </div>
           </div>
         </div>
@@ -2772,64 +2758,50 @@ const saveEditedWorkout = () => {
   opacity: 0.9;
 }
 
-.rep-input-card {
-  background-color: var(--color-card-mute);
-  border: 1px solid var(--color-card-border);
-  border-radius: 8px;
-  padding: 15px;
-  margin-bottom: 12px;
-  transition: all 0.25s ease;
-}
-
-.rep-input-card.is-confirmed {
-  border-color: var(--color-success);
-  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.1);
-}
-
-.rep-input-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
-}
-
-.exercise-name {
-  font-weight: 600;
-  font-size: 1.05em;
-  color: var(--color-card-heading);
-}
-
-.set-badge {
-  background-color: var(--color-background-soft);
-  color: var(--color-card-text);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  font-weight: 500;
-}
-
-.type-badge {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  font-weight: 600;
-}
-
-.failed-badge {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.failure-badge {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.rep-input-body {
+.rep-input-row-item {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--color-card-border);
+}
+
+.rep-input-row-item:last-child {
+  border-bottom: none;
+}
+
+.rep-input-row-item.is-confirmed-row {
+  opacity: 0.85;
+}
+
+.rep-input-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rep-input-meta .exercise-name {
+  font-weight: 700;
+  font-size: 1.1em;
+  color: var(--color-card-heading);
+}
+
+.rep-input-meta .prescribed-details {
+  font-size: 0.9em;
+  color: var(--color-card-text);
+  opacity: 0.85;
+}
+
+.status-textfailed {
+  color: #dc3545;
+  font-weight: 600;
+  margin-left: 5px;
+}
+
+.status-textfailure {
+  color: #ca8a04;
+  font-weight: 600;
+  margin-left: 5px;
 }
 
 .prescribed-details {
@@ -2907,16 +2879,6 @@ const saveEditedWorkout = () => {
 
 .btn-confirm-reps.confirmed {
   background-color: var(--color-success);
-}
-
-.rep-input-footer {
-  margin-top: 8px;
-}
-
-.helper-text {
-  font-size: 0.8em;
-  color: var(--color-card-text);
-  opacity: 0.75;
 }
 
 /* Embiggened Buttons */
