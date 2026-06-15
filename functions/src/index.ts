@@ -721,23 +721,80 @@ export const onWorkoutLogged = onDocumentCreated("users/{userId}/loggedWorkouts/
         const programName = workoutData.trainingProgramNameUsed || "";
         const title = `LiftLogic: ${dayName}${programName ? ` (${programName})` : ""}`;
 
-        let description = "";
+        const getExerciseEmoji = (name: string): string => {
+            const lower = name.toLowerCase();
+            if (lower.includes("bench")) return "🎯";
+            if (lower.includes("squat")) return "🏋️‍♂️";
+            if (lower.includes("deadlift")) return "🚀";
+            if (lower.includes("press")) return "💪";
+            if (lower.includes("curl")) return "🦾";
+            if (lower.includes("row") || lower.includes("pull")) return "🚣";
+            if (lower.includes("run") || lower.includes("treadmill")) return "🏃‍♂️";
+            if (lower.includes("bike") || lower.includes("cycle")) return "🚴";
+            if (lower.includes("plank")) return "🧘";
+            return "⚡";
+        };
+
+        let description = "💪 LiftLogic Weight Training Session Completed!\n\n";
+
+        let totalVolume = 0;
+        let totalSets = 0;
+        let doneSets = 0;
+        let failedSets = 0;
+        const prsCompleted: string[] = [];
+
+        if (workoutData.performedExercises && Array.isArray(workoutData.performedExercises)) {
+            workoutData.performedExercises.forEach((ex: any) => {
+                if (ex.isPR) {
+                    prsCompleted.push(ex.exerciseName);
+                }
+                if (ex.sets && Array.isArray(ex.sets)) {
+                    ex.sets.forEach((set: any) => {
+                        totalSets++;
+                        if (set.status === "failed") {
+                            failedSets++;
+                        } else {
+                            doneSets++;
+                        }
+                        if (typeof set.actualWeight === "number" && typeof set.actualReps === "number" && set.actualReps > 0) {
+                            totalVolume += (set.actualWeight * set.actualReps);
+                        }
+                    });
+                }
+            });
+        }
+
+        const duration = workoutData.durationMinutes || 0;
+        const durationStr = duration > 0 ? `${duration} mins` : "N/A";
+        const unit = workoutData.weightUnit || "lbs";
+
+        description += "📊 WORKOUT STATS:\n";
+        description += `🕒 Duration: ${durationStr}\n`;
+        description += `🏋️‍♂️ Total Volume: ${totalVolume.toLocaleString()} ${unit}\n`;
+        description += `🔢 Sets Logged: ${totalSets} (Done: ${doneSets}, Failed: ${failedSets})\n`;
+        if (prsCompleted.length > 0) {
+            description += `🏅 Personal Records: ${prsCompleted.length} (${prsCompleted.join(", ")}) 🌟\n`;
+        }
+        description += "\n";
+
         if (workoutData.overallSessionNotes) {
-            description += `${workoutData.overallSessionNotes}\n\n`;
+            description += `📝 Session Notes:\n"${workoutData.overallSessionNotes}"\n\n`;
         }
 
         if (workoutData.performedExercises && Array.isArray(workoutData.performedExercises)) {
-            description += "Exercises Completed:\n";
+            description += "🛠️ EXERCISE BREAKDOWN:\n";
             workoutData.performedExercises.forEach((ex: any) => {
-                description += `\n• ${ex.exerciseName}\n`;
+                const prSuffix = ex.isPR ? " 🏅 (PR!)" : "";
+                const emoji = getExerciseEmoji(ex.exerciseName);
+                description += `\n${emoji} ${ex.exerciseName}${prSuffix}\n`;
                 if (ex.sets && Array.isArray(ex.sets)) {
                     ex.sets.forEach((set: any, idx: number) => {
-                        const statusStr = set.status === "failed" ? " (failed)" : "";
+                        const statusIndicator = set.status === "failed" ? "❌ (failed)" : "✅";
                         const weight = set.actualWeight;
                         const reps = set.actualReps;
-                        const unit = set.weightUnit || workoutData.weightUnit || "lbs";
+                        const setUnit = set.weightUnit || unit;
                         const isTimed = set.isTimed || false;
-                        description += `  Set ${idx + 1}: ${reps}${isTimed ? " sec" : " reps"} @ ${weight} ${unit}${statusStr}\n`;
+                        description += `  Set ${idx + 1}: ${reps}${isTimed ? " sec" : " reps"} @ ${weight} ${setUnit} ${statusIndicator}\n`;
                     });
                 }
             });
@@ -757,6 +814,16 @@ export const onWorkoutLogged = onDocumentCreated("users/{userId}/loggedWorkouts/
 
         const elapsedSeconds = (workoutData.durationMinutes || 0) * 60 || 1800; // default 30 mins
 
+        const toLocalISOString = (date: Date): string => {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, "0");
+            const dd = String(date.getDate()).padStart(2, "0");
+            const hh = String(date.getHours()).padStart(2, "0");
+            const min = String(date.getMinutes()).padStart(2, "0");
+            const ss = String(date.getSeconds()).padStart(2, "0");
+            return `${yyyy}-${mm}-${dd}T${hh}:${min}:${ss}Z`;
+        };
+
         // 4. Submit to Strava endpoint
         const uploadResponse = await fetch("https://www.strava.com/api/v3/activities", {
             method: "POST",
@@ -767,7 +834,8 @@ export const onWorkoutLogged = onDocumentCreated("users/{userId}/loggedWorkouts/
             body: JSON.stringify({
                 name: title,
                 sport_type: "WeightTraining",
-                start_date_local: startDateObj.toISOString(),
+                start_date: startDateObj.toISOString(),
+                start_date_local: toLocalISOString(startDateObj),
                 elapsed_time: elapsedSeconds,
                 description: description
             })
