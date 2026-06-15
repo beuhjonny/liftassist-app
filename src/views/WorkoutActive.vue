@@ -2739,7 +2739,7 @@ const saveEditedWorkout = () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 15px 0;
+  margin: 0 0 8px 0;
   font-size: 1.2em;
   font-weight: 600;
   color: var(--color-warning);
@@ -2751,6 +2751,10 @@ const saveEditedWorkout = () => {
   gap: 10px;
   padding: 12px 0;
   border-bottom: 1px dashed var(--color-card-border);
+}
+
+.rep-input-row-item:first-of-type {
+  padding-top: 0;
 }
 
 .rep-input-row-item:last-child {
