@@ -91,32 +91,43 @@ class LiftAssistWorkoutView extends WatchUi.View {
         var day = days[_selectedDayIndex] as $.Toybox.Lang.Dictionary;
         var dayName = day.get("dayName") as $.Toybox.Lang.String;
 
-        // Header
-        dc.setColor(0x00AAFF, Graphics.COLOR_TRANSPARENT); 
+        // Header (using premium Ice Blue/Cyan)
+        dc.setColor(0x00FFFF, Graphics.COLOR_TRANSPARENT); 
         dc.drawText(w/2, h*0.2, Graphics.FONT_XTINY, programName.toUpper(), Graphics.TEXT_JUSTIFY_CENTER);
         
         // Day Name
         var isRecommended = day.get("isRecommended") as $.Toybox.Lang.Boolean;
         if (isRecommended != null && isRecommended) {
-            dc.setColor(0xFFAA00, Graphics.COLOR_TRANSPARENT); 
+            dc.setColor(0xFF9500, Graphics.COLOR_TRANSPARENT); // Premium Warm Orange
             dc.drawText(w/2, h*0.35, Graphics.FONT_XTINY, "UP NEXT", Graphics.TEXT_JUSTIFY_CENTER);
         } else {
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
         }
-        dc.drawText(w/2, h*0.48, Graphics.FONT_MEDIUM, dayName, Graphics.TEXT_JUSTIFY_CENTER);
+
+        // Auto-scale font based on day name length
+        var font = Graphics.FONT_MEDIUM;
+        var dayLen = dayName.length();
+        if (dayLen > 18) {
+            font = Graphics.FONT_XTINY;
+        } else if (dayLen > 14) {
+            font = Graphics.FONT_TINY;
+        } else if (dayLen > 10) {
+            font = Graphics.FONT_SMALL;
+        }
+        dc.drawText(w/2, h*0.48, font, dayName, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
         
-        // Animated Navigation Indicators
+        // Animated Navigation Indicators (Shifted inward from the extreme screen edges)
         if (days.size() > 1) {
             var pulse = (Math.sin(System.getTimer() / 200.0) * 4).toNumber();
-            dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-            // Up Arrow (Pulsing)
-            dc.fillPolygon([[w/2, 10-pulse], [w/2-8, 20-pulse], [w/2+8, 20-pulse]]);
-            // Down Arrow (Pulsing)
-            dc.fillPolygon([[w/2, h-10+pulse], [w/2-8, h-20+pulse], [w/2+8, h-20+pulse]]);
+            dc.setColor(0x88AABB, Graphics.COLOR_TRANSPARENT); // Premium slate-blue color
+            // Up Arrow (Pulsing, shifted from y=10 to y=25)
+            dc.fillPolygon([[w/2, 25-pulse], [w/2-8, 33-pulse], [w/2+8, 33-pulse]]);
+            // Down Arrow (Pulsing, shifted from y=h-10 to y=h-25)
+            dc.fillPolygon([[w/2, h-25+pulse], [w/2-8, h-33+pulse], [w/2+8, h-33+pulse]]);
         }
 
         // Action prompt
-        dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(0xAAAAAA, Graphics.COLOR_TRANSPARENT); // Slate gray
         dc.drawText(w/2, h*0.75, Graphics.FONT_XTINY, "Press START to begin", Graphics.TEXT_JUSTIFY_CENTER);
     }
 

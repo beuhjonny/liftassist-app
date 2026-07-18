@@ -36,6 +36,12 @@
             <div class="choice-arrow">→</div>
           </button>
         </div>
+
+        <div class="secondary-choice-actions" style="margin-top: 30px; border-top: 1px solid var(--color-card-border); padding-top: 20px; display: flex; justify-content: center; gap: 15px;">
+            <button @click="creationMode = 'fitnotes'" class="button-secondary small" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-mute); color: var(--color-card-text); cursor: pointer; font-size: 0.9em; font-weight: 500;">
+                📋 Import from FitNotes (.fitnotes)
+            </button>
+        </div>
       </div>
 
 
@@ -74,6 +80,43 @@
                 {{ isSaving ? 'Importing...' : 'Perform Import' }}
               </button>
             </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- FitNotes SQLite Import Flow -->
+      <div v-if="creationMode === 'fitnotes'" class="fitnotes-creation-flow card animate-fade-in">
+        <header class="flow-header" style="margin-bottom: 20px; text-align: left; display: flex; flex-direction: column; align-items: flex-start; gap: 5px;">
+          <button @click="creationMode = null" class="back-link" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 0; font-size: 0.95em; display: flex; align-items: center; gap: 5px; font-weight: 500;">← Back to choices</button>
+          <h2 style="margin-top: 10px; font-family: 'Montserrat', sans-serif;">FitNotes SQLite Import</h2>
+        </header>
+
+        <div class="import-routine-section card-inset" style="padding: 20px; background: var(--color-card-mute); border-radius: 8px; border: 1px solid var(--color-card-border); text-align: left;">
+          <h4 style="margin-top: 0; margin-bottom: 10px; font-weight: 600;">Select FitNotes Backup File</h4>
+          <p class="small-text" style="font-size: 0.85em; opacity: 0.8; margin-bottom: 20px; line-height: 1.4;">
+            Select your <strong>.fitnotes</strong> or <strong>.db</strong> SQLite backup file exported from the FitNotes app settings. 
+            All parsing will happen locally in your browser.
+          </p>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <input type="file" accept=".fitnotes,.db,.sqlite" @change="handleFitNotesFile" style="width: 100%; padding: 8px; border: 1px solid var(--color-card-border); border-radius: 6px; background: var(--color-card-bg); color: var(--color-card-text); font-size: 0.9em;" />
+          </div>
+
+          <div v-if="fitnotesParsedData" class="import-preview card-inset" style="margin-bottom: 20px; padding: 15px; background: var(--color-card-bg); border-radius: 6px; border: 1px solid var(--color-card-border); font-size: 0.95em;">
+             <h5 style="margin-top:0; margin-bottom: 12px; font-weight: 600; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 8px;">Backup Contents:</h5>
+             <ul style="list-style: none; padding-left: 0; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px;">
+                <li style="display: flex; align-items: center; gap: 8px;">📅 <span><strong>Workout Days Logged:</strong> {{ fitnotesParsedData.workoutsCount }}</span></li>
+                <li style="display: flex; align-items: center; gap: 8px;">🏋️ <span><strong>Unique Exercises:</strong> {{ fitnotesParsedData.exercisesCount }}</span></li>
+                <li style="display: flex; align-items: center; gap: 8px;">📋 <span><strong>Pre-defined Routines:</strong> {{ fitnotesParsedData.routinesCount }}</span></li>
+             </ul>
+          </div>
+
+          <button @click="performFitNotesImport" :disabled="isSaving || !fitnotesFile" class="button-primary button-large full-width" style="padding: 12px; font-size: 1.1em; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; width: 100%;">
+            {{ isSaving ? 'Importing... ' + importProgressStatus : '🚀 Start Import' }}
+          </button>
+          
+          <div v-if="isSaving && importProgressPercentage > 0" style="margin-top: 15px; width: 100%; background-color: var(--color-card-border); height: 10px; border-radius: 5px; overflow: hidden;">
+              <div :style="{ width: importProgressPercentage + '%' }" style="background-color: var(--color-primary); height: 100%; transition: width 0.3s ease;"></div>
           </div>
         </div>
       </div>
@@ -610,11 +653,13 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, watch, computed, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, deleteDoc, type DocumentData } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, deleteDoc, Timestamp, type DocumentData } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import useAuth from '../composables/useAuth';
 import useSettings, { type WeightUnitOption } from '../composables/useSettings';
 import useTrainingProgram from '../composables/useTrainingProgram';
+import useHistoryIndex from '../composables/useHistoryIndex';
+import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import { toDisplay, fromInput, displayUnit } from '../utils/weight';
 import {
   type ExerciseProgress,
@@ -622,7 +667,10 @@ import {
   type ExerciseConfigForDisplay,
   type WorkoutDay,
   type TrainingProgram,
-  type SessionExercise
+  type SessionExercise,
+  type LoggedWorkout,
+  type PerformedExerciseInLog,
+  type LoggedSetData
 } from '../types';
 import draggable from 'vuedraggable';
 
@@ -649,6 +697,9 @@ const {
   createProgram,
   setActiveProgram
 } = useTrainingProgram();
+
+const { fetchCalendarIndex: rebuildCalendarIndex } = useHistoryIndex();
+const { invalidateCache: invalidateWorkoutCache } = useLoggedWorkouts();
 
 const isLoading = computed(() => isProgramLoading.value);
 const isSaving = ref(false);
@@ -704,9 +755,20 @@ const pastedRoutineJson = ref('');
 const showExistingRoutineHelpDialog = ref(false);
 const showNewRoutineHelpDialog = ref(false);
 
+// --- FitNotes SQLite Import State ---
+const fitnotesFile = ref<File | null>(null);
+const fitnotesParsedData = ref<{
+  workoutsCount: number;
+  exercisesCount: number;
+  routinesCount: number;
+  db: any;
+} | null>(null);
+const importProgressStatus = ref('');
+const importProgressPercentage = ref(0);
+
 // --- Overall Edit Mode State ---
 const isInOverallEditMode = ref(false);
-const creationMode = ref<'manual' | 'ai' | null>(null);
+const creationMode = ref<'manual' | 'ai' | 'fitnotes' | null>(null);
 
 // --- Routine Name/Description Edit State ---
 const showEditProgramDetailsForm = ref(false);
@@ -1084,6 +1146,772 @@ const importPastedRoutine = async () => {
  } catch (e: any) {
     console.error("Import error:", e);
     error.value = "Failed to import routine. " + (e.message || "Unknown error.");
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+const loadSqlJs = async (): Promise<any> => {
+  if ((window as any).initSqlJs) return (window as any).initSqlJs;
+  
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js';
+    script.onload = () => {
+      resolve((window as any).initSqlJs);
+    };
+    script.onerror = (e) => reject(new Error("Failed to load sql.js from CDN. Please check your internet connection."));
+    document.head.appendChild(script);
+  });
+};
+
+const handleFitNotesFile = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (!target.files || target.files.length === 0) {
+    fitnotesFile.value = null;
+    fitnotesParsedData.value = null;
+    return;
+  }
+  
+  fitnotesFile.value = target.files[0];
+  error.value = null;
+  isSaving.value = true;
+  importProgressStatus.value = "Initializing SQLite parser...";
+  
+  try {
+    const initSqlJs = await loadSqlJs();
+    const initSql = await initSqlJs({
+      locateFile: (file: string) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`
+    });
+    
+    const reader = new FileReader();
+    const arrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(fitnotesFile.value!);
+    });
+    
+    const uInt8Array = new Uint8Array(arrayBuffer);
+    const dbObj = new initSql.Database(uInt8Array);
+    
+    // Count workouts (unique dates in training_log)
+    const workoutsRes = dbObj.exec("SELECT COUNT(DISTINCT date) FROM training_log");
+    const workoutsCount = workoutsRes[0]?.values[0]?.[0] || 0;
+    
+    // Count exercises
+    const exercisesRes = dbObj.exec("SELECT COUNT(*) FROM exercise");
+    const exercisesCount = exercisesRes[0]?.values[0]?.[0] || 0;
+    
+    // Count routines
+    const routinesRes = dbObj.exec("SELECT COUNT(*) FROM Routine");
+    const routinesCount = routinesRes[0]?.values[0]?.[0] || 0;
+    
+    fitnotesParsedData.value = {
+      workoutsCount,
+      exercisesCount,
+      routinesCount,
+      db: dbObj
+    };
+    
+  } catch (e: any) {
+    console.error("Error reading FitNotes SQLite backup:", e);
+    error.value = "Error reading FitNotes backup: " + e.message;
+    fitnotesFile.value = null;
+    fitnotesParsedData.value = null;
+  } finally {
+    isSaving.value = false;
+  }
+};
+
+const getWords = (s: string) => s.toLowerCase().replace(/[^a-z0-9\s]/g, '').split(/\s+/).filter(Boolean);
+const jaccardSimilarity = (s1: string, s2: string): number => {
+  const w1 = new Set(getWords(s1));
+  const w2 = new Set(getWords(s2));
+  const intersection = new Set([...w1].filter(x => w2.has(x)));
+  const union = new Set([...w1, ...w2]);
+  if (union.size === 0) return 0;
+  return intersection.size / union.size;
+};
+
+const performFitNotesImport = async () => {
+  if (!user.value || !user.value.uid || !fitnotesParsedData.value) {
+    error.value = "No data to import.";
+    return;
+  }
+  
+  isSaving.value = true;
+  error.value = null;
+  importProgressStatus.value = "Analyzing exercises...";
+  importProgressPercentage.value = 5;
+  
+  const dbObj = fitnotesParsedData.value.db;
+  const uid = user.value.uid;
+  
+  try {
+    // 1. Fetch all exercises and categories from SQLite
+    const exerciseQuery = dbObj.exec(`
+      SELECT e._id, e.name, c.name as category_name 
+      FROM exercise e
+      JOIN Category c ON e.category_id = c._id
+    `);
+    
+    const exerciseMap = new Map<number, { name: string, category: string }>();
+    if (exerciseQuery.length > 0 && exerciseQuery[0].values) {
+      exerciseQuery[0].values.forEach((row: any) => {
+        exerciseMap.set(row[0], { name: row[1], category: row[2] });
+      });
+    }
+    
+    // Fetch all logs from training_log to inspect history
+    const logsQuery = dbObj.exec(`
+      SELECT t.date, t.exercise_id, t.metric_weight, t.reps, t.unit, t.is_personal_record, t.distance, t.duration_seconds, wt.start_date_time, wt.end_date_time
+      FROM training_log t
+      LEFT JOIN WorkoutTime wt ON t.date = wt.workout_date
+      ORDER BY t.date ASC, t._id ASC
+    `);
+    
+    interface FitNotesSqlRow {
+      dateStr: string;
+      exerciseId: number;
+      weightLbs: number;
+      reps: number;
+      isPR: boolean;
+      distance: number;
+      durationSeconds: number;
+      startTimeStr?: string;
+      endTimeStr?: string;
+    }
+    
+    const rawLogs: FitNotesSqlRow[] = [];
+    if (logsQuery.length > 0 && logsQuery[0].values && logsQuery[0].values.length > 0) {
+      logsQuery[0].values.forEach((row: any) => {
+        const dateStr = row[0];
+        const exerciseId = row[1];
+        const metricWeight = row[2];
+        const reps = row[3];
+        const unit = row[4];
+        const isPR = row[5] === 1;
+        const distance = row[6] || 0;
+        const durationSeconds = row[7] || 0;
+        const startTimeStr = row[8] || undefined;
+        const endTimeStr = row[9] || undefined;
+        
+        // Convert metricWeight (kg) to LBS
+        const weightLbs = Math.round(metricWeight * 2.20462262 * 100) / 100;
+        
+        rawLogs.push({
+          dateStr,
+          exerciseId,
+          weightLbs,
+          reps,
+          isPR,
+          distance,
+          durationSeconds,
+          startTimeStr,
+          endTimeStr
+        });
+      });
+    }
+    
+    // Group logs by Date
+    const logsByDate = new Map<string, FitNotesSqlRow[]>();
+    rawLogs.forEach(row => {
+      if (!logsByDate.has(row.dateStr)) {
+        logsByDate.set(row.dateStr, []);
+      }
+      logsByDate.get(row.dateStr)!.push(row);
+    });
+    
+    const datesSorted = Array.from(logsByDate.keys()).sort();
+    
+    // 2. Fetch routines from SQLite
+    const routinesQuery = dbObj.exec("SELECT _id, name, notes FROM Routine");
+    const importedRoutines: TrainingProgram[] = [];
+    const workoutDaysToSaveList: { programId: string, days: WorkoutDay[] }[] = [];
+    
+    if (routinesQuery.length > 0 && routinesQuery[0].values && routinesQuery[0].values.length > 0) {
+      importProgressStatus.value = "Importing routines...";
+      importProgressPercentage.value = 10;
+      
+      for (const rRow of routinesQuery[0].values) {
+        const routineId = rRow[0];
+        const routineName = rRow[1];
+        const routineNotes = rRow[2] || '';
+        
+        // Fetch sections for this routine
+        const sectionsQuery = dbObj.exec(`
+          SELECT _id, name, sort_order 
+          FROM RoutineSection 
+          WHERE routine_id = ${routineId}
+          ORDER BY sort_order ASC
+        `);
+        
+        const workoutDays: WorkoutDay[] = [];
+        if (sectionsQuery.length > 0 && sectionsQuery[0].values && sectionsQuery[0].values.length > 0) {
+          for (const sRow of sectionsQuery[0].values) {
+            const sectionId = sRow[0];
+            const sectionName = sRow[1];
+            const sectionOrder = sRow[2];
+            
+            // Fetch exercises for this section
+            const rseQuery = dbObj.exec(`
+              SELECT rse._id, rse.exercise_id, rse.sort_order
+              FROM RoutineSectionExercise rse
+              WHERE rse.routine_section_id = ${sectionId}
+              ORDER BY rse.sort_order ASC
+            `);
+            
+            const exercises: ExerciseConfigForDisplay[] = [];
+            if (rseQuery.length > 0 && rseQuery[0].values && rseQuery[0].values.length > 0) {
+              for (const rseRow of rseQuery[0].values) {
+                const rseId = rseRow[0];
+                const exerciseId = rseRow[1];
+                const exDetails = exerciseMap.get(exerciseId);
+                if (!exDetails) continue;
+                
+                // Fuzzy match to check if this routine exercise exists under a slightly different name in the logs
+                const hasLogs = rawLogs.some(l => l.exerciseId === exerciseId);
+                let chosenExerciseName = exDetails.name;
+                
+                if (!hasLogs) {
+                  let bestMatchName = exDetails.name;
+                  let maxSimilarity = 0;
+                  
+                  exerciseMap.forEach((otherExDetails, otherExId) => {
+                    const otherHasLogs = rawLogs.some(l => l.exerciseId === otherExId);
+                    if (otherHasLogs) {
+                      const sim = jaccardSimilarity(exDetails.name, otherExDetails.name);
+                      if (sim > maxSimilarity) {
+                        maxSimilarity = sim;
+                        bestMatchName = otherExDetails.name;
+                      }
+                    }
+                  });
+                  
+                  if (maxSimilarity >= 0.50) {
+                    chosenExerciseName = bestMatchName;
+                  }
+                }
+                
+                // Fetch sets in this routine exercise
+                const setsQuery = dbObj.exec(`
+                  SELECT metric_weight, reps, sort_order, unit
+                  FROM RoutineSectionExerciseSet
+                  WHERE routine_section_exercise_id = ${rseId}
+                  ORDER BY sort_order ASC
+                `);
+                
+                let targetSets = 3;
+                let avgReps = 10;
+                let startingWeight = 45;
+                
+                if (setsQuery.length > 0 && setsQuery[0].values && setsQuery[0].values.length > 0) {
+                  targetSets = setsQuery[0].values.length;
+                  const repsList = setsQuery[0].values.map((s: any) => s[1]);
+                  avgReps = Math.round(repsList.reduce((a: number, b: number) => a + b, 0) / repsList.length) || 10;
+                  
+                  // Convert weight from kg to lbs
+                  const weightsLbs = setsQuery[0].values.map((s: any) => s[0] * 2.20462262);
+                  startingWeight = weightsLbs.length > 0 ? Math.round(weightsLbs[0] * 10) / 10 : 45;
+                }
+                
+                let minReps = 8;
+                let maxReps = 12;
+                if (avgReps <= 5) { minReps = 5; maxReps = 5; }
+                else if (avgReps <= 8) { minReps = 6; maxReps = 8; }
+                else if (avgReps <= 10) { minReps = 8; maxReps = 10; }
+                else if (avgReps <= 12) { minReps = 8; maxReps = 12; }
+                else { minReps = 10; maxReps = 15; }
+                
+                const newExId = doc(collection(db, '_')).id;
+                exercises.push({
+                  id: newExId,
+                  exerciseName: chosenExerciseName,
+                  targetSets,
+                  minReps,
+                  maxReps,
+                  repOverloadStep: 2,
+                  weightIncrement: 5,
+                  customRestSeconds: null,
+                  notesForExercise: null,
+                  enableProgression: true,
+                  isTimed: false,
+                  startingWeight
+                } as any);
+              }
+            }
+            
+            const newDayId = doc(collection(db, '_')).id;
+            workoutDays.push({
+              id: newDayId,
+              dayName: sectionName,
+              order: sectionOrder + 1,
+              color: daySequenceColorPalette[workoutDays.length % daySequenceColorPalette.length] || '#10B981',
+              exercises
+            });
+          }
+        }
+        
+        const newProgramId = doc(collection(db, '_')).id;
+        importedRoutines.push({
+          id: newProgramId,
+          programName: routineName,
+          description: routineNotes || `Imported from FitNotes routine on ${new Date().toLocaleDateString()}`,
+          workoutDays
+        });
+        
+        workoutDaysToSaveList.push({ programId: newProgramId, days: workoutDays });
+      }
+    }
+    
+    // Logs and datesSorted are already prepared at the beginning of the function
+    
+    // Fallback: If no routines defined in SQLite, run Jaccard clustering on history
+    if (importedRoutines.length === 0 && datesSorted.length > 0) {
+      importProgressStatus.value = "Reconstructing routines from history...";
+      importProgressPercentage.value = 15;
+      
+      const workoutDaySignatures = datesSorted.map(dateStr => {
+        const rows = logsByDate.get(dateStr)!;
+        const exNames = rows.map(r => exerciseMap.get(r.exerciseId)?.name).filter(Boolean) as string[];
+        return {
+          dateStr,
+          exercises: [...new Set(exNames)]
+        };
+      }).filter(s => s.exercises.length >= 2);
+      
+      const clusters: { exercises: Set<string>; dates: string[]; dayName: string }[] = [];
+      
+      workoutDaySignatures.forEach(sig => {
+        const sigSet = new Set(sig.exercises);
+        let bestMatchIdx = -1;
+        let maxSim = 0;
+        
+        clusters.forEach((c, idx) => {
+          const intersection = new Set([...sigSet].filter(x => c.exercises.has(x)));
+          const union = new Set([...sigSet, ...c.exercises]);
+          const sim = intersection.size / union.size;
+          if (sim > maxSim) {
+            maxSim = sim;
+            bestMatchIdx = idx;
+          }
+        });
+        
+        if (maxSim >= 0.45 && bestMatchIdx !== -1) {
+          sig.exercises.forEach(e => clusters[bestMatchIdx].exercises.add(e));
+          clusters[bestMatchIdx].dates.push(sig.dateStr);
+        } else {
+          clusters.push({
+            exercises: sigSet,
+            dates: [sig.dateStr],
+            dayName: ''
+          });
+        }
+      });
+      
+      const topClusters = clusters.sort((a, b) => b.dates.length - a.dates.length).slice(0, 6);
+      
+      // Name clusters based on category
+      topClusters.forEach((c, index) => {
+        const categoryCounts: { [key: string]: number } = {};
+        let totalCount = 0;
+        
+        c.dates.forEach(dateStr => {
+          const rows = logsByDate.get(dateStr)!;
+          rows.forEach(r => {
+            const exDetails = exerciseMap.get(r.exerciseId);
+            if (exDetails && c.exercises.has(exDetails.name)) {
+              categoryCounts[exDetails.category] = (categoryCounts[exDetails.category] || 0) + 1;
+              totalCount++;
+            }
+          });
+        });
+        
+        let primaryCategory = '';
+        let maxPct = 0;
+        for (const cat in categoryCounts) {
+          const pct = categoryCounts[cat] / totalCount;
+          if (pct > maxPct) {
+            maxPct = pct;
+            primaryCategory = cat;
+          }
+        }
+        
+        if (maxPct >= 0.5 && primaryCategory) {
+          if (['chest', 'shoulders', 'triceps'].includes(primaryCategory.toLowerCase())) {
+            c.dayName = `Push (${primaryCategory})`;
+          } else if (['back', 'biceps'].includes(primaryCategory.toLowerCase())) {
+            c.dayName = `Pull (${primaryCategory})`;
+          } else if (['legs', 'quads', 'calves', 'glutes', 'hamstrings'].includes(primaryCategory.toLowerCase())) {
+            c.dayName = `Legs (${primaryCategory})`;
+          } else {
+            c.dayName = `${primaryCategory} Day`;
+          }
+        } else {
+          c.dayName = `Imported Session ${String.fromCharCode(65 + index)}`;
+        }
+      });
+      
+      if (topClusters.length === 0) {
+        const allExNames = new Set<string>();
+        exerciseMap.forEach(v => allExNames.add(v.name));
+        topClusters.push({
+          exercises: allExNames,
+          dates: datesSorted,
+          dayName: 'Imported Session A'
+        });
+      }
+      
+      const fallbackWorkoutDays = topClusters.map((c, index) => {
+        const dayId = doc(collection(db, '_')).id;
+        
+        const exercises: ExerciseConfigForDisplay[] = Array.from(c.exercises).map(exName => {
+          const exId = doc(collection(db, '_')).id;
+          
+          const setCounts: number[] = [];
+          const repsList: number[] = [];
+          
+          c.dates.forEach(dateStr => {
+            const rows = logsByDate.get(dateStr)!;
+            const exRows = rows.filter(r => exerciseMap.get(r.exerciseId)?.name === exName);
+            if (exRows.length > 0) {
+              setCounts.push(exRows.length);
+              exRows.forEach(r => repsList.push(r.reps));
+            }
+          });
+          
+          const setCountsFreq: { [key: number]: number } = {};
+          setCounts.forEach(c => setCountsFreq[c] = (setCountsFreq[c] || 0) + 1);
+          let targetSets = 3;
+          let maxSetsFreq = 0;
+          for (const count in setCountsFreq) {
+            if (setCountsFreq[count] > maxSetsFreq) {
+              maxSetsFreq = setCountsFreq[count];
+              targetSets = parseInt(count);
+            }
+          }
+          
+          const avgReps = repsList.length > 0 ? Math.round(repsList.reduce((a: number, b: number) => a + b, 0) / repsList.length) : 10;
+          let minReps = 8;
+          let maxReps = 12;
+          if (avgReps <= 5) { minReps = 5; maxReps = 5; }
+          else if (avgReps <= 8) { minReps = 6; maxReps = 8; }
+          else if (avgReps <= 10) { minReps = 8; maxReps = 10; }
+          else if (avgReps <= 12) { minReps = 8; maxReps = 12; }
+          else { minReps = 10; maxReps = 15; }
+          
+          return {
+            id: exId,
+            exerciseName: exName,
+            targetSets,
+            minReps,
+            maxReps,
+            repOverloadStep: 2,
+            weightIncrement: 5,
+            customRestSeconds: null,
+            notesForExercise: null,
+            enableProgression: true,
+            isTimed: false
+          };
+        });
+        
+        return {
+          id: dayId,
+          dayName: c.dayName,
+          order: index + 1,
+          color: daySequenceColorPalette[index % daySequenceColorPalette.length] || '#10B981',
+          exercises
+        };
+      });
+      
+      const fallbackProgramId = doc(collection(db, '_')).id;
+      importedRoutines.push({
+        id: fallbackProgramId,
+        programName: "Imported from FitNotes",
+        description: `Automatically reconstructed on ${new Date().toLocaleDateString()} from your FitNotes log.`,
+        workoutDays: fallbackWorkoutDays
+      });
+      
+      workoutDaysToSaveList.push({ programId: fallbackProgramId, days: fallbackWorkoutDays });
+    }
+    
+    // Save all training programs to Firestore
+    importProgressStatus.value = "Saving routines...";
+    importProgressPercentage.value = 25;
+    
+    for (const prog of importedRoutines) {
+      const progDocRef = doc(db, 'users', uid, 'trainingPrograms', prog.id!);
+      const daysToSave = prog.workoutDays.map(day => ({
+        ...day,
+        exercises: day.exercises.map(ex => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { currentPrescribedReps, currentPrescribedWeight, startingWeight, ...config } = ex as any;
+          return config as ExerciseConfig;
+        })
+      }));
+      
+      await setDoc(progDocRef, {
+        programName: prog.programName,
+        description: prog.description,
+        workoutDays: daysToSave,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    }
+    
+    // Set first routine as active if none is set
+    if (!settings.value.activeProgramId && importedRoutines.length > 0) {
+      await saveSettings({ activeProgramId: importedRoutines[0].id });
+    }
+    
+    // 3. Import Workout Logs History
+    importProgressStatus.value = "Preparing workout history...";
+    importProgressPercentage.value = 35;
+    
+    const loggedWorkoutsToSave: LoggedWorkout[] = [];
+    const mainProgram = importedRoutines[0];
+    const mainDays = mainProgram ? mainProgram.workoutDays : [];
+    
+    datesSorted.forEach(dateStr => {
+      const rows = logsByDate.get(dateStr)!;
+      const workoutId = doc(collection(db, '_')).id;
+      
+      // Group rows by exerciseId to aggregate sets
+      const exerciseRowsMap = new Map<number, FitNotesSqlRow[]>();
+      rows.forEach(r => {
+        if (!exerciseRowsMap.has(r.exerciseId)) {
+          exerciseRowsMap.set(r.exerciseId, []);
+        }
+        exerciseRowsMap.get(r.exerciseId)!.push(r);
+      });
+      
+      // Determine best day match in the routine
+      let bestDayMatch = mainDays[0];
+      let maxOverlap = 0;
+      const workoutExNames = Array.from(exerciseRowsMap.keys()).map(id => exerciseMap.get(id)?.name).filter(Boolean) as string[];
+      
+      mainDays.forEach(day => {
+        const dayExNames = day.exercises.map(e => e.exerciseName);
+        const overlap = workoutExNames.filter(name => dayExNames.includes(name)).length;
+        if (overlap > maxOverlap) {
+          maxOverlap = overlap;
+          bestDayMatch = day;
+        }
+      });
+      
+      const performedExercises: PerformedExerciseInLog[] = [];
+      exerciseRowsMap.forEach((exRows, exerciseId) => {
+        const exDetails = exerciseMap.get(exerciseId);
+        if (!exDetails) return;
+        
+        const matchedEx = bestDayMatch?.exercises.find(e => e.exerciseName === exDetails.name);
+        const newExId = matchedEx ? matchedEx.id : doc(collection(db, '_')).id;
+        
+        const sets: LoggedSetData[] = exRows.map((r, index) => {
+          return {
+            exerciseId: newExId,
+            exerciseName: exDetails.name,
+            setNumber: index + 1,
+            prescribedWeight: r.weightLbs,
+            prescribedReps: r.reps,
+            actualWeight: r.weightLbs,
+            actualReps: r.reps,
+            status: 'done',
+            timestamp: new Date(dateStr)
+          };
+        });
+        
+        performedExercises.push({
+          exerciseId: newExId,
+          exerciseName: exDetails.name,
+          sets
+        });
+      });
+      
+      // Extract start / end time if present
+      const sampleRow = rows[0];
+      let startTime: Date | undefined = undefined;
+      let endTime: Date | undefined = undefined;
+      let durationMinutes: number | undefined = undefined;
+      
+      if (sampleRow.startTimeStr && sampleRow.endTimeStr) {
+        startTime = new Date(sampleRow.startTimeStr);
+        endTime = new Date(sampleRow.endTimeStr);
+        durationMinutes = Math.round((endTime.getTime() - startTime.getTime()) / 60000);
+      }
+      
+      const workoutDoc: LoggedWorkout = {
+        id: workoutId,
+        userId: uid,
+        date: new Date(dateStr),
+        trainingProgramIdUsed: mainProgram ? mainProgram.id! : 'fitnotes_imported',
+        workoutDayNameUsed: bestDayMatch ? bestDayMatch.dayName : 'Imported Workout',
+        workoutDayIdUsed: bestDayMatch ? bestDayMatch.id : 'imported_day',
+        performedExercises,
+        trainingProgramNameUsed: mainProgram ? mainProgram.programName : 'Imported Routine'
+      };
+      
+      if (startTime) workoutDoc.startTime = startTime;
+      if (endTime) workoutDoc.endTime = endTime;
+      if (durationMinutes !== undefined) workoutDoc.durationMinutes = durationMinutes;
+      
+      loggedWorkoutsToSave.push(workoutDoc);
+    });
+    
+    // Save history in chunked batches
+    importProgressStatus.value = "Saving workout history...";
+    const totalWorkouts = loggedWorkoutsToSave.length;
+    
+    for (let i = 0; i < loggedWorkoutsToSave.length; i += 400) {
+      const chunk = loggedWorkoutsToSave.slice(i, i + 400);
+      const batch = writeBatch(db);
+      
+      chunk.forEach(workout => {
+        const ref = doc(db, 'users', uid, 'loggedWorkouts', workout.id);
+        batch.set(ref, workout);
+      });
+      
+      await batch.commit();
+      
+      const pct = Math.round(35 + (i / totalWorkouts) * 40);
+      importProgressPercentage.value = pct;
+      importProgressStatus.value = `Saving workout history (${Math.min(i + chunk.length, totalWorkouts)} of ${totalWorkouts})...`;
+    }
+    
+    // 4. Compute and save exercise progress docs
+    importProgressStatus.value = "Computing exercise progress...";
+    importProgressPercentage.value = 75;
+    
+    const exerciseConfigsMap = new Map<string, ExerciseConfig>();
+    workoutDaysToSaveList.forEach(item => {
+      item.days.forEach(day => {
+        day.exercises.forEach(ex => {
+          if (!exerciseConfigsMap.has(ex.exerciseName)) {
+            exerciseConfigsMap.set(ex.exerciseName, ex);
+          }
+        });
+      });
+    });
+    
+    const progressDocsToSet: { ref: any, data: ExerciseProgress }[] = [];
+    exerciseMap.forEach((exDetails, exerciseId) => {
+      const exLogs = rawLogs.filter(l => l.exerciseId === exerciseId);
+      if (exLogs.length === 0) return;
+      
+      const lastDate = exLogs[exLogs.length - 1].dateStr;
+      const lastExLogs = exLogs.filter(l => l.dateStr === lastDate);
+      
+      let maxWeight = 0;
+      let setsAtMaxWeight: FitNotesSqlRow[] = [];
+      lastExLogs.forEach(l => {
+        if (l.weightLbs > maxWeight) {
+          maxWeight = l.weightLbs;
+          setsAtMaxWeight = [l];
+        } else if (l.weightLbs === maxWeight) {
+          setsAtMaxWeight.push(l);
+        }
+      });
+      
+      const minRepsAtMaxWeight = setsAtMaxWeight.length > 0 ? Math.min(...setsAtMaxWeight.map(l => l.reps)) : 0;
+      
+      const exConfig = exerciseConfigsMap.get(exDetails.name) || {
+        minReps: 8,
+        maxReps: 12,
+        weightIncrement: 5,
+        repOverloadStep: 2,
+        targetSets: 3
+      };
+      
+      const configMinReps = exConfig.minReps || 8;
+      const configMaxReps = exConfig.maxReps || 12;
+      const configWeightIncr = exConfig.weightIncrement || 5;
+      const configRepStep = exConfig.repOverloadStep || 2;
+      
+      let currentWeightToAttempt = maxWeight;
+      let repsToAttemptNext = configMinReps;
+      let consecutiveFailedWorkoutsAtCurrentWeightAndReps = 0;
+      let lastWorkoutAllSetsSuccessfulAtCurrentWeight = false;
+      
+      if (minRepsAtMaxWeight >= configMaxReps) {
+        currentWeightToAttempt = maxWeight + configWeightIncr;
+        repsToAttemptNext = configMinReps;
+        lastWorkoutAllSetsSuccessfulAtCurrentWeight = true;
+      } else if (minRepsAtMaxWeight < configMinReps) {
+        currentWeightToAttempt = maxWeight;
+        repsToAttemptNext = configMinReps;
+        consecutiveFailedWorkoutsAtCurrentWeightAndReps = 1;
+        lastWorkoutAllSetsSuccessfulAtCurrentWeight = false;
+      } else {
+        currentWeightToAttempt = maxWeight;
+        repsToAttemptNext = Math.min(minRepsAtMaxWeight + configRepStep, configMaxReps);
+        lastWorkoutAllSetsSuccessfulAtCurrentWeight = true;
+      }
+      
+      const exerciseProgressKey = exDetails.name.toLowerCase().replace(/\s+/g, '_');
+      const progressRef = doc(db, 'users', uid, 'exerciseProgress', exerciseProgressKey);
+      
+      progressDocsToSet.push({
+        ref: progressRef,
+        data: {
+          exerciseName: exDetails.name,
+          currentWeightToAttempt,
+          repsToAttemptNext,
+          lastWorkoutAllSetsSuccessfulAtCurrentWeight,
+          consecutiveFailedWorkoutsAtCurrentWeightAndReps,
+          lastPerformedDate: Timestamp.fromDate(new Date(lastDate))
+        }
+      });
+    });
+    
+    // Save progress docs in batches
+    importProgressStatus.value = "Saving exercise progress docs...";
+    const totalProgress = progressDocsToSet.length;
+    
+    for (let i = 0; i < progressDocsToSet.length; i += 400) {
+      const chunk = progressDocsToSet.slice(i, i + 400);
+      const batch = writeBatch(db);
+      
+      chunk.forEach(item => {
+        batch.set(item.ref, item.data);
+      });
+      
+      await batch.commit();
+      
+      const pct = Math.round(75 + (i / totalProgress) * 15);
+      importProgressPercentage.value = pct;
+      importProgressStatus.value = `Saving progress docs (${Math.min(i + chunk.length, totalProgress)} of ${totalProgress})...`;
+    }
+    
+    // 5. Rebuild history index
+    importProgressStatus.value = "Rebuilding calendar history index...";
+    importProgressPercentage.value = 90;
+    
+    invalidateWorkoutCache();
+    await rebuildCalendarIndex(true); // Rebuild calendar index from history
+    
+    importProgressPercentage.value = 100;
+    importProgressStatus.value = "Done!";
+    
+    // Switch to first imported program
+    if (importedRoutines.length > 0) {
+      await loadProgram(importedRoutines[0].id!);
+    }
+    
+    // Close SQLite db
+    dbObj.close();
+    
+    // Reset states
+    fitnotesFile.value = null;
+    fitnotesParsedData.value = null;
+    creationMode.value = null;
+    
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+    
+  } catch (e: any) {
+    console.error("FitNotes import failed:", e);
+    error.value = "FitNotes import failed: " + e.message;
   } finally {
     isSaving.value = false;
   }

@@ -48,7 +48,7 @@ class LiftAssistPairingView extends WatchUi.View {
     function onReceiveCode(responseCode as Lang.Number, data as Lang.Dictionary or Lang.String or Null) as Void {
         if (responseCode == 200 && data instanceof Lang.Dictionary) {
             _pairingCode = data.get("code");
-            _status = "Enter on Phone";
+            _status = "Link on Web";
             _generated = true;
             WatchUi.requestUpdate();
             

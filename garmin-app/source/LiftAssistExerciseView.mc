@@ -34,6 +34,44 @@ class LiftAssistExerciseView extends WatchUi.View {
         _startTime = System.getClockTime(); // Simple start time
     }
 
+    hidden function drawWrappedExerciseName(dc, name, x, y) {
+        var len = name.length();
+        var maxChars = 15;
+        if (len <= maxChars) {
+            dc.setColor(0x00FFFF, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(x, y, Graphics.FONT_SMALL, name.toUpper(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            return;
+        }
+
+        // Find the space closest to the middle of the string
+        var mid = len / 2;
+        var bestSpaceIdx = -1;
+        var minDiff = 999;
+        for (var i = 0; i < len; i++) {
+            var char = name.substring(i, i+1);
+            if (char.equals(" ")) {
+                var diff = i - mid;
+                if (diff < 0) { diff = -diff; }
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    bestSpaceIdx = i;
+                }
+            }
+        }
+
+        dc.setColor(0x00FFFF, Graphics.COLOR_TRANSPARENT);
+        if (bestSpaceIdx != -1) {
+            var line1 = name.substring(0, bestSpaceIdx);
+            var line2 = name.substring(bestSpaceIdx + 1, len);
+            var font = (line1.length() > maxChars || line2.length() > maxChars) ? Graphics.FONT_XTINY : Graphics.FONT_TINY;
+            dc.drawText(x, y - 10, font, line1.toUpper(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            dc.drawText(x, y + 10, font, line2.toUpper(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        } else {
+            // No spaces found, draw on one line in extra tiny font
+            dc.drawText(x, y, Graphics.FONT_XTINY, name.toUpper(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        }
+    }
+
     function onUpdate(dc) {
         dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
         dc.clear();
@@ -43,8 +81,9 @@ class LiftAssistExerciseView extends WatchUi.View {
 
         if (_isUploading) {
             if (_uploadError != null) {
-                dc.setColor(Graphics.COLOR_RED, Graphics.COLOR_TRANSPARENT);
+                dc.setColor(0xFF3B30, Graphics.COLOR_TRANSPARENT); // Premium Coral Red
                 dc.drawText(w/2, h/2 - 20, Graphics.FONT_MEDIUM, "Upload Failed", Graphics.TEXT_JUSTIFY_CENTER);
+                dc.setColor(0xAAAAAA, Graphics.COLOR_TRANSPARENT);
                 dc.drawText(w/2, h/2 + 20, Graphics.FONT_XTINY, _uploadError, Graphics.TEXT_JUSTIFY_CENTER);
                 dc.drawText(w/2, h - 40, Graphics.FONT_XTINY, "Press BACK to return", Graphics.TEXT_JUSTIFY_CENTER);
             } else {
@@ -55,87 +94,111 @@ class LiftAssistExerciseView extends WatchUi.View {
         }
 
         if (_showConfirmation > 0) {
-            var color = (_lastStatus.equals("done")) ? Graphics.COLOR_GREEN : Graphics.COLOR_RED;
-            var msg = (_lastStatus.equals("done")) ? "SET DONE" : "SET FAILED";
+            var color = (_lastStatus.equals("done")) ? 0x00FF88 : 0xFF3B30; // Mint Green / Coral Red
+            var msg = (_lastStatus.equals("done")) ? "SET DONE" : "FAILED";
             
+            // Premium centered visual badge
             dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(w/2, h/2, Graphics.FONT_MEDIUM, msg, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            dc.setPenWidth(4);
+            dc.drawCircle(w/2, h/2, 45);
+            dc.setPenWidth(1);
             
-            // Slick bezel highlight for confirmation
-            drawBezelIndicator(dc, color, (_lastStatus.equals("done") ? 35 : 325), 45);
+            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(w/2, h/2, Graphics.FONT_TINY, msg, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            
+            // Bezel highlight for confirmation
+            drawBezelIndicator(dc, color, (_lastStatus.equals("done") ? 35 : 325), 60);
             return;
         }
 
         if (_isFinished) {
-            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(w/2, h*0.55, Graphics.FONT_SMALL, "WORKOUT\nCOMPLETE", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            dc.setColor(0x00FFFF, Graphics.COLOR_TRANSPARENT); // Ice Blue
+            dc.drawText(w/2, h*0.35, Graphics.FONT_XTINY, "CONGRATS!", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             
-            dc.setColor(0x00FF00, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(w-25, h*0.3, Graphics.FONT_XTINY, "UPLOAD ", Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
-            drawBezelIndicator(dc, 0x00FF00, 35, 30);
+            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+            dc.drawText(w/2, h*0.52, Graphics.FONT_SMALL, "WORKOUT\nCOMPLETE", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            
+            // Upload button shifted inward to prevent clipping
+            dc.setColor(0x00FF88, Graphics.COLOR_TRANSPARENT); // Mint Green
+            dc.drawText(w-35, h*0.3, Graphics.FONT_XTINY, "UPLOAD", Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
+            drawBezelIndicator(dc, 0x00FF88, 35, 30);
             return;
         }
 
         var ex = (_exercises as $.Toybox.Lang.Array)[_exIndex] as $.Toybox.Lang.Dictionary;
 
         if (_isResting) {
-            dc.setColor(0xFFAA00, Graphics.COLOR_TRANSPARENT); 
-            dc.drawText(w/2, h*0.25, Graphics.FONT_SMALL, "RESTING", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            // Draw premium resting text
+            dc.setColor(0xFF9500, Graphics.COLOR_TRANSPARENT); // Warm gold/orange
+            dc.drawText(w/2, h*0.22, Graphics.FONT_TINY, "RESTING", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             
+            // Centered rest timer
             dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
             dc.drawText(w/2, h*0.48, Graphics.FONT_NUMBER_THAI_HOT, _restRemaining.toString(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             
-            dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+            // Premium circular countdown progress ring
+            var radius = w/2 - 12;
+            dc.setPenWidth(3);
+            dc.setColor(0x333333, Graphics.COLOR_TRANSPARENT); // Dark slate background ring
+            dc.drawCircle(w/2, h/2, radius);
+            if (_restRemaining > 0) {
+                dc.setColor(0xFF9500, Graphics.COLOR_TRANSPARENT);
+                var angle = (_restRemaining * 360.0 / 90.0).toNumber();
+                dc.drawArc(w/2, h/2, radius, Graphics.ARC_CLOCKWISE, 90, 90 - angle);
+            }
+            dc.setPenWidth(1);
+
+            // Up Next Preview at the bottom
+            dc.setColor(0xAAAAAA, Graphics.COLOR_TRANSPARENT); // Slate gray
+            dc.drawText(w/2, h*0.74, Graphics.FONT_XTINY, "UP NEXT", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             
             if (_setNumber > 1) {
-                // Pointing to the set we are about to do
-                dc.drawText(w/2, h*0.72, Graphics.FONT_XTINY, "UP NEXT: SET " + _setNumber, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+                dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(w/2, h*0.82, Graphics.FONT_XTINY, "SET " + _setNumber, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             } else {
-                // We just finished an exercise, pointing to the first set of the next one
-                var name = ex.get("exerciseName") as String;
-                var weight = ex.get("prescribedWeight");
-                dc.drawText(w/2, h*0.72, Graphics.FONT_XTINY, "UP NEXT:", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
-                dc.drawText(w/2, h*0.82, Graphics.FONT_XTINY, name.toUpper() + " (" + weight.toString() + ")", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+                var nextExName = ex.get("exerciseName") as String;
+                var nextWeight = ex.get("prescribedWeight");
+                // Wrap exercise name for preview if too long
+                var displayNext = nextExName.toUpper();
+                if (displayNext.length() > 16) {
+                    displayNext = displayNext.substring(0, 14) + "..";
+                }
+                dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
+                dc.drawText(w/2, h*0.82, Graphics.FONT_XTINY, displayNext + " (" + nextWeight.toString() + " lbs)", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             }
             
-            // Skip Rest Button
-            dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(w-25, h*0.3, Graphics.FONT_XTINY, "SKIP ", Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
-            drawBezelIndicator(dc, Graphics.COLOR_DK_GRAY, 35, 25);
+            // Skip Rest Button (Shifted inward from edge to prevent clipping)
+            dc.setColor(0x88AABB, Graphics.COLOR_TRANSPARENT); // Slate blue
+            dc.drawText(w-35, h*0.3, Graphics.FONT_XTINY, "SKIP", Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
+            drawBezelIndicator(dc, 0x557788, 35, 25);
         } else {
             var name = ex.get("exerciseName") as $.Toybox.Lang.String;
             var targetSets = ex.get("targetSets") as $.Toybox.Lang.Number;
             var reps = ex.get("prescribedReps") as $.Toybox.Lang.Number;
             var weight = ex.get("prescribedWeight") as $.Toybox.Lang.Number;
 
-            // 1. Exercise Name (Top)
-            dc.setColor(0x00AAFF, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(w/2, h*0.18, Graphics.FONT_SMALL, name.toUpper(), Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            // 1. Exercise Name with Auto-Wrap (Top)
+            drawWrappedExerciseName(dc, name, w/2, h*0.18);
             
-            // 2. Weight x Reps (Big/Center)
-            dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(w/2 - 25, h*0.5, Graphics.FONT_NUMBER_HOT, weight.toString(), Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
-            dc.drawText(w/2 + 25, h*0.5, Graphics.FONT_NUMBER_HOT, reps.toString(), Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
+            // 2. Weight & Reps Stacked Layout (Big/Center - eliminates clipping and overlap)
+            dc.setColor(0xE0E0E0, Graphics.COLOR_TRANSPARENT); // Off-white for weight
+            dc.drawText(w/2, h*0.44, Graphics.FONT_LARGE, weight.toString() + " lbs", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             
-            // Draw custom X (broken character fix) - cleaner version
-            dc.setColor(0x00AAFF, Graphics.COLOR_TRANSPARENT);
-            dc.setPenWidth(3);
-            dc.drawLine(w/2-8, h*0.5-8, w/2+8, h*0.5+8);
-            dc.drawLine(w/2+8, h*0.5-8, w/2-8, h*0.5+8);
-            dc.setPenWidth(1);
+            dc.setColor(0x00FFFF, Graphics.COLOR_TRANSPARENT); // Cyan for reps
+            dc.drawText(w/2, h*0.58, Graphics.FONT_MEDIUM, reps.toString() + " REPS", Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
 
             // 3. Set Status (Bottom)
-            dc.setColor(Graphics.COLOR_LT_GRAY, Graphics.COLOR_TRANSPARENT);
+            dc.setColor(0xAAAAAA, Graphics.COLOR_TRANSPARENT); // Muted slate gray
             dc.drawText(w/2, h*0.8, Graphics.FONT_TINY, "SET " + _setNumber + " OF " + targetSets, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             
-            // Button Indicators (Bezel aligned)
-            dc.setColor(0x00FF00, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(w-25, h*0.3, Graphics.FONT_XTINY, "DONE ", Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
-            drawBezelIndicator(dc, 0x00FF00, 35, 25);
+            // Button Indicators (Bezel aligned, shifted inward to prevent screen-edge clipping)
+            dc.setColor(0x00FF88, Graphics.COLOR_TRANSPARENT); // Mint Green
+            dc.drawText(w-35, h*0.3, Graphics.FONT_XTINY, "DONE", Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
+            drawBezelIndicator(dc, 0x00FF88, 35, 25);
             
-            dc.setColor(0xFF0000, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(w-25, h*0.7, Graphics.FONT_XTINY, "FAIL ", Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
-            drawBezelIndicator(dc, 0xFF0000, 325, 25); 
+            dc.setColor(0xFF3B30, Graphics.COLOR_TRANSPARENT); // Coral Red
+            dc.drawText(w-35, h*0.7, Graphics.FONT_XTINY, "FAIL", Graphics.TEXT_JUSTIFY_RIGHT | Graphics.TEXT_JUSTIFY_VCENTER);
+            drawBezelIndicator(dc, 0xFF3B30, 325, 25); 
         }
     }
 
@@ -361,5 +424,17 @@ class LiftAssistExerciseDelegate extends WatchUi.BehaviorDelegate {
     function onPreviousPage() {
         _view.changeReps(1);
         return true;
+    }
+
+    function onSwipe(swipeEvent) {
+        var direction = swipeEvent.getDirection();
+        if (direction == WatchUi.SWIPE_UP) {
+            _view.changeReps(1);
+            return true;
+        } else if (direction == WatchUi.SWIPE_DOWN) {
+            _view.changeReps(-1);
+            return true;
+        }
+        return false;
     }
 }

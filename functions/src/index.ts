@@ -834,7 +834,6 @@ export const onWorkoutLogged = onDocumentCreated("users/{userId}/loggedWorkouts/
             body: JSON.stringify({
                 name: title,
                 sport_type: "WeightTraining",
-                start_date: startDateObj.toISOString(),
                 start_date_local: toLocalISOString(startDateObj),
                 elapsed_time: elapsedSeconds,
                 description: description

@@ -137,10 +137,12 @@ export default function useTrainingProgram() {
 
             const progressMap = new Map<string, any>();
             progressDocs.forEach((snap, index) => {
+                console.log(`DEBUG: key=${uniqueKeys[index]} exists=${snap.exists()} data=`, snap.exists() ? snap.data() : null);
                 if (snap.exists()) {
                     progressMap.set(uniqueKeys[index], snap.data());
                 }
             });
+            console.log("DEBUG: Final progressMap:", Object.fromEntries(progressMap));
 
             // Map back to activeProgram
             activeProgram.workoutDays.forEach(day => {
