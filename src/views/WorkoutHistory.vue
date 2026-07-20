@@ -45,9 +45,9 @@
           </div>
         </template>
 
-        <!-- Cardio (Strava) -->
-        <div class="legend-item">
-          <span class="legend-color-box cardio"></span>
+        <!-- Cardio (Strava / Manual) -->
+        <div v-if="hasAnyCardioActivities" class="legend-item">
+          <span class="legend-color-box cardio" style="background-color: #FC4C02;"></span>
           <span>Cardio</span>
         </div>
       </div>
@@ -198,13 +198,16 @@
         </div>
 
         <!-- CARDIO EVENT CARD -->
-        <div v-else-if="item.isCardio && item.cardio" class="history-item-card cardio-item-card" style="border-left: 4px solid #10b981;">
+        <div v-else-if="item.isCardio && item.cardio" class="history-item-card cardio-item-card" :style="{ borderLeft: item.cardio.source === 'strava' ? '4px solid #FC4C02' : '4px solid #10b981' }">
           <div class="history-item-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <h2 style="margin: 0; font-size: 1.3em;">{{ getCardioIcon(item.cardio.type) }} {{ item.cardio.name || item.cardio.type }}</h2>
-                <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 6px; font-size: 0.75em; font-weight: 700; text-transform: uppercase;">
-                  {{ item.cardio.source === 'strava' ? 'Strava' : 'Cardio' }}
+                <span v-if="item.cardio.source === 'strava'" style="background: rgba(252, 76, 2, 0.15); color: #FC4C02; border: 1px solid rgba(252, 76, 2, 0.3); padding: 2px 8px; border-radius: 6px; font-size: 0.75em; font-weight: 700; text-transform: uppercase;">
+                  Strava
+                </span>
+                <span v-else style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 8px; border-radius: 6px; font-size: 0.75em; font-weight: 700; text-transform: uppercase;">
+                  Cardio
                 </span>
               </div>
               <p class="workout-date" style="margin-top: 4px;">
@@ -217,25 +220,25 @@
             </div>
           </div>
 
-          <div class="workout-summary card-inset" style="margin-top: 12px;">
+          <div class="workout-summary card-inset" style="margin-top: 12px; padding: 14px 18px; background-color: var(--color-card-mute); border: 1px solid var(--color-card-border);">
             <div style="display: flex; gap: 24px; flex-wrap: wrap;">
               <div>
-                <span style="font-size: 0.8em; opacity: 0.7; display: block; font-weight: 600; text-transform: uppercase;">Duration</span>
-                <strong style="font-size: 1.15em; color: var(--color-heading);">{{ formatDuration(item.cardio.durationMinutes) }}</strong>
+                <span style="font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--color-card-text); opacity: 0.65; display: block; margin-bottom: 2px;">Duration</span>
+                <span style="font-size: 1.2em; font-weight: 800; color: var(--color-card-text);">{{ formatDuration(item.cardio.durationMinutes) }}</span>
               </div>
 
               <div v-if="item.cardio.distanceMiles > 0">
-                <span style="font-size: 0.8em; opacity: 0.7; display: block; font-weight: 600; text-transform: uppercase;">Distance</span>
-                <strong style="font-size: 1.15em; color: var(--color-heading);">{{ formatCardioDistance(item.cardio.distanceMiles) }}</strong>
+                <span style="font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--color-card-text); opacity: 0.65; display: block; margin-bottom: 2px;">Distance</span>
+                <span style="font-size: 1.2em; font-weight: 800; color: var(--color-card-text);">{{ formatCardioDistance(item.cardio.distanceMiles) }}</span>
               </div>
 
               <div v-if="item.cardio.distanceMiles > 0 && item.cardio.durationMinutes > 0">
-                <span style="font-size: 0.8em; opacity: 0.7; display: block; font-weight: 600; text-transform: uppercase;">Avg Pace</span>
-                <strong style="font-size: 1.15em; color: var(--color-heading);">{{ calculatePace(item.cardio.durationMinutes, item.cardio.distanceMiles) }}</strong>
+                <span style="font-size: 0.75em; font-weight: 700; text-transform: uppercase; color: var(--color-card-text); opacity: 0.65; display: block; margin-bottom: 2px;">Avg Pace</span>
+                <span style="font-size: 1.2em; font-weight: 800; color: var(--color-card-text);">{{ calculatePace(item.cardio.durationMinutes, item.cardio.distanceMiles) }}</span>
               </div>
             </div>
 
-            <p v-if="item.cardio.notes" style="margin-top: 12px; font-size: 0.9em; font-style: italic; opacity: 0.85; border-top: 1px dashed var(--color-card-border); padding-top: 8px;">
+            <p v-if="item.cardio.notes" style="margin-top: 12px; font-size: 0.9em; font-style: italic; color: var(--color-card-text); opacity: 0.85; border-top: 1px dashed var(--color-card-border); padding-top: 8px;">
               "{{ item.cardio.notes }}"
             </p>
           </div>
@@ -313,6 +316,7 @@ interface CalendarDay {
   isPlaceholder: boolean;
   dayOfMonth: number;
   workoutDayColor?: string | null; // For dynamic coloring
+  workoutDayColors?: string[];
   isExternalActivity?: boolean;
   externalActivities?: any[];
 }
@@ -559,28 +563,51 @@ const handleClickOutsideTooltip = (event: MouseEvent) => {
   }
 };
 
+const hasAnyCardioActivities = computed(() => {
+  if (externalActivities.length > 0) return true;
+  return Object.values(calendarIndex).some(entry => entry && entry.hasExternalActivity);
+});
+
 const getDayCellStyle = (day: CalendarDay) => {
-  if (day.isPlaceholder) return {};
-  if (day.isFuture) return {};
+  if (day.isPlaceholder || day.isFuture) return {};
 
   const styles: Record<string, string> = {};
+  const workoutColors = day.workoutDayColors && day.workoutDayColors.length > 0 
+    ? day.workoutDayColors 
+    : (day.workoutDayColor ? [day.workoutDayColor] : []);
 
-  if (day.isWorkoutDay && day.isExternalActivity) {
-    const workoutColor = day.workoutDayColor || defaultWorkoutColor;
-    const runColor = '#FC4C02'; // Strava Orange
-    styles.background = `linear-gradient(135deg, ${workoutColor} 50%, ${runColor} 50%)`;
-  } else if (day.isWorkoutDay) {
-    styles.backgroundColor = day.workoutDayColor || defaultWorkoutColor;
-  } else if (day.isExternalActivity) {
-    styles.backgroundColor = 'transparent';
-    styles.background = 'linear-gradient(135deg, transparent 50%, #FC4C02 50%)';
+  const hasWorkouts = day.isWorkoutDay || workoutColors.length > 0;
+  const hasCardio = day.isExternalActivity;
+  const stravaOrange = '#FC4C02';
+
+  if (hasWorkouts && hasCardio) {
+    if (workoutColors.length >= 2) {
+      styles.background = `linear-gradient(45deg, ${workoutColors[0]} 33.3%, ${workoutColors[1]} 33.3% 66.6%, ${stravaOrange} 66.6%)`;
+    } else {
+      styles.background = `linear-gradient(135deg, ${workoutColors[0]} 50%, ${stravaOrange} 50%)`;
+    }
+  } else if (hasWorkouts) {
+    if (workoutColors.length >= 2) {
+      styles.background = `linear-gradient(90deg, ${workoutColors[0]} 50%, ${workoutColors[1]} 50%)`;
+    } else {
+      styles.backgroundColor = workoutColors[0];
+    }
+  } else if (hasCardio) {
+    styles.background = `linear-gradient(135deg, transparent 50%, ${stravaOrange} 50%)`;
   }
 
   return styles;
 };
 
+const getLocalDateKeyFromDate = (dateObj: Date): string => {
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObj.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const generateCalendarGridData = (
-  idxData: CalendarIndexData, // Now takes the index map
+  idxData: CalendarIndexData, 
   numWeeksToShow: number
 ): CalendarDay[][] => {
   const weeksData: CalendarDay[][] = [];
@@ -588,7 +615,7 @@ const generateCalendarGridData = (
   today.setHours(0, 0, 0, 0);
 
   const calendarEndDate = new Date(today);
-  calendarEndDate.setDate(today.getDate() + (6 - today.getDay())); // End week on Saturday
+  calendarEndDate.setDate(today.getDate() + (6 - today.getDay())); 
 
   const calendarStartDate = new Date(calendarEndDate);
   calendarStartDate.setDate(calendarEndDate.getDate() - (numWeeksToShow * 7) + 1);
@@ -596,7 +623,6 @@ const generateCalendarGridData = (
   const programDayTypeEncounterOrder: Record<string, Record<string, number>> = {};
   const programNextAvailableColorIndex: Record<string, number> = {};
   
-  // Convert index map to array for sorting to establish color order
   const sortedDateKeys = Object.keys(idxData).sort().filter(k => k !== 'lastUpdated');
 
   const activitiesByDate: Record<string, {
@@ -618,7 +644,6 @@ const generateCalendarGridData = (
       
       let color = entry.workoutColor;
       if (!color) {
-        // Logic to assign color based on first encounter of (Program + DayName)
         if (!programDayTypeEncounterOrder[programId]) {
           programDayTypeEncounterOrder[programId] = {};
           programNextAvailableColorIndex[programId] = 0;
@@ -627,7 +652,7 @@ const generateCalendarGridData = (
         if (programDayTypeEncounterOrder[programId][dayName] === undefined) {
           const colorIndex = programNextAvailableColorIndex[programId];
           programDayTypeEncounterOrder[programId][dayName] = colorIndex;
-          if (colorIndex < daySequenceColorPalette.length) { // Only increment if we used a palette color
+          if (colorIndex < daySequenceColorPalette.length) {
               programNextAvailableColorIndex[programId]++;
           }
         }
@@ -649,6 +674,15 @@ const generateCalendarGridData = (
       externalActivities: entry.externalActivities || []
     };
   }
+
+  const loggedWorkoutsByDateKey: Record<string, LoggedWorkout[]> = {};
+  loggedWorkouts.forEach(wk => {
+    const key = getLocalDateKeyFromDate(getObjDate(wk.date));
+    if (key) {
+      if (!loggedWorkoutsByDateKey[key]) loggedWorkoutsByDateKey[key] = [];
+      loggedWorkoutsByDateKey[key].push(wk);
+    }
+  });
   
   const currentDayIter = new Date(calendarStartDate);
   for (let w = 0; w < numWeeksToShow; w++) {
@@ -656,18 +690,46 @@ const generateCalendarGridData = (
     for (let d = 0; d < 7; d++) {
       const normalizedCurrentDayIter = new Date(currentDayIter);
       normalizedCurrentDayIter.setHours(0,0,0,0);
-      const year = normalizedCurrentDayIter.getFullYear();
-      const month = String(normalizedCurrentDayIter.getMonth() + 1).padStart(2, '0');
-      const day = String(normalizedCurrentDayIter.getDate()).padStart(2, '0');
-      const dateString = `${year}-${month}-${day}`;
+      const dateString = getLocalDateKeyFromDate(normalizedCurrentDayIter);
       
       const dayInfo = activitiesByDate[dateString];
+      const workoutsForDate = loggedWorkoutsByDateKey[dateString] || [];
+
+      const workoutColorsForDate: string[] = [];
+      const workoutNamesForDate: string[] = [];
+
+      if (workoutsForDate.length > 0) {
+        workoutsForDate.forEach(wk => {
+          const programId = wk.trainingProgramIdUsed || 'UNKNOWN_PROGRAM';
+          const dayName = wk.workoutDayNameUsed || 'Workout';
+          workoutNamesForDate.push(dayName);
+
+          if (!programDayTypeEncounterOrder[programId]) {
+            programDayTypeEncounterOrder[programId] = {};
+            programNextAvailableColorIndex[programId] = 0;
+          }
+          if (programDayTypeEncounterOrder[programId][dayName] === undefined) {
+            const colorIndex = programNextAvailableColorIndex[programId];
+            programDayTypeEncounterOrder[programId][dayName] = colorIndex;
+            if (colorIndex < daySequenceColorPalette.length) {
+              programNextAvailableColorIndex[programId]++;
+            }
+          }
+          const assignedIndex = programDayTypeEncounterOrder[programId][dayName];
+          const color = assignedIndex < daySequenceColorPalette.length ? daySequenceColorPalette[assignedIndex] : defaultWorkoutColor;
+          workoutColorsForDate.push(color);
+        });
+      } else if (dayInfo && dayInfo.isWorkoutDay) {
+        workoutColorsForDate.push(dayInfo.workoutColor || defaultWorkoutColor);
+        if (dayInfo.workoutName) workoutNamesForDate.push(dayInfo.workoutName);
+      }
       
       week.push({
         date: new Date(normalizedCurrentDayIter),
-        isWorkoutDay: !!(dayInfo && dayInfo.isWorkoutDay),
-        workoutNameTooltip: dayInfo?.workoutName || null,
-        workoutDayColor: dayInfo?.workoutColor || null,
+        isWorkoutDay: workoutColorsForDate.length > 0 || !!(dayInfo && dayInfo.isWorkoutDay),
+        workoutNameTooltip: workoutNamesForDate.join(' + ') || dayInfo?.workoutName || null,
+        workoutDayColor: workoutColorsForDate[0] || dayInfo?.workoutColor || null,
+        workoutDayColors: workoutColorsForDate,
         isExternalActivity: !!(dayInfo && dayInfo.isExternalActivity),
         externalActivities: dayInfo?.externalActivities || [],
         isFuture: normalizedCurrentDayIter > today,
