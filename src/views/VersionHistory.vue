@@ -24,6 +24,21 @@
                 <h3>Change Log</h3>
 
                 <div class="log-entry">
+                    <span class="log-date">Jul 20, 2026</span>
+                    <h4>The Cardio, Sharing & FitNotes Expansion</h4>
+                    <p>A massive update featuring FitNotes import/export, workout share cards, cardio tracking, analytics overhauls, and per-routine timers:</p>
+                    <ul class="feature-list">
+                         <li><strong>FitNotes Import & Export:</strong> Full data portability with 1-click `.fitnotes` SQLite database import and JSON/FitNotes backup exports.</li>
+                         <li><strong>Workout Sharing:</strong> Export sessions as 1080x1350 JPEG story cards or share instant web links for public viewing.</li>
+                         <li><strong>Cardio & Strava Suite:</strong> Log manual cardio, sync all endurance activity types, and auto-push sessions to Strava.</li>
+                         <li><strong>Analytics Overhaul:</strong> Added weekly muscle volume bar charts, custom muscle group mapping overrides, and 1RM progress spline charts in an expandable drawer.</li>
+                         <li><strong>Per-Routine Rest Timers:</strong> Moved default rest timers from global user settings into individual routine settings.</li>
+                         <li><strong>Exercise Video Demos:</strong> Instant video demo popups and form tips with a setting toggle to disable them.</li>
+                         <li><strong>History & Calendar Upgrades:</strong> Edit historical workout logs retroactively and view side-by-side vertical splits for multi-lift days.</li>
+                    </ul>
+                </div>
+
+                <div class="log-entry">
                     <span class="log-date">Jun 14, 2026</span>
                     <h4>The "New Laptop" Expansion & Strava Sync</h4>
                     <p>A massive update containing all features shipped since transitioning to the new laptop. Focused on Strava integration, custom routine colors, UI enhancements, and improved analytics:</p>
