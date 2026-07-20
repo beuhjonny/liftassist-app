@@ -132,7 +132,10 @@
               Routine: {{ workout.trainingProgramNameUsed }}
             </p>
           </div>
-          <button @click.stop.prevent="openEditModal(workout)" class="icon-button edit-btn" title="Edit Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">✏️</button>
+          <div style="display: flex; gap: 4px; align-items: center;">
+            <button @click.stop.prevent="openShareModal(workout)" class="icon-button share-btn" title="Share Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">📤</button>
+            <button @click.stop.prevent="openEditModal(workout)" class="icon-button edit-btn" title="Edit Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">✏️</button>
+          </div>
         </div>
 
         <div class="workout-summary card-inset">
@@ -196,6 +199,13 @@
       @save="handleSaveEditedWorkout" 
       @delete="handleDeleteWorkout" 
     />
+
+    <!-- Share Workout Modal -->
+    <ShareWorkoutModal 
+      :show="showShareModal" 
+      :workout="sharingWorkout" 
+      @close="showShareModal = false" 
+    />
   </div>
 </template>
 
@@ -215,6 +225,7 @@ import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/typ
 import WeeklyVolumeChart from '../components/WeeklyVolumeChart.vue';
 import ExerciseProgressChart from '../components/ExerciseProgressChart.vue';
 import EditLoggedWorkoutModal from '../components/history/EditLoggedWorkoutModal.vue';
+import ShareWorkoutModal from '../components/history/ShareWorkoutModal.vue';
 
 interface CalendarDay {
   date: Date;
@@ -236,10 +247,18 @@ const { calendarIndex, fetchCalendarIndex, isIndexLoading } = useHistoryIndex();
 const showEditModal = ref(false);
 const editingWorkout = ref<LoggedWorkout | null>(null);
 
+const showShareModal = ref(false);
+const sharingWorkout = ref<LoggedWorkout | null>(null);
+
 function openEditModal(workout: LoggedWorkout) {
   console.log('Opening edit modal for workout:', workout);
   editingWorkout.value = workout;
   showEditModal.value = true;
+}
+
+function openShareModal(workout: LoggedWorkout) {
+  sharingWorkout.value = workout;
+  showShareModal.value = true;
 }
 
 async function handleSaveEditedWorkout(updatedWk: LoggedWorkout) {

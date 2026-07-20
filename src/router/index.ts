@@ -105,6 +105,12 @@ const routes = [
     path: '/terms',
     name: 'Terms',
     component: () => import('../views/Terms.vue')
+  },
+  {
+    path: '/share/workout/:shareId',
+    name: 'PublicWorkoutShare',
+    component: () => import('../views/WorkoutSharePublicView.vue'),
+    props: true
   }
 ];
 
