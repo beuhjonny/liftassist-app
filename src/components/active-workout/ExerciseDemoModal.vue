@@ -8,19 +8,57 @@
         <h2>{{ exerciseName || demoInfo.name }}</h2>
       </div>
 
-      <!-- Movement Loop Media -->
+      <!-- Movement Loop Media Container -->
       <div class="demo-media-container card-inset">
+        <!-- 1. Wikimedia / High-Res GIF (If loaded successfully) -->
         <img 
-          v-if="!showFallbackGraphic"
-          :src="currentImageSrc" 
+          v-if="hasExternalGif && !imageError"
+          :src="demoInfo.gifUrl" 
           :alt="demoInfo.name + ' demonstration'" 
           class="demo-gif"
-          @error="handleImageError"
+          @error="imageError = true"
         />
-        <div v-else class="demo-fallback-graphic">
-          <span class="workout-icon">🏋️‍♂️</span>
-          <p class="fallback-title">{{ exerciseName }}</p>
-          <span class="fallback-subtitle">Proper Form Demonstration</span>
+
+        <!-- 2. Bulletproof Interactive SVG Biomechanical Lifter (Zero Network Failure) -->
+        <div v-else class="vector-demo-viewer">
+          <div class="vector-stage">
+            <svg viewBox="0 0 300 180" class="biomechanic-svg">
+              <defs>
+                <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="1"/>
+                </pattern>
+                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
+
+              <rect width="100%" height="100%" fill="url(#grid)" />
+
+              <!-- Bench / Ground Line -->
+              <line x1="40" y1="140" x2="260" y2="140" stroke="#444" stroke-width="4" stroke-linecap="round"/>
+
+              <!-- Bar Path Motion Guide -->
+              <path d="M 150 45 L 150 115" stroke="rgba(0, 123, 255, 0.3)" stroke-width="2" stroke-dasharray="4 4" />
+
+              <!-- Animated Moving Weight / Lifter -->
+              <g class="animated-weight-group">
+                <!-- Barbell Bar -->
+                <line x1="80" y1="60" x2="220" y2="60" stroke="#e0e0e0" stroke-width="6" stroke-linecap="round" />
+                <!-- Weight Plates -->
+                <rect x="70" y="42" width="12" height="36" rx="3" fill="#007bff" filter="url(#glow)" />
+                <rect x="218" y="42" width="12" height="36" rx="3" fill="#007bff" filter="url(#glow)" />
+              </g>
+
+              <!-- Target Muscle Pulse Ring -->
+              <circle cx="150" cy="95" r="18" fill="rgba(0, 123, 255, 0.15)" stroke="#007bff" stroke-width="2" class="pulse-ring" />
+              <text x="150" y="99" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">TARGET</text>
+            </svg>
+          </div>
+          <div class="vector-caption">
+            <span class="motion-indicator">⚡ Biomechanical Motion Guide</span>
+            <span class="tempo-tag">Tempo: 2s Down | 1s Hold | Explosive Up</span>
+          </div>
         </div>
       </div>
 
@@ -52,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { getExerciseDemo, type ExerciseDemoInfo } from '@/utils/exerciseDemos';
 
 const props = defineProps<{
@@ -64,64 +102,21 @@ defineEmits<{
   (e: 'close'): void;
 }>();
 
-const currentFrame = ref(0);
-const useFallbackCdn = ref(false);
-const showFallbackGraphic = ref(false);
-let frameTimer: any = null;
+const imageError = ref(false);
 
 const demoInfo = computed<ExerciseDemoInfo>(() => {
   return getExerciseDemo(props.exerciseName);
 });
 
-const currentImageSrc = computed(() => {
-  const base = useFallbackCdn.value ? demoInfo.value.fallbackUrl : demoInfo.value.gifUrl;
-  const baseUrl = base.replace(/\/0\.jpg$/, '');
-  return `${baseUrl}/${currentFrame.value}.jpg`;
+const hasExternalGif = computed(() => {
+  return Boolean(demoInfo.value.gifUrl && demoInfo.value.gifUrl.endsWith('.gif'));
 });
-
-const handleImageError = () => {
-  if (!useFallbackCdn.value) {
-    // Retry with GitHub raw CDN
-    useFallbackCdn.value = true;
-    currentFrame.value = 0;
-  } else {
-    // Primary and secondary CDNs both failed
-    showFallbackGraphic.value = true;
-  }
-};
-
-const startAnimation = () => {
-  stopAnimation();
-  frameTimer = setInterval(() => {
-    currentFrame.value = currentFrame.value === 0 ? 1 : 0;
-  }, 1000);
-};
-
-const stopAnimation = () => {
-  if (frameTimer) {
-    clearInterval(frameTimer);
-    frameTimer = null;
-  }
-};
 
 watch(() => props.show, (newShow) => {
   if (newShow) {
-    useFallbackCdn.value = false;
-    showFallbackGraphic.value = false;
-    currentFrame.value = 0;
-    startAnimation();
-  } else {
-    stopAnimation();
+    imageError.value = false;
   }
 }, { immediate: true });
-
-onMounted(() => {
-  if (props.show) startAnimation();
-});
-
-onUnmounted(() => {
-  stopAnimation();
-});
 </script>
 
 <style scoped>
@@ -167,12 +162,13 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #1a1a1a;
+  background-color: #121316;
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 16px;
-  min-height: 240px;
-  padding: 10px;
+  min-height: 220px;
+  position: relative;
+  border: 1px solid var(--color-card-border);
 }
 
 .demo-gif {
@@ -180,40 +176,65 @@ onUnmounted(() => {
   max-height: 260px;
   object-fit: contain;
   border-radius: 8px;
-  transition: opacity 0.2s ease;
 }
 
-.demo-fallback-graphic {
+/* Vector Motion Viewer */
+.vector-demo-viewer {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 30px;
-  text-align: center;
+  padding: 10px 0;
 }
 
-.workout-icon {
-  font-size: 3em;
-  margin-bottom: 8px;
-  animation: pulse 2s infinite ease-in-out;
+.vector-stage {
+  width: 100%;
+  max-width: 340px;
 }
 
-.fallback-title {
-  font-size: 1.1em;
+.biomechanic-svg {
+  width: 100%;
+  height: 150px;
+}
+
+.animated-weight-group {
+  animation: barMotion 2.4s infinite ease-in-out;
+  transform-origin: center;
+}
+
+@keyframes barMotion {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(50px); }
+  100% { transform: translateY(0px); }
+}
+
+.pulse-ring {
+  animation: pulseGlow 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0% { r: 16px; opacity: 0.4; }
+  50% { r: 24px; opacity: 0.9; }
+  100% { r: 16px; opacity: 0.4; }
+}
+
+.vector-caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.motion-indicator {
+  font-size: 0.85em;
   font-weight: 700;
-  color: white;
-  margin: 4px 0;
+  color: #007bff;
 }
 
-.fallback-subtitle {
-  font-size: 0.82em;
+.tempo-tag {
+  font-size: 0.78em;
   color: #aaa;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
 }
 
 .target-muscles-section {
