@@ -2635,17 +2635,22 @@ const saveEditedWorkout = () => {
 }
 
 /* Edit Workout Modal Styles */
-.edit-workout-modal {
+.edit-workout-modal,
+.edit-choice-modal {
   max-width: 500px;
   max-height: 80vh;
   overflow-y: auto;
+  background-color: var(--color-card-bg);
+  color: var(--color-card-text);
+  border: 1px solid var(--color-card-border);
 }
 
-.edit-workout-modal h3 {
+.edit-workout-modal h3,
+.edit-choice-modal h3 {
   margin-top: 0;
   margin-bottom: 20px;
   font-size: 1.3em;
-  color: #333;
+  color: var(--color-card-heading);
 }
 
 .edit-sets-list {
@@ -2653,17 +2658,17 @@ const saveEditedWorkout = () => {
 }
 
 .edit-set-item {
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-card-border);
   border-radius: 6px;
   padding: 15px;
   margin-bottom: 15px;
-  background-color: #f8f9fa;
+  background-color: var(--color-card-mute);
 }
 
 .edit-set-header {
   margin-bottom: 12px;
   font-size: 1em;
-  color: #333;
+  color: var(--color-card-heading);
 }
 
 .edit-set-fields {
@@ -2679,6 +2684,7 @@ const saveEditedWorkout = () => {
 .edit-set-fields .form-group label {
   font-size: 0.9em;
   margin-bottom: 5px;
+  color: var(--color-card-text);
 }
 
 .edit-set-fields .form-group input,
@@ -2686,17 +2692,20 @@ const saveEditedWorkout = () => {
   width: 100%;
   padding: 8px;
   font-size: 14px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-card-border);
   border-radius: 4px;
+  background-color: var(--color-background);
+  color: var(--color-text);
   box-sizing: border-box;
 }
 
 .status-select {
   padding: 8px;
   font-size: 14px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-card-border);
   border-radius: 4px;
-  background-color: white;
+  background-color: var(--color-background);
+  color: var(--color-text);
 }
 
 /* Facelifted Rep Input Section Styles */
