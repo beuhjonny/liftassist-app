@@ -71,11 +71,23 @@ const calculate1RM = (weight: number, reps: number): number => {
   return weight * (36 / (37 - Math.min(reps, 30)));
 };
 
+/**
+ * Robust Date Parser handling Firestore Timestamp, plain {seconds, nanoseconds} objects,
+ * Date objects, ISO strings, and epoch numbers.
+ */
 const getObjDate = (dateVal: any): Date => {
-  if (dateVal && typeof dateVal.toDate === 'function') {
+  if (!dateVal) return new Date(0);
+  if (typeof dateVal.toDate === 'function') {
     return dateVal.toDate();
   }
-  return new Date(dateVal);
+  if (typeof dateVal.seconds === 'number') {
+    return new Date(dateVal.seconds * 1000);
+  }
+  if (dateVal instanceof Date) {
+    return dateVal;
+  }
+  const d = new Date(dateVal);
+  return isNaN(d.getTime()) ? new Date(0) : d;
 };
 
 const chartData = computed(() => {
@@ -102,7 +114,7 @@ const chartData = computed(() => {
   const filtered = props.workouts
     .filter(w => {
       const d = getObjDate(w.date);
-      return !isNaN(d.getTime()) && (!cutoffDate || d >= cutoffDate);
+      return d.getTime() > 0 && (!cutoffDate || d >= cutoffDate);
     })
     .sort((a, b) => getObjDate(a.date).getTime() - getObjDate(b.date).getTime());
 
@@ -117,27 +129,27 @@ const chartData = computed(() => {
 
     if (selectedMetric.value === 'est1rm') {
       ex.sets.forEach(s => {
-        if (s.status !== 'failed' && s.actualWeight && s.actualReps) {
+        if (s && s.status !== 'failed' && s.actualWeight && s.actualReps) {
           const rm = calculate1RM(s.actualWeight, s.actualReps);
           if (rm > dayValue) dayValue = rm;
         }
       });
     } else if (selectedMetric.value === 'maxWeight') {
       ex.sets.forEach(s => {
-        if (s.status !== 'failed' && s.actualWeight) {
+        if (s && s.status !== 'failed' && s.actualWeight) {
           if (s.actualWeight > dayValue) dayValue = s.actualWeight;
         }
       });
     } else if (selectedMetric.value === 'maxVolume') {
       dayValue = ex.sets.reduce((sum, s) => {
-        if (s.status !== 'failed' && s.actualWeight && s.actualReps) {
+        if (s && s.status !== 'failed' && s.actualWeight && s.actualReps) {
           return sum + (s.actualWeight * s.actualReps);
         }
         return sum;
       }, 0);
     } else if (selectedMetric.value === 'maxReps') {
       ex.sets.forEach(s => {
-        if (s.status !== 'failed' && s.actualReps) {
+        if (s && s.status !== 'failed' && s.actualReps) {
           if (s.actualReps > dayValue) dayValue = s.actualReps;
         }
       });
@@ -168,7 +180,7 @@ const chartData = computed(() => {
           return gradient;
         },
         fill: true,
-        tension: 0.35, // Smooth curves!
+        tension: 0.35,
         pointBackgroundColor: '#007bff',
         pointBorderColor: '#ffffff',
         pointHoverBackgroundColor: '#ffffff',
@@ -197,9 +209,9 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
         backgroundColor: '#1a1f29',
         titleColor: '#ffffff',
         bodyColor: '#007bff',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderColor: 'rgba(255, 255, 255, 0.15)',
         borderWidth: 1,
-        padding: 10,
+        padding: 12,
         callbacks: {
           label: (context) => {
             const unit = getMetricUnitLabel();
@@ -211,20 +223,20 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
     scales: {
       x: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)'
+          color: 'rgba(255, 255, 255, 0.08)'
         },
         ticks: {
-          color: 'rgba(255, 255, 255, 0.6)',
-          font: { size: 11 }
+          color: '#a0aec0',
+          font: { size: 11, weight: 'bold' }
         }
       },
       y: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)'
+          color: 'rgba(255, 255, 255, 0.08)'
         },
         ticks: {
-          color: 'rgba(255, 255, 255, 0.6)',
-          font: { size: 11 }
+          color: '#a0aec0',
+          font: { size: 11, weight: 'bold' }
         },
         beginAtZero: false
       }
@@ -258,7 +270,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
   font-weight: 700;
   text-transform: uppercase;
   color: var(--color-card-text);
-  opacity: 0.6;
+  opacity: 0.75;
 }
 
 .chart-select {

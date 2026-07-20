@@ -27,6 +27,8 @@
           <option :value="4">Last 4 Weeks</option>
           <option :value="8">Last 8 Weeks</option>
           <option :value="12">Last 12 Weeks</option>
+          <option :value="24">Last 6 Months</option>
+          <option :value="52">Last 1 Year</option>
         </select>
       </div>
     </div>
@@ -89,11 +91,23 @@ const MUSCLE_GROUPS = [
   'Calves'
 ];
 
+/**
+ * Robust Date Parser handling Firestore Timestamp, plain {seconds, nanoseconds} objects,
+ * Date objects, ISO strings, and epoch numbers.
+ */
 const getObjDate = (dateVal: any): Date => {
-  if (dateVal && typeof dateVal.toDate === 'function') {
+  if (!dateVal) return new Date(0);
+  if (typeof dateVal.toDate === 'function') {
     return dateVal.toDate();
   }
-  return new Date(dateVal);
+  if (typeof dateVal.seconds === 'number') {
+    return new Date(dateVal.seconds * 1000);
+  }
+  if (dateVal instanceof Date) {
+    return dateVal;
+  }
+  const d = new Date(dateVal);
+  return isNaN(d.getTime()) ? new Date(0) : d;
 };
 
 const chartData = computed(() => {
@@ -105,9 +119,10 @@ const chartData = computed(() => {
   const cutoffDate = new Date();
   cutoffDate.setDate(now.getDate() - (timeWindowWeeks.value * 7));
 
+  // Filter workouts within timeframe
   const filtered = props.workouts.filter(w => {
     const d = getObjDate(w.date);
-    return !isNaN(d.getTime()) && d >= cutoffDate;
+    return d.getTime() > 0 && d >= cutoffDate;
   });
 
   const muscleTotals: MuscleSetCount = {};
@@ -116,9 +131,12 @@ const chartData = computed(() => {
   filtered.forEach(w => {
     if (!w.performedExercises) return;
     w.performedExercises.forEach(ex => {
-      if (!ex.sets) return;
+      if (!ex.sets || ex.sets.length === 0) return;
       
-      const validSetsCount = ex.sets.filter(s => s.status !== 'failed').length;
+      // Count any set with reps > 0 or status != failed
+      const validSetsCount = ex.sets.filter(s => 
+        s && s.status !== 'failed' && (s.actualReps === undefined || s.actualReps > 0)
+      ).length;
 
       if (validSetsCount === 0) return;
 
@@ -148,12 +166,13 @@ const chartData = computed(() => {
   const backgroundColors: string[] = [];
 
   MUSCLE_GROUPS.forEach(mGroup => {
-    const weeklyAvg = Math.round((muscleTotals[mGroup] / timeWindowWeeks.value) * 10) / 10;
+    const weeksCount = Math.max(1, timeWindowWeeks.value);
+    const weeklyAvg = Math.round((muscleTotals[mGroup] / weeksCount) * 10) / 10;
     labels.push(mGroup);
     setValues.push(weeklyAvg);
 
     if (weeklyAvg < 10) {
-      backgroundColors.push('rgba(245, 158, 11, 0.75)'); // Low (Amber)
+      backgroundColors.push('rgba(245, 158, 11, 0.85)'); // Low (Amber)
     } else if (weeklyAvg <= 20) {
       backgroundColors.push('rgba(16, 185, 129, 0.85)'); // Optimal (Green)
     } else {
@@ -176,37 +195,39 @@ const chartData = computed(() => {
 });
 
 function categorizeExerciseMuscles(rawName: string): { primary: string[]; secondary: string[] } {
-  const name = rawName.toLowerCase().trim();
+  if (!rawName) return { primary: ['Chest'], secondary: [] };
+
+  const norm = rawName.toLowerCase().trim().replace(/_/g, ' ');
   const demo = getExerciseDemo(rawName);
 
   const primary: string[] = [];
   const secondary: string[] = [];
 
-  if (name.includes('bench') || name.includes('chest_press') || name.includes('push_up') || name.includes('flye')) {
+  if (norm.includes('bench') || norm.includes('chest press') || norm.includes('push up') || norm.includes('flye') || norm.includes('pec')) {
     primary.push('Chest');
     secondary.push('Triceps', 'Shoulders');
-  } else if (name.includes('incline')) {
+  } else if (norm.includes('incline')) {
     primary.push('Chest', 'Shoulders');
     secondary.push('Triceps');
-  } else if (name.includes('overhead') || name.includes('military') || name.includes('shoulder_press') || name.includes('lateral_raise')) {
+  } else if (norm.includes('overhead') || norm.includes('military') || norm.includes('shoulder press') || norm.includes('lateral raise') || norm.includes('delt')) {
     primary.push('Shoulders');
     secondary.push('Triceps');
-  } else if (name.includes('row') || name.includes('pulldown') || name.includes('pull_up') || name.includes('chin')) {
+  } else if (norm.includes('row') || norm.includes('pulldown') || norm.includes('pull up') || norm.includes('chin') || norm.includes('lat')) {
     primary.push('Back');
     secondary.push('Biceps', 'Shoulders');
-  } else if (name.includes('squat') || name.includes('leg_press') || name.includes('leg_extension') || name.includes('lunge')) {
+  } else if (norm.includes('squat') || norm.includes('leg press') || norm.includes('extension') || norm.includes('lunge') || norm.includes('quad')) {
     primary.push('Quads');
     secondary.push('Hamstrings & Glutes');
-  } else if (name.includes('deadlift') || name.includes('rdl') || name.includes('leg_curl') || name.includes('hip_thrust')) {
+  } else if (norm.includes('deadlift') || norm.includes('rdl') || norm.includes('curl') && (norm.includes('leg') || norm.includes('hamstring')) || norm.includes('hip thrust') || norm.includes('glute')) {
     primary.push('Hamstrings & Glutes');
     secondary.push('Back');
-  } else if (name.includes('curl') || name.includes('hammer')) {
+  } else if (norm.includes('curl') || norm.includes('bicep') || norm.includes('hammer')) {
     primary.push('Biceps');
-  } else if (name.includes('tricep') || name.includes('pushdown') || name.includes('skullcrusher')) {
+  } else if (norm.includes('tricep') || norm.includes('pushdown') || norm.includes('skullcrusher') || norm.includes('dip')) {
     primary.push('Triceps');
-  } else if (name.includes('crunch') || name.includes('leg_raise') || name.includes('plank') || name.includes('ab')) {
+  } else if (norm.includes('crunch') || norm.includes('leg raise') || norm.includes('plank') || norm.includes('ab')) {
     primary.push('Abs & Core');
-  } else if (name.includes('calf') || name.includes('calves')) {
+  } else if (norm.includes('calf') || norm.includes('calves')) {
     primary.push('Calves');
   } else {
     if (demo.category === 'Chest') {
@@ -244,9 +265,9 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
         backgroundColor: '#1a1f29',
         titleColor: '#ffffff',
         bodyColor: '#10b981',
-        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderColor: 'rgba(255, 255, 255, 0.15)',
         borderWidth: 1,
-        padding: 10,
+        padding: 12,
         callbacks: {
           label: (context) => {
             return ` ${context.parsed.x} sets / week (${includeIndirect.value ? 'Direct + Indirect 0.5x' : 'Direct Only'})`;
@@ -257,17 +278,17 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
     scales: {
       x: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.05)'
+          color: 'rgba(255, 255, 255, 0.08)'
         },
         ticks: {
-          color: 'rgba(255, 255, 255, 0.6)',
-          font: { size: 11 }
+          color: '#a0aec0',
+          font: { size: 11, weight: 'bold' }
         },
         title: {
           display: true,
           text: 'Avg Weekly Sets',
-          color: 'rgba(255, 255, 255, 0.5)',
-          font: { size: 11 }
+          color: '#a0aec0',
+          font: { size: 12, weight: 'bold' }
         },
         beginAtZero: true
       },
@@ -276,7 +297,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
           display: false
         },
         ticks: {
-          color: 'rgba(255, 255, 255, 0.85)',
+          color: '#cbd5e1',
           font: { size: 12, weight: 'bold' }
         }
       }
@@ -311,7 +332,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
   font-weight: 700;
   text-transform: uppercase;
   color: var(--color-card-text);
-  opacity: 0.6;
+  opacity: 0.75;
 }
 
 .toggle-buttons {
@@ -369,7 +390,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
 }
 
 .canvas-wrapper {
-  height: 320px;
+  height: 340px;
   position: relative;
   width: 100%;
 }
