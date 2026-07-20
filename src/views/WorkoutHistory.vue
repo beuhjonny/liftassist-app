@@ -89,35 +89,53 @@
             />
         </div>
 
-        <!-- 2. Weekly Sets per Muscle Group (Direct vs. Indirect) -->
-        <div class="chart-section card">
-            <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="margin:0;">💪 Muscle Group Sets per Week</h3>
+        <!-- Expandable Detailed Analytics (Muscle Group Sets & Exercise Strength) -->
+        <div class="card" style="margin-top: 15px; margin-bottom: 25px; border-radius: 12px; overflow: hidden;">
+          <div 
+            @click="showDetailedAnalytics = !showDetailedAnalytics" 
+            style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; padding: 14px 18px; background: var(--color-card-bg);"
+          >
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <h4 style="margin: 0; font-size: 1.05em; line-height: 1; color: var(--color-heading);">📊 Detailed Muscle & Exercise Analytics</h4>
+              <span style="font-size: 0.75em; font-weight: 600; opacity: 0.75; background: var(--color-card-mute); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--color-card-border);">
+                {{ showDetailedAnalytics ? 'Hide Extra Charts' : 'Show Extra Charts' }}
+              </span>
             </div>
-            <MuscleGroupVolumeChart 
-                :workouts="loggedWorkouts" 
-                :weightUnit="settings?.weightUnit || 'lbs'"
-            />
-        </div>
+            <span style="font-size: 1.1em; transition: transform 0.2s;" :style="{ transform: showDetailedAnalytics ? 'rotate(180deg)' : 'rotate(0deg)' }">▼</span>
+          </div>
 
-        <!-- 3. Exercise Strength & 1RM Progress -->
-        <div class="chart-section card">
-             <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                 <h3 style="margin:0;">🎯 Exercise Strength & 1RM Progress</h3>
-                 <select v-model="selectedExerciseForGraph" class="history-select" style="max-width: 220px; min-width: 150px;">
-                     <option value="">Select Exercise</option>
-                     <option v-for="ex in uniqueExercises" :key="ex" :value="ex">{{ ex }}</option>
-                 </select>
-             </div>
-             <ExerciseProgressChart 
-                 v-if="selectedExerciseForGraph" 
-                 :exerciseName="selectedExerciseForGraph" 
-                 :workouts="loggedWorkouts" 
-                 :weightUnit="settings?.weightUnit || 'lbs'"
-             />
-             <div v-else class="placeholder-text card-inset" style="text-align:center; padding: 40px; color: var(--color-card-text); opacity: 0.75; border-radius: 12px;">
-                 Select an exercise above to analyze 1RM strength, top weight, and volume progress.
-             </div>
+          <div v-show="showDetailedAnalytics" style="padding: 18px; border-top: 1px solid var(--color-card-border); display: flex; flex-direction: column; gap: 20px; background: var(--color-card-mute);">
+            <!-- 2. Weekly Sets per Muscle Group (Direct vs. Indirect) -->
+            <div class="chart-section card" style="padding: 18px; border-radius: 10px;">
+                <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="margin:0; font-size: 1.2em;">💪 Muscle Group Sets per Week</h3>
+                </div>
+                <MuscleGroupVolumeChart 
+                    :workouts="loggedWorkouts" 
+                    :weightUnit="settings?.weightUnit || 'lbs'"
+                />
+            </div>
+
+            <!-- 3. Exercise Strength & 1RM Progress -->
+            <div class="chart-section card" style="padding: 18px; border-radius: 10px;">
+                 <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
+                     <h3 style="margin:0; font-size: 1.2em;">🎯 Exercise Strength & 1RM Progress</h3>
+                     <select v-model="selectedExerciseForGraph" class="history-select" style="max-width: 220px; min-width: 150px;">
+                         <option value="">Select Exercise</option>
+                         <option v-for="ex in uniqueExercises" :key="ex" :value="ex">{{ ex }}</option>
+                     </select>
+                 </div>
+                 <ExerciseProgressChart 
+                     v-if="selectedExerciseForGraph" 
+                     :exerciseName="selectedExerciseForGraph" 
+                     :workouts="loggedWorkouts" 
+                     :weightUnit="settings?.weightUnit || 'lbs'"
+                 />
+                 <div v-else class="placeholder-text card-inset" style="text-align:center; padding: 30px; color: var(--color-card-text); opacity: 0.75; border-radius: 8px;">
+                     Select an exercise above to analyze 1RM strength, top weight, and volume progress.
+                 </div>
+            </div>
+          </div>
         </div>
     </div>
 
@@ -463,6 +481,7 @@ const { activeProgram } = useTrainingProgram();
 const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
 
 // Chart & Analytics State
+const showDetailedAnalytics = ref(false);
 const selectedExerciseForGraph = ref<string>('');
 const weeklyVolumeTimeRange = ref('12w');
 const volumeAggregation = ref<'weekly' | 'monthly'>('weekly');
