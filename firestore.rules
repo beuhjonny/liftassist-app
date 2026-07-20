@@ -2,20 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    function isReasonableSize() {
-      return request.resource == null || request.resource.data.keys().size() < 50;
-    }
-
-    // Top-level system collections: managed securely by Cloud Functions
+    // Top-level system collections: managed securely by Cloud Functions only
     match /auth_tokens/{tokenId} {
       allow read, write: if false;
     }
@@ -24,43 +11,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // User Subtree Rules
+    // User Subtree Rules: User has full access to their own data
     match /users/{userId} {
-      allow read, write: if isOwner(userId) && isReasonableSize();
-
-      match /loggedWorkouts/{workoutId} {
-        allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId)
-          && isReasonableSize()
-          && request.resource.data.userId == userId;
-        allow delete: if isOwner(userId);
-      }
-
-      match /exerciseProgress/{progressId} {
-        allow read: if isOwner(userId);
-        allow create, update: if isOwner(userId)
-          && isReasonableSize();
-        allow delete: if isOwner(userId);
-      }
-
-      match /trainingPrograms/{programId} {
-        allow read, write: if isOwner(userId) && isReasonableSize();
-      }
-
-      match /settings/{settingId} {
-        allow read, write: if isOwner(userId) && isReasonableSize();
-      }
-
-      match /strava/{docId} {
-        allow read, write: if isOwner(userId) && isReasonableSize();
-      }
-
-      match /indexes/{indexId} {
-        allow read, write: if isOwner(userId);
-      }
+      allow read, write: if request.auth != null && request.auth.uid == userId;
 
       match /{document=**} {
-        allow read, write: if isOwner(userId) && isReasonableSize();
+        allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
   }
