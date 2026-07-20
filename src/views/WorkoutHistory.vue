@@ -132,7 +132,7 @@
               Routine: {{ workout.trainingProgramNameUsed }}
             </p>
           </div>
-          <button @click="openEditModal(workout)" class="icon-button edit-btn" title="Edit Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">✏️</button>
+          <button @click.stop.prevent="openEditModal(workout)" class="icon-button edit-btn" title="Edit Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">✏️</button>
         </div>
 
         <div class="workout-summary card-inset">
@@ -237,6 +237,7 @@ const showEditModal = ref(false);
 const editingWorkout = ref<LoggedWorkout | null>(null);
 
 function openEditModal(workout: LoggedWorkout) {
+  console.log('Opening edit modal for workout:', workout);
   editingWorkout.value = workout;
   showEditModal.value = true;
 }

@@ -158,9 +158,19 @@ const editableWorkout = ref<LoggedWorkout | null>(null);
 const showDeleteConfirm = ref(false);
 const isSaving = ref(false);
 
-watch(() => props.workout, (newWk) => {
-  if (newWk) {
-    editableWorkout.value = JSON.parse(JSON.stringify(newWk));
+function cloneWorkout(wk: LoggedWorkout): LoggedWorkout {
+  return {
+    ...wk,
+    performedExercises: wk.performedExercises ? wk.performedExercises.map(ex => ({
+      ...ex,
+      sets: ex.sets ? ex.sets.map(s => ({ ...s })) : []
+    })) : []
+  };
+}
+
+watch(() => [props.show, props.workout], () => {
+  if (props.show && props.workout) {
+    editableWorkout.value = cloneWorkout(props.workout);
   } else {
     editableWorkout.value = null;
   }
@@ -231,6 +241,11 @@ async function confirmDelete() {
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.75);
   backdrop-filter: blur(6px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .edit-workout-modal {
