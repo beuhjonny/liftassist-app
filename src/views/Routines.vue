@@ -59,38 +59,56 @@
 
 
       <div v-if="creationMode === 'ai'" class="ai-creation-flow card animate-fade-in">
-        <header class="flow-header">
-          <button @click="creationMode = null" class="back-link">← Back to choices</button>
-          <h2>AI Assisted Setup</h2>
+        <header class="flow-header" style="margin-bottom: 15px; text-align: left;">
+          <button @click="creationMode = null" class="back-link" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 0; font-size: 0.95em; font-weight: 500;">← Back to choices</button>
+          <h2 style="margin-top: 10px;">AI Assisted Setup</h2>
         </header>
 
-        <div class="ai-sub-options">
-          <div class="ai-nudge-section">
-             <button @click="toggleExistingRoutineHelp" class="ai-nudge-card">
-               <div class="nudge-icon">📸</div>
-               <div class="nudge-text">
-                 <strong>Import Existing Routine</strong>
-                 <span>From Notes, Screenshots, or raw text</span>
+        <p style="font-size: 0.95em; opacity: 0.85; margin-bottom: 25px; line-height: 1.5; text-align: left; background: var(--color-card-mute); padding: 14px 18px; border-radius: 8px; border: 1px solid var(--color-card-border);">
+          The following two options use the external AI agent of your choice (such as <strong>ChatGPT</strong>, <strong>Claude</strong>, or <strong>Gemini</strong>) to create a routine for LiftLogic. Simply follow the instructions to import from any source, or create a custom plan from scratch.
+        </p>
+
+        <div class="ai-sub-options" style="text-align: left;">
+          <h4 style="margin-top: 0; margin-bottom: 12px; font-weight: 600;">Step 1: Choose Method & Copy AI Prompt</h4>
+          
+          <div class="ai-nudge-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 30px;">
+             <button @click="toggleExistingRoutineHelp" class="ai-nudge-card" style="padding: 16px; border-radius: 8px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: flex-start; gap: 12px;">
+               <div class="nudge-icon" style="font-size: 1.8em;">📸</div>
+               <div class="nudge-text" style="display: flex; flex-direction: column; gap: 4px;">
+                 <strong style="color: var(--color-card-text); font-size: 1em;">Import Existing Routine</strong>
+                 <span style="font-size: 0.85em; opacity: 0.7;">Convert notes, screenshots, or text via AI prompt</span>
                </div>
              </button>
-             <button @click="toggleNewRoutineHelp" class="ai-nudge-card">
-               <div class="nudge-icon">🤖</div>
-               <div class="nudge-text">
-                 <strong>Design New with AI</strong>
-                 <span>Let AI build a plan based on your goals</span>
+
+             <button @click="toggleNewRoutineHelp" class="ai-nudge-card" style="padding: 16px; border-radius: 8px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: flex-start; gap: 12px;">
+               <div class="nudge-icon" style="font-size: 1.8em;">🤖</div>
+               <div class="nudge-text" style="display: flex; flex-direction: column; gap: 4px;">
+                 <strong style="color: var(--color-card-text); font-size: 1em;">Design New with AI</strong>
+                 <span style="font-size: 0.85em; opacity: 0.7;">Let AI build a tailored plan based on your goals</span>
                </div>
              </button>
           </div>
 
-          <div class="import-routine-section card-inset">
-            <h4>Import via JSON (Advanced)</h4>
-            <p class="small-text">If you have correctly formatted JSON data, paste it here.</p>
+          <div class="import-routine-section card-inset" style="padding: 20px; background: var(--color-card-mute); border-radius: 8px; border: 1px solid var(--color-card-border);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span style="font-size: 1.2em;">📋</span>
+              <h4 style="margin: 0; font-weight: 600;">Step 2: Paste Generated Routine JSON</h4>
+            </div>
+            <p class="small-text" style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px; line-height: 1.4;">
+              Once you've copied the prompt above into ChatGPT, Claude, or Gemini and received your routine JSON code block, paste it below to build your routine.
+            </p>
             <form @submit.prevent="importPastedRoutine">
-              <div class="form-group">
-                <textarea id="routineJsonData" v-model="pastedRoutineJson" rows="4" placeholder="Paste your routine JSON here..."></textarea>
+              <div class="form-group" style="margin-bottom: 15px;">
+                <textarea 
+                  id="routineJsonData" 
+                  v-model="pastedRoutineJson" 
+                  rows="4" 
+                  placeholder="Paste your generated routine JSON code block here..."
+                  style="width: 100%; border-radius: 6px; border: 1px solid var(--color-card-border); padding: 12px; font-family: monospace; font-size: 0.85em; background: var(--color-card-bg); color: var(--color-card-text); resize: vertical;"
+                ></textarea>
               </div>
-              <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary button-large full-width">
-                {{ isSaving ? 'Importing...' : 'Perform Import' }}
+              <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary button-large full-width" style="padding: 12px; font-weight: 600; font-size: 1em; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                {{ isSaving ? 'Importing Routine...' : '🚀 Import Routine JSON' }}
               </button>
             </form>
           </div>
@@ -141,49 +159,47 @@
         <div class="modal-content" style="max-width: 700px; text-align: left;">
             <button @click="showExistingRoutineHelpDialog = false" class="modal-close-button">&times;</button>
             <h3 style="margin-top:0;">Import Existing Routine</h3>
-            <p style="font-size: 1.05em; line-height: 1.5; color: #444;">
-                This tool will help you take <strong>ANY</strong> workout routine you already have and convert it to a format you can import into LiftAssist.
+            <p style="font-size: 1em; line-height: 1.5; color: var(--color-card-text); opacity: 0.9;">
+                Take <strong>ANY</strong> routine you already have (notes, screenshot, or dictation) and convert it to LiftLogic format using your preferred AI.
             </p>
             
-            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
+            <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
                 <div>
-                    <strong>Step 1:</strong> Find your existing routine. It can be text, a screenshot, or you can even just dictate it to your favorite AI (ChatGPT, Claude, Gemini).
-                </div>
-                <div>
-                    <strong>Step 2:</strong> Copy the instructions below and paste them into the AI along with your source workout.
+                    <strong>Step 1:</strong> Copy the prompt below into ChatGPT, Claude, or Gemini along with your routine text or image.
                 </div>
                 
-                <div class="code-block-container" style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 0.8em; white-space: pre-wrap; font-family: monospace; color: #333;">
-<strong>System Prompt:</strong>
-You are an expert fitness data assistant for the LiftAssist app.
-I am providing a workout routine (text, notes, or image). Your goal is to convert it into the specific JSON format required by the app.
+                <div class="code-block-container" style="background: var(--color-card-mute); border: 1px solid var(--color-card-border); padding: 14px; border-radius: 6px; overflow-x: auto; font-size: 0.8em; white-space: pre-wrap; font-family: monospace; color: var(--color-card-text); max-height: 250px;">
+System Prompt:
+You are an expert fitness data assistant for the LiftLogic app.
+I am providing a workout routine (text, notes, or image). Convert it into the specific JSON format required by the app.
 
-<strong>GUIDELINES:</strong>
-1. <strong>Interpret intelligently:</strong> "Bench 3x10" means { "exerciseName": "Bench Press", "targetSets": 3, "minReps": 10, "maxReps": 10 }. If range is "8-12", set min 8, max 12.
-2. <strong>Fill gaps:</strong> If sets are missing, assume 3. If reps are missing, assume 8-12. 
-3. <strong>Estimate Weight:</strong> If no weight is mentioned, provide a reasonable ESTIMATE for a beginner (e.g. 135 for Bench, 45 for Curl). <strong>Do not use 0</strong> unless it is a bodyweight exercise.
-4. <strong>Clarify if needed:</strong> If input is unintelligible, ask for clarification.
-5. <strong>Format:</strong> Output <strong>ONLY valid raw JSON</strong>.
+GUIDELINES:
+1. Interpret intelligently: "Bench 3x10 @ 135" means { "exerciseName": "Bench Press", "targetSets": 3, "minReps": 10, "maxReps": 10, "startingWeight": 135 }. If rep range is "8-12", set minReps: 8, maxReps: 12.
+2. Fill gaps: If sets are missing, assume 3. If reps are missing, assume 8-12.
+3. Estimate Weight: Provide a reasonable starting weight estimate for a beginner (e.g. 135 for Bench Press, 45 for Curl). Do not use 0 unless bodyweight.
+4. Output format: Output ONLY valid raw JSON with NO conversational text or commentary.
 
-<strong>REQUIRED JSON STRUCTURE:</strong>
+REQUIRED JSON STRUCTURE:
 {
   "programName": "Routine Name",
   "description": "Short description",
+  "defaultRestTimer": 90,
   "workoutDays": [
     {
-      "dayName": "e.g. Push Day",
+      "dayName": "Push Day",
       "order": 1,
       "exercises": [
         {
-          "exerciseName": "Exercise Name",
+          "exerciseName": "Dumbbell Bench Press",
           "targetSets": 3,
           "minReps": 8,
           "maxReps": 12,
-          "notesForExercise": "Optional notes",
-          // IMPORTANT: Provide a weight estimate!
-          "startingWeight": 135, 
-          "isTimed": false, 
-          "customRestSeconds": 60
+          "startingWeight": 50,
+          "weightIncrement": 5,
+          "repOverloadStep": 2,
+          "isTimed": false,
+          "customRestSeconds": 90,
+          "notesForExercise": "Optional execution notes"
         }
       ]
     }
@@ -191,8 +207,16 @@ I am providing a workout routine (text, notes, or image). Your goal is to conver
 }
                 </div>
                 
+                <button 
+                  @click="copyExistingRoutinePrompt" 
+                  class="button-secondary small" 
+                  style="align-self: flex-start; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; font-weight: 500;"
+                >
+                    📋 Copy Prompt to Clipboard
+                </button>
+
                 <div>
-                    <strong>Step 3:</strong> Take the JSON output from the AI and paste it into the box on the previous screen. It may not be perfect, but it should get you close! You can edit the details after importing.
+                    <strong>Step 2:</strong> Copy the resulting JSON code block output from the AI and paste it into the JSON box below.
                 </div>
             </div>
             
@@ -206,54 +230,66 @@ I am providing a workout routine (text, notes, or image). Your goal is to conver
         <div class="modal-content" style="max-width: 700px; text-align: left;">
             <button @click="showNewRoutineHelpDialog = false" class="modal-close-button">&times;</button>
             <h3 style="margin-top:0;">Design Fresh with AI</h3>
-            <p style="font-size: 1.05em; line-height: 1.5; color: #444;">
-                Have no idea where to start? Ask the AI to design a custom program for you from scratch.
+            <p style="font-size: 1em; line-height: 1.5; color: var(--color-card-text); opacity: 0.9;">
+                Ask ChatGPT, Claude, or Gemini to design a custom training program from scratch based on your goals and equipment.
             </p>
 
-            <div style="margin-top: 20px; display: flex; flex-direction: column; gap: 15px;">
+            <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
                 <div>
-                    <strong>Step 1:</strong> Copy the instructions below to the AI.
-                </div>
-                <div>
-                    <strong>Step 2:</strong> Tell the AI what equipment you have, how many days you want to train, and what your main goal is. It will do its best to create a balanced plan for you, which you can fully customize after importing.
+                    <strong>Step 1:</strong> Copy the prompt below into your favorite AI tool and fill in your goal, equipment, and training frequency.
                 </div>
 
-                <div class="code-block-container" style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 15px; border-radius: 6px; overflow-x: auto; font-size: 0.8em; white-space: pre-wrap; font-family: monospace; color: #333;">
-<strong>Prompt:</strong>
-"Act as an expert strength coach. I want a new workout routine.
-<strong>My Profile:</strong>
-- Goal: [e.g. Hypertrophy, Strength, Weight Loss]
-- Level: [e.g. Beginner, Intermediate]
-- Equipment Access: [e.g. Full Gym, Dumbbells only, Bodyweight]
-- Frequency: [e.g. 3 days/week]
+                <div class="code-block-container" style="background: var(--color-card-mute); border: 1px solid var(--color-card-border); padding: 14px; border-radius: 6px; overflow-x: auto; font-size: 0.8em; white-space: pre-wrap; font-family: monospace; color: var(--color-card-text); max-height: 250px;">
+System Prompt:
+Act as an expert strength coach for the LiftLogic app. I want a new workout routine.
 
-<strong>Your Task:</strong>
-Design a balanced program for me and output it <strong>ONLY as strict JSON</strong> representing the plan.
+My Profile:
+- Goal: [Hypertrophy / Strength / General Fitness]
+- Experience Level: [Beginner / Intermediate / Advanced]
+- Equipment Access: [Full Gym / Dumbbells & Bench / Bodyweight]
+- Frequency: [3 or 4 days per week]
 
-<strong>REQUIRED JSON FORMAT:</strong>
+Your Task:
+Design a balanced training program for me and output it ONLY as strict raw JSON with NO commentary.
+
+REQUIRED JSON STRUCTURE:
 {
-  "programName": "suggested name",
-  "description": "brief strategy summary",
+  "programName": "Suggested Program Name",
+  "description": "Brief strategy summary",
+  "defaultRestTimer": 90,
   "workoutDays": [
     {
-      "dayName": "Day 1 - Focus",
+      "dayName": "Day 1 - Push",
       "order": 1,
       "exercises": [
         {
-          "exerciseName": "Exercise",
+          "exerciseName": "Dumbbell Bench Press",
           "targetSets": 3,
           "minReps": 8,
           "maxReps": 12,
-          "startingWeight": 45 // Estimate appropriate weight (e.g. 45-135lbs). Do not use 0.
+          "startingWeight": 50,
+          "weightIncrement": 5,
+          "repOverloadStep": 2,
+          "isTimed": false,
+          "customRestSeconds": 90,
+          "notesForExercise": "Optional execution notes"
         }
       ]
     }
   ]
-}"
+}
                 </div>
 
+                <button 
+                  @click="copyNewRoutinePrompt" 
+                  class="button-secondary small" 
+                  style="align-self: flex-start; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; font-weight: 500;"
+                >
+                    📋 Copy Prompt to Clipboard
+                </button>
+
                 <div>
-                    <strong>Step 3:</strong> Paste the resulting JSON code into the import box on the previous screen.
+                    <strong>Step 2:</strong> Paste the resulting JSON code block output into the box on the setup screen.
                 </div>
             </div>
 
@@ -724,6 +760,100 @@ const showFailureProgressionHelp = ref(false);
 
 const showTooltipAlert = (msg: string) => {
   alert(msg);
+};
+
+const copyPromptToClipboard = (text: string) => {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      alert("📋 Prompt copied to clipboard! Paste it into ChatGPT, Claude, or Gemini.");
+    }).catch(() => {
+      alert("Could not copy automatically. Please select text manually.");
+    });
+  } else {
+    alert("Clipboard access not available on this browser.");
+  }
+};
+
+const copyExistingRoutinePrompt = () => {
+  const promptText = `System Prompt:
+You are an expert fitness data assistant for the LiftLogic app.
+I am providing a workout routine (text, notes, or image). Convert it into the specific JSON format required by the app.
+
+GUIDELINES:
+1. Interpret intelligently: "Bench 3x10 @ 135" means { "exerciseName": "Bench Press", "targetSets": 3, "minReps": 10, "maxReps": 10, "startingWeight": 135 }. If rep range is "8-12", set minReps: 8, maxReps: 12.
+2. Fill gaps: If sets are missing, assume 3. If reps are missing, assume 8-12.
+3. Estimate Weight: Provide a reasonable starting weight estimate for a beginner (e.g. 135 for Bench Press, 45 for Curl). Do not use 0 unless bodyweight.
+4. Output format: Output ONLY valid raw JSON with NO conversational text or commentary.
+
+REQUIRED JSON STRUCTURE:
+{
+  "programName": "Routine Name",
+  "description": "Short description",
+  "defaultRestTimer": 90,
+  "workoutDays": [
+    {
+      "dayName": "Push Day",
+      "order": 1,
+      "exercises": [
+        {
+          "exerciseName": "Dumbbell Bench Press",
+          "targetSets": 3,
+          "minReps": 8,
+          "maxReps": 12,
+          "startingWeight": 50,
+          "weightIncrement": 5,
+          "repOverloadStep": 2,
+          "isTimed": false,
+          "customRestSeconds": 90,
+          "notesForExercise": "Optional execution notes"
+        }
+      ]
+    }
+  ]
+}`;
+  copyPromptToClipboard(promptText);
+};
+
+const copyNewRoutinePrompt = () => {
+  const promptText = `System Prompt:
+Act as an expert strength coach for the LiftLogic app. I want a new workout routine.
+
+My Profile:
+- Goal: [Hypertrophy / Strength / General Fitness]
+- Experience Level: [Beginner / Intermediate / Advanced]
+- Equipment Access: [Full Gym / Dumbbells & Bench / Bodyweight]
+- Frequency: [3 or 4 days per week]
+
+Your Task:
+Design a balanced training program for me and output it ONLY as strict raw JSON with NO commentary.
+
+REQUIRED JSON STRUCTURE:
+{
+  "programName": "Suggested Program Name",
+  "description": "Brief strategy summary",
+  "defaultRestTimer": 90,
+  "workoutDays": [
+    {
+      "dayName": "Day 1 - Push",
+      "order": 1,
+      "exercises": [
+        {
+          "exerciseName": "Dumbbell Bench Press",
+          "targetSets": 3,
+          "minReps": 8,
+          "maxReps": 12,
+          "startingWeight": 50,
+          "weightIncrement": 5,
+          "repOverloadStep": 2,
+          "isTimed": false,
+          "customRestSeconds": 90,
+          "notesForExercise": "Optional execution notes"
+        }
+      ]
+    }
+  ]
+}`;
+  copyPromptToClipboard(promptText);
 };
 
 const validPrograms = computed(() => {
@@ -1298,7 +1428,11 @@ const importPastedRoutine = async () => {
   error.value = null;
 
   try {
-    const importedData = JSON.parse(pastedRoutineJson.value);
+    let rawJson = pastedRoutineJson.value.trim();
+    // Clean up markdown code block delimiters if present (e.g. ```json ... ```)
+    rawJson = rawJson.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+
+    const importedData = JSON.parse(rawJson);
 
     if (!importedData || !importedData.programName || !Array.isArray(importedData.workoutDays)) {
         throw new Error("Invalid routine data structure. Missing programName or workoutDays array.");
