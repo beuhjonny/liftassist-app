@@ -4,8 +4,17 @@
     <div class="card-header-grid">
         <div class="header-spacer"></div>
         
-        <div class="header-content">
+        <div class="header-content" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
             <h2>{{ exercise.exerciseName }}</h2>
+            <button 
+              v-if="showVideoDemos !== false" 
+              @click="$emit('openDemo', exercise.exerciseName)" 
+              class="button-icon extra-small" 
+              title="View Form Demo"
+              style="font-size: 1.1em; cursor: pointer; background: none; border: none; padding: 2px 4px;"
+            >
+              🎥
+            </button>
             <p v-if="exercise.notesForExercise" class="exercise-notes">
               <em>Notes: {{ exercise.notesForExercise }}</em>
             </p>
@@ -102,6 +111,7 @@ defineProps<{
   isHoldTimerRunning: boolean;
   formattedHoldTime: string;
   embiggenButtons: boolean;
+  showVideoDemos?: boolean;
 }>();
 
 defineEmits<{
@@ -109,6 +119,7 @@ defineEmits<{
   (e: 'startHold'): void;
   (e: 'cancelHold'): void;
   (e: 'logSet', status: 'done' | 'failed'): void;
+  (e: 'openDemo', name: string): void;
 }>();
 </script>
 

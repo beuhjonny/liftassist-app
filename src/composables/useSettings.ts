@@ -17,6 +17,7 @@ export interface UserSettings {
     activeProgramId: string | null; // ID of the active training program
     embiggenButtons: boolean; // Accessible / large buttons mode
     cardioDistanceUnit?: CardioDistanceUnitOption;
+    enableVideoDemos?: boolean; // Show in-app exercise form video demos
 }
 
 const defaultSettings: UserSettings = {
@@ -28,6 +29,7 @@ const defaultSettings: UserSettings = {
     activeProgramId: null,
     embiggenButtons: false,
     cardioDistanceUnit: 'mi',
+    enableVideoDemos: true,
 };
 
 const settings = ref<UserSettings>({ ...defaultSettings });

@@ -71,10 +71,12 @@
         :isHoldTimerRunning="isHoldTimerRunning"
         :formattedHoldTime="formattedHoldTime"
         :embiggenButtons="settings.embiggenButtons"
+        :showVideoDemos="settings.enableVideoDemos !== false"
         @openEdit="openEditPrescriptionModal"
         @startHold="startHoldTimer"
         @cancelHold="stopHoldTimer(false)"
         @logSet="logSet"
+        @openDemo="openDemoModal"
       />
     </div>
 
@@ -308,6 +310,13 @@
       </div>
     </div>
 
+    <!-- Exercise Demo Modal -->
+    <ExerciseDemoModal
+      :show="showDemoModal"
+      :exerciseName="demoExerciseName"
+      @close="showDemoModal = false"
+    />
+
     <!-- Audio element for final fallback -->
     <audio ref="timerAudioPlayer" style="display: none;">
       <source src="/sounds/bell.mp3" type="audio/mpeg">
@@ -333,6 +342,7 @@ import ActiveExerciseCard from '../components/active-workout/ActiveExerciseCard.
 import DraftPromptOverlay from '../components/active-workout/DraftPromptOverlay.vue';
 import EditPrescriptionModal from '../components/active-workout/EditPrescriptionModal.vue';
 import ActualRepsLogger from '../components/active-workout/ActualRepsLogger.vue';
+import ExerciseDemoModal from '../components/active-workout/ExerciseDemoModal.vue';
 
 
 
@@ -397,6 +407,13 @@ const error = ref<string | null>(null);
 const draftWorkoutId = ref<string | null>(null);
 const hasDraft = ref(false);
 const showDraftPrompt = ref(false);
+const showDemoModal = ref(false);
+const demoExerciseName = ref('');
+
+const openDemoModal = (name: string) => {
+  demoExerciseName.value = name;
+  showDemoModal.value = true;
+};
 const isLoadingDraft = ref(false);
 
 // Declare global window type for pending draft

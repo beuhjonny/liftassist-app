@@ -112,6 +112,18 @@
                 <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.embiggenButtons ? 'On' : 'Off' }}</span>
             </div>
         </div>
+
+         <div class="setting-item">
+            <label>Exercise Form Demos</label>
+            <div style="display: flex; align-items: center;">
+                <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                    <input type="checkbox" :checked="settings.enableVideoDemos !== false" @change="toggleVideoDemos" style="opacity: 0; width: 0; height: 0;">
+                    <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                    <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.enableVideoDemos !== false ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                </label>
+                <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.enableVideoDemos !== false ? 'On' : 'Off' }}</span>
+            </div>
+        </div>
       </div>
 
       <!-- Connections Card -->
@@ -1915,9 +1927,13 @@ const previewSound = () => {
     playTone(settings.value.timerSound, settings.value.timerVolume);
 };
 
-const toggleEmbiggen = (event: Event) => {
-    const isChecked = (event.target as HTMLInputElement).checked;
-    saveSettings({ embiggenButtons: isChecked });
+const toggleEmbiggen = () => {
+  saveSettings({ embiggenButtons: !settings.value.embiggenButtons });
+};
+
+const toggleVideoDemos = (e: Event) => {
+  const checked = (e.target as HTMLInputElement).checked;
+  saveSettings({ enableVideoDemos: checked });
 };
 
 // Device Pairing Logic
