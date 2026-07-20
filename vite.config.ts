@@ -56,6 +56,8 @@ export default defineConfig({
         ]
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         // Ensure all assets are cached for offline use
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json,vue,txt,woff2}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // Increase limit to 5MB to avoid warnings for large chunks if any
