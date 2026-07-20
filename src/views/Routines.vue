@@ -611,12 +611,21 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
              />
         </div>
         
-        <div style="margin-top: 20px;">
-            <button class="button-primary full-width" @click="startCreatingNewRoutine">
+        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="button-primary" @click="startCreatingNewRoutine" style="flex: 1; min-width: 160px;">
                 + Add New Routine
+            </button>
+            <button class="button-secondary" @click="showLogCardioModal = true" style="flex: 1; min-width: 160px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                🏃 Log Cardio Session
             </button>
         </div>
     </div>
+
+    <!-- Manual Cardio Log Modal -->
+    <LogCardioModal 
+        v-if="showLogCardioModal" 
+        @close="showLogCardioModal = false"
+    />
 
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteConfirmation" class="modal-overlay">
@@ -647,6 +656,7 @@ import useAuth from '../composables/useAuth';
 import useSettings, { type WeightUnitOption } from '../composables/useSettings';
 import useTrainingProgram from '../composables/useTrainingProgram';
 import ProgramCard from '../components/routines/ProgramCard.vue';
+import LogCardioModal from '../components/history/LogCardioModal.vue';
 import useHistoryIndex from '../composables/useHistoryIndex';
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import { toDisplay, fromInput, displayUnit } from '../utils/weight';
@@ -693,6 +703,7 @@ const { invalidateCache: invalidateWorkoutCache } = useLoggedWorkouts();
 const isLoading = computed(() => isProgramLoading.value);
 const isSaving = ref(false);
 const error = ref<string | null>(null);
+const showLogCardioModal = ref(false);
 const showDeleteConfirmation = ref(false);
 const showExerciseDeleteConfirmation = ref(false); // Potential future use, but let's stick to routine for now
 const itemToDelete = ref<any>(null); // For generic delete if needed

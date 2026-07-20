@@ -128,65 +128,120 @@
       <p>Error: {{ error }}</p>
     </div>
 
-    <div v-if="!isLoading && !error && user && loggedWorkouts.length === 0" class="no-history card">
-      <p>No workouts logged yet. Go crush a session!</p>
-      <router-link to="/" class="button-primary">Start a Workout</router-link>
+    <div v-if="!isLoading && !error && user && combinedHistoryItems.length === 0" class="no-history card">
+      <p>No workouts or cardio sessions logged yet. Go crush a session!</p>
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+        <router-link to="/" class="button-primary">Start a Workout</router-link>
+        <button @click="showLogCardioModal = true" class="button-secondary">🏃 Log Cardio</button>
+      </div>
     </div>
 
-    <div v-if="!isLoading && !error && user && loggedWorkouts.length > 0" class="history-list">
-      <h3 style="margin: 30px 0 20px 0; font-size: 1.5em; border-bottom: 1px solid var(--color-border); padding-bottom: 10px; color: var(--color-heading);">Recent Logs</h3>
-      <div v-for="workout in loggedWorkouts" :key="workout.id" class="history-item-card">
-        <div class="history-item-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <div>
-            <h2>{{ workout.workoutDayNameUsed || 'Workout Session' }}</h2>
-            <p class="workout-date">
-              {{ formatWorkoutDate(workout.date) }}
-            </p>
-            <p v-if="workout.trainingProgramNameUsed" class="program-name">
-              Routine: {{ workout.trainingProgramNameUsed }}
-            </p>
+    <div v-if="!isLoading && !error && user && combinedHistoryItems.length > 0" class="history-list">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 30px 0 20px 0; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
+        <h3 style="margin: 0; font-size: 1.5em; color: var(--color-heading);">Recent Activity</h3>
+        <button @click="showLogCardioModal = true" class="button-secondary small" style="display: flex; align-items: center; gap: 6px;">
+          🏃 Log Cardio
+        </button>
+      </div>
+
+      <div v-for="item in combinedHistoryItems" :key="item.id">
+        <!-- STRENGTH WORKOUT CARD -->
+        <div v-if="!item.isCardio && item.workout" class="history-item-card">
+          <div class="history-item-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <h2>{{ item.workout.workoutDayNameUsed || 'Workout Session' }}</h2>
+              <p class="workout-date">
+                {{ formatWorkoutDate(item.workout.date) }}
+              </p>
+              <p v-if="item.workout.trainingProgramNameUsed" class="program-name">
+                Routine: {{ item.workout.trainingProgramNameUsed }}
+              </p>
+            </div>
+            <div style="display: flex; gap: 4px; align-items: center;">
+              <button @click.stop.prevent="openShareModal(item.workout)" class="icon-button share-btn" title="Share Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">📤</button>
+              <button @click.stop.prevent="openEditModal(item.workout)" class="icon-button edit-btn" title="Edit Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">✏️</button>
+            </div>
           </div>
-          <div style="display: flex; gap: 4px; align-items: center;">
-            <button @click.stop.prevent="openShareModal(workout)" class="icon-button share-btn" title="Share Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">📤</button>
-            <button @click.stop.prevent="openEditModal(workout)" class="icon-button edit-btn" title="Edit Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">✏️</button>
+
+          <div class="workout-summary card-inset">
+            <h4>Session Summary:</h4>
+            <p><strong>Workout Time:</strong> {{ formatDuration(item.workout.durationMinutes) }}</p>
+            <p><strong>Total Volume:</strong> {{ calculateTotalVolume(item.workout.performedExercises).toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</p>
+            <p><strong>Total Sets:</strong> {{ getConsolidatedSetsInfo(item.workout.performedExercises) }}</p>
+
+            <div class="exercise-breakdown-header" v-if="item.workout.performedExercises && item.workout.performedExercises.length > 0">
+              <h5>Exercise Breakdown:</h5>
+              <button @click="toggleAllDetailsForWorkout(item.workout.id)" class="button-link">
+                {{ allDetailsExpandedForWorkout[item.workout.id] ? 'Hide Set Details' : 'Show Set Details' }}
+              </button>
+            </div>
+
+            <ul class="exercise-summary-list" v-if="item.workout.performedExercises && item.workout.performedExercises.length > 0">
+              <li v-for="ex in item.workout.performedExercises" :key="ex.exerciseId || ex.exerciseName">
+                <strong>{{ ex.exerciseName }}</strong>
+                <span v-if="ex.isPR" title="Personal Record!"> 🏅</span>
+                <span>: {{ getExerciseStatusForHistory(ex) }}{{ getExerciseLineSuffix(ex) }}</span>
+                
+                <ul v-if="allDetailsExpandedForWorkout[item.workout.id] && ex.sets && ex.sets.length > 0" class="set-details-list">
+                  <li v-for="(set, setIndex) in ex.sets" :key="setIndex">
+                    Set {{ set.setNumber }}: {{ toDisplay(set.actualWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }} x {{ set.actualReps }} {{ set.isTimed ? 'sec' : 'reps' }} ({{set.status}})
+                  </li>
+                </ul>
+              </li>
+            </ul>
+
+            <div v-if="item.workout.overallSessionNotes" class="session-notes-history">
+              <strong>Overall Session Notes:</strong>
+              <p>{{ item.workout.overallSessionNotes }}</p>
+            </div>
           </div>
         </div>
 
-        <div class="workout-summary card-inset">
-          <h4>Session Summary:</h4>
-          <p><strong>Workout Time:</strong> {{ formatDuration(workout.durationMinutes) }}</p>
-          <p><strong>Total Volume:</strong> {{ calculateTotalVolume(workout.performedExercises).toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</p>
-          <p><strong>Total Sets:</strong> {{ getConsolidatedSetsInfo(workout.performedExercises) }}</p>
+        <!-- CARDIO EVENT CARD -->
+        <div v-else-if="item.isCardio && item.cardio" class="history-item-card cardio-item-card" style="border-left: 4px solid #10b981;">
+          <div class="history-item-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <h2 style="margin: 0; font-size: 1.3em;">{{ getCardioIcon(item.cardio.type) }} {{ item.cardio.name || item.cardio.type }}</h2>
+                <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 6px; font-size: 0.75em; font-weight: 700; text-transform: uppercase;">
+                  {{ item.cardio.source === 'strava' ? 'Strava' : 'Cardio' }}
+                </span>
+              </div>
+              <p class="workout-date" style="margin-top: 4px;">
+                {{ formatWorkoutDate(item.cardio.date) }}
+              </p>
+            </div>
 
-          <div class="exercise-breakdown-header" v-if="workout.performedExercises && workout.performedExercises.length > 0">
-            <h5>Exercise Breakdown:</h5>
-            <button @click="toggleAllDetailsForWorkout(workout.id)" class="button-link">
-              {{ allDetailsExpandedForWorkout[workout.id] ? 'Hide Set Details' : 'Show Set Details' }}
-            </button>
+            <div style="display: flex; gap: 4px; align-items: center;">
+              <button v-if="item.cardio.source === 'manual'" @click.stop.prevent="handleDeleteCardioSession(item.cardio.id)" class="icon-button delete-btn" title="Delete Cardio Log" style="background: none; border: none; font-size: 1.1em; cursor: pointer; padding: 4px; border-radius: 6px; opacity: 0.7;">🗑️</button>
+            </div>
           </div>
 
-          <ul class="exercise-summary-list" v-if="workout.performedExercises && workout.performedExercises.length > 0">
-            <li v-for="ex in workout.performedExercises" :key="ex.exerciseId || ex.exerciseName">
-              <strong>{{ ex.exerciseName }}</strong>
-              <span v-if="ex.isPR" title="Personal Record!"> 🏅</span>
-              <span>: {{ getExerciseStatusForHistory(ex) }}{{ getExerciseLineSuffix(ex) }}</span>
-              
-              <ul v-if="allDetailsExpandedForWorkout[workout.id] && ex.sets && ex.sets.length > 0" class="set-details-list">
-                <li v-for="(set, setIndex) in ex.sets" :key="setIndex">
-                  Set {{ set.setNumber }}: {{ toDisplay(set.actualWeight, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }} x {{ set.actualReps }} {{ set.isTimed ? 'sec' : 'reps' }} ({{set.status}})
-                </li>
-              </ul>
-            </li>
-          </ul>
+          <div class="workout-summary card-inset" style="margin-top: 12px;">
+            <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+              <div>
+                <span style="font-size: 0.8em; opacity: 0.7; display: block; font-weight: 600; text-transform: uppercase;">Duration</span>
+                <strong style="font-size: 1.15em; color: var(--color-heading);">{{ formatDuration(item.cardio.durationMinutes) }}</strong>
+              </div>
 
-          <div v-if="workout.overallSessionNotes" class="session-notes-history">
-            <strong>Overall Session Notes:</strong>
-            <p>{{ workout.overallSessionNotes }}</p>
+              <div v-if="item.cardio.distanceMiles > 0">
+                <span style="font-size: 0.8em; opacity: 0.7; display: block; font-weight: 600; text-transform: uppercase;">Distance</span>
+                <strong style="font-size: 1.15em; color: var(--color-heading);">{{ formatCardioDistance(item.cardio.distanceMiles) }}</strong>
+              </div>
+
+              <div v-if="item.cardio.distanceMiles > 0 && item.cardio.durationMinutes > 0">
+                <span style="font-size: 0.8em; opacity: 0.7; display: block; font-weight: 600; text-transform: uppercase;">Avg Pace</span>
+                <strong style="font-size: 1.15em; color: var(--color-heading);">{{ calculatePace(item.cardio.durationMinutes, item.cardio.distanceMiles) }}</strong>
+              </div>
+            </div>
+
+            <p v-if="item.cardio.notes" style="margin-top: 12px; font-size: 0.9em; font-style: italic; opacity: 0.85; border-top: 1px dashed var(--color-card-border); padding-top: 8px;">
+              "{{ item.cardio.notes }}"
+            </p>
           </div>
         </div>
       </div>
 
-      
       <button v-if="hasMoreDocs" @click="fetchMoreWorkouts" class="button-secondary full-width" style="margin-top: 10px;">
         <span v-if="isLoading">Loading...</span>
         <span v-else>Load Older Workouts</span>
@@ -204,6 +259,12 @@
     <div v-if="!user && !isLoading" class="login-prompt">
       <p>Please <router-link to="/login">log in</router-link> to view your history.</p>
     </div>
+
+    <!-- Manual Cardio Log Modal -->
+    <LogCardioModal 
+      v-if="showLogCardioModal" 
+      @close="showLogCardioModal = false" 
+    />
 
     <!-- Edit Logged Workout Modal -->
     <EditLoggedWorkoutModal 
@@ -230,6 +291,7 @@ import { db } from '../firebase.js';
 import useAuth from '../composables/useAuth';
 import useSettings from '../composables/useSettings';
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
+import useExternalActivities, { type ExternalActivity } from '../composables/useExternalActivities';
 import useHistoryIndex, { type CalendarIndexData } from '../composables/useHistoryIndex';
 import useStrava from '../composables/useStrava';
 import useTrainingProgram from '../composables/useTrainingProgram';
@@ -241,6 +303,7 @@ import ExerciseProgressChart from '../components/ExerciseProgressChart.vue';
 import MuscleGroupVolumeChart from '../components/MuscleGroupVolumeChart.vue';
 import EditLoggedWorkoutModal from '../components/history/EditLoggedWorkoutModal.vue';
 import ShareWorkoutModal from '../components/history/ShareWorkoutModal.vue';
+import LogCardioModal from '../components/history/LogCardioModal.vue';
 
 interface CalendarDay {
   date: Date;
@@ -257,6 +320,7 @@ interface CalendarDay {
 const { user } = useAuth();
 const { settings } = useSettings();
 const { loggedWorkouts, isLoading, error, fetchLoggedWorkouts, fetchMoreWorkouts, updateLoggedWorkout, deleteLoggedWorkout, hasMoreDocs } = useLoggedWorkouts();
+const { externalActivities, fetchExternalActivities, deleteExternalActivity } = useExternalActivities();
 const { calendarIndex, fetchCalendarIndex, isIndexLoading } = useHistoryIndex();
 
 const showEditModal = ref(false);
@@ -264,6 +328,99 @@ const editingWorkout = ref<LoggedWorkout | null>(null);
 
 const showShareModal = ref(false);
 const sharingWorkout = ref<LoggedWorkout | null>(null);
+
+const showLogCardioModal = ref(false);
+
+interface HistoryTimelineItem {
+  id: string;
+  isCardio: boolean;
+  dateObj: Date;
+  workout?: LoggedWorkout;
+  cardio?: ExternalActivity;
+}
+
+const getObjDate = (dateVal: any): Date => {
+  if (!dateVal) return new Date(0);
+  if (typeof dateVal.toDate === 'function') return dateVal.toDate();
+  if (typeof dateVal.seconds === 'number') return new Date(dateVal.seconds * 1000);
+  if (dateVal instanceof Date) return dateVal;
+  const d = new Date(dateVal);
+  return isNaN(d.getTime()) ? new Date(0) : d;
+};
+
+const combinedHistoryItems = computed<HistoryTimelineItem[]>(() => {
+  const items: HistoryTimelineItem[] = [];
+
+  loggedWorkouts.forEach(w => {
+    const d = getObjDate(w.date);
+    items.push({
+      id: w.id || `strength_${d.getTime()}`,
+      isCardio: false,
+      dateObj: d,
+      workout: w
+    });
+  });
+
+  externalActivities.forEach(c => {
+    const d = getObjDate(c.date);
+    items.push({
+      id: c.id || `cardio_${d.getTime()}`,
+      isCardio: true,
+      dateObj: d,
+      cardio: c
+    });
+  });
+
+  items.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
+  return items;
+});
+
+function getCardioIcon(type: string = ''): string {
+  const t = type.toLowerCase();
+  if (t.includes('run')) return '🏃';
+  if (t.includes('ride') || t.includes('cycle') || t.includes('bike')) return '🚴';
+  if (t.includes('swim')) return '🏊';
+  if (t.includes('walk')) return '🥾';
+  if (t.includes('hike')) return '🏔️';
+  if (t.includes('row')) return '🚣';
+  return '⚡';
+}
+
+function formatCardioDistance(miles: number = 0): string {
+  if (settings.value.cardioDistanceUnit === 'km') {
+    const km = miles * 1.60934;
+    return `${km.toFixed(2)} km`;
+  }
+  return `${miles.toFixed(2)} mi`;
+}
+
+function calculatePace(durationMinutes: number = 0, miles: number = 0): string {
+  if (!miles || miles <= 0 || !durationMinutes || durationMinutes <= 0) return '-';
+  if (settings.value.cardioDistanceUnit === 'km') {
+    const km = miles * 1.60934;
+    const paceMin = durationMinutes / km;
+    const mins = Math.floor(paceMin);
+    const secs = Math.round((paceMin - mins) * 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs} /km`;
+  } else {
+    const paceMin = durationMinutes / miles;
+    const mins = Math.floor(paceMin);
+    const secs = Math.round((paceMin - mins) * 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs} /mi`;
+  }
+}
+
+async function handleDeleteCardioSession(cardioId?: string) {
+  if (!cardioId) return;
+  if (confirm('Are you sure you want to delete this cardio log?')) {
+    try {
+      await deleteExternalActivity(cardioId);
+      fetchCalendarIndex(true);
+    } catch (e: any) {
+      alert('Failed to delete cardio session: ' + e.message);
+    }
+  }
+}
 
 function openEditModal(workout: LoggedWorkout) {
   console.log('Opening edit modal for workout:', workout);
@@ -630,6 +787,7 @@ const { isConnected: isStravaConnected, syncNow: stravaSyncNow } = useStrava();
 
 onMounted(() => {
   fetchLoggedWorkouts(); 
+  fetchExternalActivities();
   fetchCalendarIndex();
 
   // Watch connection state to run auto-sync on load
