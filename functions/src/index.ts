@@ -22,7 +22,8 @@ export {
 export {
     exchangeStravaCode,
     syncStravaActivities,
-    onWorkoutLogged
+    onWorkoutLogged,
+    onCardioLogged
 } from "./strava";
 
 // Export User Account Functions

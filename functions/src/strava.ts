@@ -204,3 +204,93 @@ export const onWorkoutLogged = onDocumentCreated("users/{userId}/loggedWorkouts/
         logger.error("Error auto-pushing activity to Strava", err);
     }
 });
+
+/**
+ * 4. Auto-push manual cardio activities to Strava
+ */
+export const onCardioLogged = onDocumentCreated("users/{userId}/externalActivities/{activityId}", async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const activity = snap.data();
+    const userId = event.params.userId;
+
+    // Only push manually created cardio sessions (avoid re-pushing Strava imports back to Strava!)
+    if (activity.source !== "manual") return;
+
+    const tokenDocRef = db.collection("users").doc(userId).collection("strava").doc("tokens");
+    const tokenDoc = await tokenDocRef.get();
+
+    if (!tokenDoc.exists) return;
+
+    let { accessToken, refreshToken, expiresAt } = tokenDoc.data()!;
+    const clientId = process.env.STRAVA_CLIENT_ID;
+    const clientSecret = process.env.STRAVA_CLIENT_SECRET;
+
+    if (Date.now() / 1000 > expiresAt - 300) {
+        if (!clientId || !clientSecret) return;
+
+        const refreshRes = await fetch("https://www.strava.com/oauth/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                client_id: clientId,
+                client_secret: clientSecret,
+                refresh_token: refreshToken,
+                grant_type: "refresh_token",
+            }),
+        });
+
+        if (!refreshRes.ok) return;
+
+        const refreshData = await refreshRes.json();
+        accessToken = refreshData.access_token;
+        refreshToken = refreshData.refresh_token;
+        expiresAt = refreshData.expires_at;
+
+        await tokenDocRef.update({
+            accessToken,
+            refreshToken,
+            expiresAt,
+            updatedAt: FieldValue.serverTimestamp(),
+        });
+    }
+
+    const stravaTypeMap: Record<string, string> = {
+        Run: "Run",
+        Ride: "Ride",
+        Swim: "Swim",
+        Walk: "Walk",
+        Hike: "Hike",
+        Rowing: "Rowing",
+        Cardio: "Workout"
+    };
+
+    const stravaType = stravaTypeMap[activity.type] || "Workout";
+    const name = activity.name || `${activity.type || "Cardio"} Session`;
+    const description = activity.notes ? `${activity.notes}\n\nLogged via LiftLogic` : "Logged via LiftLogic";
+    const startDate = activity.date?.toDate ? activity.date.toDate().toISOString() : new Date().toISOString();
+    const elapsedTime = (activity.durationMinutes || 30) * 60;
+    const distanceMeters = (activity.distanceMiles || 0) * 1609.34;
+
+    try {
+        await fetch("https://www.strava.com/api/v3/activities", {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name,
+                type: stravaType,
+                start_date_local: startDate,
+                elapsed_time: elapsedTime,
+                distance: distanceMeters,
+                description,
+            }),
+        });
+        logger.info(`Successfully pushed manual cardio ${event.params.activityId} to Strava for user ${userId}`);
+    } catch (err) {
+        logger.error("Error auto-pushing manual cardio to Strava", err);
+    }
+});
