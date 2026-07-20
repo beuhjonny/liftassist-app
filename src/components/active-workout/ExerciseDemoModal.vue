@@ -8,19 +8,25 @@
         <h2>{{ exerciseName || demoInfo.name }}</h2>
       </div>
 
-      <!-- Real Bundled Exercise Image Media Player -->
-      <div v-if="demoInfo.localImgUrl && !imageError" class="demo-media-container card-inset">
-        <img 
-          :src="demoInfo.localImgUrl" 
-          :alt="demoInfo.name + ' demonstration'" 
-          class="demo-gif"
-          @error="imageError = true"
-        />
+      <!-- Animated Keyframe Motion Player -->
+      <div v-if="demoInfo.frames && demoInfo.frames.length > 0 && !imageError" class="demo-media-container card-inset">
+        <div class="motion-player">
+          <img 
+            :src="currentFrameUrl" 
+            :alt="demoInfo.name + ' demonstration frame'" 
+            class="demo-gif"
+            @error="handleImageError"
+          />
+          <div class="motion-indicator">
+            <span class="pulse-dot"></span>
+            <span class="motion-label">Form Motion Loop (Frame {{ activeFrameIdx + 1 }}/2)</span>
+          </div>
+        </div>
       </div>
 
       <!-- Clean Unknown Exercise Notice -->
       <div v-else class="unknown-exercise-card card-inset">
-        <p class="unknown-title">No matching exercise demo video found</p>
+        <p class="unknown-title">No matching exercise demo found</p>
         <p class="unknown-subtitle">
           Form cues and demonstrations are available for standard strength training lifts.
         </p>
@@ -54,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import { getExerciseDemo, type ExerciseDemoInfo } from '@/utils/exerciseDemos';
 
 const props = defineProps<{
@@ -67,16 +73,64 @@ defineEmits<{
 }>();
 
 const imageError = ref(false);
+const activeFrameIdx = ref(0);
+let animationTimer: ReturnType<typeof setInterval> | null = null;
 
 const demoInfo = computed<ExerciseDemoInfo>(() => {
   return getExerciseDemo(props.exerciseName);
 });
 
+const currentFrameUrl = computed(() => {
+  if (!demoInfo.value.frames || demoInfo.value.frames.length === 0) return '';
+  return demoInfo.value.frames[activeFrameIdx.value % demoInfo.value.frames.length];
+});
+
+function startAnimationLoop() {
+  stopAnimationLoop();
+  activeFrameIdx.value = 0;
+  imageError.value = false;
+
+  if (demoInfo.value.frames && demoInfo.value.frames.length > 1) {
+    animationTimer = setInterval(() => {
+      activeFrameIdx.value = (activeFrameIdx.value + 1) % demoInfo.value.frames!.length;
+    }, 1000);
+  }
+}
+
+function stopAnimationLoop() {
+  if (animationTimer) {
+    clearInterval(animationTimer);
+    animationTimer = null;
+  }
+}
+
+function handleImageError() {
+  // If frame 1 fails to load, fallback to static frame 0 without hiding the player
+  if (activeFrameIdx.value > 0) {
+    stopAnimationLoop();
+    activeFrameIdx.value = 0;
+  } else {
+    imageError.value = true;
+  }
+}
+
 watch(() => props.show, (newShow) => {
   if (newShow) {
-    imageError.value = false;
+    startAnimationLoop();
+  } else {
+    stopAnimationLoop();
   }
 }, { immediate: true });
+
+watch(() => props.exerciseName, () => {
+  if (props.show) {
+    startAnimationLoop();
+  }
+});
+
+onUnmounted(() => {
+  stopAnimationLoop();
+});
 </script>
 
 <style scoped>
@@ -128,6 +182,15 @@ watch(() => props.show, (newShow) => {
   margin-bottom: 16px;
   min-height: 240px;
   border: 1px solid var(--color-card-border);
+  position: relative;
+}
+
+.motion-player {
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .demo-gif {
@@ -136,6 +199,40 @@ watch(() => props.show, (newShow) => {
   object-fit: contain;
   border-radius: 8px;
   background-color: #ffffff;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.motion-indicator {
+  position: absolute;
+  bottom: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(4px);
+}
+
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #007bff;
+  box-shadow: 0 0 8px #007bff;
+  animation: pulseDot 1.2s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.3; transform: scale(0.8); }
+}
+
+.motion-label {
+  font-weight: 600;
 }
 
 /* Unknown exercise card */

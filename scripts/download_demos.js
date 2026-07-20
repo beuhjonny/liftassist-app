@@ -27,28 +27,40 @@ async function run() {
       if (item.type === 'dir') {
         const folderName = item.name;
         const normalizedName = folderName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-        const targetPath = path.join(PUBLIC_DEMOS_DIR, `${normalizedName}.jpg`);
 
-        if (fs.existsSync(targetPath)) {
-          continue;
+        const target0 = path.join(PUBLIC_DEMOS_DIR, `${normalizedName}_0.jpg`);
+        const target1 = path.join(PUBLIC_DEMOS_DIR, `${normalizedName}_1.jpg`);
+
+        // Download Frame 0 (Start Position)
+        if (!fs.existsSync(target0)) {
+          const imgUrl0 = `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${folderName}/0.jpg`;
+          try {
+            const imgRes0 = await fetch(imgUrl0);
+            if (imgRes0.ok) {
+              fs.writeFileSync(target0, Buffer.from(await imgRes0.arrayBuffer()));
+            }
+          } catch (e) {}
         }
 
-        const imgUrl = `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${folderName}/0.jpg`;
-        try {
-          const imgRes = await fetch(imgUrl);
-          if (imgRes.ok) {
-            const buffer = Buffer.from(await imgRes.arrayBuffer());
-            fs.writeFileSync(targetPath, buffer);
-            count++;
-            console.log(`[${count}] Saved ${normalizedName}.jpg`);
-          }
-        } catch (err) {
-          console.warn(`Could not download ${folderName}:`, err);
+        // Download Frame 1 (End Position / Peak Contraction)
+        if (!fs.existsSync(target1)) {
+          const imgUrl1 = `https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/${folderName}/1.jpg`;
+          try {
+            const imgRes1 = await fetch(imgUrl1);
+            if (imgRes1.ok) {
+              fs.writeFileSync(target1, Buffer.from(await imgRes1.arrayBuffer()));
+              count++;
+            }
+          } catch (e) {}
+        }
+
+        if (count % 25 === 0 && count > 0) {
+          console.log(`Downloaded ${count} exercise motion loops...`);
         }
       }
     }
 
-    console.log(`Download complete! ${count} new demo images saved to public/demos/`);
+    console.log(`Download complete! Both keyframes saved to public/demos/`);
   } catch (err) {
     console.error('Download script failed:', err);
   }
