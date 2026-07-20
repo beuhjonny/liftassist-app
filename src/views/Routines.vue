@@ -102,9 +102,9 @@
                 <textarea 
                   id="routineJsonData" 
                   v-model="pastedRoutineJson" 
-                  rows="4" 
+                  rows="2" 
                   placeholder="Paste your generated routine JSON code block here..."
-                  style="width: 100%; border-radius: 6px; border: 1px solid var(--color-card-border); padding: 12px; font-family: monospace; font-size: 0.85em; background: var(--color-card-bg); color: var(--color-card-text); resize: vertical;"
+                  style="width: 100%; border-radius: 6px; border: 1px solid var(--color-card-border); padding: 8px 12px; font-family: monospace; font-size: 0.85em; background: var(--color-card-bg); color: var(--color-card-text); resize: vertical; min-height: 52px; max-height: 180px;"
                 ></textarea>
               </div>
               <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary button-large full-width" style="padding: 12px; font-weight: 600; font-size: 1em; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
