@@ -36,3 +36,6 @@ coverage
 
 # Garmin Developer Key
 /garmin-app/developer_key
+
+# Build Binaries
+bin/

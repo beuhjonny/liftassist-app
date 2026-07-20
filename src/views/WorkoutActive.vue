@@ -2,17 +2,12 @@
   <div class="workout-active-view">
 
     <!-- Draft Workout Prompt -->
-    <div v-if="showDraftPrompt" class="draft-prompt-overlay">
-      <div class="draft-prompt-card card">
-        <h2>Resume Workout?</h2>
-        <p>You have an unfinished workout in progress.</p>
-        <p v-if="isLoadingDraft">Loading draft...</p>
-        <div v-else class="draft-prompt-actions">
-          <button @click="resumeDraft" class="button-primary">Resume Workout</button>
-          <button @click="discardDraft" class="button-secondary">Start Fresh</button>
-        </div>
-      </div>
-    </div>
+    <DraftPromptOverlay 
+      :show="showDraftPrompt" 
+      :isLoading="isLoadingDraft" 
+      @resume="resumeDraft" 
+      @discard="discardDraft" 
+    />
     
     <div v-if="isLoading && !showDraftPrompt" class="loading-message card">
       <p>Loading your workout...</p>
@@ -284,24 +279,14 @@
     </div>
 
     <!-- Edit Prescription Modal -->
-    <div v-if="showEditPrescriptionModal" class="modal-overlay" @click.self="closeEditPrescriptionModal">
-      <div class="modal-content edit-prescription-modal">
-        <button @click="closeEditPrescriptionModal" class="modal-close-button" title="Close">&times;</button>
-        <h3>Edit Weight & Reps</h3>
-        <div class="form-group">
-          <label for="editReps">{{ currentExercise?.isTimed ? 'Hold Time (sec):' : 'Reps:' }}</label>
-          <input type="number" id="editReps" v-model.number="editedReps" min="1" step="1" />
-        </div>
-        <div class="form-group">
-          <label for="editWeight">Weight (lbs):</label>
-          <input type="number" id="editWeight" v-model.number="editedWeight" min="0" step="0.1" />
-        </div>
-        <div class="form-actions">
-          <button @click="saveEditedPrescription" class="button-primary">Save</button>
-          <button @click="closeEditPrescriptionModal" class="button-secondary">Cancel</button>
-        </div>
-      </div>
-    </div>
+    <EditPrescriptionModal 
+      :show="showEditPrescriptionModal" 
+      :isTimed="currentExercise?.isTimed" 
+      v-model:reps="editedReps" 
+      v-model:weight="editedWeight" 
+      @close="closeEditPrescriptionModal" 
+      @save="saveEditedPrescription" 
+    />
 
     <!-- Edit Choice Modal (This Set Only vs All Future Sets) -->
     <div v-if="showEditChoiceModal" class="modal-overlay" @click.self="closeEditChoiceModal">
@@ -374,6 +359,8 @@ import type { LoggedSetData, PerformedExerciseInLog, ExerciseProgress, SessionEx
 import WorkoutTimeline from '../components/active-workout/WorkoutTimeline.vue';
 import TimerDisplay from '../components/active-workout/TimerDisplay.vue';
 import ActiveExerciseCard from '../components/active-workout/ActiveExerciseCard.vue';
+import DraftPromptOverlay from '../components/active-workout/DraftPromptOverlay.vue';
+import EditPrescriptionModal from '../components/active-workout/EditPrescriptionModal.vue';
 
 
 

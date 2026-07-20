@@ -594,33 +594,14 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
         </div>
         
         <div class="routines-list">
-             <div 
+             <ProgramCard 
                 v-for="program in validPrograms" 
                 :key="program.id"
-                class="routine-list-item"
-                style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;"
-            >
-                <div class="routine-info">
-                    <span class="routine-name">{{ program.programName || 'Untitled' }}</span>
-                    <span v-if="settings.activeProgramId === program.id" class="active-badge-inline" style="margin-left: 8px; font-size: 0.8em; color: #ffc107; font-weight: bold;">★ Active</span>
-                </div>
-                
-                <div class="routine-actions" style="display:flex; gap:10px;">
-                    <button 
-                        v-if="settings.activeProgramId !== program.id" 
-                        @click.stop="handleSetAsActive(program.id)" 
-                        class="button-secondary small"
-                    >
-                       Set Active
-                    </button>
-                     <button 
-                         @click="handleSwitchRoutine(program.id)" 
-                         class="button-primary-outline small"
-                     >
-                        View/Edit
-                     </button>
-                 </div>
-             </div>
+                :program="program"
+                :isActive="settings.activeProgramId === program.id"
+                @setActive="handleSetAsActive"
+                @select="handleSwitchRoutine"
+             />
         </div>
         
         <div style="margin-top: 20px;">
@@ -658,6 +639,7 @@ import { db } from '../firebase.js';
 import useAuth from '../composables/useAuth';
 import useSettings, { type WeightUnitOption } from '../composables/useSettings';
 import useTrainingProgram from '../composables/useTrainingProgram';
+import ProgramCard from '../components/routines/ProgramCard.vue';
 import useHistoryIndex from '../composables/useHistoryIndex';
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import { toDisplay, fromInput, displayUnit } from '../utils/weight';
