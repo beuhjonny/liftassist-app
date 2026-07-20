@@ -4,10 +4,12 @@ export interface ExerciseDemoInfo {
   targetMuscles: string[];
   formCues: string[];
   gifUrl: string;
+  fallbackUrl: string;
 }
 
-// jsDelivr CDN for global high-speed reliability
-const CDN_BASE = 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises';
+// Global CDN base URLs for high-availability delivery
+const CDN_JSDELIVR = 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises';
+const CDN_RAW = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises';
 
 const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
   'bench_press': {
@@ -19,18 +21,32 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Lower the bar with control to lower-mid chest level.',
       'Drive feet into the ground and press straight up to full lock.'
     ],
-    gifUrl: `${CDN_BASE}/Barbell_Bench_Press/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Barbell_Bench_Press/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Barbell_Bench_Press/0.jpg`
   },
   'incline_bench_press': {
     name: 'Incline Dumbbell Press',
-    category: 'Upper Chest',
-    targetMuscles: ['Upper Pectoralis', 'Anterior Deltoids', 'Triceps'],
+    category: 'Chest',
+    targetMuscles: ['Pectoralis Major', 'Anterior Deltoids', 'Triceps Brachii'],
     formCues: [
       'Set bench to 30–45 degrees incline.',
       'Keep wrists stacked directly over elbows at the bottom of the movement.',
       'Press dumbbells together at the top without touching.'
     ],
-    gifUrl: `${CDN_BASE}/Dumbbell_Incline_Bench_Press/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Incline_Dumbbell_Bench_Press/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Incline_Dumbbell_Bench_Press/0.jpg`
+  },
+  'hammer_curl': {
+    name: 'Standing Hammer Curl',
+    category: 'Arms',
+    targetMuscles: ['Biceps Brachii', 'Brachialis', 'Brachioradialis'],
+    formCues: [
+      'Hold dumbbells with a neutral grip (palms facing each other).',
+      'Keep upper arms stationary and curl weights upward.',
+      'Squeeze biceps & forearms at the top and lower slowly.'
+    ],
+    gifUrl: `${CDN_JSDELIVR}/Dumbbell_Alternate_Hammer_Curl/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Dumbbell_Alternate_Hammer_Curl/0.jpg`
   },
   'squat': {
     name: 'Barbell Back Squat',
@@ -41,7 +57,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Brace core, break at hips and knees simultaneously.',
       'Squat below parallel while keeping chest up and knees tracking over toes.'
     ],
-    gifUrl: `${CDN_BASE}/Barbell_Full_Squat/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Barbell_Full_Squat/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Barbell_Full_Squat/0.jpg`
   },
   'deadlift': {
     name: 'Barbell Conventional Deadlift',
@@ -52,7 +69,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Hinge at hips, pull slack out of the bar, and engage lats.',
       'Push the floor away through mid-foot and lock out hips at the top.'
     ],
-    gifUrl: `${CDN_BASE}/Barbell_Deadlift/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Barbell_Deadlift/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Barbell_Deadlift/0.jpg`
   },
   'overhead_press': {
     name: 'Standing Overhead Press',
@@ -63,7 +81,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Press straight up, leaning head back slightly as bar passes your face.',
       'Lock out overhead and push head forward to neutral.'
     ],
-    gifUrl: `${CDN_BASE}/Barbell_Standing_Overhead_Press/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Barbell_Standing_Overhead_Press/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Barbell_Standing_Overhead_Press/0.jpg`
   },
   'lat_pulldown': {
     name: 'Cable Lat Pulldown',
@@ -74,7 +93,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Pull elbows down and back towards your ribcage.',
       'Squeeze shoulder blades at the bottom and control the return.'
     ],
-    gifUrl: `${CDN_BASE}/Cable_Lat_Pulldown/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Cable_Lat_Pulldown/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Cable_Lat_Pulldown/0.jpg`
   },
   'barbell_row': {
     name: 'Bent Over Barbell Row',
@@ -85,7 +105,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Pull bar to lower sternum/belly button, driving elbows backward.',
       'Avoid swinging or using momentum to lift the weight.'
     ],
-    gifUrl: `${CDN_BASE}/Barbell_Bent_Over_Row/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Barbell_Bent_Over_Row/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Barbell_Bent_Over_Row/0.jpg`
   },
   'pull_up': {
     name: 'Pull Up',
@@ -96,7 +117,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Depress shoulder blades first, then pull chest towards the bar.',
       'Lower yourself all the way down to a full dead hang.'
     ],
-    gifUrl: `${CDN_BASE}/Pull-up/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Pull-up/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Pull-up/0.jpg`
   },
   'bicep_curl': {
     name: 'Dumbbell Bicep Curl',
@@ -107,7 +129,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Supinate wrists (palms facing up) as you curl the weight.',
       'Squeeze at the top and lower under full control.'
     ],
-    gifUrl: `${CDN_BASE}/Dumbbell_Bicep_Curl/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Dumbbell_Bicep_Curl/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Dumbbell_Bicep_Curl/0.jpg`
   },
   'tricep_pushdown': {
     name: 'Cable Tricep Pushdown',
@@ -118,7 +141,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Extend arms fully downwards, squeezing triceps at lock-out.',
       'Control the ascent without allowing elbows to drift forward.'
     ],
-    gifUrl: `${CDN_BASE}/Cable_Pushdown/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Cable_Pushdown/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Cable_Pushdown/0.jpg`
   },
   'lateral_raise': {
     name: 'Dumbbell Lateral Raise',
@@ -129,7 +153,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Raise dumbbells out to the sides until parallel with the floor.',
       'Lead with your elbows and avoid shrugging your traps.'
     ],
-    gifUrl: `${CDN_BASE}/Dumbbell_Lateral_Raise/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Dumbbell_Lateral_Raise/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Dumbbell_Lateral_Raise/0.jpg`
   },
   'leg_press': {
     name: 'Leg Press',
@@ -140,7 +165,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Lower weight until knees reach 90 degrees without lower back rounding.',
       'Press through heels without locking knees aggressively at top.'
     ],
-    gifUrl: `${CDN_BASE}/Sled_Leg_Press/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Sled_Leg_Press/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Sled_Leg_Press/0.jpg`
   }
 };
 
@@ -158,11 +184,14 @@ export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
     return DEMO_DATABASE[key];
   }
 
-  if (key.includes('bench') || key.includes('chest_press')) {
-    return { ...DEMO_DATABASE['bench_press'], name: rawName };
+  if (key.includes('hammer')) {
+    return { ...DEMO_DATABASE['hammer_curl'], name: rawName };
   }
   if (key.includes('incline')) {
     return { ...DEMO_DATABASE['incline_bench_press'], name: rawName };
+  }
+  if (key.includes('bench') || key.includes('chest_press')) {
+    return { ...DEMO_DATABASE['bench_press'], name: rawName };
   }
   if (key.includes('squat')) {
     return { ...DEMO_DATABASE['squat'], name: rawName };
@@ -179,7 +208,7 @@ export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
   if (key.includes('row') || key.includes('helms')) {
     return { ...DEMO_DATABASE['barbell_row'], name: rawName };
   }
-  if (key.includes('curl') || key.includes('hammer')) {
+  if (key.includes('curl')) {
     return { ...DEMO_DATABASE['bicep_curl'], name: rawName };
   }
   if (key.includes('tricep') || key.includes('pushdown') || key.includes('extension')) {
@@ -205,6 +234,7 @@ function getFallbackDemo(name: string): ExerciseDemoInfo {
       'Control the eccentric (lowering) phase for 2 seconds.',
       'Drive through the movement with intent without using excessive momentum.'
     ],
-    gifUrl: `${CDN_BASE}/Barbell_Bench_Press/0.jpg`
+    gifUrl: `${CDN_JSDELIVR}/Barbell_Bench_Press/0.jpg`,
+    fallbackUrl: `${CDN_RAW}/Barbell_Bench_Press/0.jpg`
   };
 }

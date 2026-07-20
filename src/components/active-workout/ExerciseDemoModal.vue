@@ -11,8 +11,8 @@
       <!-- Movement Loop Media -->
       <div class="demo-media-container card-inset">
         <img 
-          v-if="!imageError"
-          :src="currentFrameUrl" 
+          v-if="!showFallbackGraphic"
+          :src="currentImageSrc" 
           :alt="demoInfo.name + ' demonstration'" 
           class="demo-gif"
           @error="handleImageError"
@@ -65,49 +65,33 @@ defineEmits<{
 }>();
 
 const currentFrame = ref(0);
-const imageError = ref(false);
-const hasSecondFrame = ref(false);
+const useFallbackCdn = ref(false);
+const showFallbackGraphic = ref(false);
 let frameTimer: any = null;
 
 const demoInfo = computed<ExerciseDemoInfo>(() => {
   return getExerciseDemo(props.exerciseName);
 });
 
-const currentFrameUrl = computed(() => {
-  if (currentFrame.value === 1 && hasSecondFrame.value) {
-    const baseUrl = demoInfo.value.gifUrl.replace(/\/0\.jpg$/, '');
-    return `${baseUrl}/1.jpg`;
-  }
-  return demoInfo.value.gifUrl;
+const currentImageSrc = computed(() => {
+  const base = useFallbackCdn.value ? demoInfo.value.fallbackUrl : demoInfo.value.gifUrl;
+  const baseUrl = base.replace(/\/0\.jpg$/, '');
+  return `${baseUrl}/${currentFrame.value}.jpg`;
 });
 
 const handleImageError = () => {
-  // If frame 1 fails, revert to frame 0 instead of falling back to emoji
-  if (currentFrame.value === 1) {
-    hasSecondFrame.value = false;
+  if (!useFallbackCdn.value) {
+    // Retry with GitHub raw CDN
+    useFallbackCdn.value = true;
     currentFrame.value = 0;
   } else {
-    imageError.value = true;
+    // Primary and secondary CDNs both failed
+    showFallbackGraphic.value = true;
   }
-};
-
-const setupImagePreload = () => {
-  imageError.value = false;
-  hasSecondFrame.value = false;
-  currentFrame.value = 0;
-
-  const baseUrl = demoInfo.value.gifUrl.replace(/\/0\.jpg$/, '');
-  const img1 = new Image();
-  img1.src = `${baseUrl}/1.jpg`;
-  img1.onload = () => {
-    hasSecondFrame.value = true;
-    startAnimation();
-  };
 };
 
 const startAnimation = () => {
   stopAnimation();
-  if (!hasSecondFrame.value) return;
   frameTimer = setInterval(() => {
     currentFrame.value = currentFrame.value === 0 ? 1 : 0;
   }, 1000);
@@ -122,14 +106,17 @@ const stopAnimation = () => {
 
 watch(() => props.show, (newShow) => {
   if (newShow) {
-    setupImagePreload();
+    useFallbackCdn.value = false;
+    showFallbackGraphic.value = false;
+    currentFrame.value = 0;
+    startAnimation();
   } else {
     stopAnimation();
   }
 }, { immediate: true });
 
 onMounted(() => {
-  if (props.show) setupImagePreload();
+  if (props.show) startAnimation();
 });
 
 onUnmounted(() => {
