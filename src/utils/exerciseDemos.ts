@@ -30,6 +30,16 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Press dumbbells together at the top without touching.'
     ]
   },
+  'lateral_raise': {
+    name: 'Dumbbell Lateral Raise',
+    category: 'Shoulders',
+    targetMuscles: ['Lateral Deltoids'],
+    formCues: [
+      'Slight forward lean with a soft bend in the elbows.',
+      'Raise dumbbells out to the sides until parallel with the floor.',
+      'Lead with your elbows and avoid shrugging your traps.'
+    ]
+  },
   'hammer_curl': {
     name: 'Standing Hammer Curl',
     category: 'Arms',
@@ -110,16 +120,6 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Control the ascent without allowing elbows to drift forward.'
     ]
   },
-  'lateral_raise': {
-    name: 'Dumbbell Lateral Raise',
-    category: 'Shoulders',
-    targetMuscles: ['Lateral Deltoids'],
-    formCues: [
-      'Slight forward lean with a soft bend in the elbows.',
-      'Raise dumbbells out to the sides until parallel with the floor.',
-      'Lead with your elbows and avoid shrugging your traps.'
-    ]
-  },
   'leg_press': {
     name: 'Leg Press',
     category: 'Legs',
@@ -128,6 +128,36 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Set feet hip-width apart in the center of the sled.',
       'Lower weight until knees reach 90 degrees without lower back rounding.',
       'Press through heels without locking knees aggressively at top.'
+    ]
+  },
+  'rear_delt_fly': {
+    name: 'Rear Delt Fly',
+    category: 'Shoulders',
+    targetMuscles: ['Rear Deltoids', 'Rhomboids'],
+    formCues: [
+      'Hinge forward or sit facing machine chest pad.',
+      'Drive elbows back and out to the sides in a wide arc.',
+      'Squeeze rear deltoids at maximum extension.'
+    ]
+  },
+  'leg_extension': {
+    name: 'Leg Extension',
+    category: 'Legs',
+    targetMuscles: ['Quadriceps'],
+    formCues: [
+      'Align knee joint with machine pivot point.',
+      'Extend legs smoothly to top position without swinging.',
+      'Pause for 1 second at full extension and lower with control.'
+    ]
+  },
+  'leg_curl': {
+    name: 'Lying Leg Curl',
+    category: 'Legs',
+    targetMuscles: ['Hamstrings'],
+    formCues: [
+      'Lie face down with pad positioned just above ankles.',
+      'Curl weight upward towards glutes.',
+      'Lower weight slowly under full hamstring tension.'
     ]
   }
 };
@@ -147,6 +177,9 @@ export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
     return { ...DEMO_DATABASE[key], proxyUrl };
   }
 
+  if (key.includes('lateral') || key.includes('raise')) {
+    return { ...DEMO_DATABASE['lateral_raise'], name: rawName, proxyUrl };
+  }
   if (key.includes('hammer')) {
     return { ...DEMO_DATABASE['hammer_curl'], name: rawName, proxyUrl };
   }
