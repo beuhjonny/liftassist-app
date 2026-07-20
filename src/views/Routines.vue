@@ -37,9 +37,17 @@
           </button>
         </div>
 
-        <div class="secondary-choice-actions" style="margin-top: 30px; border-top: 1px solid var(--color-card-border); padding-top: 20px; display: flex; justify-content: center; gap: 15px;">
+        <div class="secondary-choice-actions" style="margin-top: 30px; border-top: 1px solid var(--color-card-border); padding-top: 20px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
             <button @click="creationMode = 'fitnotes'" class="button-secondary small" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-mute); color: var(--color-card-text); cursor: pointer; font-size: 0.9em; font-weight: 500;">
                 📋 Import from FitNotes (.fitnotes)
+            </button>
+            <button 
+              @click="loadJonnyPPL" 
+              class="button-secondary small" 
+              style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; border: 1px solid #007bff; background: rgba(0, 123, 255, 0.08); color: var(--color-primary); cursor: pointer; font-size: 0.9em; font-weight: 600;" 
+              title="If you have dumbbells, a bench and some doorway elastics, you can copy his excellent routine. You will need to adjust your weights."
+            >
+                💪 Copy Jonny's PPL
             </button>
         </div>
       </div>
@@ -612,8 +620,16 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
         </div>
         
         <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="button-primary" @click="startCreatingNewRoutine" style="flex: 1; min-width: 160px;">
+            <button class="button-primary" @click="startCreatingNewRoutine" style="flex: 1; min-width: 150px;">
                 + Add New Routine
+            </button>
+            <button 
+              class="button-secondary" 
+              @click="loadJonnyPPL" 
+              style="flex: 1; min-width: 170px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #007bff; color: var(--color-primary); background: rgba(0, 123, 255, 0.05);"
+              title="If you have dumbbells, a bench and some doorway elastics, you can copy his excellent routine. You will need to adjust your weights."
+            >
+                💪 Copy Jonny's PPL
             </button>
             <button class="button-secondary" @click="showLogCardioModal = true" style="flex: 1; min-width: 160px; display: flex; align-items: center; justify-content: center; gap: 6px;">
                 🏃 Log Cardio Session
@@ -650,7 +666,7 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, watch, computed, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, deleteDoc, Timestamp, type DocumentData } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, deleteDoc, addDoc, Timestamp, type DocumentData } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import useAuth from '../composables/useAuth';
 import useSettings, { type WeightUnitOption } from '../composables/useSettings';
@@ -998,6 +1014,274 @@ const saveActiveProgramBaseDetails = async () => {
     }
   } catch (e: any) { error.value = "Failed to save routine details. " + e.message; }
   finally { isSaving.value = false; }
+};
+
+const loadJonnyPPL = async () => {
+  if (!user.value || !user.value.uid) {
+    alert("Please sign in to copy Jonny's PPL routine.");
+    return;
+  }
+
+  if (confirm("Copy Jonny's PPL routine to your account? You will need to adjust your weights.")) {
+    try {
+      isSaving.value = true;
+      const programsRef = collection(db, 'users', user.value.uid, 'trainingPrograms');
+      
+      const newProgramDoc = {
+        programName: "Jonny's PPL",
+        description: "High-efficiency Push/Pull/Legs split built for Dumbbells, an Adjustable Bench, and Doorway Resistance Bands.",
+        defaultRestTimer: 90,
+        workoutDays: [
+          {
+            id: 'day_push_' + Date.now(),
+            dayName: "Push (Chest, Shoulders, Triceps)",
+            order: 1,
+            workoutColor: "#FF5252",
+            exercises: [
+              {
+                id: "ex_push_1_" + Date.now(),
+                exerciseName: "Dumbbell Bench Press",
+                targetSets: 3,
+                minReps: 8,
+                maxReps: 12,
+                startingWeight: 50,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 90,
+                notesForExercise: "Flat or slight incline bench. Retract shoulder blades."
+              },
+              {
+                id: "ex_push_2_" + Date.now(),
+                exerciseName: "Seated Dumbbell Overhead Press",
+                targetSets: 3,
+                minReps: 8,
+                maxReps: 12,
+                startingWeight: 35,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 90,
+                notesForExercise: "Upright bench support. Press vertically without arching lower back."
+              },
+              {
+                id: "ex_push_3_" + Date.now(),
+                exerciseName: "Incline Dumbbell Flyes",
+                targetSets: 3,
+                minReps: 10,
+                maxReps: 15,
+                startingWeight: 25,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 60,
+                notesForExercise: "Deep chest stretch at the bottom with a slight bend in elbows."
+              },
+              {
+                id: "ex_push_4_" + Date.now(),
+                exerciseName: "Dumbbell Lateral Raise",
+                targetSets: 3,
+                minReps: 12,
+                maxReps: 15,
+                startingWeight: 15,
+                weightIncrement: 2.5,
+                repOverloadStep: 1,
+                enableProgression: true,
+                customRestSeconds: 60,
+                notesForExercise: "Lead with elbows, raise to shoulder height."
+              },
+              {
+                id: "ex_push_5_" + Date.now(),
+                exerciseName: "Overhead Dumbbell Tricep Extension",
+                targetSets: 3,
+                minReps: 10,
+                maxReps: 12,
+                startingWeight: 30,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 60,
+                notesForExercise: "Keep elbows pointed forward and close to head."
+              },
+              {
+                id: "ex_push_6_" + Date.now(),
+                exerciseName: "Doorway Band Tricep Pushdown",
+                targetSets: 3,
+                minReps: 12,
+                maxReps: 15,
+                startingWeight: 20,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 60,
+                notesForExercise: "Anchor band at top of doorframe. Lock out elbows at the bottom."
+              }
+            ]
+          },
+          {
+            id: 'day_pull_' + Date.now(),
+            dayName: "Pull (Back, Rear Delts, Biceps)",
+            order: 2,
+            workoutColor: "#2ECC71",
+            exercises: [
+              {
+                id: "ex_pull_1_" + Date.now(),
+                exerciseName: "One-Arm Dumbbell Row",
+                targetSets: 3,
+                minReps: 8,
+                maxReps: 12,
+                startingWeight: 45,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 90,
+                notesForExercise: "Hand and knee on bench. Pull dumbbell to hip."
+              },
+              {
+                id: "ex_pull_2_" + Date.now(),
+                exerciseName: "Doorway Band Lat Pulldown",
+                targetSets: 3,
+                minReps: 10,
+                maxReps: 15,
+                startingWeight: 30,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 75,
+                notesForExercise: "Kneel down, anchor band at top of door, pull down to collarbone."
+              },
+              {
+                id: "ex_pull_3_" + Date.now(),
+                exerciseName: "Doorway Band Face Pull",
+                targetSets: 3,
+                minReps: 12,
+                maxReps: 15,
+                startingWeight: 20,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 60,
+                notesForExercise: "Anchor band at chest level. Pull hands back towards ears."
+              },
+              {
+                id: "ex_pull_4_" + Date.now(),
+                exerciseName: "Dumbbell Bicep Curl",
+                targetSets: 3,
+                minReps: 8,
+                maxReps: 12,
+                startingWeight: 25,
+                weightIncrement: 2.5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 60,
+                notesForExercise: "Strict form, rotate palms up as you curl."
+              },
+              {
+                id: "ex_pull_5_" + Date.now(),
+                exerciseName: "Dumbbell Hammer Curl",
+                targetSets: 3,
+                minReps: 10,
+                maxReps: 12,
+                startingWeight: 25,
+                weightIncrement: 2.5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 60,
+                notesForExercise: "Palms facing each other throughout the lift."
+              }
+            ]
+          },
+          {
+            id: 'day_legs_' + Date.now(),
+            dayName: "Legs & Core",
+            order: 3,
+            workoutColor: "#2979FF",
+            exercises: [
+              {
+                id: "ex_legs_1_" + Date.now(),
+                exerciseName: "Dumbbell Goblet Squat",
+                targetSets: 3,
+                minReps: 8,
+                maxReps: 12,
+                startingWeight: 55,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 90,
+                notesForExercise: "Hold dumbbell against upper chest, squat below parallel."
+              },
+              {
+                id: "ex_legs_2_" + Date.now(),
+                exerciseName: "Dumbbell Romanian Deadlift",
+                targetSets: 3,
+                minReps: 8,
+                maxReps: 12,
+                startingWeight: 50,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 90,
+                notesForExercise: "Soft knees, hinge hips back until hamstrings stretch."
+              },
+              {
+                id: "ex_legs_3_" + Date.now(),
+                exerciseName: "Dumbbell Lunge",
+                targetSets: 3,
+                minReps: 10,
+                maxReps: 12,
+                startingWeight: 30,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 75,
+                notesForExercise: "Step forward into a deep lunge with torso upright."
+              },
+              {
+                id: "ex_legs_4_" + Date.now(),
+                exerciseName: "Single-Leg Dumbbell Calf Raise",
+                targetSets: 3,
+                minReps: 12,
+                maxReps: 15,
+                startingWeight: 30,
+                weightIncrement: 5,
+                repOverloadStep: 2,
+                enableProgression: true,
+                customRestSeconds: 60,
+                notesForExercise: "Balance on step or plate for full stretch at bottom."
+              },
+              {
+                id: "ex_legs_5_" + Date.now(),
+                exerciseName: "Weighted Plank",
+                targetSets: 3,
+                minReps: 45,
+                maxReps: 60,
+                startingWeight: 0,
+                weightIncrement: 5,
+                repOverloadStep: 15,
+                enableProgression: true,
+                isTimed: true,
+                customRestSeconds: 60,
+                notesForExercise: "Keep core rigid and glutes engaged throughout."
+              }
+            ]
+          }
+        ],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      const docRef = await addDoc(programsRef, newProgramDoc);
+      await fetchAllPrograms();
+      await setActiveProgram(docRef.id);
+      await loadProgram(docRef.id);
+      creationMode.value = null;
+      alert("🎉 Jonny's PPL Routine copied and set as active!");
+    } catch (e: any) {
+      alert("Failed to copy Jonny's PPL: " + e.message);
+    } finally {
+      isSaving.value = false;
+    }
+  }
 };
 
 const importPastedRoutine = async () => {
