@@ -23,12 +23,13 @@
 
       <div class="control-group">
         <label class="control-label">Time Window</label>
-        <select v-model="timeWindowWeeks" class="chart-select">
-          <option :value="4">Last 4 Weeks</option>
-          <option :value="8">Last 8 Weeks</option>
-          <option :value="12">Last 12 Weeks</option>
-          <option :value="24">Last 6 Months</option>
-          <option :value="52">Last 1 Year</option>
+        <select v-model="timeWindow" class="chart-select">
+          <option value="4w">Last 4 Weeks</option>
+          <option value="8w">Last 8 Weeks</option>
+          <option value="12w">Last 12 Weeks</option>
+          <option value="6m">Last 6 Months</option>
+          <option value="1y">Last 1 Year</option>
+          <option value="all">All Time</option>
         </select>
       </div>
     </div>
@@ -36,7 +37,7 @@
     <!-- Optimal Volume Benchmark Legend -->
     <div class="benchmark-legend card-inset">
       <span class="legend-badge low">🟡 &lt; 10 sets/wk (Maintenance)</span>
-      <span class="legend-badge optimal">🟢 10–20 sets/wk (Optimal Hypertrophy)</span>
+      <span class="legend-badge optimal">🟢 10–20 sets/wk (Hypertrophy)</span>
       <span class="legend-badge high">🔵 &gt; 20 sets/wk (High Volume)</span>
     </div>
 
@@ -45,6 +46,57 @@
     </div>
     <div v-else class="no-data card-inset">
       <p>No logged workout data found in the selected timeframe.</p>
+    </div>
+
+    <!-- Exercise to Muscle Mapping Inspector Drawer -->
+    <div class="breakdown-drawer-container">
+      <button 
+        @click="showBreakdownDrawer = !showBreakdownDrawer" 
+        class="button-secondary breakdown-toggle-btn"
+      >
+        <span>📋 {{ showBreakdownDrawer ? 'Hide' : 'Inspect' }} Exercise-to-Muscle Group Mappings</span>
+        <span class="drawer-arrow">{{ showBreakdownDrawer ? '▲' : '▼' }}</span>
+      </button>
+
+      <div v-if="showBreakdownDrawer" class="breakdown-content card-inset">
+        <h4>Exercise Muscle Group Contributions</h4>
+        <p class="breakdown-subtitle">
+          Below are all movements logged in your workouts within this timeframe, showing how sets are distributed to muscle groups.
+        </p>
+
+        <div v-if="exerciseBreakdownList.length > 0" class="table-responsive">
+          <table class="breakdown-table">
+            <thead>
+              <tr>
+                <th>Exercise Name</th>
+                <th>Primary (1.0x)</th>
+                <th>Secondary (0.5x)</th>
+                <th>Sets Logged</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="ex in exerciseBreakdownList" :key="ex.name">
+                <td class="ex-name-cell">
+                  <strong>{{ ex.name }}</strong>
+                </td>
+                <td>
+                  <span class="muscle-chip primary-chip">{{ ex.primary.join(', ') || 'Unmapped' }}</span>
+                </td>
+                <td>
+                  <span v-if="ex.secondary.length > 0" class="muscle-chip secondary-chip">{{ ex.secondary.join(', ') }}</span>
+                  <span v-else class="text-muted">—</span>
+                </td>
+                <td class="sets-cell">
+                  <strong>{{ ex.setsCount }}</strong> sets
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div v-else class="no-data-text">
+          No exercise breakdown available.
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -73,7 +125,8 @@ const props = defineProps<{
 }>();
 
 const includeIndirect = ref(false);
-const timeWindowWeeks = ref<number>(4);
+const timeWindow = ref<string>('all');
+const showBreakdownDrawer = ref(false);
 
 interface MuscleSetCount {
   [muscleGroup: string]: number;
@@ -110,30 +163,68 @@ const getObjDate = (dateVal: any): Date => {
   return isNaN(d.getTime()) ? new Date(0) : d;
 };
 
-const chartData = computed(() => {
-  if (!props.workouts || props.workouts.length === 0) {
-    return { labels: [], datasets: [] };
-  }
+// Filter workouts within timeframe
+const filteredWorkouts = computed(() => {
+  if (!props.workouts || props.workouts.length === 0) return [];
 
   const now = new Date();
-  const cutoffDate = new Date();
-  cutoffDate.setDate(now.getDate() - (timeWindowWeeks.value * 7));
+  let cutoffDate: Date | null = null;
 
-  // Filter workouts within timeframe
-  const filtered = props.workouts.filter(w => {
+  if (timeWindow.value === '4w') {
+    cutoffDate = new Date();
+    cutoffDate.setDate(now.getDate() - (4 * 7));
+  } else if (timeWindow.value === '8w') {
+    cutoffDate = new Date();
+    cutoffDate.setDate(now.getDate() - (8 * 7));
+  } else if (timeWindow.value === '12w') {
+    cutoffDate = new Date();
+    cutoffDate.setDate(now.getDate() - (12 * 7));
+  } else if (timeWindow.value === '6m') {
+    cutoffDate = new Date();
+    cutoffDate.setMonth(now.getMonth() - 6);
+  } else if (timeWindow.value === '1y') {
+    cutoffDate = new Date();
+    cutoffDate.setFullYear(now.getFullYear() - 1);
+  }
+
+  return props.workouts.filter(w => {
     const d = getObjDate(w.date);
-    return d.getTime() > 0 && d >= cutoffDate;
+    return d.getTime() > 0 && (!cutoffDate || d >= cutoffDate);
   });
+});
 
+// Calculate total weeks span in selected timeframe
+const calculatedWeeksSpan = computed(() => {
+  if (filteredWorkouts.value.length === 0) return 1;
+
+  if (timeWindow.value === '4w') return 4;
+  if (timeWindow.value === '8w') return 8;
+  if (timeWindow.value === '12w') return 12;
+  if (timeWindow.value === '6m') return 24;
+  if (timeWindow.value === '1y') return 52;
+
+  // All Time: calculate weeks from oldest workout to newest workout (or today)
+  const timestamps = filteredWorkouts.value
+    .map(w => getObjDate(w.date).getTime())
+    .filter(t => t > 0);
+
+  if (timestamps.length === 0) return 1;
+
+  const minDate = Math.min(...timestamps);
+  const maxDate = Math.max(...timestamps, new Date().getTime());
+  const diffDays = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24));
+  return Math.max(1, Math.ceil(diffDays / 7));
+});
+
+const chartData = computed(() => {
   const muscleTotals: MuscleSetCount = {};
   MUSCLE_GROUPS.forEach(m => { muscleTotals[m] = 0; });
 
-  filtered.forEach(w => {
+  filteredWorkouts.value.forEach(w => {
     if (!w.performedExercises) return;
     w.performedExercises.forEach(ex => {
       if (!ex.sets || ex.sets.length === 0) return;
       
-      // Count any set with reps > 0 or status != failed
       const validSetsCount = ex.sets.filter(s => 
         s && s.status !== 'failed' && (s.actualReps === undefined || s.actualReps > 0)
       ).length;
@@ -160,14 +251,13 @@ const chartData = computed(() => {
     });
   });
 
-  // Calculate Average Weekly Sets
   const labels: string[] = [];
   const setValues: number[] = [];
   const backgroundColors: string[] = [];
+  const weeks = calculatedWeeksSpan.value;
 
   MUSCLE_GROUPS.forEach(mGroup => {
-    const weeksCount = Math.max(1, timeWindowWeeks.value);
-    const weeklyAvg = Math.round((muscleTotals[mGroup] / weeksCount) * 10) / 10;
+    const weeklyAvg = Math.round((muscleTotals[mGroup] / weeks) * 10) / 10;
     labels.push(mGroup);
     setValues.push(weeklyAvg);
 
@@ -194,42 +284,76 @@ const chartData = computed(() => {
   };
 });
 
+// Detailed list of exercises logged in timeframe for the Inspector Drawer
+const exerciseBreakdownList = computed(() => {
+  const exerciseMap: Record<string, { name: string; primary: string[]; secondary: string[]; setsCount: number }> = {};
+
+  filteredWorkouts.value.forEach(w => {
+    if (!w.performedExercises) return;
+    w.performedExercises.forEach(ex => {
+      if (!ex.exerciseName || !ex.sets) return;
+      
+      const validSetsCount = ex.sets.filter(s => 
+        s && s.status !== 'failed' && (s.actualReps === undefined || s.actualReps > 0)
+      ).length;
+
+      if (validSetsCount === 0) return;
+
+      const key = ex.exerciseName.trim();
+      if (!exerciseMap[key]) {
+        const mappings = categorizeExerciseMuscles(key);
+        exerciseMap[key] = {
+          name: key,
+          primary: mappings.primary,
+          secondary: mappings.secondary,
+          setsCount: 0
+        };
+      }
+      exerciseMap[key].setsCount += validSetsCount;
+    });
+  });
+
+  return Object.values(exerciseMap).sort((a, b) => b.setsCount - a.setsCount);
+});
+
 function categorizeExerciseMuscles(rawName: string): { primary: string[]; secondary: string[] } {
   if (!rawName) return { primary: ['Chest'], secondary: [] };
 
-  const norm = rawName.toLowerCase().trim().replace(/_/g, ' ');
+  const norm = rawName.toLowerCase().replace(/[-_]/g, ' ').trim();
   const demo = getExerciseDemo(rawName);
 
   const primary: string[] = [];
   const secondary: string[] = [];
 
-  if (norm.includes('bench') || norm.includes('chest press') || norm.includes('push up') || norm.includes('flye') || norm.includes('pec')) {
+  if (norm.includes('bench') || norm.includes('chest press') || norm.includes('push up') || norm.includes('flye') || norm.includes('pec') || norm.includes('chest')) {
     primary.push('Chest');
     secondary.push('Triceps', 'Shoulders');
   } else if (norm.includes('incline')) {
     primary.push('Chest', 'Shoulders');
     secondary.push('Triceps');
-  } else if (norm.includes('overhead') || norm.includes('military') || norm.includes('shoulder press') || norm.includes('lateral raise') || norm.includes('delt')) {
+  } else if (norm.includes('overhead') || norm.includes('military') || norm.includes('shoulder press') || norm.includes('lateral raise') || norm.includes('delt') || norm.includes('shoulder') || norm.includes('arnold')) {
     primary.push('Shoulders');
     secondary.push('Triceps');
-  } else if (norm.includes('row') || norm.includes('pulldown') || norm.includes('pull up') || norm.includes('chin') || norm.includes('lat')) {
+  } else if (norm.includes('row') || norm.includes('pulldown') || norm.includes('pull up') || norm.includes('chin') || norm.includes('lat') || norm.includes('back')) {
     primary.push('Back');
     secondary.push('Biceps', 'Shoulders');
-  } else if (norm.includes('squat') || norm.includes('leg press') || norm.includes('extension') || norm.includes('lunge') || norm.includes('quad')) {
+  } else if (norm.includes('squat') || norm.includes('leg press') || norm.includes('leg extension') || norm.includes('lunge') || norm.includes('quad')) {
     primary.push('Quads');
     secondary.push('Hamstrings & Glutes');
-  } else if (norm.includes('deadlift') || norm.includes('rdl') || norm.includes('curl') && (norm.includes('leg') || norm.includes('hamstring')) || norm.includes('hip thrust') || norm.includes('glute')) {
+  } else if (norm.includes('deadlift') || norm.includes('rdl') || norm.includes('leg curl') || norm.includes('hip thrust') || norm.includes('glute') || norm.includes('hamstring')) {
     primary.push('Hamstrings & Glutes');
     secondary.push('Back');
   } else if (norm.includes('curl') || norm.includes('bicep') || norm.includes('hammer')) {
     primary.push('Biceps');
   } else if (norm.includes('tricep') || norm.includes('pushdown') || norm.includes('skullcrusher') || norm.includes('dip')) {
     primary.push('Triceps');
+    secondary.push('Chest');
   } else if (norm.includes('crunch') || norm.includes('leg raise') || norm.includes('plank') || norm.includes('ab')) {
     primary.push('Abs & Core');
   } else if (norm.includes('calf') || norm.includes('calves')) {
     primary.push('Calves');
   } else {
+    // Fallback using exerciseDemos category
     if (demo.category === 'Chest') {
       primary.push('Chest');
       secondary.push('Triceps');
@@ -245,7 +369,7 @@ function categorizeExerciseMuscles(rawName: string): { primary: string[]; second
     } else if (demo.category === 'Arms') {
       primary.push('Biceps', 'Triceps');
     } else {
-      primary.push('Chest');
+      primary.push('Chest'); // Default fallback
     }
   }
 
@@ -286,7 +410,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
         },
         title: {
           display: true,
-          text: 'Avg Weekly Sets',
+          text: `Avg Weekly Sets (${calculatedWeeksSpan.value} Wks Span)`,
           color: '#a0aec0',
           font: { size: 12, weight: 'bold' }
         },
@@ -402,5 +526,91 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
   color: var(--color-card-text);
   opacity: 0.75;
   font-size: 0.9em;
+}
+
+/* Breakdown Inspector Drawer */
+.breakdown-drawer-container {
+  margin-top: 10px;
+}
+
+.breakdown-toggle-btn {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  font-size: 0.85em;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.breakdown-content {
+  margin-top: 10px;
+  padding: 16px;
+  border-radius: 12px;
+}
+
+.breakdown-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 1em;
+  font-weight: 700;
+}
+
+.breakdown-subtitle {
+  font-size: 0.8em;
+  opacity: 0.75;
+  margin: 0 0 14px 0;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.breakdown-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+  text-align: left;
+}
+
+.breakdown-table th,
+.breakdown-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--color-card-border, rgba(255,255,255,0.1));
+}
+
+.breakdown-table th {
+  font-size: 0.75em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.muscle-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
+.primary-chip {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+}
+
+.secondary-chip {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.text-muted {
+  opacity: 0.4;
+}
+
+.no-data-text {
+  text-align: center;
+  font-size: 0.85em;
+  opacity: 0.6;
+  padding: 15px;
 }
 </style>
