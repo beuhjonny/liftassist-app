@@ -111,46 +111,17 @@
         :timeText="formattedRestTime" 
         :progress="timerProgressPercentage" 
       />
-      <div v-if="showActualRepsInput" class="actual-reps-input-section card-inset warning-highlight" style="margin-bottom: 20px;">
-        <h3 class="input-section-title">
-          <span class="warning-icon">💪</span> Log Actual Reps
-        </h3>
-
-        <div v-for="item in setsRequiringRepInput" :key="item.index" class="rep-input-row-item" :class="{ 'is-confirmed-row': confirmedRepsMap[item.index] }">
-          <div class="rep-input-meta">
-            <span class="exercise-name">{{ item.set.exerciseName }}</span>
-            <span class="prescribed-details">
-              Prescribed: Set {{ item.set.setNumber }} — {{ item.set.prescribedReps }} reps @ {{ item.set.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}
-              <span v-if="item.set.status === 'failed'" class="status-textfailed">(Failed Attempt)</span>
-              <span v-else class="status-textfailure">(To Failure)</span>
-            </span>
-          </div>
-          
-          <div class="input-control-row">
-            <button type="button" class="btn-adjust minus" @click="decrementRepInput(item.index)">−</button>
-            <input 
-              type="number" 
-              :id="'reps-input-' + item.index" 
-              v-model.number="repsCompletedInputMap[item.index]" 
-              min="0"
-              placeholder="Reps"
-              class="rep-number-input"
-              @input="onRepInputChanged(item.index)"
-            />
-            <button type="button" class="btn-adjust plus" @click="incrementRepInput(item.index)">+</button>
-            
-            <button 
-              type="button" 
-              class="btn-confirm-reps" 
-              :class="{ 'confirmed': confirmedRepsMap[item.index] }"
-              @click="confirmReps(item.index)"
-            >
-              <span v-if="confirmedRepsMap[item.index]">Confirmed ✓</span>
-              <span v-else>Confirm</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      <ActualRepsLogger 
+        :show="showActualRepsInput" 
+        :items="setsRequiringRepInput" 
+        :inputMap="repsCompletedInputMap" 
+        :confirmedMap="confirmedRepsMap" 
+        :weightUnit="displayUnit(settings.weightUnit)" 
+        @decrement="decrementRepInput" 
+        @increment="incrementRepInput" 
+        @updateInput="(idx, val) => { repsCompletedInputMap[idx] = val; onRepInputChanged(idx); }" 
+        @confirm="confirmReps" 
+      />
       <div v-if="nextSetDetails" class="next-up-info card-inset" :class="{ 'new-exercise-upcoming': currentExercise && nextSetDetails.exerciseName !== currentExercise.exerciseName }">
         <h4>{{ currentExercise && nextSetDetails.exerciseName !== currentExercise.exerciseName ? 'NEXT EXERCISE:' : 'NEXT UP:' }} {{ nextSetDetails.exerciseName }}</h4>
         <p class="next-up-details">
@@ -361,6 +332,7 @@ import TimerDisplay from '../components/active-workout/TimerDisplay.vue';
 import ActiveExerciseCard from '../components/active-workout/ActiveExerciseCard.vue';
 import DraftPromptOverlay from '../components/active-workout/DraftPromptOverlay.vue';
 import EditPrescriptionModal from '../components/active-workout/EditPrescriptionModal.vue';
+import ActualRepsLogger from '../components/active-workout/ActualRepsLogger.vue';
 
 
 
