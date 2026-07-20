@@ -8,71 +8,43 @@
         <h2>{{ exerciseName || demoInfo.name }}</h2>
       </div>
 
-      <!-- Unrecognized / Nonsense Exercise State -->
-      <div v-if="demoInfo.isUnknown" class="unknown-exercise-card card-inset">
-        <div class="unknown-icon">🔍</div>
-        <h3 class="unknown-title">No matching exercise demo found</h3>
+      <!-- Real Video / GIF Media Player (Proxy Stream) -->
+      <div v-if="demoInfo.proxyUrl && !imageError" class="demo-media-container card-inset">
+        <img 
+          :src="demoInfo.proxyUrl" 
+          :alt="demoInfo.name + ' demonstration'" 
+          class="demo-gif"
+          @error="imageError = true"
+        />
+      </div>
+
+      <!-- Clean Unknown Exercise Notice (Only if no video available) -->
+      <div v-else class="unknown-exercise-card card-inset">
+        <p class="unknown-title">No matching exercise demo video found</p>
         <p class="unknown-subtitle">
-          Demonstration videos and form cues are available for standard compound and isolation lifts (e.g. Bench Press, Incline Press, Squat, Deadlift, Overhead Press, Rows, Curls, Triceps, etc.).
+          Form cues and video demonstrations are available for standard strength training lifts.
         </p>
       </div>
 
-      <!-- Standard Recognized Exercise Demo -->
-      <template v-else>
-        <div class="demo-media-container card-inset">
-          <!-- Animated Biomechanical Vector Stage -->
-          <div class="vector-stage-container">
-            <svg viewBox="0 0 320 180" class="biomechanics-svg">
-              <defs>
-                <pattern id="grid-pattern" width="20" height="20" patternUnits="userSpaceOnUse">
-                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255, 255, 255, 0.06)" stroke-width="1"/>
-                </pattern>
-                <filter id="glow-effect" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
-
-              <rect width="100%" height="100%" fill="url(#grid-pattern)" />
-              <line x1="30" y1="145" x2="290" y2="145" stroke="#444" stroke-width="4" stroke-linecap="round"/>
-              <path d="M 160 40 L 160 120" stroke="rgba(0, 123, 255, 0.35)" stroke-width="2" stroke-dasharray="4 4" />
-
-              <g class="animated-bar-group">
-                <line x1="70" y1="60" x2="250" y2="60" stroke="#f0f0f0" stroke-width="6" stroke-linecap="round" />
-                <rect x="58" y="40" width="14" height="40" rx="3" fill="#007bff" filter="url(#glow-effect)" />
-                <rect x="248" y="40" width="14" height="40" rx="3" fill="#007bff" filter="url(#glow-effect)" />
-              </g>
-
-              <circle cx="160" cy="95" r="18" fill="rgba(0, 123, 255, 0.18)" stroke="#007bff" stroke-width="2" class="pulse-circle" />
-              <text x="160" y="99" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">TARGET</text>
-            </svg>
-            <div class="motion-caption">
-              <span class="motion-badge">⚡ Biomechanical Motion Guide</span>
-              <span class="tempo-info">Tempo: 2s Controlled Down | 1s Hold | Explosive Press</span>
-            </div>
-          </div>
+      <!-- Target Muscles -->
+      <div v-if="demoInfo.targetMuscles.length > 0" class="target-muscles-section">
+        <h4>Target Muscles</h4>
+        <div class="muscle-tags">
+          <span v-for="muscle in demoInfo.targetMuscles" :key="muscle" class="muscle-tag">
+            💪 {{ muscle }}
+          </span>
         </div>
+      </div>
 
-        <!-- Target Muscles -->
-        <div v-if="demoInfo.targetMuscles.length > 0" class="target-muscles-section">
-          <h4>Target Muscles</h4>
-          <div class="muscle-tags">
-            <span v-for="muscle in demoInfo.targetMuscles" :key="muscle" class="muscle-tag">
-              💪 {{ muscle }}
-            </span>
-          </div>
-        </div>
-
-        <!-- Key Form Cues -->
-        <div v-if="demoInfo.formCues.length > 0" class="form-cues-section card-inset">
-          <h4>Key Form Cues</h4>
-          <ul class="form-cues-list">
-            <li v-for="(cue, idx) in demoInfo.formCues" :key="idx">
-              {{ cue }}
-            </li>
-          </ul>
-        </div>
-      </template>
+      <!-- Key Form Cues -->
+      <div v-if="demoInfo.formCues.length > 0" class="form-cues-section card-inset">
+        <h4>Key Form Cues</h4>
+        <ul class="form-cues-list">
+          <li v-for="(cue, idx) in demoInfo.formCues" :key="idx">
+            {{ cue }}
+          </li>
+        </ul>
+      </div>
 
       <button @click="$emit('close')" class="button-primary full-width" style="margin-top: 15px;">
         Got it! Return to Workout
@@ -82,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { getExerciseDemo, type ExerciseDemoInfo } from '@/utils/exerciseDemos';
 
 const props = defineProps<{
@@ -94,9 +66,17 @@ defineEmits<{
   (e: 'close'): void;
 }>();
 
+const imageError = ref(false);
+
 const demoInfo = computed<ExerciseDemoInfo>(() => {
   return getExerciseDemo(props.exerciseName);
 });
+
+watch(() => props.show, (newShow) => {
+  if (newShow) {
+    imageError.value = false;
+  }
+}, { immediate: true });
 </script>
 
 <style scoped>
@@ -138,96 +118,47 @@ const demoInfo = computed<ExerciseDemoInfo>(() => {
   letter-spacing: 0.5px;
 }
 
+.demo-media-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000000;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  min-height: 240px;
+  border: 1px solid var(--color-card-border);
+}
+
+.demo-gif {
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
 /* Unknown exercise card */
 .unknown-exercise-card {
-  padding: 30px 20px;
+  padding: 20px;
   text-align: center;
   border-radius: 12px;
   margin-bottom: 16px;
 }
 
-.unknown-icon {
-  font-size: 2.8em;
-  margin-bottom: 10px;
-}
-
 .unknown-title {
-  font-size: 1.15em;
+  font-size: 1em;
   font-weight: 700;
-  margin: 0 0 8px 0;
+  margin: 0 0 6px 0;
   color: var(--color-card-heading);
 }
 
 .unknown-subtitle {
-  font-size: 0.88em;
+  font-size: 0.85em;
   color: var(--color-card-text);
   opacity: 0.8;
   margin: 0;
   line-height: 1.5;
-}
-
-.demo-media-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #121316;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 16px;
-  padding: 12px 10px;
-  border: 1px solid var(--color-card-border);
-}
-
-.vector-stage-container {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.biomechanics-svg {
-  width: 100%;
-  height: 150px;
-}
-
-.animated-bar-group {
-  animation: strokeLift 2.2s infinite ease-in-out;
-  transform-origin: center;
-}
-
-@keyframes strokeLift {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(50px); }
-  100% { transform: translateY(0px); }
-}
-
-.pulse-circle {
-  animation: pulseTarget 1.8s infinite ease-in-out;
-}
-
-@keyframes pulseTarget {
-  0% { r: 16px; opacity: 0.4; }
-  50% { r: 24px; opacity: 0.9; }
-  100% { r: 16px; opacity: 0.4; }
-}
-
-.motion-caption {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.motion-badge {
-  font-size: 0.85em;
-  font-weight: 700;
-  color: #007bff;
-}
-
-.tempo-info {
-  font-size: 0.78em;
-  color: #aaa;
 }
 
 .target-muscles-section {

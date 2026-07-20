@@ -3,8 +3,11 @@ export interface ExerciseDemoInfo {
   category: string;
   targetMuscles: string[];
   formCues: string[];
+  proxyUrl?: string;
   isUnknown?: boolean;
 }
+
+const CLOUD_FUNCTION_BASE = 'https://us-central1-lift-logic-app.cloudfunctions.net/getExerciseDemo';
 
 const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
   'bench_press': {
@@ -130,7 +133,7 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
 };
 
 /**
- * Normalizes an exercise name and returns matching or fallback demo information.
+ * Normalizes an exercise name and returns matching demo info with Cloud Function proxy URL.
  */
 export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
   if (!rawName) {
@@ -138,40 +141,41 @@ export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
   }
 
   const key = rawName.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  const proxyUrl = `${CLOUD_FUNCTION_BASE}?name=${encodeURIComponent(rawName)}`;
 
   if (DEMO_DATABASE[key]) {
-    return DEMO_DATABASE[key];
+    return { ...DEMO_DATABASE[key], proxyUrl };
   }
 
   if (key.includes('hammer')) {
-    return { ...DEMO_DATABASE['hammer_curl'], name: rawName };
+    return { ...DEMO_DATABASE['hammer_curl'], name: rawName, proxyUrl };
   }
   if (key.includes('incline')) {
-    return { ...DEMO_DATABASE['incline_bench_press'], name: rawName };
+    return { ...DEMO_DATABASE['incline_bench_press'], name: rawName, proxyUrl };
   }
   if (key.includes('bench') || key.includes('chest_press')) {
-    return { ...DEMO_DATABASE['bench_press'], name: rawName };
+    return { ...DEMO_DATABASE['bench_press'], name: rawName, proxyUrl };
   }
   if (key.includes('squat')) {
-    return { ...DEMO_DATABASE['squat'], name: rawName };
+    return { ...DEMO_DATABASE['squat'], name: rawName, proxyUrl };
   }
   if (key.includes('deadlift') || key.includes('rdl')) {
-    return { ...DEMO_DATABASE['deadlift'], name: rawName };
+    return { ...DEMO_DATABASE['deadlift'], name: rawName, proxyUrl };
   }
   if (key.includes('press') && (key.includes('shoulder') || key.includes('overhead') || key.includes('military'))) {
-    return { ...DEMO_DATABASE['overhead_press'], name: rawName };
+    return { ...DEMO_DATABASE['overhead_press'], name: rawName, proxyUrl };
   }
   if (key.includes('lat') || key.includes('pulldown')) {
-    return { ...DEMO_DATABASE['lat_pulldown'], name: rawName };
+    return { ...DEMO_DATABASE['lat_pulldown'], name: rawName, proxyUrl };
   }
   if (key.includes('row') || key.includes('helms')) {
-    return { ...DEMO_DATABASE['barbell_row'], name: rawName };
+    return { ...DEMO_DATABASE['barbell_row'], name: rawName, proxyUrl };
   }
   if (key.includes('curl')) {
-    return { ...DEMO_DATABASE['bicep_curl'], name: rawName };
+    return { ...DEMO_DATABASE['bicep_curl'], name: rawName, proxyUrl };
   }
   if (key.includes('tricep') || key.includes('pushdown') || key.includes('extension')) {
-    return { ...DEMO_DATABASE['tricep_pushdown'], name: rawName };
+    return { ...DEMO_DATABASE['tricep_pushdown'], name: rawName, proxyUrl };
   }
 
   return getUnknownDemo(rawName);
