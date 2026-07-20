@@ -3,9 +3,9 @@ export interface ExerciseDemoInfo {
   category: string;
   targetMuscles: string[];
   formCues: string[];
-  videoMp4Url?: string;
+  exerciseDbGifUrl?: string;
+  fitGifUrl?: string;
   youtubeEmbedUrl?: string;
-  gifUrl?: string;
 }
 
 const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
@@ -18,9 +18,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Lower the bar with control to lower-mid chest level.',
       'Drive feet into the ground and press straight up to full lock.'
     ],
-    videoMp4Url: 'https://wger.de/media/exercise-videos/78.mp4',
-    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/rT7DgCr-3pg?autoplay=1&mute=1&loop=1&playlist=rT7DgCr-3pg&controls=1',
-    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg'
+    exerciseDbGifUrl: 'https://d205bpvrqc9yn1.cloudfront.net/0025.gif',
+    fitGifUrl: 'https://cdn.jsdelivr.net/gh/akbartaimurr/FitGif-Exercise-API@main/gifs/Barbell%20Bench%20Press.gif',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/rT7DgCr-3pg?autoplay=1&mute=1&loop=1&playlist=rT7DgCr-3pg&controls=1'
   },
   'incline_bench_press': {
     name: 'Incline Dumbbell Press',
@@ -31,9 +31,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Keep wrists stacked directly over elbows at the bottom of the movement.',
       'Press dumbbells together at the top without touching.'
     ],
-    videoMp4Url: 'https://wger.de/media/exercise-videos/18.mp4',
-    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/8iPEnn-ltC8?autoplay=1&mute=1&loop=1&playlist=8iPEnn-ltC8&controls=1',
-    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Bench_Press/0.jpg'
+    exerciseDbGifUrl: 'https://d205bpvrqc9yn1.cloudfront.net/0314.gif',
+    fitGifUrl: 'https://cdn.jsdelivr.net/gh/akbartaimurr/FitGif-Exercise-API@main/gifs/Incline%20Dumbbell%20Press.gif',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/8iPEnn-ltC8?autoplay=1&mute=1&loop=1&playlist=8iPEnn-ltC8&controls=1'
   },
   'hammer_curl': {
     name: 'Standing Hammer Curl',
@@ -44,9 +44,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Keep upper arms stationary and curl weights upward.',
       'Squeeze biceps & forearms at the top and lower slowly.'
     ],
-    videoMp4Url: 'https://wger.de/media/exercise-videos/87.mp4',
-    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/zC3nLlEvin4?autoplay=1&mute=1&loop=1&playlist=zC3nLlEvin4&controls=1',
-    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Alternate_Hammer_Curl/0.jpg'
+    exerciseDbGifUrl: 'https://d205bpvrqc9yn1.cloudfront.net/0306.gif',
+    fitGifUrl: 'https://cdn.jsdelivr.net/gh/akbartaimurr/FitGif-Exercise-API@main/gifs/Dumbbell%20Hammer%20Curl.gif',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/zC3nLlEvin4?autoplay=1&mute=1&loop=1&playlist=zC3nLlEvin4&controls=1'
   },
   'squat': {
     name: 'Barbell Back Squat',
@@ -57,9 +57,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Brace core, break at hips and knees simultaneously.',
       'Squat below parallel while keeping chest up and knees tracking over toes.'
     ],
-    videoMp4Url: 'https://wger.de/media/exercise-videos/191.mp4',
-    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/ultWZbUMPL8?autoplay=1&mute=1&loop=1&playlist=ultWZbUMPL8&controls=1',
-    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Full_Squat/0.jpg'
+    exerciseDbGifUrl: 'https://d205bpvrqc9yn1.cloudfront.net/0043.gif',
+    fitGifUrl: 'https://cdn.jsdelivr.net/gh/akbartaimurr/FitGif-Exercise-API@main/gifs/Barbell%20Squat.gif',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/ultWZbUMPL8?autoplay=1&mute=1&loop=1&playlist=ultWZbUMPL8&controls=1'
   },
   'deadlift': {
     name: 'Barbell Conventional Deadlift',
@@ -70,9 +70,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Hinge at hips, pull slack out of the bar, and engage lats.',
       'Push the floor away through mid-foot and lock out hips at the top.'
     ],
-    videoMp4Url: 'https://wger.de/media/exercise-videos/161.mp4',
-    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/op9kVnSso6Q?autoplay=1&mute=1&loop=1&playlist=op9kVnSso6Q&controls=1',
-    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/0.jpg'
+    exerciseDbGifUrl: 'https://d205bpvrqc9yn1.cloudfront.net/0032.gif',
+    fitGifUrl: 'https://cdn.jsdelivr.net/gh/akbartaimurr/FitGif-Exercise-API@main/gifs/Barbell%20Deadlift.gif',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/op9kVnSso6Q?autoplay=1&mute=1&loop=1&playlist=op9kVnSso6Q&controls=1'
   },
   'overhead_press': {
     name: 'Standing Overhead Press',
@@ -83,9 +83,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Press straight up, leaning head back slightly as bar passes your face.',
       'Lock out overhead and push head forward to neutral.'
     ],
-    videoMp4Url: 'https://wger.de/media/exercise-videos/192.mp4',
-    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/2yjwXTZQDDI?autoplay=1&mute=1&loop=1&playlist=2yjwXTZQDDI&controls=1',
-    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Standing_Overhead_Press/0.jpg'
+    exerciseDbGifUrl: 'https://d205bpvrqc9yn1.cloudfront.net/0091.gif',
+    fitGifUrl: 'https://cdn.jsdelivr.net/gh/akbartaimurr/FitGif-Exercise-API@main/gifs/Overhead%20Press.gif',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/2yjwXTZQDDI?autoplay=1&mute=1&loop=1&playlist=2yjwXTZQDDI&controls=1'
   },
   'lat_pulldown': {
     name: 'Cable Lat Pulldown',
@@ -96,9 +96,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Pull elbows down and back towards your ribcage.',
       'Squeeze shoulder blades at the bottom and control the return.'
     ],
-    videoMp4Url: 'https://wger.de/media/exercise-videos/160.mp4',
-    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/CAwf7n6Luuc?autoplay=1&mute=1&loop=1&playlist=CAwf7n6Luuc&controls=1',
-    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Lat_Pulldown/0.jpg'
+    exerciseDbGifUrl: 'https://d205bpvrqc9yn1.cloudfront.net/0150.gif',
+    fitGifUrl: 'https://cdn.jsdelivr.net/gh/akbartaimurr/FitGif-Exercise-API@main/gifs/Lat%20Pulldown.gif',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/CAwf7n6Luuc?autoplay=1&mute=1&loop=1&playlist=CAwf7n6Luuc&controls=1'
   },
   'barbell_row': {
     name: 'Bent Over Barbell Row',
@@ -109,9 +109,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Pull bar to lower sternum/belly button, driving elbows backward.',
       'Avoid swinging or using momentum to lift the weight.'
     ],
-    videoMp4Url: 'https://wger.de/media/exercise-videos/78.mp4',
-    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/FWJR5YeXDYA?autoplay=1&mute=1&loop=1&playlist=FWJR5YeXDYA&controls=1',
-    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/0.jpg'
+    exerciseDbGifUrl: 'https://d205bpvrqc9yn1.cloudfront.net/0027.gif',
+    fitGifUrl: 'https://cdn.jsdelivr.net/gh/akbartaimurr/FitGif-Exercise-API@main/gifs/Bent%20Over%20Row.gif',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/FWJR5YeXDYA?autoplay=1&mute=1&loop=1&playlist=FWJR5YeXDYA&controls=1'
   }
 };
 
@@ -164,8 +164,8 @@ function getFallbackDemo(name: string): ExerciseDemoInfo {
       'Control the eccentric (lowering) phase for 2 seconds.',
       'Drive through the movement with intent without using excessive momentum.'
     ],
-    videoMp4Url: 'https://wger.de/media/exercise-videos/78.mp4',
-    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/rT7DgCr-3pg?autoplay=1&mute=1&loop=1&playlist=rT7DgCr-3pg&controls=1',
-    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg'
+    exerciseDbGifUrl: 'https://d205bpvrqc9yn1.cloudfront.net/0025.gif',
+    fitGifUrl: 'https://cdn.jsdelivr.net/gh/akbartaimurr/FitGif-Exercise-API@main/gifs/Barbell%20Bench%20Press.gif',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/rT7DgCr-3pg?autoplay=1&mute=1&loop=1&playlist=rT7DgCr-3pg&controls=1'
   };
 }

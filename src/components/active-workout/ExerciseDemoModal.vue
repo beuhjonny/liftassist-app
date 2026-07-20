@@ -11,11 +11,18 @@
       <!-- Source Switcher Tabs -->
       <div class="provider-tabs">
         <button 
-          :class="{ active: activeProvider === 'mp4' }" 
-          @click="activeProvider = 'mp4'"
+          :class="{ active: activeProvider === 'exercisedb' }" 
+          @click="activeProvider = 'exercisedb'"
           class="provider-tab-btn"
         >
-          🎬 HD MP4 Loop (wger)
+          🏋️‍♂️ ExerciseDB (3D GIF)
+        </button>
+        <button 
+          :class="{ active: activeProvider === 'fitgif' }" 
+          @click="activeProvider = 'fitgif'"
+          class="provider-tab-btn"
+        >
+          ⚡ FitGif API
         </button>
         <button 
           :class="{ active: activeProvider === 'youtube' }" 
@@ -28,19 +35,23 @@
 
       <!-- Movement Loop Media Container -->
       <div class="demo-media-container card-inset">
-        <!-- 1. Real HD MP4 Video Loop (wger) -->
-        <video 
-          v-if="activeProvider === 'mp4' && demoInfo.videoMp4Url"
-          :src="demoInfo.videoMp4Url" 
-          autoplay 
-          loop 
-          muted 
-          playsinline 
-          controls 
-          class="demo-video-player"
-        ></video>
+        <!-- 1. ExerciseDB CloudFront 3D Animated GIF -->
+        <img 
+          v-if="activeProvider === 'exercisedb' && demoInfo.exerciseDbGifUrl"
+          :src="demoInfo.exerciseDbGifUrl" 
+          :alt="demoInfo.name + ' demonstration'" 
+          class="demo-gif"
+        />
 
-        <!-- 2. Clean Embedded YouTube Short -->
+        <!-- 2. FitGif API Looping GIF -->
+        <img 
+          v-else-if="activeProvider === 'fitgif' && demoInfo.fitGifUrl"
+          :src="demoInfo.fitGifUrl" 
+          :alt="demoInfo.name + ' demonstration'" 
+          class="demo-gif"
+        />
+
+        <!-- 3. Clean Embedded YouTube Short -->
         <iframe 
           v-else-if="activeProvider === 'youtube' && demoInfo.youtubeEmbedUrl"
           :src="demoInfo.youtubeEmbedUrl" 
@@ -97,7 +108,7 @@ defineEmits<{
   (e: 'close'): void;
 }>();
 
-const activeProvider = ref<'mp4' | 'youtube'>('mp4');
+const activeProvider = ref<'exercisedb' | 'fitgif' | 'youtube'>('exercisedb');
 
 const demoInfo = computed<ExerciseDemoInfo>(() => {
   return getExerciseDemo(props.exerciseName);
@@ -110,8 +121,8 @@ const demoInfo = computed<ExerciseDemoInfo>(() => {
 }
 
 .exercise-demo-modal {
-  max-width: 520px;
-  width: 92%;
+  max-width: 540px;
+  width: 94%;
   padding: 24px;
   max-height: 90vh;
   overflow-y: auto;
@@ -145,14 +156,14 @@ const demoInfo = computed<ExerciseDemoInfo>(() => {
 
 .provider-tabs {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   margin-bottom: 12px;
 }
 
 .provider-tab-btn {
   flex: 1;
-  padding: 6px 12px;
-  font-size: 0.82em;
+  padding: 6px 8px;
+  font-size: 0.78em;
   font-weight: 600;
   border-radius: 8px;
   border: 1px solid var(--color-card-border);
@@ -160,6 +171,7 @@ const demoInfo = computed<ExerciseDemoInfo>(() => {
   color: var(--color-card-text);
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .provider-tab-btn.active {
@@ -180,11 +192,12 @@ const demoInfo = computed<ExerciseDemoInfo>(() => {
   width: 100%;
 }
 
-.demo-video-player {
+.demo-gif {
   width: 100%;
   max-height: 280px;
+  object-fit: contain;
   border-radius: 8px;
-  outline: none;
+  background-color: #ffffff;
 }
 
 .demo-youtube-iframe {
