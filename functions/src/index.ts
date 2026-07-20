@@ -29,3 +29,8 @@ export {
 export {
     deleteAccount
 } from "./user";
+
+// Export Exercise Demo Proxy Function
+export {
+    getExerciseDemo
+} from "./demos";

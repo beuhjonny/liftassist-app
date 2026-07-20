@@ -4,18 +4,20 @@
     <div class="card-header-grid">
         <div class="header-spacer"></div>
         
-        <div class="header-content" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-            <h2>{{ exercise.exerciseName }}</h2>
-            <button 
-              v-if="showVideoDemos !== false" 
-              @click="$emit('openDemo', exercise.exerciseName)" 
-              class="button-icon extra-small" 
-              title="View Form Demo"
-              style="font-size: 1.1em; cursor: pointer; background: none; border: none; padding: 2px 4px;"
-            >
-              🎥
-            </button>
-            <p v-if="exercise.notesForExercise" class="exercise-notes">
+        <div class="header-content" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+            <div style="display: inline-flex; align-items: center; gap: 6px; justify-content: center;">
+              <h2 style="margin: 0; line-height: 1.2;">{{ exercise.exerciseName }}</h2>
+              <button 
+                v-if="showVideoDemos !== false" 
+                @click="$emit('openDemo', exercise.exerciseName)" 
+                class="button-icon extra-small" 
+                title="Exercise Form & Info"
+                style="font-size: 1.05em; cursor: pointer; background: none; border: none; padding: 0; line-height: 1; display: inline-flex; align-items: center; vertical-align: middle;"
+              >
+                ℹ️
+              </button>
+            </div>
+            <p v-if="exercise.notesForExercise" class="exercise-notes" style="margin: 0;">
               <em>Notes: {{ exercise.notesForExercise }}</em>
             </p>
         </div>
