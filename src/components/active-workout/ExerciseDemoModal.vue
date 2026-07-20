@@ -15,7 +15,7 @@
           :src="currentFrameUrl" 
           :alt="demoInfo.name + ' demonstration'" 
           class="demo-gif"
-          @error="imageError = true"
+          @error="handleImageError"
         />
         <div v-else class="demo-fallback-graphic">
           <span class="workout-icon">🏋️‍♂️</span>
@@ -66,6 +66,7 @@ defineEmits<{
 
 const currentFrame = ref(0);
 const imageError = ref(false);
+const hasSecondFrame = ref(false);
 let frameTimer: any = null;
 
 const demoInfo = computed<ExerciseDemoInfo>(() => {
@@ -73,19 +74,46 @@ const demoInfo = computed<ExerciseDemoInfo>(() => {
 });
 
 const currentFrameUrl = computed(() => {
-  const baseUrl = demoInfo.value.gifUrl.replace(/\/0\.jpg$/, '');
-  return `${baseUrl}/${currentFrame.value}.jpg`;
+  if (currentFrame.value === 1 && hasSecondFrame.value) {
+    const baseUrl = demoInfo.value.gifUrl.replace(/\/0\.jpg$/, '');
+    return `${baseUrl}/1.jpg`;
+  }
+  return demoInfo.value.gifUrl;
 });
 
-const startFrameAnimation = () => {
-  stopFrameAnimation();
+const handleImageError = () => {
+  // If frame 1 fails, revert to frame 0 instead of falling back to emoji
+  if (currentFrame.value === 1) {
+    hasSecondFrame.value = false;
+    currentFrame.value = 0;
+  } else {
+    imageError.value = true;
+  }
+};
+
+const setupImagePreload = () => {
+  imageError.value = false;
+  hasSecondFrame.value = false;
   currentFrame.value = 0;
+
+  const baseUrl = demoInfo.value.gifUrl.replace(/\/0\.jpg$/, '');
+  const img1 = new Image();
+  img1.src = `${baseUrl}/1.jpg`;
+  img1.onload = () => {
+    hasSecondFrame.value = true;
+    startAnimation();
+  };
+};
+
+const startAnimation = () => {
+  stopAnimation();
+  if (!hasSecondFrame.value) return;
   frameTimer = setInterval(() => {
     currentFrame.value = currentFrame.value === 0 ? 1 : 0;
   }, 1000);
 };
 
-const stopFrameAnimation = () => {
+const stopAnimation = () => {
   if (frameTimer) {
     clearInterval(frameTimer);
     frameTimer = null;
@@ -94,19 +122,18 @@ const stopFrameAnimation = () => {
 
 watch(() => props.show, (newShow) => {
   if (newShow) {
-    imageError.value = false;
-    startFrameAnimation();
+    setupImagePreload();
   } else {
-    stopFrameAnimation();
+    stopAnimation();
   }
 }, { immediate: true });
 
 onMounted(() => {
-  if (props.show) startFrameAnimation();
+  if (props.show) setupImagePreload();
 });
 
 onUnmounted(() => {
-  stopFrameAnimation();
+  stopAnimation();
 });
 </script>
 

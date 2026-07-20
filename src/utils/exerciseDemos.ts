@@ -30,7 +30,7 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Keep wrists stacked directly over elbows at the bottom of the movement.',
       'Press dumbbells together at the top without touching.'
     ],
-    gifUrl: `${CDN_BASE}/Incline_Dumbbell_Bench_Press/0.jpg`
+    gifUrl: `${CDN_BASE}/Dumbbell_Incline_Bench_Press/0.jpg`
   },
   'squat': {
     name: 'Barbell Back Squat',
@@ -107,7 +107,7 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Supinate wrists (palms facing up) as you curl the weight.',
       'Squeeze at the top and lower under full control.'
     ],
-    gifUrl: `${CDN_BASE}/Dumbbell_Biceps_Curl/0.jpg`
+    gifUrl: `${CDN_BASE}/Dumbbell_Bicep_Curl/0.jpg`
   },
   'tricep_pushdown': {
     name: 'Cable Tricep Pushdown',
@@ -179,7 +179,7 @@ export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
   if (key.includes('row') || key.includes('helms')) {
     return { ...DEMO_DATABASE['barbell_row'], name: rawName };
   }
-  if (key.includes('curl')) {
+  if (key.includes('curl') || key.includes('hammer')) {
     return { ...DEMO_DATABASE['bicep_curl'], name: rawName };
   }
   if (key.includes('tricep') || key.includes('pushdown') || key.includes('extension')) {
