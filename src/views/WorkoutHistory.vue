@@ -93,22 +93,21 @@
         <div class="card" style="margin-top: 15px; margin-bottom: 25px; border-radius: 12px; overflow: hidden;">
           <div 
             @click="showDetailedAnalytics = !showDetailedAnalytics" 
-            style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; padding: 14px 18px; background: var(--color-card-bg);"
+            style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; padding: 14px 16px; background: var(--color-card-bg);"
           >
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <h4 style="margin: 0; font-size: 1.05em; line-height: 1; color: var(--color-heading);">📊 Detailed Muscle & Exercise Analytics</h4>
-              <span style="font-size: 0.75em; font-weight: 600; opacity: 0.75; background: var(--color-card-mute); padding: 3px 8px; border-radius: 6px; border: 1px solid var(--color-card-border);">
-                {{ showDetailedAnalytics ? 'Hide Extra Charts' : 'Show Extra Charts' }}
-              </span>
-            </div>
-            <span style="font-size: 1.1em; transition: transform 0.2s;" :style="{ transform: showDetailedAnalytics ? 'rotate(180deg)' : 'rotate(0deg)' }">▼</span>
+            <span style="font-weight: 700; font-size: 1.05em; color: var(--color-card-text); display: flex; align-items: center; gap: 8px;">
+              📊 Detailed Muscle & Exercise Analytics
+            </span>
+            <span style="font-size: 0.85em; font-weight: 700; color: var(--color-card-text); opacity: 0.7; transition: transform 0.2s;" :style="{ transform: showDetailedAnalytics ? 'rotate(180deg)' : 'rotate(0deg)' }">
+              ▼
+            </span>
           </div>
 
-          <div v-show="showDetailedAnalytics" style="padding: 18px; border-top: 1px solid var(--color-card-border); display: flex; flex-direction: column; gap: 20px; background: var(--color-card-mute);">
+          <div v-show="showDetailedAnalytics" style="padding: 12px 16px 16px 16px; border-top: 1px solid var(--color-card-border); display: flex; flex-direction: column; gap: 16px;">
             <!-- 2. Weekly Sets per Muscle Group (Direct vs. Indirect) -->
-            <div class="chart-section card" style="padding: 18px; border-radius: 10px;">
-                <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3 style="margin:0; font-size: 1.2em;">💪 Muscle Group Sets per Week</h3>
+            <div class="chart-section">
+                <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h3 style="margin:0; font-size: 1.1em; color: var(--color-card-text);">💪 Muscle Group Sets per Week</h3>
                 </div>
                 <MuscleGroupVolumeChart 
                     :workouts="loggedWorkouts" 
@@ -116,10 +115,12 @@
                 />
             </div>
 
+            <hr style="border: none; border-top: 1px dashed var(--color-card-border); margin: 4px 0;" />
+
             <!-- 3. Exercise Strength & 1RM Progress -->
-            <div class="chart-section card" style="padding: 18px; border-radius: 10px;">
-                 <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
-                     <h3 style="margin:0; font-size: 1.2em;">🎯 Exercise Strength & 1RM Progress</h3>
+            <div class="chart-section">
+                 <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap: wrap; gap: 10px;">
+                     <h3 style="margin:0; font-size: 1.1em; color: var(--color-card-text);">🎯 Exercise Strength & 1RM Progress</h3>
                      <select v-model="selectedExerciseForGraph" class="history-select" style="max-width: 220px; min-width: 150px;">
                          <option value="">Select Exercise</option>
                          <option v-for="ex in uniqueExercises" :key="ex" :value="ex">{{ ex }}</option>
@@ -131,7 +132,7 @@
                      :workouts="loggedWorkouts" 
                      :weightUnit="settings?.weightUnit || 'lbs'"
                  />
-                 <div v-else class="placeholder-text card-inset" style="text-align:center; padding: 30px; color: var(--color-card-text); opacity: 0.75; border-radius: 8px;">
+                 <div v-else class="placeholder-text card-inset" style="text-align:center; padding: 20px; color: var(--color-card-text); opacity: 0.75; border-radius: 8px;">
                      Select an exercise above to analyze 1RM strength, top weight, and volume progress.
                  </div>
             </div>
