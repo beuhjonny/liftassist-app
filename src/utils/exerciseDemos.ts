@@ -3,11 +3,9 @@ export interface ExerciseDemoInfo {
   category: string;
   targetMuscles: string[];
   formCues: string[];
-  proxyUrl?: string;
+  localImgUrl?: string;
   isUnknown?: boolean;
 }
-
-const CLOUD_FUNCTION_BASE = 'https://us-central1-lift-logic-app.cloudfunctions.net/getExerciseDemo';
 
 const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
   'bench_press': {
@@ -18,7 +16,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Retract shoulder blades and keep feet flat on the floor.',
       'Lower the bar with control to lower-mid chest level.',
       'Drive feet into the ground and press straight up to full lock.'
-    ]
+    ],
+    localImgUrl: '/demos/barbell_bench_press_medium_grip.jpg'
   },
   'incline_bench_press': {
     name: 'Incline Dumbbell Press',
@@ -28,7 +27,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Set bench to 30–45 degrees incline.',
       'Keep wrists stacked directly over elbows at the bottom of the movement.',
       'Press dumbbells together at the top without touching.'
-    ]
+    ],
+    localImgUrl: '/demos/incline_dumbbell_press.jpg'
   },
   'lateral_raise': {
     name: 'Dumbbell Lateral Raise',
@@ -38,7 +38,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Slight forward lean with a soft bend in the elbows.',
       'Raise dumbbells out to the sides until parallel with the floor.',
       'Lead with your elbows and avoid shrugging your traps.'
-    ]
+    ],
+    localImgUrl: '/demos/lateral_raise_with_bands.jpg'
   },
   'hammer_curl': {
     name: 'Standing Hammer Curl',
@@ -48,7 +49,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Hold dumbbells with a neutral grip (palms facing each other).',
       'Keep upper arms stationary and curl weights upward.',
       'Squeeze biceps & forearms at the top and lower slowly.'
-    ]
+    ],
+    localImgUrl: '/demos/hammer_curls.jpg'
   },
   'squat': {
     name: 'Barbell Back Squat',
@@ -58,7 +60,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Set feet shoulder-width apart with toes slightly turned out.',
       'Brace core, break at hips and knees simultaneously.',
       'Squat below parallel while keeping chest up and knees tracking over toes.'
-    ]
+    ],
+    localImgUrl: '/demos/barbell_squat.jpg'
   },
   'deadlift': {
     name: 'Barbell Conventional Deadlift',
@@ -68,7 +71,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Position bar over mid-foot, shoulder-width stance.',
       'Hinge at hips, pull slack out of the bar, and engage lats.',
       'Push the floor away through mid-foot and lock out hips at the top.'
-    ]
+    ],
+    localImgUrl: '/demos/barbell_deadlift.jpg'
   },
   'overhead_press': {
     name: 'Standing Overhead Press',
@@ -78,7 +82,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Grip bar slightly outside shoulder width, elbows slightly in front of bar.',
       'Press straight up, leaning head back slightly as bar passes your face.',
       'Lock out overhead and push head forward to neutral.'
-    ]
+    ],
+    localImgUrl: '/demos/barbell_shoulder_press.jpg'
   },
   'lat_pulldown': {
     name: 'Cable Lat Pulldown',
@@ -88,7 +93,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Grip bar wider than shoulder width with a slight backward lean.',
       'Pull elbows down and back towards your ribcage.',
       'Squeeze shoulder blades at the bottom and control the return.'
-    ]
+    ],
+    localImgUrl: '/demos/full_range_of_motion_lat_pulldown.jpg'
   },
   'barbell_row': {
     name: 'Bent Over Barbell Row',
@@ -98,7 +104,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Hinge forward at 45 degrees with a flat back and soft knees.',
       'Pull bar to lower sternum/belly button, driving elbows backward.',
       'Avoid swinging or using momentum to lift the weight.'
-    ]
+    ],
+    localImgUrl: '/demos/bent_over_barbell_row.jpg'
   },
   'bicep_curl': {
     name: 'Dumbbell Bicep Curl',
@@ -108,7 +115,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Keep upper arms pinned to your sides throughout the movement.',
       'Supinate wrists (palms facing up) as you curl the weight.',
       'Squeeze at the top and lower under full control.'
-    ]
+    ],
+    localImgUrl: '/demos/machine_bicep_curl.jpg'
   },
   'tricep_pushdown': {
     name: 'Cable Tricep Pushdown',
@@ -118,7 +126,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Keep elbows locked near your torso.',
       'Extend arms fully downwards, squeezing triceps at lock-out.',
       'Control the ascent without allowing elbows to drift forward.'
-    ]
+    ],
+    localImgUrl: '/demos/cable_incline_pushdown.jpg'
   },
   'leg_press': {
     name: 'Leg Press',
@@ -128,17 +137,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Set feet hip-width apart in the center of the sled.',
       'Lower weight until knees reach 90 degrees without lower back rounding.',
       'Press through heels without locking knees aggressively at top.'
-    ]
-  },
-  'rear_delt_fly': {
-    name: 'Rear Delt Fly',
-    category: 'Shoulders',
-    targetMuscles: ['Rear Deltoids', 'Rhomboids'],
-    formCues: [
-      'Hinge forward or sit facing machine chest pad.',
-      'Drive elbows back and out to the sides in a wide arc.',
-      'Squeeze rear deltoids at maximum extension.'
-    ]
+    ],
+    localImgUrl: '/demos/leg_press.jpg'
   },
   'leg_extension': {
     name: 'Leg Extension',
@@ -148,7 +148,8 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Align knee joint with machine pivot point.',
       'Extend legs smoothly to top position without swinging.',
       'Pause for 1 second at full extension and lower with control.'
-    ]
+    ],
+    localImgUrl: '/demos/leg_extensions.jpg'
   },
   'leg_curl': {
     name: 'Lying Leg Curl',
@@ -158,12 +159,13 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Lie face down with pad positioned just above ankles.',
       'Curl weight upward towards glutes.',
       'Lower weight slowly under full hamstring tension.'
-    ]
+    ],
+    localImgUrl: '/demos/lying_leg_curls.jpg'
   }
 };
 
 /**
- * Normalizes an exercise name and returns matching demo info with Cloud Function proxy URL.
+ * Normalizes an exercise name and returns matching demo info with bundled local image URL.
  */
 export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
   if (!rawName) {
@@ -171,44 +173,43 @@ export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
   }
 
   const key = rawName.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-  const proxyUrl = `${CLOUD_FUNCTION_BASE}?name=${encodeURIComponent(rawName)}`;
 
   if (DEMO_DATABASE[key]) {
-    return { ...DEMO_DATABASE[key], proxyUrl };
+    return DEMO_DATABASE[key];
   }
 
   if (key.includes('lateral') || key.includes('raise')) {
-    return { ...DEMO_DATABASE['lateral_raise'], name: rawName, proxyUrl };
+    return { ...DEMO_DATABASE['lateral_raise'], name: rawName };
   }
   if (key.includes('hammer')) {
-    return { ...DEMO_DATABASE['hammer_curl'], name: rawName, proxyUrl };
+    return { ...DEMO_DATABASE['hammer_curl'], name: rawName };
   }
   if (key.includes('incline')) {
-    return { ...DEMO_DATABASE['incline_bench_press'], name: rawName, proxyUrl };
+    return { ...DEMO_DATABASE['incline_bench_press'], name: rawName };
   }
   if (key.includes('bench') || key.includes('chest_press')) {
-    return { ...DEMO_DATABASE['bench_press'], name: rawName, proxyUrl };
+    return { ...DEMO_DATABASE['bench_press'], name: rawName };
   }
   if (key.includes('squat')) {
-    return { ...DEMO_DATABASE['squat'], name: rawName, proxyUrl };
+    return { ...DEMO_DATABASE['squat'], name: rawName };
   }
   if (key.includes('deadlift') || key.includes('rdl')) {
-    return { ...DEMO_DATABASE['deadlift'], name: rawName, proxyUrl };
+    return { ...DEMO_DATABASE['deadlift'], name: rawName };
   }
   if (key.includes('press') && (key.includes('shoulder') || key.includes('overhead') || key.includes('military'))) {
-    return { ...DEMO_DATABASE['overhead_press'], name: rawName, proxyUrl };
+    return { ...DEMO_DATABASE['overhead_press'], name: rawName };
   }
   if (key.includes('lat') || key.includes('pulldown')) {
-    return { ...DEMO_DATABASE['lat_pulldown'], name: rawName, proxyUrl };
+    return { ...DEMO_DATABASE['lat_pulldown'], name: rawName };
   }
   if (key.includes('row') || key.includes('helms')) {
-    return { ...DEMO_DATABASE['barbell_row'], name: rawName, proxyUrl };
+    return { ...DEMO_DATABASE['barbell_row'], name: rawName };
   }
   if (key.includes('curl')) {
-    return { ...DEMO_DATABASE['bicep_curl'], name: rawName, proxyUrl };
+    return { ...DEMO_DATABASE['bicep_curl'], name: rawName };
   }
   if (key.includes('tricep') || key.includes('pushdown') || key.includes('extension')) {
-    return { ...DEMO_DATABASE['tricep_pushdown'], name: rawName, proxyUrl };
+    return { ...DEMO_DATABASE['tricep_pushdown'], name: rawName };
   }
 
   return getUnknownDemo(rawName);

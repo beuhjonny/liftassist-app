@@ -8,21 +8,21 @@
         <h2>{{ exerciseName || demoInfo.name }}</h2>
       </div>
 
-      <!-- Real Video / GIF Media Player (Proxy Stream) -->
-      <div v-if="demoInfo.proxyUrl && !imageError" class="demo-media-container card-inset">
+      <!-- Real Bundled Exercise Image Media Player -->
+      <div v-if="demoInfo.localImgUrl && !imageError" class="demo-media-container card-inset">
         <img 
-          :src="demoInfo.proxyUrl" 
+          :src="demoInfo.localImgUrl" 
           :alt="demoInfo.name + ' demonstration'" 
           class="demo-gif"
           @error="imageError = true"
         />
       </div>
 
-      <!-- Clean Unknown Exercise Notice (Only if no video available) -->
+      <!-- Clean Unknown Exercise Notice -->
       <div v-else class="unknown-exercise-card card-inset">
         <p class="unknown-title">No matching exercise demo video found</p>
         <p class="unknown-subtitle">
-          Form cues and video demonstrations are available for standard strength training lifts.
+          Form cues and demonstrations are available for standard strength training lifts.
         </p>
       </div>
 
@@ -122,7 +122,7 @@ watch(() => props.show, (newShow) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #000000;
+  background-color: #ffffff;
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 16px;
