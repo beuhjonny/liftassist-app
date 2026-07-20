@@ -1,0 +1,17 @@
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\Constants.mc"; @line = 1; @symbol_moduledef = [Constants,1,7,16]; ]
+module Constants {
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\Constants.mc"; @line = 1; ]
+    <init> {
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\Constants.mc"; @line = 3; @position = 17; @symbol_constdef = [URL_GEN_CODE,3,17,29]; ]
+    const URL_GEN_CODE = "https://generatepairingcode-1003664264514.us-central1.run.app";
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\Constants.mc"; @line = 4; @position = 17; @symbol_constdef = [URL_CHECK_CODE,4,17,31]; ]
+    const URL_CHECK_CODE = "https://checkpairingcode-1003664264514.us-central1.run.app";
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\Constants.mc"; @line = 8; @position = 17; @symbol_constdef = [URL_GET_SESSION,8,17,32]; ]
+    const URL_GET_SESSION = "https://getworkoutsession-1003664264514.us-central1.run.app";
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\Constants.mc"; @line = 9; @position = 17; @symbol_constdef = [URL_SUBMIT_SESSION,9,17,35]; ]
+    const URL_SUBMIT_SESSION = "https://submitworkoutsession-1003664264514.us-central1.run.app";
+}
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\Constants.mc"; @line = 1; ]
+<init> {
+}

@@ -1,0 +1,610 @@
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 1; @symbol_importdef<0> = [Toybox,1,7,13]; @symbol_importdef<1> = [WatchUi,1,14,21]; ]
+import Toybox.WatchUi;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 2; @symbol_importdef<0> = [Toybox,2,7,13]; @symbol_importdef<1> = [Graphics,2,14,22]; ]
+import Toybox.Graphics;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 3; @symbol_importdef<0> = [Toybox,3,7,13]; @symbol_importdef<1> = [Communications,3,14,28]; ]
+import Toybox.Communications;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 4; @symbol_importdef<0> = [Toybox,4,7,13]; @symbol_importdef<1> = [Lang,4,14,18]; ]
+import Toybox.Lang;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 5; @symbol_importdef<0> = [Toybox,5,7,13]; @symbol_importdef<1> = [Timer,5,14,19]; ]
+import Toybox.Timer;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 6; @symbol_importdef<0> = [Toybox,6,7,13]; @symbol_importdef<1> = [Application,6,14,25]; @symbol_importdef<2> = [Storage,6,26,33]; ]
+import Toybox.Application.Storage;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 8; @symbol_classdef = [LiftAssistPairingView,8,6,27]; @symbol_extends<0> = [WatchUi,8,36,43]; @symbol_extends<1> = [View,8,44,48]; ]
+class LiftAssistPairingView extends WatchUi.View {
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 8; ]
+    <init> {
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 8; ]
+    static
+    <init> {
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 10; @position = 15; @symbol_vardef = [_pairingCode,10,15,27]; ]
+    protected
+    var _pairingCode = "Loading...";
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 11; @position = 15; @symbol_vardef = [_status,11,15,22]; ]
+    protected
+    var _status = "Waiting...";
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 12; @position = 15; @symbol_vardef = [_pollTimer,12,15,25]; ]
+    protected
+    var _pollTimer;
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 13; @position = 15; @symbol_vardef = [_generated,13,15,25]; ]
+    protected
+    var _generated = false;
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 15; @symbol_functiondef = [initialize,15,13,23]; ]
+    function initialize() as Void {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_15_26_18_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 16 8 ]
+        symbol [ View %tmp.2 16 8 12 ];
+        %tmp.2 = getv ? :View;
+        symbol [ initialize %tmp.3 16 13 23 ];
+        %tmp.3 = getv function %tmp.2 :initialize;
+        invoke %tmp.2 %tmp.3();
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 17 8 ]
+        symbol [ Timer %tmp.6 17 25 30 ];
+        %tmp.6 = getm $.Toybox.Timer;
+        symbol [ Timer %tmp.7 17 31 36 ];
+        %tmp.7 = getv function ? %tmp.6 :Timer;
+        %tmp.4 = newc %tmp.7 ();
+        symbol [ _pollTimer ? 17 8 18 ];
+        putv self :_pollTimer %tmp.4;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_15_26_18_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 20; @symbol_functiondef = [onLayout,20,13,21]; @symbol_param<0> = [dc,20,22,24]; ]
+    function onLayout(dc) {
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 23; @symbol_functiondef = [onShow,23,13,19]; ]
+    function onShow() {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_23_22_27_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 24 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_24_8_26_8_if_stmt:
+        symbol [ _generated %tmp.2 24 13 23 ];
+        %tmp.2 = getv ? :_generated;
+        %tmp.3 = not %tmp.2;
+        bf %tmp.3 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_24_8_26_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_24_8_26_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_24_25_26_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 25 12 ]
+        %tmp.4 = self;
+        symbol [ generateCode %tmp.5 25 12 24 ];
+        %tmp.5 = getv function %tmp.4 :generateCode;
+        invoke %tmp.4 %tmp.5();
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_24_25_26_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_24_8_26_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_24_8_26_8_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_23_22_27_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 30; @symbol_functiondef = [generateCode,30,13,25]; ]
+    function generateCode() {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_30_28_46_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 31 8 ]
+        %tmp.1 = "Connecting...";
+        symbol [ _status ? 31 8 15 ];
+        putv self :_status %tmp.1;
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 32 8 ]
+        symbol [ WatchUi %tmp.2 32 8 15 ];
+        %tmp.2 = getm $.Toybox.WatchUi;
+        symbol [ requestUpdate %tmp.3 32 16 29 ];
+        %tmp.3 = getv function %tmp.2 :requestUpdate;
+        invoke %tmp.2 %tmp.3();
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 34 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_30_28_46_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_30_28_46_4_stop" ]
+        %options.1 = local;
+        symbol [ options %options.1 34 12 19 ];
+        %tmp.4 = newd 3;
+        %tmp.6 = const :method;
+        symbol [ method %tmp.6 35 13 19 const ];
+        symbol [ Communications %tmp.7 35 23 37 ];
+        %tmp.7 = getm $.Toybox.Communications;
+        symbol [ HTTP_REQUEST_METHOD_GET %tmp.8 35 38 61 ];
+        %tmp.8 = getv %tmp.7 :HTTP_REQUEST_METHOD_GET;
+        %tmp.9 = dup %tmp.4;
+        %tmp.10 = aputv %tmp.9 %tmp.6 %tmp.8;
+        %tmp.12 = const :headers;
+        symbol [ headers %tmp.12 36 13 20 const ];
+        %tmp.13 = newd 1;
+        %tmp.14 = "Content-Type";
+        symbol [ Communications %tmp.15 36 44 58 ];
+        %tmp.15 = getm $.Toybox.Communications;
+        symbol [ REQUEST_CONTENT_TYPE_JSON %tmp.16 36 59 84 ];
+        %tmp.16 = getv %tmp.15 :REQUEST_CONTENT_TYPE_JSON;
+        %tmp.17 = dup %tmp.13;
+        %tmp.18 = aputv %tmp.17 %tmp.14 %tmp.16;
+        %tmp.19 = dup %tmp.10;
+        %tmp.20 = aputv %tmp.19 %tmp.12 %tmp.18;
+        %tmp.22 = const :responseType;
+        symbol [ responseType %tmp.22 37 13 25 const ];
+        symbol [ Communications %tmp.23 37 29 43 ];
+        %tmp.23 = getm $.Toybox.Communications;
+        symbol [ HTTP_RESPONSE_CONTENT_TYPE_JSON %tmp.24 37 44 75 ];
+        %tmp.24 = getv %tmp.23 :HTTP_RESPONSE_CONTENT_TYPE_JSON;
+        %tmp.25 = dup %tmp.20;
+        %tmp.26 = aputv %tmp.25 %tmp.22 %tmp.24;
+        lputv %options.1 %tmp.26;
+        symbol [ options %options.1 34 12 19 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 40 8 ]
+        symbol [ Communications %tmp.27 40 8 22 ];
+        %tmp.27 = getm $.Toybox.Communications;
+        symbol [ makeWebRequest %tmp.28 40 23 37 ];
+        %tmp.28 = getv function %tmp.27 :makeWebRequest;
+        symbol [ Constants %tmp.30 41 12 21 ];
+        %tmp.30 = getv ? :Constants;
+        symbol [ URL_GEN_CODE %tmp.31 41 22 34 ];
+        %tmp.31 = getv %tmp.30 :URL_GEN_CODE;
+        %tmp.32 = null;
+        %tmp.33 = lgetv %options.1;
+        symbol [ options %tmp.33 43 12 19 ];
+        %tmp.34 = self;
+        symbol [ method %tmp.35 44 12 18 ];
+        %tmp.35 = getv function %tmp.34 :method;
+        %tmp.37 = const :onReceiveCode;
+        symbol [ onReceiveCode %tmp.37 44 20 33 const ];
+        %tmp.38 = invoke %tmp.34 %tmp.35(%tmp.37);
+        invoke %tmp.27 %tmp.28(%tmp.31, %tmp.32, %tmp.33, %tmp.38);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_30_28_46_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 48; @symbol_functiondef = [onReceiveCode,48,13,26]; @symbol_param<0> = [responseCode,48,27,39]; @symbol_param<0>_type<0> = [Lang,48,43,47]; @symbol_param<0>_type<1> = [Number,48,48,54]; @symbol_param<1> = [data,48,56,60]; @symbol_param<1>_type<0> = [Lang,48,64,68]; @symbol_param<1>_type<1> = [Dictionary,48,69,79]; @symbol_param<1>_type<2> = [Lang,48,83,87]; @symbol_param<1>_type<3> = [String,48,88,94]; ]
+    function onReceiveCode(responseCode as Lang.Number, data as Lang.Dictionary or Lang.String or Null) as Void {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_48_112_62_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 49 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_8_61_8_if_stmt:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_12_49_56_begin:
+        %tmp.1 = lgetv %responseCode;
+        symbol [ responseCode %tmp.1 49 12 24 ];
+        %tmp.2 = 200;
+        %tmp.3 = eq %tmp.1 %tmp.2;
+        bf %tmp.3 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_8_61_8_if_else_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_35_49_56_true:
+        %tmp.4 = lgetv %data;
+        symbol [ data %tmp.4 49 35 39 ];
+        symbol [ Lang %tmp.5 49 51 55 ];
+        %tmp.5 = getm $.Toybox.Lang;
+        symbol [ Dictionary %tmp.6 49 56 66 ];
+        %tmp.6 = getv %tmp.5 :Dictionary;
+        %tmp.7 = isa %tmp.4 %tmp.6;
+        push %tmp.7;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_35_49_56_end:
+        %tmp.8 = phi [%tmp.3 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_12_49_56_begin] [%tmp.7 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_35_49_56_true] [%tmp.8 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_35_49_56_end];
+        bf %tmp.8 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_8_61_8_if_else_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_8_61_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_68_57_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 50 12 ]
+        %tmp.9 = lgetv %data;
+        symbol [ data %tmp.9 50 27 31 ];
+        %tmp.10 = as %tmp.9 { (Lang.Dictionary) };
+        symbol [ get %tmp.11 50 32 35 ];
+        %tmp.11 = getv function %tmp.10 :get;
+        %tmp.12 = "code";
+        %tmp.13 = invoke %tmp.10 %tmp.11(%tmp.12);
+        symbol [ _pairingCode ? 50 12 24 ];
+        putv self :_pairingCode %tmp.13;
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 51 12 ]
+        %tmp.14 = "Link on Web";
+        symbol [ _status ? 51 12 19 ];
+        putv self :_status %tmp.14;
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 52 12 ]
+        %tmp.15 = true;
+        symbol [ _generated ? 52 12 22 ];
+        putv self :_generated %tmp.15;
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 53 12 ]
+        symbol [ WatchUi %tmp.16 53 12 19 ];
+        %tmp.16 = getm $.Toybox.WatchUi;
+        symbol [ requestUpdate %tmp.17 53 20 33 ];
+        %tmp.17 = getv function %tmp.16 :requestUpdate;
+        invoke %tmp.16 %tmp.17();
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 56 12 ]
+        symbol [ _pollTimer %tmp.19 56 12 22 ];
+        %tmp.19 = getv ? :_pollTimer;
+        symbol [ start %tmp.20 56 23 28 ];
+        %tmp.20 = getv function %tmp.19 :start;
+        %tmp.21 = self;
+        symbol [ method %tmp.22 56 29 35 ];
+        %tmp.22 = getv function %tmp.21 :method;
+        %tmp.24 = const :checkStatus;
+        symbol [ checkStatus %tmp.24 56 37 48 const ];
+        %tmp.25 = invoke %tmp.21 %tmp.22(%tmp.24);
+        %tmp.26 = 5000;
+        %tmp.27 = true;
+        invoke %tmp.19 %tmp.20(%tmp.25, %tmp.26, %tmp.27);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_68_57_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_8_61_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_8_61_8_if_else_false:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_57_15_61_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 58 12 ]
+        %tmp.28 = "Error";
+        symbol [ _pairingCode ? 58 12 24 ];
+        putv self :_pairingCode %tmp.28;
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 59 12 ]
+        %tmp.29 = "Retry?";
+        symbol [ _status ? 59 12 19 ];
+        putv self :_status %tmp.29;
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 60 12 ]
+        symbol [ WatchUi %tmp.30 60 12 19 ];
+        %tmp.30 = getm $.Toybox.WatchUi;
+        symbol [ requestUpdate %tmp.31 60 20 33 ];
+        %tmp.31 = getv function %tmp.30 :requestUpdate;
+        invoke %tmp.30 %tmp.31();
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_57_15_61_8_stop:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_49_8_61_8_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_48_112_62_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 65; @symbol_functiondef = [checkStatus,65,13,24]; ]
+    function checkStatus() {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_65_27_81_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 66 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_66_8_66_35_if_stmt:
+        symbol [ _generated %tmp.2 66 13 23 ];
+        %tmp.2 = getv ? :_generated;
+        %tmp.3 = not %tmp.2;
+        bf %tmp.3 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_66_8_66_35_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_66_8_66_35_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_66_25_66_35_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 66 27 ]
+        ret ?;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_66_25_66_35_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_66_8_66_35_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_66_8_66_35_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 68 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_65_27_81_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_65_27_81_4_stop" ]
+        %url.1 = local;
+        symbol [ url %url.1 68 12 15 ];
+        symbol [ Constants %tmp.5 68 18 27 ];
+        %tmp.5 = getv ? :Constants;
+        symbol [ URL_CHECK_CODE %tmp.6 68 28 42 ];
+        %tmp.6 = getv %tmp.5 :URL_CHECK_CODE;
+        %tmp.7 = "?code=";
+        %tmp.8 = add %tmp.6 %tmp.7;
+        symbol [ _pairingCode %tmp.10 68 56 68 ];
+        %tmp.10 = getv ? :_pairingCode;
+        %tmp.11 = add %tmp.8 %tmp.10;
+        lputv %url.1 %tmp.11;
+        symbol [ url %url.1 68 12 15 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 69 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_65_27_81_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_65_27_81_4_stop" ]
+        %options.2 = local;
+        symbol [ options %options.2 69 12 19 ];
+        %tmp.12 = newd 3;
+        %tmp.14 = const :method;
+        symbol [ method %tmp.14 70 13 19 const ];
+        symbol [ Communications %tmp.15 70 23 37 ];
+        %tmp.15 = getm $.Toybox.Communications;
+        symbol [ HTTP_REQUEST_METHOD_GET %tmp.16 70 38 61 ];
+        %tmp.16 = getv %tmp.15 :HTTP_REQUEST_METHOD_GET;
+        %tmp.17 = dup %tmp.12;
+        %tmp.18 = aputv %tmp.17 %tmp.14 %tmp.16;
+        %tmp.20 = const :headers;
+        symbol [ headers %tmp.20 71 13 20 const ];
+        %tmp.21 = newd 1;
+        %tmp.22 = "Content-Type";
+        symbol [ Communications %tmp.23 71 44 58 ];
+        %tmp.23 = getm $.Toybox.Communications;
+        symbol [ REQUEST_CONTENT_TYPE_JSON %tmp.24 71 59 84 ];
+        %tmp.24 = getv %tmp.23 :REQUEST_CONTENT_TYPE_JSON;
+        %tmp.25 = dup %tmp.21;
+        %tmp.26 = aputv %tmp.25 %tmp.22 %tmp.24;
+        %tmp.27 = dup %tmp.18;
+        %tmp.28 = aputv %tmp.27 %tmp.20 %tmp.26;
+        %tmp.30 = const :responseType;
+        symbol [ responseType %tmp.30 72 13 25 const ];
+        symbol [ Communications %tmp.31 72 29 43 ];
+        %tmp.31 = getm $.Toybox.Communications;
+        symbol [ HTTP_RESPONSE_CONTENT_TYPE_JSON %tmp.32 72 44 75 ];
+        %tmp.32 = getv %tmp.31 :HTTP_RESPONSE_CONTENT_TYPE_JSON;
+        %tmp.33 = dup %tmp.28;
+        %tmp.34 = aputv %tmp.33 %tmp.30 %tmp.32;
+        lputv %options.2 %tmp.34;
+        symbol [ options %options.2 69 12 19 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 75 8 ]
+        symbol [ Communications %tmp.35 75 8 22 ];
+        %tmp.35 = getm $.Toybox.Communications;
+        symbol [ makeWebRequest %tmp.36 75 23 37 ];
+        %tmp.36 = getv function %tmp.35 :makeWebRequest;
+        %tmp.37 = lgetv %url.1;
+        symbol [ url %tmp.37 76 12 15 ];
+        %tmp.38 = null;
+        %tmp.39 = lgetv %options.2;
+        symbol [ options %tmp.39 78 12 19 ];
+        %tmp.40 = self;
+        symbol [ method %tmp.41 79 12 18 ];
+        %tmp.41 = getv function %tmp.40 :method;
+        %tmp.43 = const :onCheckStatus;
+        symbol [ onCheckStatus %tmp.43 79 20 33 const ];
+        %tmp.44 = invoke %tmp.40 %tmp.41(%tmp.43);
+        invoke %tmp.35 %tmp.36(%tmp.37, %tmp.38, %tmp.39, %tmp.44);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_65_27_81_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 83; @symbol_functiondef = [onCheckStatus,83,13,26]; @symbol_param<0> = [responseCode,83,27,39]; @symbol_param<0>_type<0> = [Lang,83,43,47]; @symbol_param<0>_type<1> = [Number,83,48,54]; @symbol_param<1> = [data,83,56,60]; @symbol_param<1>_type<0> = [Lang,83,64,68]; @symbol_param<1>_type<1> = [Dictionary,83,69,79]; @symbol_param<1>_type<2> = [Lang,83,83,87]; @symbol_param<1>_type<3> = [String,83,88,94]; ]
+    function onCheckStatus(responseCode as Lang.Number, data as Lang.Dictionary or Lang.String or Null) as Void {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_83_112_97_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 84 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_8_96_8_if_stmt:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_12_84_56_begin:
+        %tmp.1 = lgetv %responseCode;
+        symbol [ responseCode %tmp.1 84 12 24 ];
+        %tmp.2 = 200;
+        %tmp.3 = eq %tmp.1 %tmp.2;
+        bf %tmp.3 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_8_96_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_35_84_56_true:
+        %tmp.4 = lgetv %data;
+        symbol [ data %tmp.4 84 35 39 ];
+        symbol [ Lang %tmp.5 84 51 55 ];
+        %tmp.5 = getm $.Toybox.Lang;
+        symbol [ Dictionary %tmp.6 84 56 66 ];
+        %tmp.6 = getv %tmp.5 :Dictionary;
+        %tmp.7 = isa %tmp.4 %tmp.6;
+        push %tmp.7;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_35_84_56_end:
+        %tmp.8 = phi [%tmp.3 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_12_84_56_begin] [%tmp.7 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_35_84_56_true] [%tmp.8 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_35_84_56_end];
+        bf %tmp.8 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_8_96_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_8_96_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_68_96_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 85 12 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_68_96_8_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_68_96_8_stop" ]
+        %status.1 = local;
+        symbol [ status %status.1 85 16 22 ];
+        %tmp.9 = lgetv %data;
+        symbol [ data %tmp.9 85 25 29 ];
+        %tmp.10 = as %tmp.9 { (Lang.Dictionary) };
+        symbol [ get %tmp.11 85 30 33 ];
+        %tmp.11 = getv function %tmp.10 :get;
+        %tmp.12 = "status";
+        %tmp.13 = invoke %tmp.10 %tmp.11(%tmp.12);
+        lputv %status.1 %tmp.13;
+        symbol [ status %status.1 85 16 22 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 86 12 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_12_95_12_if_stmt:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_16_86_57_begin:
+        %tmp.14 = lgetv %status.1;
+        symbol [ status %tmp.14 86 16 22 ];
+        %tmp.15 = null;
+        %tmp.16 = ne %tmp.14 %tmp.15;
+        bf %tmp.16 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_12_95_12_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_34_86_57_true:
+        %tmp.17 = lgetv %status.1;
+        symbol [ status %tmp.17 86 34 40 ];
+        %tmp.18 = as %tmp.17 { (!Null) };
+        symbol [ equals %tmp.19 86 41 47 ];
+        %tmp.19 = getv function %tmp.18 :equals;
+        %tmp.20 = "claimed";
+        %tmp.21 = invoke %tmp.18 %tmp.19(%tmp.20);
+        push %tmp.21;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_34_86_57_end:
+        %tmp.22 = phi [%tmp.16 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_16_86_57_begin] [%tmp.21 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_34_86_57_true] [%tmp.22 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_34_86_57_end];
+        bf %tmp.22 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_12_95_12_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_12_95_12_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_60_95_12_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 87 16 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_60_95_12_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_60_95_12_stop" ]
+        %token.2 = local;
+        symbol [ token %token.2 87 20 25 ];
+        %tmp.23 = lgetv %data;
+        symbol [ data %tmp.23 87 28 32 ];
+        %tmp.24 = as %tmp.23 { (Lang.Dictionary) };
+        symbol [ get %tmp.25 87 33 36 ];
+        %tmp.25 = getv function %tmp.24 :get;
+        %tmp.26 = "token";
+        %tmp.27 = invoke %tmp.24 %tmp.25(%tmp.26);
+        lputv %token.2 %tmp.27;
+        symbol [ token %token.2 87 20 25 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 88 16 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_88_16_94_16_if_stmt:
+        %tmp.28 = lgetv %token.2;
+        symbol [ token %tmp.28 88 20 25 ];
+        %tmp.29 = null;
+        %tmp.30 = ne %tmp.28 %tmp.29;
+        bf %tmp.30 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_88_16_94_16_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_88_16_94_16_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_88_35_94_16_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 90 20 ]
+        symbol [ Storage %tmp.31 90 20 27 ];
+        %tmp.31 = getm $.Toybox.Application.Storage;
+        symbol [ setValue %tmp.32 90 28 36 ];
+        %tmp.32 = getv function %tmp.31 :setValue;
+        %tmp.33 = "accessToken";
+        %tmp.34 = lgetv %token.2;
+        symbol [ token %tmp.34 90 52 57 ];
+        %tmp.35 = as %tmp.34 { (!Null) };
+        invoke %tmp.31 %tmp.32(%tmp.33, %tmp.35);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 91 20 ]
+        symbol [ _pollTimer %tmp.37 91 20 30 ];
+        %tmp.37 = getv ? :_pollTimer;
+        symbol [ stop %tmp.38 91 31 35 ];
+        %tmp.38 = getv function %tmp.37 :stop;
+        invoke %tmp.37 %tmp.38();
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 92 20 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_88_35_94_16_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_88_35_94_16_stop" ]
+        %view.3 = local;
+        symbol [ view %view.3 92 24 28 ];
+        symbol [ LiftAssistWorkoutView %tmp.42 92 35 56 ];
+        %tmp.42 = getv ? :LiftAssistWorkoutView;
+        %tmp.39 = newc %tmp.42 ();
+        lputv %view.3 %tmp.39;
+        symbol [ view %view.3 92 24 28 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 93 20 ]
+        symbol [ WatchUi %tmp.43 93 20 27 ];
+        %tmp.43 = getm $.Toybox.WatchUi;
+        symbol [ switchToView %tmp.44 93 28 40 ];
+        %tmp.44 = getv function %tmp.43 :switchToView;
+        %tmp.45 = lgetv %view.3;
+        symbol [ view %tmp.45 93 41 45 ];
+        symbol [ LiftAssistWorkoutDelegate %tmp.49 93 51 76 ];
+        %tmp.49 = getv ? :LiftAssistWorkoutDelegate;
+        %tmp.50 = lgetv %view.3;
+        symbol [ view %tmp.50 93 77 81 ];
+        %tmp.46 = newc %tmp.49 (%tmp.50);
+        symbol [ WatchUi %tmp.51 93 84 91 ];
+        %tmp.51 = getm $.Toybox.WatchUi;
+        symbol [ SLIDE_LEFT %tmp.52 93 92 102 ];
+        %tmp.52 = getv %tmp.51 :SLIDE_LEFT;
+        invoke %tmp.43 %tmp.44(%tmp.45, %tmp.46, %tmp.52);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_88_35_94_16_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_88_16_94_16_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_88_16_94_16_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_60_95_12_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_12_95_12_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_86_12_95_12_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_68_96_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_8_96_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_84_8_96_8_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_83_112_97_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 99; @symbol_functiondef = [onUpdate,99,13,21]; @symbol_param<0> = [dc,99,22,24]; ]
+    function onUpdate(dc) {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_99_26_110_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 100 8 ]
+        %tmp.1 = lgetv %dc;
+        symbol [ dc %tmp.1 100 8 10 ];
+        symbol [ setColor %tmp.2 100 11 19 ];
+        %tmp.2 = getv function %tmp.1 :setColor;
+        symbol [ Graphics %tmp.3 100 20 28 ];
+        %tmp.3 = getm $.Toybox.Graphics;
+        symbol [ COLOR_BLACK %tmp.4 100 29 40 ];
+        %tmp.4 = getv %tmp.3 :COLOR_BLACK;
+        symbol [ Graphics %tmp.5 100 42 50 ];
+        %tmp.5 = getm $.Toybox.Graphics;
+        symbol [ COLOR_BLACK %tmp.6 100 51 62 ];
+        %tmp.6 = getv %tmp.5 :COLOR_BLACK;
+        invoke %tmp.1 %tmp.2(%tmp.4, %tmp.6);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 101 8 ]
+        %tmp.7 = lgetv %dc;
+        symbol [ dc %tmp.7 101 8 10 ];
+        symbol [ clear %tmp.8 101 11 16 ];
+        %tmp.8 = getv function %tmp.7 :clear;
+        invoke %tmp.7 %tmp.8();
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 102 8 ]
+        %tmp.9 = lgetv %dc;
+        symbol [ dc %tmp.9 102 8 10 ];
+        symbol [ setColor %tmp.10 102 11 19 ];
+        %tmp.10 = getv function %tmp.9 :setColor;
+        symbol [ Graphics %tmp.11 102 20 28 ];
+        %tmp.11 = getm $.Toybox.Graphics;
+        symbol [ COLOR_WHITE %tmp.12 102 29 40 ];
+        %tmp.12 = getv %tmp.11 :COLOR_WHITE;
+        symbol [ Graphics %tmp.13 102 42 50 ];
+        %tmp.13 = getm $.Toybox.Graphics;
+        symbol [ COLOR_TRANSPARENT %tmp.14 102 51 68 ];
+        %tmp.14 = getv %tmp.13 :COLOR_TRANSPARENT;
+        invoke %tmp.9 %tmp.10(%tmp.12, %tmp.14);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 104 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_99_26_110_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_99_26_110_4_stop" ]
+        %w.1 = local;
+        symbol [ w %w.1 104 12 13 ];
+        %tmp.15 = lgetv %dc;
+        symbol [ dc %tmp.15 104 16 18 ];
+        symbol [ getWidth %tmp.16 104 19 27 ];
+        %tmp.16 = getv function %tmp.15 :getWidth;
+        %tmp.17 = invoke %tmp.15 %tmp.16();
+        lputv %w.1 %tmp.17;
+        symbol [ w %w.1 104 12 13 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 105 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_99_26_110_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_99_26_110_4_stop" ]
+        %h.2 = local;
+        symbol [ h %h.2 105 12 13 ];
+        %tmp.18 = lgetv %dc;
+        symbol [ dc %tmp.18 105 16 18 ];
+        symbol [ getHeight %tmp.19 105 19 28 ];
+        %tmp.19 = getv function %tmp.18 :getHeight;
+        %tmp.20 = invoke %tmp.18 %tmp.19();
+        lputv %h.2 %tmp.20;
+        symbol [ h %h.2 105 12 13 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 107 8 ]
+        %tmp.21 = lgetv %dc;
+        symbol [ dc %tmp.21 107 8 10 ];
+        symbol [ drawText %tmp.22 107 11 19 ];
+        %tmp.22 = getv function %tmp.21 :drawText;
+        %tmp.23 = lgetv %w.1;
+        symbol [ w %tmp.23 107 20 21 ];
+        %tmp.24 = 2;
+        %tmp.25 = div %tmp.23 %tmp.24;
+        %tmp.26 = lgetv %h.2;
+        symbol [ h %tmp.26 107 25 26 ];
+        %tmp.27 = 0.3;
+        %tmp.28 = mul %tmp.26 %tmp.27;
+        symbol [ Graphics %tmp.29 107 32 40 ];
+        %tmp.29 = getm $.Toybox.Graphics;
+        symbol [ FONT_MEDIUM %tmp.30 107 41 52 ];
+        %tmp.30 = getv %tmp.29 :FONT_MEDIUM;
+        %tmp.31 = "Pairing Code:";
+        symbol [ Graphics %tmp.32 107 71 79 ];
+        %tmp.32 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.33 107 80 99 ];
+        %tmp.33 = getv %tmp.32 :TEXT_JUSTIFY_CENTER;
+        invoke %tmp.21 %tmp.22(%tmp.25, %tmp.28, %tmp.30, %tmp.31, %tmp.33);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 108 8 ]
+        %tmp.34 = lgetv %dc;
+        symbol [ dc %tmp.34 108 8 10 ];
+        symbol [ drawText %tmp.35 108 11 19 ];
+        %tmp.35 = getv function %tmp.34 :drawText;
+        %tmp.36 = lgetv %w.1;
+        symbol [ w %tmp.36 108 20 21 ];
+        %tmp.37 = 2;
+        %tmp.38 = div %tmp.36 %tmp.37;
+        %tmp.39 = lgetv %h.2;
+        symbol [ h %tmp.39 108 25 26 ];
+        %tmp.40 = 0.5;
+        %tmp.41 = mul %tmp.39 %tmp.40;
+        symbol [ Graphics %tmp.42 108 32 40 ];
+        %tmp.42 = getm $.Toybox.Graphics;
+        symbol [ FONT_LARGE %tmp.43 108 41 51 ];
+        %tmp.43 = getv %tmp.42 :FONT_LARGE;
+        symbol [ _pairingCode %tmp.45 108 53 65 ];
+        %tmp.45 = getv ? :_pairingCode;
+        symbol [ Graphics %tmp.46 108 67 75 ];
+        %tmp.46 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.47 108 76 95 ];
+        %tmp.47 = getv %tmp.46 :TEXT_JUSTIFY_CENTER;
+        invoke %tmp.34 %tmp.35(%tmp.38, %tmp.41, %tmp.43, %tmp.45, %tmp.47);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 109 8 ]
+        %tmp.48 = lgetv %dc;
+        symbol [ dc %tmp.48 109 8 10 ];
+        symbol [ drawText %tmp.49 109 11 19 ];
+        %tmp.49 = getv function %tmp.48 :drawText;
+        %tmp.50 = lgetv %w.1;
+        symbol [ w %tmp.50 109 20 21 ];
+        %tmp.51 = 2;
+        %tmp.52 = div %tmp.50 %tmp.51;
+        %tmp.53 = lgetv %h.2;
+        symbol [ h %tmp.53 109 25 26 ];
+        %tmp.54 = 0.75;
+        %tmp.55 = mul %tmp.53 %tmp.54;
+        symbol [ Graphics %tmp.56 109 33 41 ];
+        %tmp.56 = getm $.Toybox.Graphics;
+        symbol [ FONT_SMALL %tmp.57 109 42 52 ];
+        %tmp.57 = getv %tmp.56 :FONT_SMALL;
+        symbol [ _status %tmp.59 109 54 61 ];
+        %tmp.59 = getv ? :_status;
+        symbol [ Graphics %tmp.60 109 63 71 ];
+        %tmp.60 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.61 109 72 91 ];
+        %tmp.61 = getv %tmp.60 :TEXT_JUSTIFY_CENTER;
+        invoke %tmp.48 %tmp.49(%tmp.52, %tmp.55, %tmp.57, %tmp.59, %tmp.61);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_99_26_110_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 112; @symbol_functiondef = [onHide,112,13,19]; ]
+    function onHide() {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_112_22_116_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 113 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_113_8_115_8_if_stmt:
+        symbol [ _pollTimer %tmp.2 113 12 22 ];
+        %tmp.2 = getv ? :_pollTimer;
+        %tmp.3 = null;
+        %tmp.4 = ne %tmp.2 %tmp.3;
+        bf %tmp.4 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_113_8_115_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_113_8_115_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_113_32_115_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc" 114 12 ]
+        symbol [ _pollTimer %tmp.6 114 12 22 ];
+        %tmp.6 = getv ? :_pollTimer;
+        %tmp.7 = as %tmp.6 { (!Null) };
+        symbol [ stop %tmp.8 114 23 27 ];
+        %tmp.8 = getv function %tmp.7 :stop;
+        invoke %tmp.7 %tmp.8();
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_113_32_115_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_113_8_115_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_113_8_115_8_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistPairingView_mc_112_22_116_4_stop:
+    }
+}
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistPairingView.mc"; @line = 1; ]
+<init> {
+}

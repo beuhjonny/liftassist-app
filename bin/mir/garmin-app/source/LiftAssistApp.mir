@@ -1,0 +1,106 @@
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc"; @line = 1; @symbol_importdef<0> = [Toybox,1,7,13]; @symbol_importdef<1> = [Application,1,14,25]; ]
+import Toybox.Application;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc"; @line = 2; @symbol_importdef<0> = [Toybox,2,7,13]; @symbol_importdef<1> = [Lang,2,14,18]; ]
+import Toybox.Lang;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc"; @line = 3; @symbol_importdef<0> = [Toybox,3,7,13]; @symbol_importdef<1> = [WatchUi,3,14,21]; ]
+import Toybox.WatchUi;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc"; @line = 5; @symbol_classdef = [LiftAssistApp,5,6,19]; @symbol_extends<0> = [Application,5,28,39]; @symbol_extends<1> = [AppBase,5,40,47]; ]
+class LiftAssistApp extends Application.AppBase {
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc"; @line = 5; ]
+    <init> {
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc"; @line = 5; ]
+    static
+    <init> {
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc"; @line = 7; @symbol_functiondef = [initialize,7,13,23]; ]
+    function initialize() as Void {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_7_26_9_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc" 8 8 ]
+        symbol [ AppBase %tmp.2 8 8 15 ];
+        %tmp.2 = getv ? :AppBase;
+        symbol [ initialize %tmp.3 8 16 26 ];
+        %tmp.3 = getv function %tmp.2 :initialize;
+        invoke %tmp.2 %tmp.3();
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_7_26_9_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc"; @line = 11; @symbol_functiondef = [onStart,11,13,20]; @symbol_param<0> = [state,11,21,26]; ]
+    function onStart(state) {
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc"; @line = 14; @symbol_functiondef = [onStop,14,13,19]; @symbol_param<0> = [state,14,20,25]; ]
+    function onStop(state) {
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc"; @line = 17; @symbol_functiondef = [getInitialView,17,13,27]; ]
+    function getInitialView() {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_17_30_25_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc" 18 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_17_30_25_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_17_30_25_4_stop" ]
+        %token.1 = local;
+        symbol [ token %token.1 18 12 17 ];
+        symbol [ Application %tmp.1 18 20 31 ];
+        %tmp.1 = getm $.Toybox.Application;
+        symbol [ Storage %tmp.2 18 32 39 ];
+        %tmp.2 = getv %tmp.1 :Storage;
+        symbol [ getValue %tmp.3 18 40 48 ];
+        %tmp.3 = getv function %tmp.2 :getValue;
+        %tmp.4 = "accessToken";
+        %tmp.5 = invoke %tmp.2 %tmp.3(%tmp.4);
+        lputv %token.1 %tmp.5;
+        symbol [ token %token.1 18 12 17 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc" 19 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_19_8_24_8_if_stmt:
+        %tmp.6 = lgetv %token.1;
+        symbol [ token %tmp.6 19 12 17 ];
+        %tmp.7 = null;
+        %tmp.8 = ne %tmp.6 %tmp.7;
+        bf %tmp.8 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_19_8_24_8_if_else_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_19_8_24_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_19_27_22_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc" 20 13 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_19_27_22_8_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_19_27_22_8_stop" ]
+        %view.2 = local;
+        symbol [ view %view.2 20 17 21 ];
+        symbol [ LiftAssistWorkoutView %tmp.12 20 28 49 ];
+        %tmp.12 = getv ? :LiftAssistWorkoutView;
+        %tmp.9 = newc %tmp.12 ();
+        lputv %view.2 %tmp.9;
+        symbol [ view %view.2 20 17 21 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc" 21 13 ]
+        %tmp.13 = newa 2;
+        %tmp.14 = lgetv %view.2;
+        symbol [ view %tmp.14 21 22 26 ];
+        %tmp.15 = dup %tmp.13;
+        %tmp.16 = aputv %tmp.15 0 %tmp.14;
+        symbol [ LiftAssistWorkoutDelegate %tmp.20 21 32 57 ];
+        %tmp.20 = getv ? :LiftAssistWorkoutDelegate;
+        %tmp.21 = lgetv %view.2;
+        symbol [ view %tmp.21 21 58 62 ];
+        %tmp.17 = newc %tmp.20 (%tmp.21);
+        %tmp.22 = dup %tmp.16;
+        %tmp.23 = aputv %tmp.22 1 %tmp.17;
+        ret %tmp.23;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_19_27_22_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_19_8_24_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_19_8_24_8_if_else_false:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_22_15_24_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc" 23 13 ]
+        %tmp.24 = newa 2;
+        symbol [ LiftAssistPairingView %tmp.28 23 26 47 ];
+        %tmp.28 = getv ? :LiftAssistPairingView;
+        %tmp.25 = newc %tmp.28 ();
+        %tmp.29 = dup %tmp.24;
+        %tmp.30 = aputv %tmp.29 0 %tmp.25;
+        symbol [ LiftAssistPairingDelegate %tmp.34 23 55 80 ];
+        %tmp.34 = getv ? :LiftAssistPairingDelegate;
+        %tmp.31 = newc %tmp.34 ();
+        %tmp.35 = dup %tmp.30;
+        %tmp.36 = aputv %tmp.35 1 %tmp.31;
+        ret %tmp.36;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_22_15_24_8_stop:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_19_8_24_8_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistApp_mc_17_30_25_4_stop:
+    }
+}
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistApp.mc"; @line = 1; ]
+<init> {
+}

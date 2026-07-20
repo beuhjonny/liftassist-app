@@ -1,0 +1,1330 @@
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 1; @symbol_importdef<0> = [Toybox,1,7,13]; @symbol_importdef<1> = [WatchUi,1,14,21]; ]
+import Toybox.WatchUi;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 2; @symbol_importdef<0> = [Toybox,2,7,13]; @symbol_importdef<1> = [Graphics,2,14,22]; ]
+import Toybox.Graphics;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 3; @symbol_importdef<0> = [Toybox,3,7,13]; @symbol_importdef<1> = [Communications,3,14,28]; ]
+import Toybox.Communications;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 4; @symbol_importdef<0> = [Toybox,4,7,13]; @symbol_importdef<1> = [Application,4,14,25]; @symbol_importdef<2> = [Storage,4,26,33]; ]
+import Toybox.Application.Storage;
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 6; @symbol_classdef = [LiftAssistWorkoutView,6,6,27]; @symbol_extends<0> = [WatchUi,6,36,43]; @symbol_extends<1> = [View,6,44,48]; ]
+class LiftAssistWorkoutView extends WatchUi.View {
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 6; ]
+    <init> {
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 6; ]
+    static
+    <init> {
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 8; @position = 15; @symbol_vardef = [_mainText,8,15,24]; ]
+    protected
+    var _mainText = "Loading Session...";
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 10; @symbol_functiondef = [initialize,10,13,23]; ]
+    function initialize() as Void {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_10_26_12_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 11 8 ]
+        symbol [ View %tmp.2 11 8 12 ];
+        %tmp.2 = getv ? :View;
+        symbol [ initialize %tmp.3 11 13 23 ];
+        %tmp.3 = getv function %tmp.2 :initialize;
+        invoke %tmp.2 %tmp.3();
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_10_26_12_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 14; @symbol_functiondef = [onShow,14,13,19]; ]
+    function onShow() {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_14_22_30_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 15 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_14_22_30_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_14_22_30_4_stop" ]
+        %token.1 = local;
+        symbol [ token %token.1 15 12 17 ];
+        symbol [ Storage %tmp.1 15 20 27 ];
+        %tmp.1 = getm $.Toybox.Application.Storage;
+        symbol [ getValue %tmp.2 15 28 36 ];
+        %tmp.2 = getv function %tmp.1 :getValue;
+        %tmp.3 = "accessToken";
+        %tmp.4 = invoke %tmp.1 %tmp.2(%tmp.3);
+        lputv %token.1 %tmp.4;
+        symbol [ token %token.1 15 12 17 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 16 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_14_22_30_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_14_22_30_4_stop" ]
+        %url.2 = local;
+        symbol [ url %url.2 16 12 15 ];
+        symbol [ Constants %tmp.6 16 18 27 ];
+        %tmp.6 = getv ? :Constants;
+        symbol [ URL_GET_SESSION %tmp.7 16 28 43 ];
+        %tmp.7 = getv %tmp.6 :URL_GET_SESSION;
+        %tmp.8 = "?token=";
+        %tmp.9 = add %tmp.7 %tmp.8;
+        %tmp.10 = lgetv %token.1;
+        symbol [ token %tmp.10 16 58 63 ];
+        %tmp.11 = add %tmp.9 %tmp.10;
+        lputv %url.2 %tmp.11;
+        symbol [ url %url.2 16 12 15 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 18 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_14_22_30_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_14_22_30_4_stop" ]
+        %options.3 = local;
+        symbol [ options %options.3 18 12 19 ];
+        %tmp.12 = newd 3;
+        %tmp.14 = const :method;
+        symbol [ method %tmp.14 19 13 19 const ];
+        symbol [ Communications %tmp.15 19 23 37 ];
+        %tmp.15 = getm $.Toybox.Communications;
+        symbol [ HTTP_REQUEST_METHOD_GET %tmp.16 19 38 61 ];
+        %tmp.16 = getv %tmp.15 :HTTP_REQUEST_METHOD_GET;
+        %tmp.17 = dup %tmp.12;
+        %tmp.18 = aputv %tmp.17 %tmp.14 %tmp.16;
+        %tmp.20 = const :headers;
+        symbol [ headers %tmp.20 20 13 20 const ];
+        %tmp.21 = newd 1;
+        %tmp.22 = "Content-Type";
+        symbol [ Communications %tmp.23 20 44 58 ];
+        %tmp.23 = getm $.Toybox.Communications;
+        symbol [ REQUEST_CONTENT_TYPE_JSON %tmp.24 20 59 84 ];
+        %tmp.24 = getv %tmp.23 :REQUEST_CONTENT_TYPE_JSON;
+        %tmp.25 = dup %tmp.21;
+        %tmp.26 = aputv %tmp.25 %tmp.22 %tmp.24;
+        %tmp.27 = dup %tmp.18;
+        %tmp.28 = aputv %tmp.27 %tmp.20 %tmp.26;
+        %tmp.30 = const :responseType;
+        symbol [ responseType %tmp.30 21 13 25 const ];
+        symbol [ Communications %tmp.31 21 29 43 ];
+        %tmp.31 = getm $.Toybox.Communications;
+        symbol [ HTTP_RESPONSE_CONTENT_TYPE_JSON %tmp.32 21 44 75 ];
+        %tmp.32 = getv %tmp.31 :HTTP_RESPONSE_CONTENT_TYPE_JSON;
+        %tmp.33 = dup %tmp.28;
+        %tmp.34 = aputv %tmp.33 %tmp.30 %tmp.32;
+        lputv %options.3 %tmp.34;
+        symbol [ options %options.3 18 12 19 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 24 8 ]
+        symbol [ Communications %tmp.35 24 8 22 ];
+        %tmp.35 = getm $.Toybox.Communications;
+        symbol [ makeWebRequest %tmp.36 24 23 37 ];
+        %tmp.36 = getv function %tmp.35 :makeWebRequest;
+        %tmp.37 = lgetv %url.2;
+        symbol [ url %tmp.37 25 12 15 ];
+        %tmp.38 = null;
+        %tmp.39 = lgetv %options.3;
+        symbol [ options %tmp.39 27 12 19 ];
+        %tmp.40 = self;
+        symbol [ method %tmp.41 28 12 18 ];
+        %tmp.41 = getv function %tmp.40 :method;
+        %tmp.43 = const :onReceiveSession;
+        symbol [ onReceiveSession %tmp.43 28 20 36 const ];
+        %tmp.44 = invoke %tmp.40 %tmp.41(%tmp.43);
+        invoke %tmp.35 %tmp.36(%tmp.37, %tmp.38, %tmp.39, %tmp.44);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_14_22_30_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 32; @position = 15; @symbol_vardef = [_sessionData,32,15,27]; ]
+    protected
+    var _sessionData = null;
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 33; @position = 15; @symbol_vardef = [_selectedDayIndex,33,15,32]; ]
+    protected
+    var _selectedDayIndex = 0;
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 35; @symbol_functiondef = [onReceiveSession,35,13,29]; @symbol_param<0> = [responseCode,35,30,42]; @symbol_param<0>_type<0> = [$,35,46,47]; @symbol_param<0>_type<1> = [Toybox,35,48,54]; @symbol_param<0>_type<2> = [Lang,35,55,59]; @symbol_param<0>_type<3> = [Number,35,60,66]; @symbol_param<1> = [data,35,68,72]; @symbol_param<1>_type<0> = [$,35,76,77]; @symbol_param<1>_type<1> = [Toybox,35,78,84]; @symbol_param<1>_type<2> = [Lang,35,85,89]; @symbol_param<1>_type<3> = [Dictionary,35,90,100]; @symbol_param<1>_type<4> = [$,35,104,105]; @symbol_param<1>_type<5> = [Toybox,35,106,112]; @symbol_param<1>_type<6> = [Lang,35,113,117]; @symbol_param<1>_type<7> = [String,35,118,124]; ]
+    function onReceiveSession(responseCode as $.Toybox.Lang.Number, data as $.Toybox.Lang.Dictionary or $.Toybox.Lang.String or Null) as Void {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_35_142_59_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 36 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_36_8_58_8_if_stmt:
+        %tmp.1 = lgetv %responseCode;
+        symbol [ responseCode %tmp.1 36 12 24 ];
+        %tmp.2 = 200;
+        %tmp.3 = eq %tmp.1 %tmp.2;
+        bf %tmp.3 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_36_8_58_8_if_else_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_36_8_58_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_36_33_55_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 37 12 ]
+        %tmp.4 = lgetv %data;
+        symbol [ data %tmp.4 37 27 31 ];
+        %tmp.5 = as %tmp.4 $.Toybox.Lang.Dictionary;
+        symbol [ $ %tmp.5 37 35 36 ];
+        symbol [ Toybox %tmp.5 37 37 43 ];
+        symbol [ Lang %tmp.5 37 44 48 ];
+        symbol [ Dictionary %tmp.5 37 49 59 ];
+        symbol [ _sessionData ? 37 12 24 ];
+        putv self :_sessionData %tmp.5;
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 38 12 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_36_33_55_8_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_36_33_55_8_stop" ]
+        %days.1 = local;
+        symbol [ days %days.1 38 16 20 ];
+        symbol [ _sessionData %tmp.7 38 24 36 ];
+        %tmp.7 = getv ? :_sessionData;
+        %tmp.8 = as %tmp.7 $.Toybox.Lang.Dictionary;
+        symbol [ $ %tmp.8 38 40 41 ];
+        symbol [ Toybox %tmp.8 38 42 48 ];
+        symbol [ Lang %tmp.8 38 49 53 ];
+        symbol [ Dictionary %tmp.8 38 54 64 ];
+        symbol [ get %tmp.9 38 66 69 ];
+        %tmp.9 = getv function %tmp.8 :get;
+        %tmp.10 = "workoutDays";
+        %tmp.11 = invoke %tmp.8 %tmp.9(%tmp.10);
+        lputv %days.1 %tmp.11;
+        symbol [ days %days.1 38 16 20 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 40 12 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_12_53_12_if_stmt:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_16_40_110_begin:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_16_40_62_begin:
+        %tmp.12 = lgetv %days.1;
+        symbol [ days %tmp.12 40 16 20 ];
+        %tmp.13 = null;
+        %tmp.14 = ne %tmp.12 %tmp.13;
+        bf %tmp.14 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_12_53_12_if_else_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_32_40_62_true:
+        %tmp.15 = lgetv %days.1;
+        symbol [ days %tmp.15 40 32 36 ];
+        %tmp.16 = as %tmp.15 { (!Null) };
+        symbol [ $ %tmp.17 40 48 49 ];
+        %tmp.17 = getm $;
+        symbol [ Toybox %tmp.18 40 50 56 ];
+        %tmp.18 = getv %tmp.17 :Toybox;
+        symbol [ Lang %tmp.19 40 57 61 ];
+        %tmp.19 = getv %tmp.18 :Lang;
+        symbol [ Array %tmp.20 40 62 67 ];
+        %tmp.20 = getv %tmp.19 :Array;
+        %tmp.21 = isa %tmp.16 %tmp.20;
+        push %tmp.21;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_32_40_62_end:
+        %tmp.22 = phi [%tmp.14 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_16_40_62_begin] [%tmp.21 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_32_40_62_true] [%tmp.22 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_32_40_62_end];
+        bf %tmp.22 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_12_53_12_if_else_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_71_40_110_true:
+        %tmp.23 = lgetv %days.1;
+        symbol [ days %tmp.23 40 72 76 ];
+        %tmp.24 = as %tmp.23 { ($.Toybox.Lang.Array) && (!Null) };
+        %tmp.25 = as %tmp.24 $.Toybox.Lang.Array;
+        symbol [ $ %tmp.25 40 80 81 ];
+        symbol [ Toybox %tmp.25 40 82 88 ];
+        symbol [ Lang %tmp.25 40 89 93 ];
+        symbol [ Array %tmp.25 40 94 99 ];
+        symbol [ size %tmp.26 40 101 105 ];
+        %tmp.26 = getv function %tmp.25 :size;
+        %tmp.27 = invoke %tmp.25 %tmp.26();
+        %tmp.28 = 0;
+        %tmp.29 = gt %tmp.27 %tmp.28;
+        push %tmp.29;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_71_40_110_end:
+        %tmp.30 = phi [%tmp.22 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_16_40_110_begin] [%tmp.29 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_71_40_110_true] [%tmp.30 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_71_40_110_end];
+        bf %tmp.30 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_12_53_12_if_else_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_12_53_12_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_113_51_12_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 41 16 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_113_51_12_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_113_51_12_stop" ]
+        %daysArr.2 = local;
+        symbol [ daysArr %daysArr.2 41 20 27 ];
+        %tmp.31 = lgetv %days.1;
+        symbol [ days %tmp.31 41 30 34 ];
+        %tmp.32 = as %tmp.31 { ($.Toybox.Lang.Array) && (!Null) };
+        %tmp.33 = as %tmp.32 $.Toybox.Lang.Array;
+        symbol [ $ %tmp.33 41 38 39 ];
+        symbol [ Toybox %tmp.33 41 40 46 ];
+        symbol [ Lang %tmp.33 41 47 51 ];
+        symbol [ Array %tmp.33 41 52 57 ];
+        lputv %daysArr.2 %tmp.33;
+        symbol [ daysArr %daysArr.2 41 20 27 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 42 16 ]
+        for @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_test @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_incr @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_init:
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_begin" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_end" ]
+        %i.3 = local;
+        symbol [ i %i.3 42 25 26 ];
+        %tmp.34 = 0;
+        lputv %i.3 %tmp.34;
+        symbol [ i %i.3 42 25 26 ];
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_test:
+        %tmp.35 = lgetv %i.3;
+        symbol [ i %tmp.35 42 32 33 ];
+        %tmp.36 = lgetv %daysArr.2;
+        symbol [ daysArr %tmp.36 42 36 43 ];
+        symbol [ size %tmp.37 42 44 48 ];
+        %tmp.37 = getv function %tmp.36 :size;
+        %tmp.38 = invoke %tmp.36 %tmp.37();
+        %tmp.39 = lt %tmp.35 %tmp.38;
+        bf %tmp.39 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_begin:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_57_49_16_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 43 20 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_57_49_16_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_57_49_16_stop" ]
+        %d.4 = local;
+        symbol [ d %d.4 43 24 25 ];
+        %tmp.40 = lgetv %daysArr.2;
+        symbol [ daysArr %tmp.40 43 28 35 ];
+        %tmp.41 = lgetv %i.3;
+        symbol [ i %tmp.41 43 36 37 ];
+        %tmp.42 = agetv %tmp.40 %tmp.41;
+        %tmp.43 = as %tmp.42 $.Toybox.Lang.Dictionary;
+        symbol [ $ %tmp.43 43 42 43 ];
+        symbol [ Toybox %tmp.43 43 44 50 ];
+        symbol [ Lang %tmp.43 43 51 55 ];
+        symbol [ Dictionary %tmp.43 43 56 66 ];
+        lputv %d.4 %tmp.43;
+        symbol [ d %d.4 43 24 25 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 44 20 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_57_49_16_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_57_49_16_stop" ]
+        %isRec.5 = local;
+        symbol [ isRec %isRec.5 44 24 29 ];
+        %tmp.44 = lgetv %d.4;
+        symbol [ d %tmp.44 44 32 33 ];
+        symbol [ get %tmp.45 44 34 37 ];
+        %tmp.45 = getv function %tmp.44 :get;
+        %tmp.46 = "isRecommended";
+        %tmp.47 = invoke %tmp.44 %tmp.45(%tmp.46);
+        %tmp.48 = as %tmp.47 $.Toybox.Lang.Boolean;
+        symbol [ $ %tmp.48 44 58 59 ];
+        symbol [ Toybox %tmp.48 44 60 66 ];
+        symbol [ Lang %tmp.48 44 67 71 ];
+        symbol [ Boolean %tmp.48 44 72 79 ];
+        lputv %isRec.5 %tmp.48;
+        symbol [ isRec %isRec.5 44 24 29 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 45 20 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_20_48_20_if_stmt:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_24_45_41_begin:
+        %tmp.49 = lgetv %isRec.5;
+        symbol [ isRec %tmp.49 45 24 29 ];
+        %tmp.50 = null;
+        %tmp.51 = ne %tmp.49 %tmp.50;
+        bf %tmp.51 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_20_48_20_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_41_45_41_true:
+        %tmp.52 = lgetv %isRec.5;
+        symbol [ isRec %tmp.52 45 41 46 ];
+        %tmp.53 = as %tmp.52 { (!Null) };
+        push %tmp.53;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_41_45_41_end:
+        %tmp.54 = phi [%tmp.51 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_24_45_41_begin] [%tmp.53 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_41_45_41_true] [%tmp.54 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_41_45_41_end];
+        bf %tmp.54 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_20_48_20_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_20_48_20_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_48_48_20_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 46 24 ]
+        %tmp.55 = lgetv %i.3;
+        symbol [ i %tmp.55 46 44 45 ];
+        symbol [ _selectedDayIndex ? 46 24 41 ];
+        putv self :_selectedDayIndex %tmp.55;
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 47 24 ]
+        goto break @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_48_48_20_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_20_48_20_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_45_20_48_20_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_57_49_16_stop:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_incr:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 42 ]
+        %tmp.58 = lgetv %i.3;
+        symbol [ i %tmp.58 42 52 53 ];
+        %tmp.59 = add %tmp.58 1;
+        lputv %i.3 %tmp.59;
+        symbol [ i %i.3 42 52 53 ];
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_test;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_42_16_49_16_for_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 50 16 ]
+        symbol [ WatchUi %tmp.60 50 16 23 ];
+        %tmp.60 = getm $.Toybox.WatchUi;
+        symbol [ requestUpdate %tmp.61 50 24 37 ];
+        %tmp.61 = getv function %tmp.60 :requestUpdate;
+        invoke %tmp.60 %tmp.61();
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_113_51_12_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_12_53_12_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_12_53_12_if_else_false:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_51_19_53_12_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 52 16 ]
+        %tmp.62 = "No workouts found";
+        symbol [ _mainText ? 52 16 25 ];
+        putv self :_mainText %tmp.62;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_51_19_53_12_stop:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_40_12_53_12_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 54 12 ]
+        symbol [ WatchUi %tmp.63 54 12 19 ];
+        %tmp.63 = getm $.Toybox.WatchUi;
+        symbol [ requestUpdate %tmp.64 54 20 33 ];
+        %tmp.64 = getv function %tmp.63 :requestUpdate;
+        invoke %tmp.63 %tmp.64();
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_36_33_55_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_36_8_58_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_36_8_58_8_if_else_false:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_55_15_58_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 56 12 ]
+        %tmp.65 = "Fetch Error: ";
+        %tmp.66 = lgetv %responseCode;
+        symbol [ responseCode %tmp.66 56 42 54 ];
+        %tmp.67 = add %tmp.65 %tmp.66;
+        symbol [ _mainText ? 56 12 21 ];
+        putv self :_mainText %tmp.67;
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 57 12 ]
+        symbol [ WatchUi %tmp.68 57 12 19 ];
+        %tmp.68 = getm $.Toybox.WatchUi;
+        symbol [ requestUpdate %tmp.69 57 20 33 ];
+        %tmp.69 = getv function %tmp.68 :requestUpdate;
+        invoke %tmp.68 %tmp.69();
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_55_15_58_8_stop:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_36_8_58_8_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_35_142_59_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 61; @position = 15; @symbol_vardef = [_animTimer,61,15,25]; ]
+    protected
+    var _animTimer;
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 62; @position = 15; @symbol_vardef = [_animOffset,62,15,26]; ]
+    protected
+    var _animOffset = 0;
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 64; @symbol_functiondef = [onHide,64,13,19]; ]
+    function onHide() {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_64_22_69_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 65 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_65_8_68_8_if_stmt:
+        symbol [ _animTimer %tmp.2 65 12 22 ];
+        %tmp.2 = getv ? :_animTimer;
+        %tmp.3 = null;
+        %tmp.4 = ne %tmp.2 %tmp.3;
+        bf %tmp.4 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_65_8_68_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_65_8_68_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_65_32_68_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 66 12 ]
+        symbol [ _animTimer %tmp.6 66 12 22 ];
+        %tmp.6 = getv ? :_animTimer;
+        %tmp.7 = as %tmp.6 { (!Null) };
+        symbol [ stop %tmp.8 66 23 27 ];
+        %tmp.8 = getv function %tmp.7 :stop;
+        invoke %tmp.7 %tmp.8();
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 67 12 ]
+        %tmp.9 = null;
+        symbol [ _animTimer ? 67 12 22 ];
+        putv self :_animTimer %tmp.9;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_65_32_68_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_65_8_68_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_65_8_68_8_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_64_22_69_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 71; @symbol_functiondef = [onUpdate,71,13,21]; @symbol_param<0> = [dc,71,22,24]; ]
+    function onUpdate(dc) {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 72 8 ]
+        %tmp.1 = lgetv %dc;
+        symbol [ dc %tmp.1 72 8 10 ];
+        symbol [ setColor %tmp.2 72 11 19 ];
+        %tmp.2 = getv function %tmp.1 :setColor;
+        symbol [ Graphics %tmp.3 72 20 28 ];
+        %tmp.3 = getm $.Toybox.Graphics;
+        symbol [ COLOR_BLACK %tmp.4 72 29 40 ];
+        %tmp.4 = getv %tmp.3 :COLOR_BLACK;
+        symbol [ Graphics %tmp.5 72 42 50 ];
+        %tmp.5 = getm $.Toybox.Graphics;
+        symbol [ COLOR_BLACK %tmp.6 72 51 62 ];
+        %tmp.6 = getv %tmp.5 :COLOR_BLACK;
+        invoke %tmp.1 %tmp.2(%tmp.4, %tmp.6);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 73 8 ]
+        %tmp.7 = lgetv %dc;
+        symbol [ dc %tmp.7 73 8 10 ];
+        symbol [ clear %tmp.8 73 11 16 ];
+        %tmp.8 = getv function %tmp.7 :clear;
+        invoke %tmp.7 %tmp.8();
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 75 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_stop" ]
+        %w.1 = local;
+        symbol [ w %w.1 75 12 13 ];
+        %tmp.9 = lgetv %dc;
+        symbol [ dc %tmp.9 75 16 18 ];
+        symbol [ getWidth %tmp.10 75 19 27 ];
+        %tmp.10 = getv function %tmp.9 :getWidth;
+        %tmp.11 = invoke %tmp.9 %tmp.10();
+        lputv %w.1 %tmp.11;
+        symbol [ w %w.1 75 12 13 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 76 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_stop" ]
+        %h.2 = local;
+        symbol [ h %h.2 76 12 13 ];
+        %tmp.12 = lgetv %dc;
+        symbol [ dc %tmp.12 76 16 18 ];
+        symbol [ getHeight %tmp.13 76 19 28 ];
+        %tmp.13 = getv function %tmp.12 :getHeight;
+        %tmp.14 = invoke %tmp.12 %tmp.13();
+        lputv %h.2 %tmp.14;
+        symbol [ h %h.2 76 12 13 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 78 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_78_8_81_8_if_stmt:
+        symbol [ _animTimer %tmp.16 78 12 22 ];
+        %tmp.16 = getv ? :_animTimer;
+        %tmp.17 = null;
+        %tmp.18 = eq %tmp.16 %tmp.17;
+        bf %tmp.18 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_78_8_81_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_78_8_81_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_78_32_81_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 79 12 ]
+        symbol [ Timer %tmp.22 79 29 34 ];
+        %tmp.22 = getv ? :Timer;
+        symbol [ Timer %tmp.23 79 35 40 ];
+        %tmp.23 = getv function ? %tmp.22 :Timer;
+        %tmp.19 = newc %tmp.23 ();
+        symbol [ _animTimer ? 79 12 22 ];
+        putv self :_animTimer %tmp.19;
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 80 12 ]
+        symbol [ _animTimer %tmp.25 80 12 22 ];
+        %tmp.25 = getv ? :_animTimer;
+        symbol [ start %tmp.26 80 23 28 ];
+        %tmp.26 = getv function %tmp.25 :start;
+        %tmp.27 = self;
+        symbol [ method %tmp.28 80 29 35 ];
+        %tmp.28 = getv function %tmp.27 :method;
+        %tmp.30 = const :onTimer;
+        symbol [ onTimer %tmp.30 80 37 44 const ];
+        %tmp.31 = invoke %tmp.27 %tmp.28(%tmp.30);
+        %tmp.32 = 100;
+        %tmp.33 = true;
+        invoke %tmp.25 %tmp.26(%tmp.31, %tmp.32, %tmp.33);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_78_32_81_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_78_8_81_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_78_8_81_8_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 83 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_83_8_87_8_if_stmt:
+        symbol [ _sessionData %tmp.35 83 12 24 ];
+        %tmp.35 = getv ? :_sessionData;
+        %tmp.36 = null;
+        %tmp.37 = eq %tmp.35 %tmp.36;
+        bf %tmp.37 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_83_8_87_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_83_8_87_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_83_34_87_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 84 12 ]
+        %tmp.38 = lgetv %dc;
+        symbol [ dc %tmp.38 84 12 14 ];
+        symbol [ setColor %tmp.39 84 15 23 ];
+        %tmp.39 = getv function %tmp.38 :setColor;
+        symbol [ Graphics %tmp.40 84 24 32 ];
+        %tmp.40 = getm $.Toybox.Graphics;
+        symbol [ COLOR_WHITE %tmp.41 84 33 44 ];
+        %tmp.41 = getv %tmp.40 :COLOR_WHITE;
+        symbol [ Graphics %tmp.42 84 46 54 ];
+        %tmp.42 = getm $.Toybox.Graphics;
+        symbol [ COLOR_TRANSPARENT %tmp.43 84 55 72 ];
+        %tmp.43 = getv %tmp.42 :COLOR_TRANSPARENT;
+        invoke %tmp.38 %tmp.39(%tmp.41, %tmp.43);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 85 12 ]
+        %tmp.44 = lgetv %dc;
+        symbol [ dc %tmp.44 85 12 14 ];
+        symbol [ drawText %tmp.45 85 15 23 ];
+        %tmp.45 = getv function %tmp.44 :drawText;
+        %tmp.46 = lgetv %w.1;
+        symbol [ w %tmp.46 85 24 25 ];
+        %tmp.47 = 2;
+        %tmp.48 = div %tmp.46 %tmp.47;
+        %tmp.49 = lgetv %h.2;
+        symbol [ h %tmp.49 85 29 30 ];
+        %tmp.50 = 2;
+        %tmp.51 = div %tmp.49 %tmp.50;
+        symbol [ Graphics %tmp.52 85 34 42 ];
+        %tmp.52 = getm $.Toybox.Graphics;
+        symbol [ FONT_TINY %tmp.53 85 43 52 ];
+        %tmp.53 = getv %tmp.52 :FONT_TINY;
+        symbol [ _mainText %tmp.55 85 54 63 ];
+        %tmp.55 = getv ? :_mainText;
+        symbol [ Graphics %tmp.56 85 65 73 ];
+        %tmp.56 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.57 85 74 93 ];
+        %tmp.57 = getv %tmp.56 :TEXT_JUSTIFY_CENTER;
+        symbol [ Graphics %tmp.58 85 96 104 ];
+        %tmp.58 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_VCENTER %tmp.59 85 105 125 ];
+        %tmp.59 = getv %tmp.58 :TEXT_JUSTIFY_VCENTER;
+        %tmp.60 = bitor %tmp.57 %tmp.59;
+        invoke %tmp.44 %tmp.45(%tmp.48, %tmp.51, %tmp.53, %tmp.55, %tmp.60);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 86 12 ]
+        ret ?;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_83_34_87_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_83_8_87_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_83_8_87_8_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 89 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_stop" ]
+        %programName.3 = local;
+        symbol [ programName %programName.3 89 12 23 ];
+        symbol [ _sessionData %tmp.62 89 27 39 ];
+        %tmp.62 = getv ? :_sessionData;
+        %tmp.63 = as %tmp.62 $.Toybox.Lang.Dictionary;
+        symbol [ $ %tmp.63 89 43 44 ];
+        symbol [ Toybox %tmp.63 89 45 51 ];
+        symbol [ Lang %tmp.63 89 52 56 ];
+        symbol [ Dictionary %tmp.63 89 57 67 ];
+        symbol [ get %tmp.64 89 69 72 ];
+        %tmp.64 = getv function %tmp.63 :get;
+        %tmp.65 = "programName";
+        %tmp.66 = invoke %tmp.63 %tmp.64(%tmp.65);
+        %tmp.67 = as %tmp.66 $.Toybox.Lang.String;
+        symbol [ $ %tmp.67 89 91 92 ];
+        symbol [ Toybox %tmp.67 89 93 99 ];
+        symbol [ Lang %tmp.67 89 100 104 ];
+        symbol [ String %tmp.67 89 105 111 ];
+        lputv %programName.3 %tmp.67;
+        symbol [ programName %programName.3 89 12 23 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 90 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_stop" ]
+        %days.4 = local;
+        symbol [ days %days.4 90 12 16 ];
+        symbol [ _sessionData %tmp.69 90 20 32 ];
+        %tmp.69 = getv ? :_sessionData;
+        %tmp.70 = as %tmp.69 $.Toybox.Lang.Dictionary;
+        symbol [ $ %tmp.70 90 36 37 ];
+        symbol [ Toybox %tmp.70 90 38 44 ];
+        symbol [ Lang %tmp.70 90 45 49 ];
+        symbol [ Dictionary %tmp.70 90 50 60 ];
+        symbol [ get %tmp.71 90 62 65 ];
+        %tmp.71 = getv function %tmp.70 :get;
+        %tmp.72 = "workoutDays";
+        %tmp.73 = invoke %tmp.70 %tmp.71(%tmp.72);
+        %tmp.74 = as %tmp.73 $.Toybox.Lang.Array;
+        symbol [ $ %tmp.74 90 84 85 ];
+        symbol [ Toybox %tmp.74 90 86 92 ];
+        symbol [ Lang %tmp.74 90 93 97 ];
+        symbol [ Array %tmp.74 90 98 103 ];
+        lputv %days.4 %tmp.74;
+        symbol [ days %days.4 90 12 16 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 91 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_stop" ]
+        %day.5 = local;
+        symbol [ day %day.5 91 12 15 ];
+        %tmp.75 = lgetv %days.4;
+        symbol [ days %tmp.75 91 18 22 ];
+        symbol [ _selectedDayIndex %tmp.77 91 23 40 ];
+        %tmp.77 = getv ? :_selectedDayIndex;
+        %tmp.78 = agetv %tmp.75 %tmp.77;
+        %tmp.79 = as %tmp.78 $.Toybox.Lang.Dictionary;
+        symbol [ $ %tmp.79 91 45 46 ];
+        symbol [ Toybox %tmp.79 91 47 53 ];
+        symbol [ Lang %tmp.79 91 54 58 ];
+        symbol [ Dictionary %tmp.79 91 59 69 ];
+        lputv %day.5 %tmp.79;
+        symbol [ day %day.5 91 12 15 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 92 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_stop" ]
+        %dayName.6 = local;
+        symbol [ dayName %dayName.6 92 12 19 ];
+        %tmp.80 = lgetv %day.5;
+        symbol [ day %tmp.80 92 22 25 ];
+        symbol [ get %tmp.81 92 26 29 ];
+        %tmp.81 = getv function %tmp.80 :get;
+        %tmp.82 = "dayName";
+        %tmp.83 = invoke %tmp.80 %tmp.81(%tmp.82);
+        %tmp.84 = as %tmp.83 $.Toybox.Lang.String;
+        symbol [ $ %tmp.84 92 44 45 ];
+        symbol [ Toybox %tmp.84 92 46 52 ];
+        symbol [ Lang %tmp.84 92 53 57 ];
+        symbol [ String %tmp.84 92 58 64 ];
+        lputv %dayName.6 %tmp.84;
+        symbol [ dayName %dayName.6 92 12 19 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 95 8 ]
+        %tmp.85 = lgetv %dc;
+        symbol [ dc %tmp.85 95 8 10 ];
+        symbol [ setColor %tmp.86 95 11 19 ];
+        %tmp.86 = getv function %tmp.85 :setColor;
+        %tmp.87 = 0x00FFFF;
+        symbol [ Graphics %tmp.88 95 30 38 ];
+        %tmp.88 = getm $.Toybox.Graphics;
+        symbol [ COLOR_TRANSPARENT %tmp.89 95 39 56 ];
+        %tmp.89 = getv %tmp.88 :COLOR_TRANSPARENT;
+        invoke %tmp.85 %tmp.86(%tmp.87, %tmp.89);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 96 8 ]
+        %tmp.90 = lgetv %dc;
+        symbol [ dc %tmp.90 96 8 10 ];
+        symbol [ drawText %tmp.91 96 11 19 ];
+        %tmp.91 = getv function %tmp.90 :drawText;
+        %tmp.92 = lgetv %w.1;
+        symbol [ w %tmp.92 96 20 21 ];
+        %tmp.93 = 2;
+        %tmp.94 = div %tmp.92 %tmp.93;
+        %tmp.95 = lgetv %h.2;
+        symbol [ h %tmp.95 96 25 26 ];
+        %tmp.96 = 0.2;
+        %tmp.97 = mul %tmp.95 %tmp.96;
+        symbol [ Graphics %tmp.98 96 32 40 ];
+        %tmp.98 = getm $.Toybox.Graphics;
+        symbol [ FONT_XTINY %tmp.99 96 41 51 ];
+        %tmp.99 = getv %tmp.98 :FONT_XTINY;
+        %tmp.100 = lgetv %programName.3;
+        symbol [ programName %tmp.100 96 53 64 ];
+        symbol [ toUpper %tmp.101 96 65 72 ];
+        %tmp.101 = getv function %tmp.100 :toUpper;
+        %tmp.102 = invoke %tmp.100 %tmp.101();
+        symbol [ Graphics %tmp.103 96 76 84 ];
+        %tmp.103 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.104 96 85 104 ];
+        %tmp.104 = getv %tmp.103 :TEXT_JUSTIFY_CENTER;
+        invoke %tmp.90 %tmp.91(%tmp.94, %tmp.97, %tmp.99, %tmp.102, %tmp.104);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 99 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_stop" ]
+        %isRecommended.7 = local;
+        symbol [ isRecommended %isRecommended.7 99 12 25 ];
+        %tmp.105 = lgetv %day.5;
+        symbol [ day %tmp.105 99 28 31 ];
+        symbol [ get %tmp.106 99 32 35 ];
+        %tmp.106 = getv function %tmp.105 :get;
+        %tmp.107 = "isRecommended";
+        %tmp.108 = invoke %tmp.105 %tmp.106(%tmp.107);
+        %tmp.109 = as %tmp.108 $.Toybox.Lang.Boolean;
+        symbol [ $ %tmp.109 99 56 57 ];
+        symbol [ Toybox %tmp.109 99 58 64 ];
+        symbol [ Lang %tmp.109 99 65 69 ];
+        symbol [ Boolean %tmp.109 99 70 77 ];
+        lputv %isRecommended.7 %tmp.109;
+        symbol [ isRecommended %isRecommended.7 99 12 25 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 100 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_8_105_8_if_stmt:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_12_100_37_begin:
+        %tmp.110 = lgetv %isRecommended.7;
+        symbol [ isRecommended %tmp.110 100 12 25 ];
+        %tmp.111 = null;
+        %tmp.112 = ne %tmp.110 %tmp.111;
+        bf %tmp.112 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_8_105_8_if_else_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_37_100_37_true:
+        %tmp.113 = lgetv %isRecommended.7;
+        symbol [ isRecommended %tmp.113 100 37 50 ];
+        %tmp.114 = as %tmp.113 { (!Null) };
+        push %tmp.114;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_37_100_37_end:
+        %tmp.115 = phi [%tmp.112 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_12_100_37_begin] [%tmp.114 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_37_100_37_true] [%tmp.115 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_37_100_37_end];
+        bf %tmp.115 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_8_105_8_if_else_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_8_105_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_52_103_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 101 12 ]
+        %tmp.116 = lgetv %dc;
+        symbol [ dc %tmp.116 101 12 14 ];
+        symbol [ setColor %tmp.117 101 15 23 ];
+        %tmp.117 = getv function %tmp.116 :setColor;
+        %tmp.118 = 0xFF9500;
+        symbol [ Graphics %tmp.119 101 34 42 ];
+        %tmp.119 = getm $.Toybox.Graphics;
+        symbol [ COLOR_TRANSPARENT %tmp.120 101 43 60 ];
+        %tmp.120 = getv %tmp.119 :COLOR_TRANSPARENT;
+        invoke %tmp.116 %tmp.117(%tmp.118, %tmp.120);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 102 12 ]
+        %tmp.121 = lgetv %dc;
+        symbol [ dc %tmp.121 102 12 14 ];
+        symbol [ drawText %tmp.122 102 15 23 ];
+        %tmp.122 = getv function %tmp.121 :drawText;
+        %tmp.123 = lgetv %w.1;
+        symbol [ w %tmp.123 102 24 25 ];
+        %tmp.124 = 2;
+        %tmp.125 = div %tmp.123 %tmp.124;
+        %tmp.126 = lgetv %h.2;
+        symbol [ h %tmp.126 102 29 30 ];
+        %tmp.127 = 0.35;
+        %tmp.128 = mul %tmp.126 %tmp.127;
+        symbol [ Graphics %tmp.129 102 37 45 ];
+        %tmp.129 = getm $.Toybox.Graphics;
+        symbol [ FONT_XTINY %tmp.130 102 46 56 ];
+        %tmp.130 = getv %tmp.129 :FONT_XTINY;
+        %tmp.131 = "UP NEXT";
+        symbol [ Graphics %tmp.132 102 69 77 ];
+        %tmp.132 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.133 102 78 97 ];
+        %tmp.133 = getv %tmp.132 :TEXT_JUSTIFY_CENTER;
+        invoke %tmp.121 %tmp.122(%tmp.125, %tmp.128, %tmp.130, %tmp.131, %tmp.133);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_52_103_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_8_105_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_8_105_8_if_else_false:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_103_15_105_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 104 12 ]
+        %tmp.134 = lgetv %dc;
+        symbol [ dc %tmp.134 104 12 14 ];
+        symbol [ setColor %tmp.135 104 15 23 ];
+        %tmp.135 = getv function %tmp.134 :setColor;
+        symbol [ Graphics %tmp.136 104 24 32 ];
+        %tmp.136 = getm $.Toybox.Graphics;
+        symbol [ COLOR_WHITE %tmp.137 104 33 44 ];
+        %tmp.137 = getv %tmp.136 :COLOR_WHITE;
+        symbol [ Graphics %tmp.138 104 46 54 ];
+        %tmp.138 = getm $.Toybox.Graphics;
+        symbol [ COLOR_TRANSPARENT %tmp.139 104 55 72 ];
+        %tmp.139 = getv %tmp.138 :COLOR_TRANSPARENT;
+        invoke %tmp.134 %tmp.135(%tmp.137, %tmp.139);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_103_15_105_8_stop:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_100_8_105_8_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 108 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_stop" ]
+        %font.8 = local;
+        symbol [ font %font.8 108 12 16 ];
+        symbol [ Graphics %tmp.140 108 19 27 ];
+        %tmp.140 = getm $.Toybox.Graphics;
+        symbol [ FONT_MEDIUM %tmp.141 108 28 39 ];
+        %tmp.141 = getv %tmp.140 :FONT_MEDIUM;
+        lputv %font.8 %tmp.141;
+        symbol [ font %font.8 108 12 16 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 109 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_stop" ]
+        %dayLen.9 = local;
+        symbol [ dayLen %dayLen.9 109 12 18 ];
+        %tmp.142 = lgetv %dayName.6;
+        symbol [ dayName %tmp.142 109 21 28 ];
+        symbol [ length %tmp.143 109 29 35 ];
+        %tmp.143 = getv function %tmp.142 :length;
+        %tmp.144 = invoke %tmp.142 %tmp.143();
+        lputv %dayLen.9 %tmp.144;
+        symbol [ dayLen %dayLen.9 109 12 18 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 110 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_110_8_116_8_if_stmt:
+        %tmp.145 = lgetv %dayLen.9;
+        symbol [ dayLen %tmp.145 110 12 18 ];
+        %tmp.146 = 18;
+        %tmp.147 = gt %tmp.145 %tmp.146;
+        bf %tmp.147 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_110_8_116_8_if_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_110_8_116_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_110_25_112_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 111 12 ]
+        symbol [ Graphics %tmp.148 111 19 27 ];
+        %tmp.148 = getm $.Toybox.Graphics;
+        symbol [ FONT_XTINY %tmp.149 111 28 38 ];
+        %tmp.149 = getv %tmp.148 :FONT_XTINY;
+        lputv %font.8 %tmp.149;
+        symbol [ font %font.8 111 12 16 ];
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_110_25_112_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_110_8_116_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_110_8_116_8_if_false:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 112 15 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_112_15_116_8_if_stmt:
+        %tmp.150 = lgetv %dayLen.9;
+        symbol [ dayLen %tmp.150 112 19 25 ];
+        %tmp.151 = 14;
+        %tmp.152 = gt %tmp.150 %tmp.151;
+        bf %tmp.152 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_112_15_116_8_if_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_112_15_116_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_112_32_114_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 113 12 ]
+        symbol [ Graphics %tmp.153 113 19 27 ];
+        %tmp.153 = getm $.Toybox.Graphics;
+        symbol [ FONT_TINY %tmp.154 113 28 37 ];
+        %tmp.154 = getv %tmp.153 :FONT_TINY;
+        lputv %font.8 %tmp.154;
+        symbol [ font %font.8 113 12 16 ];
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_112_32_114_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_112_15_116_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_112_15_116_8_if_false:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 114 15 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_114_15_116_8_if_stmt:
+        %tmp.155 = lgetv %dayLen.9;
+        symbol [ dayLen %tmp.155 114 19 25 ];
+        %tmp.156 = 10;
+        %tmp.157 = gt %tmp.155 %tmp.156;
+        bf %tmp.157 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_114_15_116_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_114_15_116_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_114_32_116_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 115 12 ]
+        symbol [ Graphics %tmp.158 115 19 27 ];
+        %tmp.158 = getm $.Toybox.Graphics;
+        symbol [ FONT_SMALL %tmp.159 115 28 38 ];
+        %tmp.159 = getv %tmp.158 :FONT_SMALL;
+        lputv %font.8 %tmp.159;
+        symbol [ font %font.8 115 12 16 ];
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_114_32_116_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_114_15_116_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_114_15_116_8_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_112_15_116_8_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_110_8_116_8_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 117 8 ]
+        %tmp.160 = lgetv %dc;
+        symbol [ dc %tmp.160 117 8 10 ];
+        symbol [ drawText %tmp.161 117 11 19 ];
+        %tmp.161 = getv function %tmp.160 :drawText;
+        %tmp.162 = lgetv %w.1;
+        symbol [ w %tmp.162 117 20 21 ];
+        %tmp.163 = 2;
+        %tmp.164 = div %tmp.162 %tmp.163;
+        %tmp.165 = lgetv %h.2;
+        symbol [ h %tmp.165 117 25 26 ];
+        %tmp.166 = 0.48;
+        %tmp.167 = mul %tmp.165 %tmp.166;
+        %tmp.168 = lgetv %font.8;
+        symbol [ font %tmp.168 117 33 37 ];
+        %tmp.169 = lgetv %dayName.6;
+        symbol [ dayName %tmp.169 117 39 46 ];
+        symbol [ Graphics %tmp.170 117 48 56 ];
+        %tmp.170 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.171 117 57 76 ];
+        %tmp.171 = getv %tmp.170 :TEXT_JUSTIFY_CENTER;
+        symbol [ Graphics %tmp.172 117 79 87 ];
+        %tmp.172 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_VCENTER %tmp.173 117 88 108 ];
+        %tmp.173 = getv %tmp.172 :TEXT_JUSTIFY_VCENTER;
+        %tmp.174 = bitor %tmp.171 %tmp.173;
+        invoke %tmp.160 %tmp.161(%tmp.164, %tmp.167, %tmp.168, %tmp.169, %tmp.174);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 120 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_120_8_127_8_if_stmt:
+        %tmp.175 = lgetv %days.4;
+        symbol [ days %tmp.175 120 12 16 ];
+        symbol [ size %tmp.176 120 17 21 ];
+        %tmp.176 = getv function %tmp.175 :size;
+        %tmp.177 = invoke %tmp.175 %tmp.176();
+        %tmp.178 = 1;
+        %tmp.179 = gt %tmp.177 %tmp.178;
+        bf %tmp.179 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_120_8_127_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_120_8_127_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_120_29_127_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 121 12 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_120_29_127_8_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_120_29_127_8_stop" ]
+        %pulse.10 = local;
+        symbol [ pulse %pulse.10 121 16 21 ];
+        symbol [ Math %tmp.181 121 25 29 ];
+        %tmp.181 = getv ? :Math;
+        symbol [ sin %tmp.182 121 30 33 ];
+        %tmp.182 = getv function %tmp.181 :sin;
+        symbol [ System %tmp.184 121 34 40 ];
+        %tmp.184 = getv ? :System;
+        symbol [ getTimer %tmp.185 121 41 49 ];
+        %tmp.185 = getv function %tmp.184 :getTimer;
+        %tmp.186 = invoke %tmp.184 %tmp.185();
+        %tmp.187 = 200.0;
+        %tmp.188 = div %tmp.186 %tmp.187;
+        %tmp.189 = invoke %tmp.181 %tmp.182(%tmp.188);
+        %tmp.190 = 4;
+        %tmp.191 = mul %tmp.189 %tmp.190;
+        symbol [ toNumber %tmp.192 121 66 74 ];
+        %tmp.192 = getv function %tmp.191 :toNumber;
+        %tmp.193 = invoke %tmp.191 %tmp.192();
+        lputv %pulse.10 %tmp.193;
+        symbol [ pulse %pulse.10 121 16 21 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 122 12 ]
+        %tmp.194 = lgetv %dc;
+        symbol [ dc %tmp.194 122 12 14 ];
+        symbol [ setColor %tmp.195 122 15 23 ];
+        %tmp.195 = getv function %tmp.194 :setColor;
+        %tmp.196 = 0x88AABB;
+        symbol [ Graphics %tmp.197 122 34 42 ];
+        %tmp.197 = getm $.Toybox.Graphics;
+        symbol [ COLOR_TRANSPARENT %tmp.198 122 43 60 ];
+        %tmp.198 = getv %tmp.197 :COLOR_TRANSPARENT;
+        invoke %tmp.194 %tmp.195(%tmp.196, %tmp.198);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 124 12 ]
+        %tmp.199 = lgetv %dc;
+        symbol [ dc %tmp.199 124 12 14 ];
+        symbol [ fillPolygon %tmp.200 124 15 26 ];
+        %tmp.200 = getv function %tmp.199 :fillPolygon;
+        %tmp.201 = newa 3;
+        %tmp.202 = newa 2;
+        %tmp.203 = lgetv %w.1;
+        symbol [ w %tmp.203 124 29 30 ];
+        %tmp.204 = 2;
+        %tmp.205 = div %tmp.203 %tmp.204;
+        %tmp.206 = dup %tmp.202;
+        %tmp.207 = aputv %tmp.206 0 %tmp.205;
+        %tmp.208 = 25;
+        %tmp.209 = lgetv %pulse.10;
+        symbol [ pulse %tmp.209 124 37 42 ];
+        %tmp.210 = sub %tmp.208 %tmp.209;
+        %tmp.211 = dup %tmp.207;
+        %tmp.212 = aputv %tmp.211 1 %tmp.210;
+        %tmp.213 = dup %tmp.201;
+        %tmp.214 = aputv %tmp.213 0 %tmp.212;
+        %tmp.215 = newa 2;
+        %tmp.216 = lgetv %w.1;
+        symbol [ w %tmp.216 124 46 47 ];
+        %tmp.217 = 2;
+        %tmp.218 = div %tmp.216 %tmp.217;
+        %tmp.219 = 8;
+        %tmp.220 = sub %tmp.218 %tmp.219;
+        %tmp.221 = dup %tmp.215;
+        %tmp.222 = aputv %tmp.221 0 %tmp.220;
+        %tmp.223 = 33;
+        %tmp.224 = lgetv %pulse.10;
+        symbol [ pulse %tmp.224 124 56 61 ];
+        %tmp.225 = sub %tmp.223 %tmp.224;
+        %tmp.226 = dup %tmp.222;
+        %tmp.227 = aputv %tmp.226 1 %tmp.225;
+        %tmp.228 = dup %tmp.214;
+        %tmp.229 = aputv %tmp.228 1 %tmp.227;
+        %tmp.230 = newa 2;
+        %tmp.231 = lgetv %w.1;
+        symbol [ w %tmp.231 124 65 66 ];
+        %tmp.232 = 2;
+        %tmp.233 = div %tmp.231 %tmp.232;
+        %tmp.234 = 8;
+        %tmp.235 = add %tmp.233 %tmp.234;
+        %tmp.236 = dup %tmp.230;
+        %tmp.237 = aputv %tmp.236 0 %tmp.235;
+        %tmp.238 = 33;
+        %tmp.239 = lgetv %pulse.10;
+        symbol [ pulse %tmp.239 124 75 80 ];
+        %tmp.240 = sub %tmp.238 %tmp.239;
+        %tmp.241 = dup %tmp.237;
+        %tmp.242 = aputv %tmp.241 1 %tmp.240;
+        %tmp.243 = dup %tmp.229;
+        %tmp.244 = aputv %tmp.243 2 %tmp.242;
+        invoke %tmp.199 %tmp.200(%tmp.244);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 126 12 ]
+        %tmp.245 = lgetv %dc;
+        symbol [ dc %tmp.245 126 12 14 ];
+        symbol [ fillPolygon %tmp.246 126 15 26 ];
+        %tmp.246 = getv function %tmp.245 :fillPolygon;
+        %tmp.247 = newa 3;
+        %tmp.248 = newa 2;
+        %tmp.249 = lgetv %w.1;
+        symbol [ w %tmp.249 126 29 30 ];
+        %tmp.250 = 2;
+        %tmp.251 = div %tmp.249 %tmp.250;
+        %tmp.252 = dup %tmp.248;
+        %tmp.253 = aputv %tmp.252 0 %tmp.251;
+        %tmp.254 = lgetv %h.2;
+        symbol [ h %tmp.254 126 34 35 ];
+        %tmp.255 = 25;
+        %tmp.256 = sub %tmp.254 %tmp.255;
+        %tmp.257 = lgetv %pulse.10;
+        symbol [ pulse %tmp.257 126 39 44 ];
+        %tmp.258 = add %tmp.256 %tmp.257;
+        %tmp.259 = dup %tmp.253;
+        %tmp.260 = aputv %tmp.259 1 %tmp.258;
+        %tmp.261 = dup %tmp.247;
+        %tmp.262 = aputv %tmp.261 0 %tmp.260;
+        %tmp.263 = newa 2;
+        %tmp.264 = lgetv %w.1;
+        symbol [ w %tmp.264 126 48 49 ];
+        %tmp.265 = 2;
+        %tmp.266 = div %tmp.264 %tmp.265;
+        %tmp.267 = 8;
+        %tmp.268 = sub %tmp.266 %tmp.267;
+        %tmp.269 = dup %tmp.263;
+        %tmp.270 = aputv %tmp.269 0 %tmp.268;
+        %tmp.271 = lgetv %h.2;
+        symbol [ h %tmp.271 126 55 56 ];
+        %tmp.272 = 33;
+        %tmp.273 = sub %tmp.271 %tmp.272;
+        %tmp.274 = lgetv %pulse.10;
+        symbol [ pulse %tmp.274 126 60 65 ];
+        %tmp.275 = add %tmp.273 %tmp.274;
+        %tmp.276 = dup %tmp.270;
+        %tmp.277 = aputv %tmp.276 1 %tmp.275;
+        %tmp.278 = dup %tmp.262;
+        %tmp.279 = aputv %tmp.278 1 %tmp.277;
+        %tmp.280 = newa 2;
+        %tmp.281 = lgetv %w.1;
+        symbol [ w %tmp.281 126 69 70 ];
+        %tmp.282 = 2;
+        %tmp.283 = div %tmp.281 %tmp.282;
+        %tmp.284 = 8;
+        %tmp.285 = add %tmp.283 %tmp.284;
+        %tmp.286 = dup %tmp.280;
+        %tmp.287 = aputv %tmp.286 0 %tmp.285;
+        %tmp.288 = lgetv %h.2;
+        symbol [ h %tmp.288 126 76 77 ];
+        %tmp.289 = 33;
+        %tmp.290 = sub %tmp.288 %tmp.289;
+        %tmp.291 = lgetv %pulse.10;
+        symbol [ pulse %tmp.291 126 81 86 ];
+        %tmp.292 = add %tmp.290 %tmp.291;
+        %tmp.293 = dup %tmp.287;
+        %tmp.294 = aputv %tmp.293 1 %tmp.292;
+        %tmp.295 = dup %tmp.279;
+        %tmp.296 = aputv %tmp.295 2 %tmp.294;
+        invoke %tmp.245 %tmp.246(%tmp.296);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_120_29_127_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_120_8_127_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_120_8_127_8_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 130 8 ]
+        %tmp.297 = lgetv %dc;
+        symbol [ dc %tmp.297 130 8 10 ];
+        symbol [ setColor %tmp.298 130 11 19 ];
+        %tmp.298 = getv function %tmp.297 :setColor;
+        %tmp.299 = 0xAAAAAA;
+        symbol [ Graphics %tmp.300 130 30 38 ];
+        %tmp.300 = getm $.Toybox.Graphics;
+        symbol [ COLOR_TRANSPARENT %tmp.301 130 39 56 ];
+        %tmp.301 = getv %tmp.300 :COLOR_TRANSPARENT;
+        invoke %tmp.297 %tmp.298(%tmp.299, %tmp.301);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 131 8 ]
+        %tmp.302 = lgetv %dc;
+        symbol [ dc %tmp.302 131 8 10 ];
+        symbol [ drawText %tmp.303 131 11 19 ];
+        %tmp.303 = getv function %tmp.302 :drawText;
+        %tmp.304 = lgetv %w.1;
+        symbol [ w %tmp.304 131 20 21 ];
+        %tmp.305 = 2;
+        %tmp.306 = div %tmp.304 %tmp.305;
+        %tmp.307 = lgetv %h.2;
+        symbol [ h %tmp.307 131 25 26 ];
+        %tmp.308 = 0.75;
+        %tmp.309 = mul %tmp.307 %tmp.308;
+        symbol [ Graphics %tmp.310 131 33 41 ];
+        %tmp.310 = getm $.Toybox.Graphics;
+        symbol [ FONT_XTINY %tmp.311 131 42 52 ];
+        %tmp.311 = getv %tmp.310 :FONT_XTINY;
+        %tmp.312 = "Press START to begin";
+        symbol [ Graphics %tmp.313 131 78 86 ];
+        %tmp.313 = getm $.Toybox.Graphics;
+        symbol [ TEXT_JUSTIFY_CENTER %tmp.314 131 87 106 ];
+        %tmp.314 = getv %tmp.313 :TEXT_JUSTIFY_CENTER;
+        invoke %tmp.302 %tmp.303(%tmp.306, %tmp.309, %tmp.311, %tmp.312, %tmp.314);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_71_26_132_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 134; @symbol_functiondef = [onTimer,134,13,20]; ]
+    function onTimer() as Void {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_134_31_136_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 135 8 ]
+        symbol [ WatchUi %tmp.1 135 8 15 ];
+        %tmp.1 = getm $.Toybox.WatchUi;
+        symbol [ requestUpdate %tmp.2 135 16 29 ];
+        %tmp.2 = getv function %tmp.1 :requestUpdate;
+        invoke %tmp.1 %tmp.2();
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_134_31_136_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 138; @symbol_functiondef = [changeDay,138,13,22]; @symbol_param<0> = [delta,138,23,28]; @symbol_param<0>_type<0> = [$,138,32,33]; @symbol_param<0>_type<1> = [Toybox,138,34,40]; @symbol_param<0>_type<2> = [Lang,138,41,45]; @symbol_param<0>_type<3> = [Number,138,46,52]; ]
+    function changeDay(delta as $.Toybox.Lang.Number) as Void {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_138_62_151_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 139 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_139_8_139_44_if_stmt:
+        symbol [ _sessionData %tmp.2 139 12 24 ];
+        %tmp.2 = getv ? :_sessionData;
+        %tmp.3 = null;
+        %tmp.4 = eq %tmp.2 %tmp.3;
+        bf %tmp.4 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_139_8_139_44_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_139_8_139_44_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_139_34_139_44_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 139 36 ]
+        ret ?;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_139_34_139_44_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_139_8_139_44_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_139_8_139_44_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 140 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_138_62_151_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_138_62_151_4_stop" ]
+        %days.1 = local;
+        symbol [ days %days.1 140 12 16 ];
+        symbol [ _sessionData %tmp.6 140 20 32 ];
+        %tmp.6 = getv ? :_sessionData;
+        %tmp.7 = as %tmp.6 $.Toybox.Lang.Dictionary;
+        symbol [ $ %tmp.7 140 36 37 ];
+        symbol [ Toybox %tmp.7 140 38 44 ];
+        symbol [ Lang %tmp.7 140 45 49 ];
+        symbol [ Dictionary %tmp.7 140 50 60 ];
+        symbol [ get %tmp.8 140 62 65 ];
+        %tmp.8 = getv function %tmp.7 :get;
+        %tmp.9 = "workoutDays";
+        %tmp.10 = invoke %tmp.7 %tmp.8(%tmp.9);
+        %tmp.11 = as %tmp.10 $.Toybox.Lang.Array;
+        symbol [ $ %tmp.11 140 84 85 ];
+        symbol [ Toybox %tmp.11 140 86 92 ];
+        symbol [ Lang %tmp.11 140 93 97 ];
+        symbol [ Array %tmp.11 140 98 103 ];
+        lputv %days.1 %tmp.11;
+        symbol [ days %days.1 140 12 16 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 141 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_8_141_56_if_stmt:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_12_141_43_begin:
+        %tmp.12 = lgetv %days.1;
+        symbol [ days %tmp.12 141 12 16 ];
+        %tmp.13 = null;
+        %tmp.14 = eq %tmp.12 %tmp.13;
+        bt %tmp.14 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_8_141_56_if_true;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_28_141_43_false:
+        %tmp.15 = lgetv %days.1;
+        symbol [ days %tmp.15 141 28 32 ];
+        %tmp.16 = as %tmp.15 { (!Null) };
+        symbol [ size %tmp.17 141 33 37 ];
+        %tmp.17 = getv function %tmp.16 :size;
+        %tmp.18 = invoke %tmp.16 %tmp.17();
+        %tmp.19 = 0;
+        %tmp.20 = eq %tmp.18 %tmp.19;
+        push %tmp.20;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_28_141_43_end:
+        %tmp.21 = phi [%tmp.14 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_12_141_43_begin] [%tmp.20 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_28_141_43_false] [%tmp.21 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_28_141_43_end];
+        bf %tmp.21 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_8_141_56_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_8_141_56_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_46_141_56_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 141 48 ]
+        ret ?;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_46_141_56_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_8_141_56_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_141_8_141_56_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 143 8 ]
+        symbol [ _selectedDayIndex %tmp.22 143 8 25 ];
+        %tmp.22 = getv self :_selectedDayIndex;
+        %tmp.23 = lgetv %delta;
+        symbol [ delta %tmp.23 143 29 34 ];
+        %tmp.24 = add %tmp.22 %tmp.23;
+        symbol [ _selectedDayIndex ? 143 8 25 ];
+        putv self :_selectedDayIndex dup %tmp.24;
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 144 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_144_8_148_8_if_stmt:
+        symbol [ _selectedDayIndex %tmp.26 144 12 29 ];
+        %tmp.26 = getv ? :_selectedDayIndex;
+        %tmp.27 = 0;
+        %tmp.28 = lt %tmp.26 %tmp.27;
+        bf %tmp.28 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_144_8_148_8_if_false;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_144_8_148_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_144_35_146_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 145 12 ]
+        %tmp.29 = lgetv %days.1;
+        symbol [ days %tmp.29 145 32 36 ];
+        symbol [ size %tmp.30 145 37 41 ];
+        %tmp.30 = getv function %tmp.29 :size;
+        %tmp.31 = invoke %tmp.29 %tmp.30();
+        %tmp.32 = 1;
+        %tmp.33 = sub %tmp.31 %tmp.32;
+        symbol [ _selectedDayIndex ? 145 12 29 ];
+        putv self :_selectedDayIndex %tmp.33;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_144_35_146_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_144_8_148_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_144_8_148_8_if_false:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 146 15 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_146_15_148_8_if_stmt:
+        symbol [ _selectedDayIndex %tmp.35 146 19 36 ];
+        %tmp.35 = getv ? :_selectedDayIndex;
+        %tmp.36 = lgetv %days.1;
+        symbol [ days %tmp.36 146 40 44 ];
+        symbol [ size %tmp.37 146 45 49 ];
+        %tmp.37 = getv function %tmp.36 :size;
+        %tmp.38 = invoke %tmp.36 %tmp.37();
+        %tmp.39 = gte %tmp.35 %tmp.38;
+        bf %tmp.39 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_146_15_148_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_146_15_148_8_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_146_53_148_8_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 147 12 ]
+        %tmp.40 = 0;
+        symbol [ _selectedDayIndex ? 147 12 29 ];
+        putv self :_selectedDayIndex %tmp.40;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_146_53_148_8_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_146_15_148_8_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_146_15_148_8_if_end:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_144_8_148_8_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 150 8 ]
+        symbol [ WatchUi %tmp.41 150 8 15 ];
+        %tmp.41 = getm $.Toybox.WatchUi;
+        symbol [ requestUpdate %tmp.42 150 16 29 ];
+        %tmp.42 = getv function %tmp.41 :requestUpdate;
+        invoke %tmp.41 %tmp.42();
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_138_62_151_4_stop:
+    }
+    [ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 153; @symbol_functiondef = [startWorkout,153,13,25]; ]
+    function startWorkout() as Void {
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_153_36_164_4_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 154 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_154_8_154_44_if_stmt:
+        symbol [ _sessionData %tmp.2 154 12 24 ];
+        %tmp.2 = getv ? :_sessionData;
+        %tmp.3 = null;
+        %tmp.4 = eq %tmp.2 %tmp.3;
+        bf %tmp.4 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_154_8_154_44_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_154_8_154_44_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_154_34_154_44_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 154 36 ]
+        ret ?;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_154_34_154_44_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_154_8_154_44_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_154_8_154_44_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 155 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_153_36_164_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_153_36_164_4_stop" ]
+        %dict.1 = local;
+        symbol [ dict %dict.1 155 12 16 ];
+        symbol [ _sessionData %tmp.6 155 19 31 ];
+        %tmp.6 = getv ? :_sessionData;
+        %tmp.7 = as %tmp.6 $.Toybox.Lang.Dictionary;
+        symbol [ $ %tmp.7 155 35 36 ];
+        symbol [ Toybox %tmp.7 155 37 43 ];
+        symbol [ Lang %tmp.7 155 44 48 ];
+        symbol [ Dictionary %tmp.7 155 49 59 ];
+        lputv %dict.1 %tmp.7;
+        symbol [ dict %dict.1 155 12 16 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 156 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_153_36_164_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_153_36_164_4_stop" ]
+        %days.2 = local;
+        symbol [ days %days.2 156 12 16 ];
+        %tmp.8 = lgetv %dict.1;
+        symbol [ dict %tmp.8 156 19 23 ];
+        symbol [ get %tmp.9 156 24 27 ];
+        %tmp.9 = getv function %tmp.8 :get;
+        %tmp.10 = "workoutDays";
+        %tmp.11 = invoke %tmp.8 %tmp.9(%tmp.10);
+        %tmp.12 = as %tmp.11 $.Toybox.Lang.Array;
+        symbol [ $ %tmp.12 156 46 47 ];
+        symbol [ Toybox %tmp.12 156 48 54 ];
+        symbol [ Lang %tmp.12 156 55 59 ];
+        symbol [ Array %tmp.12 156 60 65 ];
+        lputv %days.2 %tmp.12;
+        symbol [ days %days.2 156 12 16 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 157 8 ]
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_8_157_56_if_stmt:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_12_157_43_begin:
+        %tmp.13 = lgetv %days.2;
+        symbol [ days %tmp.13 157 12 16 ];
+        %tmp.14 = null;
+        %tmp.15 = eq %tmp.13 %tmp.14;
+        bt %tmp.15 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_8_157_56_if_true;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_28_157_43_false:
+        %tmp.16 = lgetv %days.2;
+        symbol [ days %tmp.16 157 28 32 ];
+        %tmp.17 = as %tmp.16 { (!Null) };
+        symbol [ size %tmp.18 157 33 37 ];
+        %tmp.18 = getv function %tmp.17 :size;
+        %tmp.19 = invoke %tmp.17 %tmp.18();
+        %tmp.20 = 0;
+        %tmp.21 = eq %tmp.19 %tmp.20;
+        push %tmp.21;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_28_157_43_end:
+        %tmp.22 = phi [%tmp.15 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_12_157_43_begin] [%tmp.21 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_28_157_43_false] [%tmp.22 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_28_157_43_end];
+        bf %tmp.22 @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_8_157_56_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_8_157_56_if_true:
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_46_157_56_start:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 157 48 ]
+        ret ?;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_46_157_56_stop:
+        goto @C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_8_157_56_if_end;
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_157_8_157_56_if_end:
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 159 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_153_36_164_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_153_36_164_4_stop" ]
+        %day.3 = local;
+        symbol [ day %day.3 159 12 15 ];
+        %tmp.23 = lgetv %days.2;
+        symbol [ days %tmp.23 159 18 22 ];
+        symbol [ _selectedDayIndex %tmp.25 159 23 40 ];
+        %tmp.25 = getv ? :_selectedDayIndex;
+        %tmp.26 = agetv %tmp.23 %tmp.25;
+        %tmp.27 = as %tmp.26 $.Toybox.Lang.Dictionary;
+        symbol [ $ %tmp.27 159 45 46 ];
+        symbol [ Toybox %tmp.27 159 47 53 ];
+        symbol [ Lang %tmp.27 159 54 58 ];
+        symbol [ Dictionary %tmp.27 159 59 69 ];
+        lputv %day.3 %tmp.27;
+        symbol [ day %day.3 159 12 15 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 160 8 ]
+        %tmp.28 = lgetv %day.3;
+        symbol [ day %tmp.28 160 8 11 ];
+        symbol [ put %tmp.29 160 12 15 ];
+        %tmp.29 = getv function %tmp.28 :put;
+        %tmp.30 = "programId";
+        %tmp.31 = lgetv %dict.1;
+        symbol [ dict %tmp.31 160 29 33 ];
+        symbol [ get %tmp.32 160 34 37 ];
+        %tmp.32 = getv function %tmp.31 :get;
+        %tmp.33 = "programId";
+        %tmp.34 = invoke %tmp.31 %tmp.32(%tmp.33);
+        invoke %tmp.28 %tmp.29(%tmp.30, %tmp.34);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 161 8 ]
+        %tmp.35 = lgetv %day.3;
+        symbol [ day %tmp.35 161 8 11 ];
+        symbol [ put %tmp.36 161 12 15 ];
+        %tmp.36 = getv function %tmp.35 :put;
+        %tmp.37 = "programName";
+        %tmp.38 = lgetv %dict.1;
+        symbol [ dict %tmp.38 161 31 35 ];
+        symbol [ get %tmp.39 161 36 39 ];
+        %tmp.39 = getv function %tmp.38 :get;
+        %tmp.40 = "programName";
+        %tmp.41 = invoke %tmp.38 %tmp.39(%tmp.40);
+        invoke %tmp.35 %tmp.36(%tmp.37, %tmp.41);
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 162 8 ]
+        [ "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_153_36_164_4_start" "C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_153_36_164_4_stop" ]
+        %view.4 = local;
+        symbol [ view %view.4 162 12 16 ];
+        symbol [ LiftAssistExerciseView %tmp.45 162 23 45 ];
+        %tmp.45 = getv ? :LiftAssistExerciseView;
+        %tmp.46 = lgetv %day.3;
+        symbol [ day %tmp.46 162 46 49 ];
+        %tmp.42 = newc %tmp.45 (%tmp.46);
+        lputv %view.4 %tmp.42;
+        symbol [ view %view.4 162 12 16 ];
+[ "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc" 163 8 ]
+        symbol [ WatchUi %tmp.47 163 8 15 ];
+        %tmp.47 = getm $.Toybox.WatchUi;
+        symbol [ pushView %tmp.48 163 16 24 ];
+        %tmp.48 = getv function %tmp.47 :pushView;
+        %tmp.49 = lgetv %view.4;
+        symbol [ view %tmp.49 163 25 29 ];
+        symbol [ LiftAssistExerciseDelegate %tmp.53 163 35 61 ];
+        %tmp.53 = getv ? :LiftAssistExerciseDelegate;
+        %tmp.54 = lgetv %view.4;
+        symbol [ view %tmp.54 163 62 66 ];
+        %tmp.50 = newc %tmp.53 (%tmp.54);
+        symbol [ WatchUi %tmp.55 163 69 76 ];
+        %tmp.55 = getm $.Toybox.WatchUi;
+        symbol [ SLIDE_LEFT %tmp.56 163 77 87 ];
+        %tmp.56 = getv %tmp.55 :SLIDE_LEFT;
+        invoke %tmp.47 %tmp.48(%tmp.49, %tmp.50, %tmp.56);
+C__Users_jonny_havenstudios_appdev_liftlogic_liftassist_app_garmin_app_source_LiftAssistWorkoutView_mc_153_36_164_4_stop:
+    }
+}
+[ @file = "C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\source\LiftAssistWorkoutView.mc"; @line = 1; ]
+<init> {
+}

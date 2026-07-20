@@ -8,6 +8,7 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import * as logger from "firebase-functions/logger";
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 
 // Initialize Admin SDK once
 initializeApp();
@@ -117,11 +118,28 @@ export const claimPairingCode = onCall(async (request) => {
                 throw new HttpsError("already-exists", "This code has already been claimed.");
             }
 
+            // Expiry check (10 minutes)
+            const createdAt = data?.createdAt;
+            if (createdAt && typeof createdAt.toDate === 'function') {
+                const createdTimeMs = createdAt.toDate().getTime();
+                const tenMinutesMs = 10 * 60 * 1000;
+                if (Date.now() - createdTimeMs > tenMinutesMs) {
+                    throw new HttpsError("failed-precondition", "This pairing code has expired. Please generate a new one on your watch.");
+                }
+            }
+
+            // Update pairing status
             transaction.update(docRef, {
                 status: "claimed",
                 userId: request.auth!.uid, // assert auth because of check above
                 claimedAt: FieldValue.serverTimestamp(),
                 accessToken: accessToken
+            });
+
+            // Write token lookup mapping for O(1) watch auth queries
+            transaction.set(db.collection("auth_tokens").doc(accessToken), {
+                userId: request.auth!.uid,
+                createdAt: FieldValue.serverTimestamp()
             });
         });
 
@@ -133,6 +151,44 @@ export const claimPairingCode = onCall(async (request) => {
         throw new HttpsError("internal", "Failed to claim code.");
     }
 });
+
+/**
+ * Helper to verify watch access token and retrieve userId in O(1) time.
+ * Includes backward-compatible fallback to search pairing_codes collection.
+ */
+async function verifyTokenAndGetUserId(token: string): Promise<string | null> {
+    if (!token) return null;
+
+    // 1. Try O(1) lookup in auth_tokens
+    const tokenDoc = await db.collection("auth_tokens").doc(token).get();
+    if (tokenDoc.exists) {
+        return tokenDoc.data()?.userId || null;
+    }
+
+    // 2. Fallback to O(N) scan in pairing_codes for backward compatibility
+    const pairingSnap = await db.collection("pairing_codes")
+        .where("accessToken", "==", token)
+        .limit(1)
+        .get();
+
+    if (!pairingSnap.empty) {
+        const doc = pairingSnap.docs[0];
+        const data = doc.data();
+        const userId = data.userId;
+
+        if (userId) {
+            // Self-migrate to auth_tokens
+            await db.collection("auth_tokens").doc(token).set({
+                userId: userId,
+                createdAt: data.claimedAt || FieldValue.serverTimestamp()
+            });
+            logger.info("Migrated legacy watch token to auth_tokens", { token, userId });
+            return userId;
+        }
+    }
+
+    return null;
+}
 
 /**
  * 4. Get Workout Session (Called by Watch)
@@ -148,15 +204,11 @@ export const getWorkoutSession = onRequest({ cors: true }, async (request, respo
     }
 
     try {
-        const pairingSnap = await db.collection("pairing_codes").where("accessToken", "==", token).limit(1).get();
-
-        if (pairingSnap.empty) {
+        const userId = await verifyTokenAndGetUserId(token);
+        if (!userId) {
             response.status(401).json({ error: "Unauthorized: Invalid token" });
             return;
         }
-
-        const pairingData = pairingSnap.docs[0].data();
-        const userId = pairingData.userId;
 
         // 1. Get User Settings for activeProgramId
         const settingsSnap = await db.collection("users").doc(userId).collection("settings").doc("preferences").get();
@@ -256,14 +308,11 @@ export const submitWorkoutSession = onRequest({ cors: true }, async (request, re
     }
 
     try {
-        const pairingSnap = await db.collection("pairing_codes").where("accessToken", "==", token).limit(1).get();
-        if (pairingSnap.empty) {
+        const userId = await verifyTokenAndGetUserId(token);
+        if (!userId) {
             response.status(401).json({ error: "Unauthorized: Invalid token" });
             return;
         }
-
-        const pairingData = pairingSnap.docs[0].data();
-        const userId = pairingData.userId;
 
         // 1. Save Logged Workout
         const loggedWorkoutRef = db.collection("users").doc(userId).collection("loggedWorkouts").doc();
@@ -355,12 +404,12 @@ export const submitWorkoutSession = onRequest({ cors: true }, async (request, re
                 update.consecutiveFailedWorkoutsAtCurrentWeightAndReps = 0;
                 update.lastWorkoutAllSetsSuccessfulAtCurrentWeight = true;
                 update.currentWeightToAttempt = (currentProgress.currentWeightToAttempt || 0) + (exConfig.weightIncrement || 5);
-                update.repsToAttemptNext = exConfig.minReps || 1;
+                update.repsToAttemptNext = exConfig.minReps || 8;
             } else {
                 if (!exConfig.isToFailure) {
                     if (allSetsDone) {
                         update.lastWorkoutAllSetsSuccessfulAtCurrentWeight = true;
-                        update.repsToAttemptNext = Math.min((currentProgress.repsToAttemptNext || 0) + (exConfig.repOverloadStep || 1), exConfig.maxReps);
+                        update.repsToAttemptNext = Math.min((currentProgress.repsToAttemptNext || 0) + (exConfig.repOverloadStep || 2), exConfig.maxReps || 12);
                         update.consecutiveFailedWorkoutsAtCurrentWeightAndReps = 0;
                     } else {
                         update.lastWorkoutAllSetsSuccessfulAtCurrentWeight = false;
@@ -858,5 +907,35 @@ export const onWorkoutLogged = onDocumentCreated("users/{userId}/loggedWorkouts/
 
     } catch (err) {
         logger.error("onWorkoutLogged trigger failed", err);
+    }
+});
+
+/**
+ * 8. Delete Account (Called by PWA)
+ * Recursively deletes Firestore user documents/subcollections and removes Auth record.
+ */
+export const deleteAccount = onCall(async (request) => {
+    if (!request.auth) {
+        throw new HttpsError("unauthenticated", "User must be logged in to delete their account.");
+    }
+
+    const uid = request.auth.uid;
+    logger.info("Starting account deletion", { uid });
+
+    try {
+        // 1. Delete Firestore user document and all subcollections recursively
+        const userDocRef = db.collection("users").doc(uid);
+        await db.recursiveDelete(userDocRef);
+        logger.info("Successfully deleted Firestore data", { uid });
+
+        // 2. Delete Firebase Authentication user record
+        const auth = getAuth();
+        await auth.deleteUser(uid);
+        logger.info("Successfully deleted Auth user", { uid });
+
+        return { success: true };
+    } catch (error: any) {
+        logger.error("Error deleting account", { uid, error });
+        throw new HttpsError("internal", error.message || "Failed to delete account.");
     }
 });

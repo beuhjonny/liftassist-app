@@ -1,0 +1,851 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<debugInfo>
+    <manifest filename="C:\Users\jonny_havenstudios\appdev\liftlogic\liftassist-app\garmin-app\manifest.xml"/>
+    <pcToLineNum>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="1" lineNum="401" parent="globals/LiftAssistExerciseDelegate" pc="268435460" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="2" lineNum="8" parent="globals/LiftAssistPairingView" pc="268435472" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingDelegate.mc" id="3" lineNum="3" parent="globals/LiftAssistPairingDelegate" pc="268435484" symbol="&lt;init&gt;"/>
+        <entry filename="c:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\bin\\gen\\006-B3906-00\\source\\Rez.mcgen" id="4" lineNum="7" parent="globals/Rez" pc="268435496" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistApp.mc" id="5" lineNum="5" parent="globals/LiftAssistApp" pc="268435516" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="6" lineNum="4" parent="globals/LiftAssistWorkoutDelegate" pc="268435528" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="7" lineNum="9" parent="globals/LiftAssistExerciseView" pc="268435540" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="7" lineNum="15" parent="globals/LiftAssistExerciseView" pc="268435551" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="8" lineNum="6" parent="globals/LiftAssistWorkoutView" pc="268435561" symbol="&lt;init&gt;"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="9" lineNum="414" parent="globals/LiftAssistExerciseDelegate" pc="268435573" symbol="onBack"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="9" lineNum="415" parent="globals/LiftAssistExerciseDelegate" pc="268435575" symbol="onBack"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="9" lineNum="416" parent="globals/LiftAssistExerciseDelegate" pc="268435594" symbol="onBack"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="10" lineNum="424" parent="globals/LiftAssistExerciseDelegate" pc="268435596" symbol="onPreviousPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="10" lineNum="425" parent="globals/LiftAssistExerciseDelegate" pc="268435598" symbol="onPreviousPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="10" lineNum="426" parent="globals/LiftAssistExerciseDelegate" pc="268435614" symbol="onPreviousPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="11" lineNum="429" parent="globals/LiftAssistExerciseDelegate" pc="268435616" symbol="onSwipe"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="11" lineNum="430" parent="globals/LiftAssistExerciseDelegate" pc="268435619" symbol="onSwipe"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="11" lineNum="431" parent="globals/LiftAssistExerciseDelegate" pc="268435628" symbol="onSwipe"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="11" lineNum="432" parent="globals/LiftAssistExerciseDelegate" pc="268435635" symbol="onSwipe"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="11" lineNum="433" parent="globals/LiftAssistExerciseDelegate" pc="268435651" symbol="onSwipe"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="11" lineNum="434" parent="globals/LiftAssistExerciseDelegate" pc="268435656" symbol="onSwipe"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="11" lineNum="435" parent="globals/LiftAssistExerciseDelegate" pc="268435664" symbol="onSwipe"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="11" lineNum="436" parent="globals/LiftAssistExerciseDelegate" pc="268435680" symbol="onSwipe"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="11" lineNum="438" parent="globals/LiftAssistExerciseDelegate" pc="268435685" symbol="onSwipe"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="12" lineNum="404" parent="globals/LiftAssistExerciseDelegate" pc="268435687" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="12" lineNum="405" parent="globals/LiftAssistExerciseDelegate" pc="268435689" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="12" lineNum="406" parent="globals/LiftAssistExerciseDelegate" pc="268435701" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="13" lineNum="409" parent="globals/LiftAssistExerciseDelegate" pc="268435711" symbol="onSelect"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="13" lineNum="410" parent="globals/LiftAssistExerciseDelegate" pc="268435713" symbol="onSelect"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="13" lineNum="411" parent="globals/LiftAssistExerciseDelegate" pc="268435732" symbol="onSelect"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="14" lineNum="419" parent="globals/LiftAssistExerciseDelegate" pc="268435734" symbol="onNextPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="14" lineNum="420" parent="globals/LiftAssistExerciseDelegate" pc="268435736" symbol="onNextPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="14" lineNum="421" parent="globals/LiftAssistExerciseDelegate" pc="268435752" symbol="onNextPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="15" lineNum="23" parent="globals/LiftAssistPairingView" pc="268435754" symbol="onShow"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="15" lineNum="24" parent="globals/LiftAssistPairingView" pc="268435756" symbol="onShow"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="15" lineNum="25" parent="globals/LiftAssistPairingView" pc="268435765" symbol="onShow"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="16" lineNum="30" parent="globals/LiftAssistPairingView" pc="268435776" symbol="generateCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="16" lineNum="31" parent="globals/LiftAssistPairingView" pc="268435779" symbol="generateCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="16" lineNum="32" parent="globals/LiftAssistPairingView" pc="268435791" symbol="generateCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="16" lineNum="34" parent="globals/LiftAssistPairingView" pc="268435802" symbol="generateCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="16" lineNum="40" parent="globals/LiftAssistPairingView" pc="268435835" symbol="generateCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="17" lineNum="20" parent="globals/LiftAssistPairingView" pc="268435870" symbol="onLayout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="18" lineNum="83" parent="globals/LiftAssistPairingView" pc="268435873" symbol="onCheckStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="18" lineNum="84" parent="globals/LiftAssistPairingView" pc="268435876" symbol="onCheckStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="18" lineNum="85" parent="globals/LiftAssistPairingView" pc="268435900" symbol="onCheckStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="18" lineNum="86" parent="globals/LiftAssistPairingView" pc="268435917" symbol="onCheckStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="18" lineNum="87" parent="globals/LiftAssistPairingView" pc="268435941" symbol="onCheckStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="18" lineNum="88" parent="globals/LiftAssistPairingView" pc="268435958" symbol="onCheckStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="18" lineNum="90" parent="globals/LiftAssistPairingView" pc="268435964" symbol="onCheckStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="18" lineNum="91" parent="globals/LiftAssistPairingView" pc="268435984" symbol="onCheckStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="18" lineNum="92" parent="globals/LiftAssistPairingView" pc="268435996" symbol="onCheckStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="18" lineNum="93" parent="globals/LiftAssistPairingView" pc="268436016" symbol="onCheckStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="19" lineNum="65" parent="globals/LiftAssistPairingView" pc="268436063" symbol="checkStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="19" lineNum="66" parent="globals/LiftAssistPairingView" pc="268436066" symbol="checkStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="19" lineNum="66" parent="globals/LiftAssistPairingView" pc="268436075" symbol="checkStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="19" lineNum="68" parent="globals/LiftAssistPairingView" pc="268436079" symbol="checkStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="19" lineNum="69" parent="globals/LiftAssistPairingView" pc="268436092" symbol="checkStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="19" lineNum="75" parent="globals/LiftAssistPairingView" pc="268436125" symbol="checkStatus"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="20" lineNum="48" parent="globals/LiftAssistPairingView" pc="268436157" symbol="onReceiveCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="20" lineNum="49" parent="globals/LiftAssistPairingView" pc="268436159" symbol="onReceiveCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="20" lineNum="50" parent="globals/LiftAssistPairingView" pc="268436183" symbol="onReceiveCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="20" lineNum="51" parent="globals/LiftAssistPairingView" pc="268436205" symbol="onReceiveCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="20" lineNum="52" parent="globals/LiftAssistPairingView" pc="268436217" symbol="onReceiveCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="20" lineNum="53" parent="globals/LiftAssistPairingView" pc="268436225" symbol="onReceiveCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="20" lineNum="56" parent="globals/LiftAssistPairingView" pc="268436236" symbol="onReceiveCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="20" lineNum="58" parent="globals/LiftAssistPairingView" pc="268436270" symbol="onReceiveCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="20" lineNum="59" parent="globals/LiftAssistPairingView" pc="268436282" symbol="onReceiveCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="20" lineNum="60" parent="globals/LiftAssistPairingView" pc="268436294" symbol="onReceiveCode"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="21" lineNum="15" parent="globals/LiftAssistPairingView" pc="268436306" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="21" lineNum="16" parent="globals/LiftAssistPairingView" pc="268436308" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="21" lineNum="17" parent="globals/LiftAssistPairingView" pc="268436320" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="22" lineNum="112" parent="globals/LiftAssistPairingView" pc="268436350" symbol="onHide"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="22" lineNum="113" parent="globals/LiftAssistPairingView" pc="268436352" symbol="onHide"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="22" lineNum="114" parent="globals/LiftAssistPairingView" pc="268436361" symbol="onHide"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="23" lineNum="99" parent="globals/LiftAssistPairingView" pc="268436377" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="23" lineNum="100" parent="globals/LiftAssistPairingView" pc="268436380" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="23" lineNum="101" parent="globals/LiftAssistPairingView" pc="268436392" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="23" lineNum="102" parent="globals/LiftAssistPairingView" pc="268436400" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="23" lineNum="104" parent="globals/LiftAssistPairingView" pc="268436417" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="23" lineNum="105" parent="globals/LiftAssistPairingView" pc="268436426" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="23" lineNum="107" parent="globals/LiftAssistPairingView" pc="268436435" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="23" lineNum="108" parent="globals/LiftAssistPairingView" pc="268436467" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingView.mc" id="23" lineNum="109" parent="globals/LiftAssistPairingView" pc="268436499" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingDelegate.mc" id="24" lineNum="9" parent="globals/LiftAssistPairingDelegate" pc="268436532" symbol="onBack"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingDelegate.mc" id="24" lineNum="10" parent="globals/LiftAssistPairingDelegate" pc="268436534" symbol="onBack"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingDelegate.mc" id="24" lineNum="11" parent="globals/LiftAssistPairingDelegate" pc="268436548" symbol="onBack"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingDelegate.mc" id="25" lineNum="5" parent="globals/LiftAssistPairingDelegate" pc="268436550" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistPairingDelegate.mc" id="25" lineNum="6" parent="globals/LiftAssistPairingDelegate" pc="268436552" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistApp.mc" id="26" lineNum="11" parent="globals/LiftAssistApp" pc="268436565" symbol="onStart"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistApp.mc" id="27" lineNum="17" parent="globals/LiftAssistApp" pc="268436568" symbol="getInitialView"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistApp.mc" id="27" lineNum="18" parent="globals/LiftAssistApp" pc="268436571" symbol="getInitialView"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistApp.mc" id="27" lineNum="19" parent="globals/LiftAssistApp" pc="268436590" symbol="getInitialView"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistApp.mc" id="27" lineNum="20" parent="globals/LiftAssistApp" pc="268436596" symbol="getInitialView"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistApp.mc" id="27" lineNum="21" parent="globals/LiftAssistApp" pc="268436616" symbol="getInitialView"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistApp.mc" id="27" lineNum="23" parent="globals/LiftAssistApp" pc="268436652" symbol="getInitialView"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistApp.mc" id="28" lineNum="7" parent="globals/LiftAssistApp" pc="268436700" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistApp.mc" id="28" lineNum="8" parent="globals/LiftAssistApp" pc="268436702" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistApp.mc" id="29" lineNum="14" parent="globals/LiftAssistApp" pc="268436715" symbol="onStop"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="30" lineNum="18" parent="globals/LiftAssistWorkoutDelegate" pc="268436718" symbol="onPreviousPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="30" lineNum="19" parent="globals/LiftAssistWorkoutDelegate" pc="268436720" symbol="onPreviousPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="30" lineNum="20" parent="globals/LiftAssistWorkoutDelegate" pc="268436736" symbol="onPreviousPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="31" lineNum="8" parent="globals/LiftAssistWorkoutDelegate" pc="268436738" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="31" lineNum="9" parent="globals/LiftAssistWorkoutDelegate" pc="268436740" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="31" lineNum="10" parent="globals/LiftAssistWorkoutDelegate" pc="268436752" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="32" lineNum="13" parent="globals/LiftAssistWorkoutDelegate" pc="268436762" symbol="onNextPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="32" lineNum="14" parent="globals/LiftAssistWorkoutDelegate" pc="268436764" symbol="onNextPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="32" lineNum="15" parent="globals/LiftAssistWorkoutDelegate" pc="268436780" symbol="onNextPage"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="33" lineNum="23" parent="globals/LiftAssistWorkoutDelegate" pc="268436782" symbol="onSelect"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="33" lineNum="24" parent="globals/LiftAssistWorkoutDelegate" pc="268436784" symbol="onSelect"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutDelegate.mc" id="33" lineNum="25" parent="globals/LiftAssistWorkoutDelegate" pc="268436796" symbol="onSelect"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="34" lineNum="283" parent="globals/LiftAssistExerciseView" pc="268436798" symbol="startRest"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="34" lineNum="284" parent="globals/LiftAssistExerciseView" pc="268436800" symbol="startRest"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="34" lineNum="285" parent="globals/LiftAssistExerciseView" pc="268436808" symbol="startRest"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="34" lineNum="286" parent="globals/LiftAssistExerciseView" pc="268436817" symbol="startRest"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="34" lineNum="287" parent="globals/LiftAssistExerciseView" pc="268436846" symbol="startRest"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="35" lineNum="290" parent="globals/LiftAssistExerciseView" pc="268436878" symbol="stopRest"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="35" lineNum="291" parent="globals/LiftAssistExerciseView" pc="268436880" symbol="stopRest"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="35" lineNum="292" parent="globals/LiftAssistExerciseView" pc="268436888" symbol="stopRest"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="35" lineNum="293" parent="globals/LiftAssistExerciseView" pc="268436897" symbol="stopRest"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="35" lineNum="294" parent="globals/LiftAssistExerciseView" pc="268436909" symbol="stopRest"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="35" lineNum="296" parent="globals/LiftAssistExerciseView" pc="268436920" symbol="stopRest"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="315" parent="globals/LiftAssistExerciseView" pc="268436932" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="316" parent="globals/LiftAssistExerciseView" pc="268436935" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="317" parent="globals/LiftAssistExerciseView" pc="268436954" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="320" parent="globals/LiftAssistExerciseView" pc="268436961" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="321" parent="globals/LiftAssistExerciseView" pc="268436965" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="323" parent="globals/LiftAssistExerciseView" pc="268436968" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="324" parent="globals/LiftAssistExerciseView" pc="268436975" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="326" parent="globals/LiftAssistExerciseView" pc="268437001" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="327" parent="globals/LiftAssistExerciseView" pc="268437017" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="328" parent="globals/LiftAssistExerciseView" pc="268437024" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="330" parent="globals/LiftAssistExerciseView" pc="268437040" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="331" parent="globals/LiftAssistExerciseView" pc="268437067" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="336" parent="globals/LiftAssistExerciseView" pc="268437110" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="339" parent="globals/LiftAssistExerciseView" pc="268437125" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="340" parent="globals/LiftAssistExerciseView" pc="268437142" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="344" parent="globals/LiftAssistExerciseView" pc="268437164" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="353" parent="globals/LiftAssistExerciseView" pc="268437253" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="355" parent="globals/LiftAssistExerciseView" pc="268437279" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="361" parent="globals/LiftAssistExerciseView" pc="268437312" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="366" parent="globals/LiftAssistExerciseView" pc="268437335" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="367" parent="globals/LiftAssistExerciseView" pc="268437356" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="369" parent="globals/LiftAssistExerciseView" pc="268437388" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="370" parent="globals/LiftAssistExerciseView" pc="268437396" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="371" parent="globals/LiftAssistExerciseView" pc="268437408" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="36" lineNum="372" parent="globals/LiftAssistExerciseView" pc="268437416" symbol="finishWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="37" lineNum="394" parent="globals/LiftAssistExerciseView" pc="268437428" symbol="popAfterSuccess"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="37" lineNum="395" parent="globals/LiftAssistExerciseView" pc="268437430" symbol="popAfterSuccess"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="37" lineNum="396" parent="globals/LiftAssistExerciseView" pc="268437442" symbol="popAfterSuccess"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="37" lineNum="397" parent="globals/LiftAssistExerciseView" pc="268437450" symbol="popAfterSuccess"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="37" parent="globals/LiftAssistExerciseView" pc="268437466" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="38" parent="globals/LiftAssistExerciseView" pc="268437469" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="39" parent="globals/LiftAssistExerciseView" pc="268437478" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="40" parent="globals/LiftAssistExerciseView" pc="268437482" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="41" parent="globals/LiftAssistExerciseView" pc="268437490" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="42" parent="globals/LiftAssistExerciseView" pc="268437506" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="43" parent="globals/LiftAssistExerciseView" pc="268437531" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="47" parent="globals/LiftAssistExerciseView" pc="268437535" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="48" parent="globals/LiftAssistExerciseView" pc="268437542" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="49" parent="globals/LiftAssistExerciseView" pc="268437546" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="50" parent="globals/LiftAssistExerciseView" pc="268437551" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="51" parent="globals/LiftAssistExerciseView" pc="268437562" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="52" parent="globals/LiftAssistExerciseView" pc="268437580" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="53" parent="globals/LiftAssistExerciseView" pc="268437597" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="54" parent="globals/LiftAssistExerciseView" pc="268437604" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="54" parent="globals/LiftAssistExerciseView" pc="268437611" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="55" parent="globals/LiftAssistExerciseView" pc="268437620" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="56" parent="globals/LiftAssistExerciseView" pc="268437628" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="57" parent="globals/LiftAssistExerciseView" pc="268437632" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="62" parent="globals/LiftAssistExerciseView" pc="268437652" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="63" parent="globals/LiftAssistExerciseView" pc="268437668" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="64" parent="globals/LiftAssistExerciseView" pc="268437676" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="65" parent="globals/LiftAssistExerciseView" pc="268437690" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="66" parent="globals/LiftAssistExerciseView" pc="268437708" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="67" parent="globals/LiftAssistExerciseView" pc="268437742" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="68" parent="globals/LiftAssistExerciseView" pc="268437770" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="38" lineNum="71" parent="globals/LiftAssistExerciseView" pc="268437801" symbol="drawWrappedExerciseName"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="39" lineNum="299" parent="globals/LiftAssistExerciseView" pc="268437826" symbol="onRestTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="39" lineNum="300" parent="globals/LiftAssistExerciseView" pc="268437828" symbol="onRestTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="39" lineNum="301" parent="globals/LiftAssistExerciseView" pc="268437838" symbol="onRestTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="39" lineNum="302" parent="globals/LiftAssistExerciseView" pc="268437853" symbol="onRestTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="39" lineNum="304" parent="globals/LiftAssistExerciseView" pc="268437867" symbol="onRestTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="39" lineNum="305" parent="globals/LiftAssistExerciseView" pc="268437882" symbol="onRestTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="39" lineNum="311" parent="globals/LiftAssistExerciseView" pc="268437990" symbol="onRestTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="40" lineNum="375" parent="globals/LiftAssistExerciseView" pc="268437998" symbol="onUploadComplete"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="40" lineNum="376" parent="globals/LiftAssistExerciseView" pc="268438000" symbol="onUploadComplete"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="40" lineNum="377" parent="globals/LiftAssistExerciseView" pc="268438021" symbol="onUploadComplete"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="40" lineNum="378" parent="globals/LiftAssistExerciseView" pc="268438027" symbol="onUploadComplete"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="40" lineNum="381" parent="globals/LiftAssistExerciseView" pc="268438057" symbol="onUploadComplete"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="40" lineNum="382" parent="globals/LiftAssistExerciseView" pc="268438066" symbol="onUploadComplete"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="40" lineNum="383" parent="globals/LiftAssistExerciseView" pc="268438078" symbol="onUploadComplete"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="40" lineNum="386" parent="globals/LiftAssistExerciseView" pc="268438089" symbol="onUploadComplete"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="40" lineNum="387" parent="globals/LiftAssistExerciseView" pc="268438118" symbol="onUploadComplete"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="40" lineNum="389" parent="globals/LiftAssistExerciseView" pc="268438152" symbol="onUploadComplete"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="40" lineNum="390" parent="globals/LiftAssistExerciseView" pc="268438167" symbol="onUploadComplete"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="41" lineNum="272" parent="globals/LiftAssistExerciseView" pc="268438179" symbol="onConfirmationTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="41" lineNum="273" parent="globals/LiftAssistExerciseView" pc="268438181" symbol="onConfirmationTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="41" lineNum="274" parent="globals/LiftAssistExerciseView" pc="268438191" symbol="onConfirmationTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="41" lineNum="275" parent="globals/LiftAssistExerciseView" pc="268438206" symbol="onConfirmationTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="41" lineNum="276" parent="globals/LiftAssistExerciseView" pc="268438216" symbol="onConfirmationTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="41" lineNum="277" parent="globals/LiftAssistExerciseView" pc="268438228" symbol="onConfirmationTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="41" lineNum="279" parent="globals/LiftAssistExerciseView" pc="268438239" symbol="onConfirmationTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="223" parent="globals/LiftAssistExerciseView" pc="268438254" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="224" parent="globals/LiftAssistExerciseView" pc="268438257" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="225" parent="globals/LiftAssistExerciseView" pc="268438265" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="226" parent="globals/LiftAssistExerciseView" pc="268438272" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="228" parent="globals/LiftAssistExerciseView" pc="268438276" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="229" parent="globals/LiftAssistExerciseView" pc="268438284" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="230" parent="globals/LiftAssistExerciseView" pc="268438291" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="233" parent="globals/LiftAssistExerciseView" pc="268438295" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="234" parent="globals/LiftAssistExerciseView" pc="268438308" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="236" parent="globals/LiftAssistExerciseView" pc="268438324" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="239" parent="globals/LiftAssistExerciseView" pc="268438333" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="248" parent="globals/LiftAssistExerciseView" pc="268438494" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="250" parent="globals/LiftAssistExerciseView" pc="268438510" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="251" parent="globals/LiftAssistExerciseView" pc="268438519" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="252" parent="globals/LiftAssistExerciseView" pc="268438548" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="254" parent="globals/LiftAssistExerciseView" pc="268438579" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="255" parent="globals/LiftAssistExerciseView" pc="268438590" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="256" parent="globals/LiftAssistExerciseView" pc="268438605" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="258" parent="globals/LiftAssistExerciseView" pc="268438615" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="259" parent="globals/LiftAssistExerciseView" pc="268438638" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="260" parent="globals/LiftAssistExerciseView" pc="268438653" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="261" parent="globals/LiftAssistExerciseView" pc="268438662" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="263" parent="globals/LiftAssistExerciseView" pc="268438672" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="264" parent="globals/LiftAssistExerciseView" pc="268438680" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="265" parent="globals/LiftAssistExerciseView" pc="268438695" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="42" lineNum="269" parent="globals/LiftAssistExerciseView" pc="268438745" symbol="logSet"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="43" lineNum="213" parent="globals/LiftAssistExerciseView" pc="268438757" symbol="changeReps"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="43" lineNum="214" parent="globals/LiftAssistExerciseView" pc="268438760" symbol="changeReps"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="43" lineNum="214" parent="globals/LiftAssistExerciseView" pc="268438776" symbol="changeReps"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="43" lineNum="215" parent="globals/LiftAssistExerciseView" pc="268438780" symbol="changeReps"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="43" lineNum="216" parent="globals/LiftAssistExerciseView" pc="268438793" symbol="changeReps"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="43" lineNum="217" parent="globals/LiftAssistExerciseView" pc="268438809" symbol="changeReps"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="43" lineNum="218" parent="globals/LiftAssistExerciseView" pc="268438816" symbol="changeReps"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="43" lineNum="218" parent="globals/LiftAssistExerciseView" pc="268438823" symbol="changeReps"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="43" lineNum="219" parent="globals/LiftAssistExerciseView" pc="268438829" symbol="changeReps"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="43" lineNum="220" parent="globals/LiftAssistExerciseView" pc="268438846" symbol="changeReps"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="44" lineNum="205" parent="globals/LiftAssistExerciseView" pc="268438858" symbol="drawBezelIndicator"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="44" lineNum="206" parent="globals/LiftAssistExerciseView" pc="268438861" symbol="drawBezelIndicator"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="44" lineNum="207" parent="globals/LiftAssistExerciseView" pc="268438875" symbol="drawBezelIndicator"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="44" lineNum="208" parent="globals/LiftAssistExerciseView" pc="268438887" symbol="drawBezelIndicator"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="44" lineNum="209" parent="globals/LiftAssistExerciseView" pc="268438902" symbol="drawBezelIndicator"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="44" lineNum="210" parent="globals/LiftAssistExerciseView" pc="268438952" symbol="drawBezelIndicator"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="45" lineNum="30" parent="globals/LiftAssistExerciseView" pc="268438965" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="45" lineNum="31" parent="globals/LiftAssistExerciseView" pc="268438967" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="45" lineNum="32" parent="globals/LiftAssistExerciseView" pc="268438979" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="45" lineNum="33" parent="globals/LiftAssistExerciseView" pc="268438988" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="45" lineNum="34" parent="globals/LiftAssistExerciseView" pc="268439009" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="75" parent="globals/LiftAssistExerciseView" pc="268439027" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="76" parent="globals/LiftAssistExerciseView" pc="268439030" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="77" parent="globals/LiftAssistExerciseView" pc="268439042" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="79" parent="globals/LiftAssistExerciseView" pc="268439050" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="80" parent="globals/LiftAssistExerciseView" pc="268439059" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="82" parent="globals/LiftAssistExerciseView" pc="268439068" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="83" parent="globals/LiftAssistExerciseView" pc="268439076" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="84" parent="globals/LiftAssistExerciseView" pc="268439085" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="85" parent="globals/LiftAssistExerciseView" pc="268439102" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="86" parent="globals/LiftAssistExerciseView" pc="268439134" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="87" parent="globals/LiftAssistExerciseView" pc="268439151" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="88" parent="globals/LiftAssistExerciseView" pc="268439182" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="90" parent="globals/LiftAssistExerciseView" pc="268439213" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="91" parent="globals/LiftAssistExerciseView" pc="268439230" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="93" parent="globals/LiftAssistExerciseView" pc="268439259" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="96" parent="globals/LiftAssistExerciseView" pc="268439263" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="97" parent="globals/LiftAssistExerciseView" pc="268439273" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="98" parent="globals/LiftAssistExerciseView" pc="268439308" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="101" parent="globals/LiftAssistExerciseView" pc="268439344" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="102" parent="globals/LiftAssistExerciseView" pc="268439358" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="103" parent="globals/LiftAssistExerciseView" pc="268439370" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="104" parent="globals/LiftAssistExerciseView" pc="268439392" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="106" parent="globals/LiftAssistExerciseView" pc="268439404" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="107" parent="globals/LiftAssistExerciseView" pc="268439421" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="110" parent="globals/LiftAssistExerciseView" pc="268439447" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="111" parent="globals/LiftAssistExerciseView" pc="268439491" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="114" parent="globals/LiftAssistExerciseView" pc="268439495" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="115" parent="globals/LiftAssistExerciseView" pc="268439503" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="116" parent="globals/LiftAssistExerciseView" pc="268439519" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="118" parent="globals/LiftAssistExerciseView" pc="268439550" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="119" parent="globals/LiftAssistExerciseView" pc="268439567" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="122" parent="globals/LiftAssistExerciseView" pc="268439599" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="123" parent="globals/LiftAssistExerciseView" pc="268439615" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="124" parent="globals/LiftAssistExerciseView" pc="268439646" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="125" parent="globals/LiftAssistExerciseView" pc="268439665" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="128" parent="globals/LiftAssistExerciseView" pc="268439669" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="130" parent="globals/LiftAssistExerciseView" pc="268439682" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="132" parent="globals/LiftAssistExerciseView" pc="268439690" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="133" parent="globals/LiftAssistExerciseView" pc="268439707" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="136" parent="globals/LiftAssistExerciseView" pc="268439739" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="137" parent="globals/LiftAssistExerciseView" pc="268439756" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="140" parent="globals/LiftAssistExerciseView" pc="268439794" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="141" parent="globals/LiftAssistExerciseView" pc="268439804" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="142" parent="globals/LiftAssistExerciseView" pc="268439816" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="143" parent="globals/LiftAssistExerciseView" pc="268439832" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="144" parent="globals/LiftAssistExerciseView" pc="268439854" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="145" parent="globals/LiftAssistExerciseView" pc="268439864" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="146" parent="globals/LiftAssistExerciseView" pc="268439881" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="147" parent="globals/LiftAssistExerciseView" pc="268439906" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="149" parent="globals/LiftAssistExerciseView" pc="268439940" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="152" parent="globals/LiftAssistExerciseView" pc="268439952" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="153" parent="globals/LiftAssistExerciseView" pc="268439969" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="155" parent="globals/LiftAssistExerciseView" pc="268440000" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="156" parent="globals/LiftAssistExerciseView" pc="268440011" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="157" parent="globals/LiftAssistExerciseView" pc="268440028" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="159" parent="globals/LiftAssistExerciseView" pc="268440068" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="160" parent="globals/LiftAssistExerciseView" pc="268440084" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="162" parent="globals/LiftAssistExerciseView" pc="268440100" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="163" parent="globals/LiftAssistExerciseView" pc="268440109" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="164" parent="globals/LiftAssistExerciseView" pc="268440122" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="166" parent="globals/LiftAssistExerciseView" pc="268440145" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="167" parent="globals/LiftAssistExerciseView" pc="268440162" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="171" parent="globals/LiftAssistExerciseView" pc="268440210" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="172" parent="globals/LiftAssistExerciseView" pc="268440227" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="173" parent="globals/LiftAssistExerciseView" pc="268440258" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="175" parent="globals/LiftAssistExerciseView" pc="268440280" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="176" parent="globals/LiftAssistExerciseView" pc="268440296" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="177" parent="globals/LiftAssistExerciseView" pc="268440312" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="178" parent="globals/LiftAssistExerciseView" pc="268440328" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="181" parent="globals/LiftAssistExerciseView" pc="268440344" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="184" parent="globals/LiftAssistExerciseView" pc="268440370" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="185" parent="globals/LiftAssistExerciseView" pc="268440387" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="187" parent="globals/LiftAssistExerciseView" pc="268440427" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="188" parent="globals/LiftAssistExerciseView" pc="268440443" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="191" parent="globals/LiftAssistExerciseView" pc="268440483" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="192" parent="globals/LiftAssistExerciseView" pc="268440500" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="195" parent="globals/LiftAssistExerciseView" pc="268440547" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="196" parent="globals/LiftAssistExerciseView" pc="268440563" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="197" parent="globals/LiftAssistExerciseView" pc="268440594" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="199" parent="globals/LiftAssistExerciseView" pc="268440613" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="200" parent="globals/LiftAssistExerciseView" pc="268440630" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistExerciseView.mc" id="46" lineNum="201" parent="globals/LiftAssistExerciseView" pc="268440661" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="47" lineNum="14" parent="globals/LiftAssistWorkoutView" pc="268440683" symbol="onShow"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="47" lineNum="15" parent="globals/LiftAssistWorkoutView" pc="268440686" symbol="onShow"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="47" lineNum="16" parent="globals/LiftAssistWorkoutView" pc="268440705" symbol="onShow"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="47" lineNum="18" parent="globals/LiftAssistWorkoutView" pc="268440715" symbol="onShow"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="47" lineNum="24" parent="globals/LiftAssistWorkoutView" pc="268440748" symbol="onShow"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="35" parent="globals/LiftAssistWorkoutView" pc="268440780" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="36" parent="globals/LiftAssistWorkoutView" pc="268440783" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="37" parent="globals/LiftAssistWorkoutView" pc="268440792" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="38" parent="globals/LiftAssistWorkoutView" pc="268440801" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="40" parent="globals/LiftAssistWorkoutView" pc="268440821" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="41" parent="globals/LiftAssistWorkoutView" pc="268440855" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="42" parent="globals/LiftAssistWorkoutView" pc="268440859" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="43" parent="globals/LiftAssistWorkoutView" pc="268440875" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="44" parent="globals/LiftAssistWorkoutView" pc="268440882" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="45" parent="globals/LiftAssistWorkoutView" pc="268440898" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="46" parent="globals/LiftAssistWorkoutView" pc="268440909" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="47" parent="globals/LiftAssistWorkoutView" pc="268440918" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="50" parent="globals/LiftAssistWorkoutView" pc="268440934" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="52" parent="globals/LiftAssistWorkoutView" pc="268440948" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="54" parent="globals/LiftAssistWorkoutView" pc="268440960" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="56" parent="globals/LiftAssistWorkoutView" pc="268440974" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="48" lineNum="57" parent="globals/LiftAssistWorkoutView" pc="268440989" symbol="onReceiveSession"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="138" parent="globals/LiftAssistWorkoutView" pc="268441001" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="139" parent="globals/LiftAssistWorkoutView" pc="268441004" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="139" parent="globals/LiftAssistWorkoutView" pc="268441013" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="140" parent="globals/LiftAssistWorkoutView" pc="268441017" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="141" parent="globals/LiftAssistWorkoutView" pc="268441037" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="141" parent="globals/LiftAssistWorkoutView" pc="268441056" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="143" parent="globals/LiftAssistWorkoutView" pc="268441060" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="144" parent="globals/LiftAssistWorkoutView" pc="268441075" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="145" parent="globals/LiftAssistWorkoutView" pc="268441085" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="146" parent="globals/LiftAssistWorkoutView" pc="268441105" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="147" parent="globals/LiftAssistWorkoutView" pc="268441121" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="49" lineNum="150" parent="globals/LiftAssistWorkoutView" pc="268441132" symbol="changeDay"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="50" lineNum="10" parent="globals/LiftAssistWorkoutView" pc="268441144" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="50" lineNum="11" parent="globals/LiftAssistWorkoutView" pc="268441146" symbol="initialize"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="51" lineNum="64" parent="globals/LiftAssistWorkoutView" pc="268441159" symbol="onHide"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="51" lineNum="65" parent="globals/LiftAssistWorkoutView" pc="268441161" symbol="onHide"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="51" lineNum="66" parent="globals/LiftAssistWorkoutView" pc="268441170" symbol="onHide"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="51" lineNum="67" parent="globals/LiftAssistWorkoutView" pc="268441182" symbol="onHide"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="71" parent="globals/LiftAssistWorkoutView" pc="268441194" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="72" parent="globals/LiftAssistWorkoutView" pc="268441197" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="73" parent="globals/LiftAssistWorkoutView" pc="268441209" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="75" parent="globals/LiftAssistWorkoutView" pc="268441217" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="76" parent="globals/LiftAssistWorkoutView" pc="268441226" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="78" parent="globals/LiftAssistWorkoutView" pc="268441235" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="79" parent="globals/LiftAssistWorkoutView" pc="268441244" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="80" parent="globals/LiftAssistWorkoutView" pc="268441273" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="83" parent="globals/LiftAssistWorkoutView" pc="268441306" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="84" parent="globals/LiftAssistWorkoutView" pc="268441315" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="85" parent="globals/LiftAssistWorkoutView" pc="268441332" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="86" parent="globals/LiftAssistWorkoutView" pc="268441361" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="89" parent="globals/LiftAssistWorkoutView" pc="268441365" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="90" parent="globals/LiftAssistWorkoutView" pc="268441385" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="91" parent="globals/LiftAssistWorkoutView" pc="268441405" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="92" parent="globals/LiftAssistWorkoutView" pc="268441415" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="95" parent="globals/LiftAssistWorkoutView" pc="268441431" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="96" parent="globals/LiftAssistWorkoutView" pc="268441447" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="99" parent="globals/LiftAssistWorkoutView" pc="268441480" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="100" parent="globals/LiftAssistWorkoutView" pc="268441496" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="101" parent="globals/LiftAssistWorkoutView" pc="268441507" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="102" parent="globals/LiftAssistWorkoutView" pc="268441524" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="104" parent="globals/LiftAssistWorkoutView" pc="268441558" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="108" parent="globals/LiftAssistWorkoutView" pc="268441575" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="109" parent="globals/LiftAssistWorkoutView" pc="268441579" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="110" parent="globals/LiftAssistWorkoutView" pc="268441588" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="111" parent="globals/LiftAssistWorkoutView" pc="268441596" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="112" parent="globals/LiftAssistWorkoutView" pc="268441602" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="113" parent="globals/LiftAssistWorkoutView" pc="268441610" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="114" parent="globals/LiftAssistWorkoutView" pc="268441617" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="115" parent="globals/LiftAssistWorkoutView" pc="268441625" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="117" parent="globals/LiftAssistWorkoutView" pc="268441632" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="120" parent="globals/LiftAssistWorkoutView" pc="268441661" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="121" parent="globals/LiftAssistWorkoutView" pc="268441674" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="122" parent="globals/LiftAssistWorkoutView" pc="268441713" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="124" parent="globals/LiftAssistWorkoutView" pc="268441730" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="126" parent="globals/LiftAssistWorkoutView" pc="268441819" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="130" parent="globals/LiftAssistWorkoutView" pc="268441920" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="52" lineNum="131" parent="globals/LiftAssistWorkoutView" pc="268441937" symbol="onUpdate"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="53" lineNum="134" parent="globals/LiftAssistWorkoutView" pc="268441969" symbol="onTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="53" lineNum="135" parent="globals/LiftAssistWorkoutView" pc="268441971" symbol="onTimer"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="153" parent="globals/LiftAssistWorkoutView" pc="268441983" symbol="startWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="154" parent="globals/LiftAssistWorkoutView" pc="268441986" symbol="startWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="154" parent="globals/LiftAssistWorkoutView" pc="268441995" symbol="startWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="155" parent="globals/LiftAssistWorkoutView" pc="268441999" symbol="startWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="156" parent="globals/LiftAssistWorkoutView" pc="268442006" symbol="startWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="157" parent="globals/LiftAssistWorkoutView" pc="268442022" symbol="startWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="157" parent="globals/LiftAssistWorkoutView" pc="268442041" symbol="startWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="159" parent="globals/LiftAssistWorkoutView" pc="268442045" symbol="startWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="160" parent="globals/LiftAssistWorkoutView" pc="268442055" symbol="startWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="161" parent="globals/LiftAssistWorkoutView" pc="268442084" symbol="startWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="162" parent="globals/LiftAssistWorkoutView" pc="268442113" symbol="startWorkout"/>
+        <entry filename="C:\\Users\\jonny_havenstudios\\appdev\\liftlogic\\liftassist-app\\garmin-app\\source\\LiftAssistWorkoutView.mc" id="54" lineNum="163" parent="globals/LiftAssistWorkoutView" pc="268442135" symbol="startWorkout"/>
+    </pcToLineNum>
+    <symbolTable>
+        <entry id="42" method="true" symbol="drawWrappedExerciseName"/>
+        <entry id="8388639" module="true" symbol="Graphics"/>
+        <entry id="56" method="true" symbol="changeDay"/>
+        <entry id="8388632" method="true" symbol="&lt;init&gt;"/>
+        <entry id="44" method="true" symbol="logSet"/>
+        <entry field="true" id="23" symbol="_confirmationTimer"/>
+        <entry field="true" id="32" symbol="_restTimer"/>
+        <entry field="true" id="24" symbol="_day"/>
+        <entry id="48" method="true" symbol="popAfterSuccess"/>
+        <entry id="8390424" module="true" symbol="Storage"/>
+        <entry field="true" id="29" symbol="_isUploading"/>
+        <entry field="true" id="54" symbol="_selectedDayIndex"/>
+        <entry field="true" id="33" symbol="_setNumber"/>
+        <entry field="true" id="51" symbol="_animOffset"/>
+        <entry field="true" id="8388611" module="true" symbol="Toybox"/>
+        <entry id="41" method="true" symbol="drawBezelIndicator"/>
+        <entry field="true" id="17" symbol="_pollTimer"/>
+        <entry id="57" method="true" symbol="onReceiveSession"/>
+        <entry field="true" id="61" symbol="AppName"/>
+        <entry id="5" module="true" symbol="globals/Rez/Strings"/>
+        <entry id="8389594" symbol="headers"/>
+        <entry id="46" method="true" symbol="onRestTimer"/>
+        <entry id="2" module="true" symbol="globals/Constants"/>
+        <entry id="8388648" module="true" symbol="WatchUi"/>
+        <entry id="8389081" method="true" symbol="onBack"/>
+        <entry field="true" id="31" symbol="_restRemaining"/>
+        <entry id="59" method="true" symbol="startWorkout"/>
+        <entry id="11" object="true" symbol="LiftAssistPairingView"/>
+        <entry id="3" module="true" symbol="globals/Rez"/>
+        <entry id="8389124" method="true" symbol="onUpdate"/>
+        <entry field="true" id="36" symbol="_successTimer"/>
+        <entry field="true" id="38" symbol="_uploadStatus"/>
+        <entry id="6" module="true" symbol="Constants"/>
+        <entry id="49" method="true" symbol="startRest"/>
+        <entry field="true" id="25" symbol="_exIndex"/>
+        <entry id="8388771" module="true" object="true" symbol="Drawables"/>
+        <entry id="8389079" method="true" symbol="onPreviousPage"/>
+        <entry id="8389122" method="true" symbol="onLayout"/>
+        <entry id="40" method="true" symbol="changeReps"/>
+        <entry field="true" id="39" symbol="_workoutLog"/>
+        <entry id="45" method="true" symbol="onConfirmationTimer"/>
+        <entry id="8388987" method="true" symbol="vibrate"/>
+        <entry field="true" id="34" symbol="_showConfirmation"/>
+        <entry field="true" id="16" symbol="_pairingCode"/>
+        <entry id="8" object="true" symbol="LiftAssistExerciseDelegate"/>
+        <entry id="19" method="true" symbol="checkStatus"/>
+        <entry field="true" id="30" symbol="_lastStatus"/>
+        <entry field="true" id="60" symbol="launcher_icon"/>
+        <entry id="8388637" module="true" symbol="Communications"/>
+        <entry field="true" id="35" symbol="_startTime"/>
+        <entry id="4" module="true" symbol="globals/Rez/Drawables"/>
+        <entry id="8389844" symbol="responseType"/>
+        <entry id="20" method="true" symbol="generateCode"/>
+        <entry id="8388786" method="true" symbol="method"/>
+        <entry id="8388644" module="true" symbol="System"/>
+        <entry id="8389619" method="true" symbol="onSelect"/>
+        <entry id="43" method="true" symbol="finishWorkout"/>
+        <entry id="8388769" module="true" object="true" symbol="Rez"/>
+        <entry field="true" id="53" symbol="_mainText"/>
+        <entry field="true" id="18" symbol="_status"/>
+        <entry id="12" object="true" symbol="LiftAssistWorkoutDelegate"/>
+        <entry id="8388640" module="true" symbol="Lang"/>
+        <entry id="8388610" symbol="statics"/>
+        <entry id="8389123" method="true" symbol="onShow"/>
+        <entry id="10" object="true" symbol="LiftAssistPairingDelegate"/>
+        <entry id="7" object="true" symbol="LiftAssistApp"/>
+        <entry id="8389350" module="true" symbol="globals"/>
+        <entry id="8388770" module="true" object="true" symbol="Strings"/>
+        <entry field="true" id="14" symbol="_view"/>
+        <entry id="8388702" method="true" symbol="initialize"/>
+        <entry field="true" id="15" symbol="_generated"/>
+        <entry id="8389279" method="true" symbol="onStart"/>
+        <entry field="true" id="37" symbol="_uploadError"/>
+        <entry field="true" id="55" symbol="_sessionData"/>
+        <entry id="13" object="true" symbol="LiftAssistWorkoutView"/>
+        <entry field="true" id="26" symbol="_exercises"/>
+        <entry id="21" method="true" symbol="onCheckStatus"/>
+        <entry field="true" id="52" symbol="_animTimer"/>
+        <entry id="8389280" method="true" symbol="getInitialView"/>
+        <entry id="8389281" method="true" symbol="onStop"/>
+        <entry id="47" method="true" symbol="onUploadComplete"/>
+        <entry id="8388646" module="true" object="true" symbol="Timer"/>
+        <entry id="8388636" module="true" symbol="Attention"/>
+        <entry field="true" id="27" symbol="_isFinished"/>
+        <entry field="true" id="28" symbol="_isResting"/>
+        <entry id="50" method="true" symbol="stopRest"/>
+        <entry id="8389125" method="true" symbol="onHide"/>
+        <entry id="8389078" method="true" symbol="onNextPage"/>
+        <entry id="8388635" module="true" symbol="Application"/>
+        <entry id="58" method="true" symbol="onTimer"/>
+        <entry id="22" method="true" symbol="onReceiveCode"/>
+        <entry id="9" object="true" symbol="LiftAssistExerciseView"/>
+        <entry id="8389101" method="true" symbol="onSwipe"/>
+    </symbolTable>
+    <localVars>
+        <entry arg="true" endPc="268435686" name="swipeEvent" stackId="1" startPc="268435616"/>
+        <entry endPc="268435686" name="direction" stackId="2" startPc="268435619"/>
+        <entry arg="true" endPc="268435710" name="view" stackId="1" startPc="268435687"/>
+        <entry endPc="268435868" name="options" stackId="1" startPc="268435779"/>
+        <entry arg="true" endPc="268436062" name="responseCode" stackId="1" startPc="268435873"/>
+        <entry arg="true" endPc="268436062" name="data" stackId="2" startPc="268435873"/>
+        <entry endPc="268436058" name="status" stackId="3" startPc="268435900"/>
+        <entry endPc="268436055" name="token" stackId="4" startPc="268435941"/>
+        <entry endPc="268436052" name="view" stackId="5" startPc="268435964"/>
+        <entry endPc="268436155" name="url" stackId="1" startPc="268436066"/>
+        <entry endPc="268436155" name="options" stackId="2" startPc="268436066"/>
+        <entry arg="true" endPc="268436305" name="responseCode" stackId="1" startPc="268436157"/>
+        <entry arg="true" endPc="268436305" name="data" stackId="2" startPc="268436157"/>
+        <entry arg="true" endPc="268436531" name="dc" stackId="1" startPc="268436377"/>
+        <entry endPc="268436530" name="w" stackId="2" startPc="268436380"/>
+        <entry endPc="268436530" name="h" stackId="3" startPc="268436380"/>
+        <entry endPc="268436698" name="token" stackId="1" startPc="268436571"/>
+        <entry endPc="268436648" name="view" stackId="2" startPc="268436596"/>
+        <entry arg="true" endPc="268436761" name="view" stackId="1" startPc="268436738"/>
+        <entry endPc="268437426" name="token" stackId="1" startPc="268436935"/>
+        <entry endPc="268437426" name="url" stackId="2" startPc="268436935"/>
+        <entry endPc="268437426" name="performedExercises" stackId="3" startPc="268436935"/>
+        <entry endPc="268437426" name="currentEx" stackId="4" startPc="268436935"/>
+        <entry endPc="268437426" name="workoutLogArr" stackId="5" startPc="268436935"/>
+        <entry endPc="268437163" name="i" stackId="6" startPc="268437017"/>
+        <entry endPc="268437153" name="set" stackId="7" startPc="268437017"/>
+        <entry endPc="268437153" name="exId" stackId="8" startPc="268437017"/>
+        <entry endPc="268437153" name="setsArr" stackId="9" startPc="268437017"/>
+        <entry endPc="268437426" name="workoutPackage" stackId="10" startPc="268436935"/>
+        <entry endPc="268437426" name="options" stackId="11" startPc="268436935"/>
+        <entry endPc="268437426" name="body" stackId="12" startPc="268436935"/>
+        <entry arg="true" endPc="268437825" name="dc" stackId="1" startPc="268437466"/>
+        <entry arg="true" endPc="268437825" name="name" stackId="2" startPc="268437466"/>
+        <entry arg="true" endPc="268437825" name="x" stackId="3" startPc="268437466"/>
+        <entry arg="true" endPc="268437825" name="y" stackId="4" startPc="268437466"/>
+        <entry endPc="268437824" name="len" stackId="5" startPc="268437469"/>
+        <entry endPc="268437824" name="maxChars" stackId="6" startPc="268437469"/>
+        <entry endPc="268437824" name="mid" stackId="7" startPc="268437469"/>
+        <entry endPc="268437824" name="bestSpaceIdx" stackId="8" startPc="268437469"/>
+        <entry endPc="268437824" name="minDiff" stackId="9" startPc="268437469"/>
+        <entry endPc="268437651" name="i" stackId="10" startPc="268437562"/>
+        <entry endPc="268437641" name="char" stackId="11" startPc="268437562"/>
+        <entry endPc="268437638" name="diff" stackId="12" startPc="268437597"/>
+        <entry endPc="268437797" name="line1" stackId="13" startPc="268437676"/>
+        <entry endPc="268437797" name="line2" stackId="14" startPc="268437676"/>
+        <entry endPc="268437797" name="font" stackId="15" startPc="268437676"/>
+        <entry arg="true" endPc="268438178" name="responseCode" stackId="1" startPc="268437998"/>
+        <entry arg="true" endPc="268438178" name="data" stackId="2" startPc="268437998"/>
+        <entry arg="true" endPc="268438756" name="status" stackId="1" startPc="268438254"/>
+        <entry endPc="268438755" name="ex" stackId="2" startPc="268438257"/>
+        <entry endPc="268438755" name="targetSets" stackId="3" startPc="268438257"/>
+        <entry endPc="268438755" name="loggedSet" stackId="4" startPc="268438257"/>
+        <entry arg="true" endPc="268438857" name="delta" stackId="1" startPc="268438757"/>
+        <entry endPc="268438856" name="ex" stackId="2" startPc="268438760"/>
+        <entry endPc="268438856" name="reps" stackId="3" startPc="268438760"/>
+        <entry arg="true" endPc="268438964" name="dc" stackId="1" startPc="268438858"/>
+        <entry arg="true" endPc="268438964" name="color" stackId="2" startPc="268438858"/>
+        <entry arg="true" endPc="268438964" name="angleCenter" stackId="3" startPc="268438858"/>
+        <entry arg="true" endPc="268438964" name="length" stackId="4" startPc="268438858"/>
+        <entry endPc="268438963" name="r" stackId="5" startPc="268438861"/>
+        <entry arg="true" endPc="268439026" name="day" stackId="1" startPc="268438965"/>
+        <entry arg="true" endPc="268440682" name="dc" stackId="1" startPc="268439027"/>
+        <entry endPc="268440681" name="w" stackId="2" startPc="268439030"/>
+        <entry endPc="268440681" name="h" stackId="3" startPc="268439030"/>
+        <entry endPc="268439491" name="color" stackId="4" startPc="268439273"/>
+        <entry endPc="268439491" name="msg" stackId="5" startPc="268439273"/>
+        <entry endPc="268440681" name="ex" stackId="6" startPc="268439030"/>
+        <entry endPc="268440276" name="radius" stackId="7" startPc="268439690"/>
+        <entry endPc="268439936" name="angle" stackId="8" startPc="268439864"/>
+        <entry endPc="268440209" name="nextExName" stackId="9" startPc="268440068"/>
+        <entry endPc="268440209" name="nextWeight" stackId="10" startPc="268440068"/>
+        <entry endPc="268440209" name="displayNext" stackId="11" startPc="268440068"/>
+        <entry endPc="268440681" name="name" stackId="12" startPc="268440280"/>
+        <entry endPc="268440681" name="targetSets" stackId="13" startPc="268440280"/>
+        <entry endPc="268440681" name="reps" stackId="14" startPc="268440280"/>
+        <entry endPc="268440681" name="weight" stackId="15" startPc="268440280"/>
+        <entry endPc="268440778" name="token" stackId="1" startPc="268440686"/>
+        <entry endPc="268440778" name="url" stackId="2" startPc="268440686"/>
+        <entry endPc="268440778" name="options" stackId="3" startPc="268440686"/>
+        <entry arg="true" endPc="268441000" name="responseCode" stackId="1" startPc="268440780"/>
+        <entry arg="true" endPc="268441000" name="data" stackId="2" startPc="268440780"/>
+        <entry endPc="268440970" name="days" stackId="3" startPc="268440792"/>
+        <entry endPc="268440944" name="daysArr" stackId="4" startPc="268440855"/>
+        <entry endPc="268440933" name="i" stackId="5" startPc="268440875"/>
+        <entry endPc="268440923" name="d" stackId="6" startPc="268440875"/>
+        <entry endPc="268440923" name="isRec" stackId="7" startPc="268440875"/>
+        <entry arg="true" endPc="268441143" name="delta" stackId="1" startPc="268441001"/>
+        <entry endPc="268441142" name="days" stackId="2" startPc="268441004"/>
+        <entry arg="true" endPc="268441968" name="dc" stackId="1" startPc="268441194"/>
+        <entry endPc="268441967" name="w" stackId="2" startPc="268441197"/>
+        <entry endPc="268441967" name="h" stackId="3" startPc="268441197"/>
+        <entry endPc="268441967" name="programName" stackId="4" startPc="268441197"/>
+        <entry endPc="268441967" name="days" stackId="5" startPc="268441197"/>
+        <entry endPc="268441967" name="day" stackId="6" startPc="268441197"/>
+        <entry endPc="268441967" name="dayName" stackId="7" startPc="268441197"/>
+        <entry endPc="268441967" name="isRecommended" stackId="8" startPc="268441197"/>
+        <entry endPc="268441967" name="font" stackId="9" startPc="268441197"/>
+        <entry endPc="268441967" name="dayLen" stackId="10" startPc="268441197"/>
+        <entry endPc="268441916" name="pulse" stackId="11" startPc="268441674"/>
+        <entry endPc="268442171" name="dict" stackId="1" startPc="268441986"/>
+        <entry endPc="268442171" name="days" stackId="2" startPc="268441986"/>
+        <entry endPc="268442171" name="day" stackId="3" startPc="268441986"/>
+        <entry endPc="268442171" name="view" stackId="4" startPc="268441986"/>
+    </localVars>
+    <deviceInfo deviceVersion="3cbcff5b61d759a7585c5fa7606e74c0bd5dfa74" partNumber="006-B3906-00"/>
+    <annotations>
+        <annotationEntry annotation="initialized" class="Drawables" module="globals/Rez" symbol="launcher_icon"/>
+        <annotationEntry annotation="initialized" class="Strings" module="globals/Rez" symbol="AppName"/>
+    </annotations>
+    <dataEntryOffsetMappings>
+        <dataEntry label="globals" offset="58" parentId="" symbolId="globals" type="module"/>
+        <dataEntry label="globals/LiftAssistExerciseDelegate" offset="170" parentId="globals" symbolId="LiftAssistExerciseDelegate" type="class"/>
+        <dataEntry label="globals/LiftAssistPairingView" offset="268" parentId="globals" symbolId="LiftAssistPairingView" type="class"/>
+        <dataEntry label="globals/LiftAssistPairingDelegate" offset="420" parentId="globals" symbolId="LiftAssistPairingDelegate" type="class"/>
+        <dataEntry label="globals/Rez" offset="473" parentId="globals" symbolId="Rez" type="module"/>
+        <dataEntry label="globals/Constants" offset="517" parentId="globals" symbolId="Constants" type="module"/>
+        <dataEntry label="globals/LiftAssistApp" offset="543" parentId="globals" symbolId="LiftAssistApp" type="class"/>
+        <dataEntry label="globals/LiftAssistWorkoutDelegate" offset="614" parentId="globals" symbolId="LiftAssistWorkoutDelegate" type="class"/>
+        <dataEntry label="globals/LiftAssistExerciseView" offset="694" parentId="globals" symbolId="LiftAssistExerciseView" type="class"/>
+        <dataEntry label="globals/LiftAssistWorkoutView" offset="999" parentId="globals" symbolId="LiftAssistWorkoutView" type="class"/>
+        <dataEntry label="globals/Rez/Drawables" offset="1151" parentId="Rez" symbolId="Drawables" type="module"/>
+        <dataEntry label="globals/Rez/Strings" offset="1186" parentId="Rez" symbolId="Strings" type="module"/>
+    </dataEntryOffsetMappings>
+    <functions>
+        <functionEntry accessMode="public" endPc="268435471" name="&lt;init&gt;" parent="LiftAssistExerciseDelegate" startPc="268435460">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435483" name="&lt;init&gt;" parent="LiftAssistPairingView" startPc="268435472">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435495" name="&lt;init&gt;" parent="LiftAssistPairingDelegate" startPc="268435484">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435515" name="&lt;init&gt;" parent="Rez" startPc="268435496">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" name="&lt;init&gt;" parent="Constants">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435527" name="&lt;init&gt;" parent="LiftAssistApp" startPc="268435516">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435539" name="&lt;init&gt;" parent="LiftAssistWorkoutDelegate" startPc="268435528">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435560" name="&lt;init&gt;" parent="LiftAssistExerciseView" startPc="268435540">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435572" name="&lt;init&gt;" parent="LiftAssistWorkoutView" startPc="268435561">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435595" name="onBack" parent="LiftAssistExerciseDelegate" startPc="268435573">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435615" name="onPreviousPage" parent="LiftAssistExerciseDelegate" startPc="268435596">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435686" name="onSwipe" parent="LiftAssistExerciseDelegate" startPc="268435616">
+            <param id="swipeEvent"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435710" name="initialize" parent="LiftAssistExerciseDelegate" startPc="268435687">
+            <param id="view"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435733" name="onSelect" parent="LiftAssistExerciseDelegate" startPc="268435711">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435753" name="onNextPage" parent="LiftAssistExerciseDelegate" startPc="268435734">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435775" name="onShow" parent="LiftAssistPairingView" startPc="268435754">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435869" name="generateCode" parent="LiftAssistPairingView" startPc="268435776">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268435872" name="onLayout" parent="LiftAssistPairingView" startPc="268435870">
+            <param id="dc"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436062" name="onCheckStatus" parent="LiftAssistPairingView" startPc="268435873">
+            <param id="responseCode"/>
+            <param id="data"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436156" name="checkStatus" parent="LiftAssistPairingView" startPc="268436063">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436305" name="onReceiveCode" parent="LiftAssistPairingView" startPc="268436157">
+            <param id="responseCode"/>
+            <param id="data"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436349" name="initialize" parent="LiftAssistPairingView" startPc="268436306">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436376" name="onHide" parent="LiftAssistPairingView" startPc="268436350">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436531" name="onUpdate" parent="LiftAssistPairingView" startPc="268436377">
+            <param id="dc"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436549" name="onBack" parent="LiftAssistPairingDelegate" startPc="268436532">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436564" name="initialize" parent="LiftAssistPairingDelegate" startPc="268436550">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" name="&lt;init&gt;" parent="Drawables">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" name="&lt;init&gt;" parent="Strings">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436567" name="onStart" parent="LiftAssistApp" startPc="268436565">
+            <param id="state"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436699" name="getInitialView" parent="LiftAssistApp" startPc="268436568">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436714" name="initialize" parent="LiftAssistApp" startPc="268436700">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436717" name="onStop" parent="LiftAssistApp" startPc="268436715">
+            <param id="state"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436737" name="onPreviousPage" parent="LiftAssistWorkoutDelegate" startPc="268436718">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436761" name="initialize" parent="LiftAssistWorkoutDelegate" startPc="268436738">
+            <param id="view"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436781" name="onNextPage" parent="LiftAssistWorkoutDelegate" startPc="268436762">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436797" name="onSelect" parent="LiftAssistWorkoutDelegate" startPc="268436782">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436877" name="startRest" parent="LiftAssistExerciseView" startPc="268436798">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268436931" name="stopRest" parent="LiftAssistExerciseView" startPc="268436878">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268437427" name="finishWorkout" parent="LiftAssistExerciseView" startPc="268436932">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268437465" name="popAfterSuccess" parent="LiftAssistExerciseView" startPc="268437428">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="protected" endPc="268437825" name="drawWrappedExerciseName" parent="LiftAssistExerciseView" startPc="268437466">
+            <param id="dc"/>
+            <param id="name"/>
+            <param id="x"/>
+            <param id="y"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268437997" name="onRestTimer" parent="LiftAssistExerciseView" startPc="268437826">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268438178" name="onUploadComplete" parent="LiftAssistExerciseView" startPc="268437998">
+            <param id="responseCode"/>
+            <param id="data"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268438253" name="onConfirmationTimer" parent="LiftAssistExerciseView" startPc="268438179">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268438756" name="logSet" parent="LiftAssistExerciseView" startPc="268438254">
+            <param id="status"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268438857" name="changeReps" parent="LiftAssistExerciseView" startPc="268438757">
+            <param id="delta"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268438964" name="drawBezelIndicator" parent="LiftAssistExerciseView" startPc="268438858">
+            <param id="dc"/>
+            <param id="color"/>
+            <param id="angleCenter"/>
+            <param id="length"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268439026" name="initialize" parent="LiftAssistExerciseView" startPc="268438965">
+            <param id="day"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268440682" name="onUpdate" parent="LiftAssistExerciseView" startPc="268439027">
+            <param id="dc"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268440779" name="onShow" parent="LiftAssistWorkoutView" startPc="268440683">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268441000" name="onReceiveSession" parent="LiftAssistWorkoutView" startPc="268440780">
+            <param id="responseCode"/>
+            <param id="data"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268441143" name="changeDay" parent="LiftAssistWorkoutView" startPc="268441001">
+            <param id="delta"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268441158" name="initialize" parent="LiftAssistWorkoutView" startPc="268441144">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268441193" name="onHide" parent="LiftAssistWorkoutView" startPc="268441159">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268441968" name="onUpdate" parent="LiftAssistWorkoutView" startPc="268441194">
+            <param id="dc"/>
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268441982" name="onTimer" parent="LiftAssistWorkoutView" startPc="268441969">
+            <documentation/>
+        </functionEntry>
+        <functionEntry accessMode="public" endPc="268442172" name="startWorkout" parent="LiftAssistWorkoutView" startPc="268441983">
+            <documentation/>
+        </functionEntry>
+    </functions>
+</debugInfo>

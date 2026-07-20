@@ -62,6 +62,13 @@
           </button>
         </div>
       </div>
+
+      <!-- Legal Links Footer -->
+      <div class="legal-footer-links" style="text-align: center; margin-top: 25px; font-size: 0.85em; display: flex; justify-content: center; gap: 12px; opacity: 0.8;">
+        <router-link to="/privacy" style="color: #007bff; text-decoration: underline;">Privacy Policy</router-link>
+        <span>•</span>
+        <router-link to="/terms" style="color: #007bff; text-decoration: underline;">Terms of Service</router-link>
+      </div>
     </div>
     
     <p v-if="user" class="already-logged-in-message">You are already logged in. Redirecting...</p>

@@ -33,3 +33,6 @@ coverage
 
 # Firebase
 .firebase/*.cache
+
+# Garmin Developer Key
+/garmin-app/developer_key

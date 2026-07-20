@@ -26,7 +26,6 @@ const enablePullFromStrava = ref(true);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 const clientId = ref(import.meta.env.VITE_STRAVA_CLIENT_ID || '');
-const clientSecret = ref('');
 
 export default function useStrava() {
   const { user } = useAuth();
@@ -191,7 +190,6 @@ export default function useStrava() {
       isConnected.value = false;
       athleteName.value = '';
       clientId.value = '';
-      clientSecret.value = '';
     }
   }, { immediate: true });
 
@@ -202,7 +200,6 @@ export default function useStrava() {
     enablePushToStrava,
     enablePullFromStrava,
     clientId,
-    clientSecret,
     isLoading,
     error,
     loadStravaStatus,

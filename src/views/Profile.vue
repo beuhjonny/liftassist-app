@@ -14,6 +14,27 @@
           </div>
         </div>
         <button @click="handleLogout" class="logout-button">Logout</button>
+        <button @click="showDeleteConfirm = true" class="delete-account-button">Delete Account</button>
+      </div>
+
+      <!-- Delete Account Confirmation Modal -->
+      <div v-if="showDeleteConfirm" class="delete-modal-overlay" @click.self="showDeleteConfirm = false">
+        <div class="delete-modal-content card">
+          <button @click="showDeleteConfirm = false" class="modal-close-button" aria-label="Close delete modal">&times;</button>
+          <h2 style="color: var(--color-danger, #dc3545);">Delete Account Permanently? ⚠️</h2>
+          <p style="margin-bottom: 20px; line-height: 1.5; color: var(--color-card-text); text-align: left;">
+            This action is irreversible. All your routines, settings, workout history, and third-party pairings (Strava/Garmin) will be permanently erased.
+          </p>
+          <div v-if="deleteAccountError" class="error-text" style="margin-bottom: 15px; font-weight: 600; text-align: left;">
+            {{ deleteAccountError }}
+          </div>
+          <div class="modal-actions" style="display: flex; gap: 10px; justify-content: flex-end; width: 100%;">
+            <button @click="showDeleteConfirm = false" class="button-secondary" :disabled="isDeletingAccount" style="padding: 10px 18px;">Cancel</button>
+            <button @click="handleDeleteAccount" class="button-danger" :disabled="isDeletingAccount" style="padding: 10px 18px;">
+              {{ isDeletingAccount ? 'Deleting...' : 'Delete permanently' }}
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Settings Card -->
@@ -1720,7 +1741,6 @@ const {
   enablePushToStrava,
   enablePullFromStrava,
   clientId,
-  clientSecret,
   isLoading: isStravaLoading,
   connect: stravaConnect,
   disconnect: stravaDisconnect,
@@ -1932,6 +1952,30 @@ const handlePairing = async () => {
         pairingMessage.value = e.message || "Failed to link device.";
     } finally {
         isPairing.value = false;
+    }
+};
+
+// Account Deletion Flow
+const showDeleteConfirm = ref(false);
+const isDeletingAccount = ref(false);
+const deleteAccountError = ref<string | null>(null);
+
+const handleDeleteAccount = async () => {
+    isDeletingAccount.value = true;
+    deleteAccountError.value = null;
+    try {
+        const functionsInstance = getFunctions();
+        const deleteFunc = httpsCallable(functionsInstance, 'deleteAccount');
+        await deleteFunc();
+        
+        // Log out locally and redirect
+        await logout();
+        router.push('/');
+    } catch (e: any) {
+        console.error("Account deletion failed:", e);
+        deleteAccountError.value = e.message || "Failed to delete account.";
+    } finally {
+        isDeletingAccount.value = false;
     }
 };
 
@@ -2425,5 +2469,55 @@ select {
       align-items: flex-start;
       width: 100%;
   }
+}
+
+/* Delete Account Button & Modal Styles */
+.delete-account-button {
+  display: block;
+  margin: 15px auto 0 auto;
+  padding: 10px 20px;
+  font-size: 1.0em;
+  font-weight: bold;
+  background-color: transparent;
+  color: #dc3545;
+  border: 1px solid #dc3545;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  width: 100%;
+  text-align: center;
+}
+
+.delete-account-button:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  padding: 20px;
+  backdrop-filter: blur(5px);
+}
+
+.delete-modal-content {
+  background-color: var(--color-card-bg);
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--color-card-border);
+  color: var(--color-card-text);
+  text-align: center;
 }
 </style>
