@@ -432,8 +432,8 @@ REQUIRED JSON STRUCTURE:
                                     <div><label>Rest (sec):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" :placeholder="'Default (' + settings.defaultRestTimer + 's)'" /></div>
                                   </div>
                                   
-                                  <div class="exercise-options-container card-inset" style="padding: 10px; margin-bottom: 15px; background-color: #f9f9f9; border: 1px solid #eee;">
-                                    <label class="form-section-label" style="font-weight:600; margin-bottom:8px; display:block;">Configuration</label>
+                                  <div class="exercise-options-container card-inset" style="padding: 10px; margin-bottom: 15px; background-color: var(--color-card-mute); border: 1px solid var(--color-card-border);">
+                                    <label class="form-section-label" style="font-weight:600; margin-bottom:8px; display:block; color: var(--color-card-heading);">Configuration</label>
 
                                     <div class="form-group" style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
                                         <label class="checkbox-label">
@@ -448,7 +448,7 @@ REQUIRED JSON STRUCTURE:
                                     </div>
 
                                     <div v-if="editingExercise.enableProgression">
-                                        <div class="form-group form-group-inline" v-if="!editingExercise.isToFailure || editingExercise.enableProgression" style="margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                                        <div class="form-group form-group-inline" v-if="!editingExercise.isToFailure || editingExercise.enableProgression" style="margin-bottom: 15px; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 10px;">
                                             <div v-if="!editingExercise.isToFailure">
                                                 <label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label>
                                                 <input type="number" v-model.number="editingExercise.minReps" min="1" required />
@@ -461,7 +461,7 @@ REQUIRED JSON STRUCTURE:
                                                     </span>
                                                 </label>
                                                 <input type="number" v-model.number="editingExercise.maxReps" min="1" required />
-                                                <div v-if="showFailureProgressionHelp && editingExercise.isToFailure" style="font-size: 0.85em; color: #666; background: #fff3cd; padding: 5px; border-radius: 4px; margin-top: 5px; border: 1px solid #ffeeba;">
+                                                <div v-if="showFailureProgressionHelp && editingExercise.isToFailure" style="font-size: 0.85em; color: var(--color-card-text); background: var(--color-card-mute); padding: 8px; border-radius: 4px; margin-top: 5px; border: 1px solid var(--color-card-border);">
                                                     If you exceed this rep count on <strong>all sets</strong> during a workout, the weight will automatically increase for the next session.
                                                 </div>
                                             </div>
@@ -521,8 +521,8 @@ REQUIRED JSON STRUCTURE:
                               <div><label>Rest (sec):</label><input type="number" v-model.number="editingExercise.customRestSeconds" min="10" :placeholder="'Default (' + settings.defaultRestTimer + 's)'" /></div>
                           </div>
                           
-                          <div class="exercise-options-container card-inset" style="padding: 10px; margin-bottom: 15px; background-color: #f9f9f9; border: 1px solid #eee;">
-                            <label class="form-section-label" style="font-weight:600; margin-bottom:8px; display:block;">Configuration</label>
+                          <div class="exercise-options-container card-inset" style="padding: 10px; margin-bottom: 15px; background-color: var(--color-card-mute); border: 1px solid var(--color-card-border);">
+                            <label class="form-section-label" style="font-weight:600; margin-bottom:8px; display:block; color: var(--color-card-heading);">Configuration</label>
                             
                             <div class="form-group" style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
                                 <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression</label>
@@ -531,7 +531,7 @@ REQUIRED JSON STRUCTURE:
                             </div>
 
                             <div v-if="editingExercise.enableProgression">
-                                <div class="form-group form-group-inline" v-if="!editingExercise.isToFailure || editingExercise.enableProgression" style="margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                                <div class="form-group form-group-inline" v-if="!editingExercise.isToFailure || editingExercise.enableProgression" style="margin-bottom: 15px; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 10px;">
                                     <div v-if="!editingExercise.isToFailure">
                                         <label>{{ editingExercise.isTimed ? 'Min Hold (sec):' : 'Min Reps:' }}</label>
                                         <input type="number" v-model.number="editingExercise.minReps" min="1" required />
@@ -544,7 +544,7 @@ REQUIRED JSON STRUCTURE:
                                             </span>
                                         </label>
                                         <input type="number" v-model.number="editingExercise.maxReps" min="1" required />
-                                        <div v-if="showFailureProgressionHelp && editingExercise.isToFailure" style="font-size: 0.85em; color: #666; background: #fff3cd; padding: 5px; border-radius: 4px; margin-top: 5px; border: 1px solid #ffeeba;">
+                                        <div v-if="showFailureProgressionHelp && editingExercise.isToFailure" style="font-size: 0.85em; color: var(--color-card-text); background: var(--color-card-mute); padding: 8px; border-radius: 4px; margin-top: 5px; border: 1px solid var(--color-card-border);">
                                             If you exceed this rep count on <strong>all sets</strong> during a workout, the weight will automatically increase for the next session.
                                         </div>
                                     </div>
@@ -3271,7 +3271,7 @@ textarea { min-height: 70px; resize: vertical; }
 button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; border-color: #ced4da !important; }
 .workout-day-entry { margin-bottom: 15px; text-align:left; }
 .workout-day-entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.day-name-display { font-weight: 600; font-size: 1.1em; color: #0056b3; flex-grow: 1; margin: 0; }
+.day-name-display { font-weight: 600; font-size: 1.1em; color: var(--color-card-heading); flex-grow: 1; margin: 0; }
 .day-name-edit-form { display: flex; align-items: center; flex-grow: 1; gap: 5px; }
 .day-name-edit-form input[type="text"] { flex-grow: 1; }
 .day-header-actions .button-icon { margin-left: 5px; }
@@ -3286,7 +3286,7 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 .exercise-info-text { text-align:left; flex-grow:1; color: var(--color-card-text);}
 .ex-name { font-weight: 500; color: var(--color-card-heading); }
 .ex-details { color: var(--color-card-text); opacity: 0.8; font-size: 0.9em; margin-left: 5px; }
-.no-progression-note { font-style: italic; color: #777; }
+.no-progression-note { font-style: italic; color: var(--color-card-text); opacity: 0.7; }
 .exercise-item-actions { white-space: nowrap; }
 .exercise-form-container { margin-top: 15px; padding-top:15px; border-top:1px dashed var(--color-card-border);}
 .add-exercise-form h5 { margin-top: 0; margin-bottom: 15px; font-size: 1.1em; text-align:left; color: var(--color-card-heading); }
@@ -3294,7 +3294,7 @@ button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed
 .add-day-form-inline { display: flex; gap: 10px; align-items: center; margin-top:10px; }
 .add-day-form-inline input {flex-grow:1;}
 .form-actions { margin-top:15px; display:flex; gap:10px; justify-content: flex-start;}
-.no-items-message, .loading-message, .login-prompt { color: #6c757d; text-align: center; padding: 20px; }
+.no-items-message, .loading-message, .login-prompt { color: var(--color-card-text); opacity: 0.8; text-align: center; padding: 20px; }
 .no-items-message.small-text { font-size:0.9em; padding:10px 0; text-align:left; }
 .error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-top: 15px; }
 .checkbox-label { display: flex; align-items: center; font-weight: normal; color: var(--color-card-text); font-size: 0.9em; }
