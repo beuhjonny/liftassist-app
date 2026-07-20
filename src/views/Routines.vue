@@ -277,7 +277,6 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
         </div>
         <p class="routine-description">
           <em>{{ activeProgram.description || 'No description.' }}</em>
-          <span style="margin-left: 12px; font-weight: 600; color: #10b981; font-size: 0.9em;">⏱️ Default Rest: {{ activeProgram.defaultRestTimer || 90 }}s</span>
         </p>
       </div>
 
