@@ -11,11 +11,17 @@
       <!-- Movement Loop Media -->
       <div class="demo-media-container card-inset">
         <img 
-          :src="demoInfo.gifUrl" 
+          v-if="!imageError"
+          :src="currentFrameUrl" 
           :alt="demoInfo.name + ' demonstration'" 
           class="demo-gif"
-          loading="lazy"
+          @error="imageError = true"
         />
+        <div v-else class="demo-fallback-graphic">
+          <span class="workout-icon">🏋️‍♂️</span>
+          <p class="fallback-title">{{ exerciseName }}</p>
+          <span class="fallback-subtitle">Proper Form Demonstration</span>
+        </div>
       </div>
 
       <!-- Target Muscles -->
@@ -46,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { getExerciseDemo, type ExerciseDemoInfo } from '@/utils/exerciseDemos';
 
 const props = defineProps<{
@@ -58,8 +64,49 @@ defineEmits<{
   (e: 'close'): void;
 }>();
 
+const currentFrame = ref(0);
+const imageError = ref(false);
+let frameTimer: any = null;
+
 const demoInfo = computed<ExerciseDemoInfo>(() => {
   return getExerciseDemo(props.exerciseName);
+});
+
+const currentFrameUrl = computed(() => {
+  const baseUrl = demoInfo.value.gifUrl.replace(/\/0\.jpg$/, '');
+  return `${baseUrl}/${currentFrame.value}.jpg`;
+});
+
+const startFrameAnimation = () => {
+  stopFrameAnimation();
+  currentFrame.value = 0;
+  frameTimer = setInterval(() => {
+    currentFrame.value = currentFrame.value === 0 ? 1 : 0;
+  }, 1000);
+};
+
+const stopFrameAnimation = () => {
+  if (frameTimer) {
+    clearInterval(frameTimer);
+    frameTimer = null;
+  }
+};
+
+watch(() => props.show, (newShow) => {
+  if (newShow) {
+    imageError.value = false;
+    startFrameAnimation();
+  } else {
+    stopFrameAnimation();
+  }
+}, { immediate: true });
+
+onMounted(() => {
+  if (props.show) startFrameAnimation();
+});
+
+onUnmounted(() => {
+  stopFrameAnimation();
 });
 </script>
 
@@ -106,18 +153,53 @@ const demoInfo = computed<ExerciseDemoInfo>(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #000;
+  background-color: #1a1a1a;
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 16px;
-  min-height: 220px;
+  min-height: 240px;
+  padding: 10px;
 }
 
 .demo-gif {
   width: 100%;
-  max-height: 280px;
+  max-height: 260px;
   object-fit: contain;
   border-radius: 8px;
+  transition: opacity 0.2s ease;
+}
+
+.demo-fallback-graphic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
+}
+
+.workout-icon {
+  font-size: 3em;
+  margin-bottom: 8px;
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.fallback-title {
+  font-size: 1.1em;
+  font-weight: 700;
+  color: white;
+  margin: 4px 0;
+}
+
+.fallback-subtitle {
+  font-size: 0.82em;
+  color: #aaa;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 .target-muscles-section {

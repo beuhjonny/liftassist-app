@@ -6,8 +6,8 @@ export interface ExerciseDemoInfo {
   gifUrl: string;
 }
 
-// FreeExerciseDB CDN base URL for animated 3D movement loops
-const CDN_BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises';
+// jsDelivr CDN for global high-speed reliability
+const CDN_BASE = 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises';
 
 const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
   'bench_press': {
@@ -30,7 +30,7 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Keep wrists stacked directly over elbows at the bottom of the movement.',
       'Press dumbbells together at the top without touching.'
     ],
-    gifUrl: `${CDN_BASE}/Dumbbell_Incline_Bench_Press/0.jpg`
+    gifUrl: `${CDN_BASE}/Incline_Dumbbell_Bench_Press/0.jpg`
   },
   'squat': {
     name: 'Barbell Back Squat',
@@ -154,12 +154,10 @@ export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
 
   const key = rawName.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 
-  // Exact match
   if (DEMO_DATABASE[key]) {
     return DEMO_DATABASE[key];
   }
 
-  // Partial keyword matching
   if (key.includes('bench') || key.includes('chest_press')) {
     return { ...DEMO_DATABASE['bench_press'], name: rawName };
   }
@@ -178,7 +176,7 @@ export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
   if (key.includes('lat') || key.includes('pulldown')) {
     return { ...DEMO_DATABASE['lat_pulldown'], name: rawName };
   }
-  if (key.includes('row')) {
+  if (key.includes('row') || key.includes('helms')) {
     return { ...DEMO_DATABASE['barbell_row'], name: rawName };
   }
   if (key.includes('curl')) {
