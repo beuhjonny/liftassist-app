@@ -82,6 +82,7 @@
             </div>
             <WeeklyVolumeChart 
                 :volumeIndex="calendarIndex" 
+                :workouts="loggedWorkouts"
                 :weightUnit="settings?.weightUnit || 'lbs'" 
                 :timeRange="weeklyVolumeTimeRange" 
                 :aggregation="volumeAggregation"

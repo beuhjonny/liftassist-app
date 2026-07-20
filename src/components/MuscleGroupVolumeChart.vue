@@ -54,15 +54,19 @@
         @click="showBreakdownDrawer = !showBreakdownDrawer" 
         class="button-secondary breakdown-toggle-btn"
       >
-        <span>📋 {{ showBreakdownDrawer ? 'Hide' : 'Inspect' }} Exercise-to-Muscle Group Mappings</span>
+        <span>📋 {{ showBreakdownDrawer ? 'Hide' : 'Inspect & Edit' }} Exercise Muscle Mappings</span>
         <span class="drawer-arrow">{{ showBreakdownDrawer ? '▲' : '▼' }}</span>
       </button>
 
       <div v-if="showBreakdownDrawer" class="breakdown-content card-inset">
-        <h4>Exercise Muscle Group Contributions</h4>
-        <p class="breakdown-subtitle">
-          Below are all movements logged in your workouts within this timeframe, showing how sets are distributed to muscle groups.
-        </p>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+          <div>
+            <h4 style="margin:0;">Exercise Muscle Group Contributions</h4>
+            <p class="breakdown-subtitle" style="margin: 4px 0 0 0;">
+              Below are movements logged in your workouts. Click ✏️ Edit to customize which muscle groups any exercise targets!
+            </p>
+          </div>
+        </div>
 
         <div v-if="exerciseBreakdownList.length > 0" class="table-responsive">
           <table class="breakdown-table">
@@ -72,12 +76,14 @@
                 <th>Primary (1.0x)</th>
                 <th>Secondary (0.5x)</th>
                 <th>Sets Logged</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="ex in exerciseBreakdownList" :key="ex.name">
                 <td class="ex-name-cell">
                   <strong>{{ ex.name }}</strong>
+                  <span v-if="ex.isCustom" class="custom-tag" title="User Custom Mapping">✏️ Custom</span>
                 </td>
                 <td>
                   <span class="muscle-chip primary-chip">{{ ex.primary.join(', ') || 'Unmapped' }}</span>
@@ -89,6 +95,11 @@
                 <td class="sets-cell">
                   <strong>{{ ex.setsCount }}</strong> sets
                 </td>
+                <td>
+                  <button @click="openEditModal(ex)" class="edit-mapping-btn" title="Edit Muscle Group Mapping">
+                    ✏️ Edit
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -98,11 +109,54 @@
         </div>
       </div>
     </div>
+
+    <!-- Edit Mapping Modal -->
+    <div v-if="editingExercise" class="modal-overlay" @click.self="editingExercise = null">
+      <div class="edit-modal-card card">
+        <h3>✏️ Edit Muscle Mapping</h3>
+        <p class="modal-exercise-name"><strong>{{ editingExercise.name }}</strong></p>
+
+        <div class="mapping-section">
+          <label class="modal-label">Primary Muscle Groups (1.0x Set Count)</label>
+          <div class="chips-selector">
+            <button 
+              v-for="mGroup in MUSCLE_GROUPS" 
+              :key="'p-' + mGroup"
+              @click="togglePrimary(mGroup)"
+              class="chip-select-btn"
+              :class="{ selected: editForm.primary.includes(mGroup) }"
+            >
+              {{ mGroup }}
+            </button>
+          </div>
+        </div>
+
+        <div class="mapping-section" style="margin-top: 16px;">
+          <label class="modal-label">Secondary / Synergist Muscles (0.5x Set Count)</label>
+          <div class="chips-selector">
+            <button 
+              v-for="mGroup in MUSCLE_GROUPS" 
+              :key="'s-' + mGroup"
+              @click="toggleSecondary(mGroup)"
+              class="chip-select-btn secondary"
+              :class="{ selected: editForm.secondary.includes(mGroup) }"
+            >
+              {{ mGroup }}
+            </button>
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 24px; display: flex; gap: 10px; justify-content: flex-end;">
+          <button @click="editingExercise = null" class="button-secondary">Cancel</button>
+          <button @click="saveMapping" class="button-primary">Save Mapping</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Bar } from 'vue-chartjs';
 import { 
   Chart as ChartJS, 
@@ -116,6 +170,7 @@ import {
 } from 'chart.js';
 import type { LoggedWorkout } from '@/types';
 import { getExerciseDemo } from '@/utils/exerciseDemos';
+import useMuscleMappings, { type ExerciseMuscleMapping } from '@/composables/useMuscleMappings';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
@@ -124,9 +179,19 @@ const props = defineProps<{
   weightUnit?: 'lbs' | 'kg';
 }>();
 
+const { customMappings, fetchCustomMappings, setCustomMapping, getCustomMapping } = useMuscleMappings();
+
+onMounted(() => {
+  fetchCustomMappings();
+});
+
 const includeIndirect = ref(false);
 const timeWindow = ref<string>('all');
 const showBreakdownDrawer = ref(false);
+
+// Edit Modal State
+const editingExercise = ref<{ name: string; primary: string[]; secondary: string[] } | null>(null);
+const editForm = ref<{ primary: string[]; secondary: string[] }>({ primary: [], secondary: [] });
 
 interface MuscleSetCount {
   [muscleGroup: string]: number;
@@ -141,7 +206,9 @@ const MUSCLE_GROUPS = [
   'Biceps',
   'Triceps',
   'Abs & Core',
-  'Calves'
+  'Calves',
+  'Forearms',
+  'Traps'
 ];
 
 /**
@@ -203,7 +270,6 @@ const calculatedWeeksSpan = computed(() => {
   if (timeWindow.value === '6m') return 24;
   if (timeWindow.value === '1y') return 52;
 
-  // All Time: calculate weeks from oldest workout to newest workout (or today)
   const timestamps = filteredWorkouts.value
     .map(w => getObjDate(w.date).getTime())
     .filter(t => t > 0);
@@ -286,7 +352,7 @@ const chartData = computed(() => {
 
 // Detailed list of exercises logged in timeframe for the Inspector Drawer
 const exerciseBreakdownList = computed(() => {
-  const exerciseMap: Record<string, { name: string; primary: string[]; secondary: string[]; setsCount: number }> = {};
+  const exerciseMap: Record<string, { name: string; primary: string[]; secondary: string[]; setsCount: number; isCustom: boolean }> = {};
 
   filteredWorkouts.value.forEach(w => {
     if (!w.performedExercises) return;
@@ -302,11 +368,13 @@ const exerciseBreakdownList = computed(() => {
       const key = ex.exerciseName.trim();
       if (!exerciseMap[key]) {
         const mappings = categorizeExerciseMuscles(key);
+        const hasCustom = !!getCustomMapping(key);
         exerciseMap[key] = {
           name: key,
           primary: mappings.primary,
           secondary: mappings.secondary,
-          setsCount: 0
+          setsCount: 0,
+          isCustom: hasCustom
         };
       }
       exerciseMap[key].setsCount += validSetsCount;
@@ -316,8 +384,56 @@ const exerciseBreakdownList = computed(() => {
   return Object.values(exerciseMap).sort((a, b) => b.setsCount - a.setsCount);
 });
 
+function openEditModal(ex: { name: string; primary: string[]; secondary: string[] }) {
+  editingExercise.value = ex;
+  const current = categorizeExerciseMuscles(ex.name);
+  editForm.value = {
+    primary: [...current.primary],
+    secondary: [...current.secondary]
+  };
+}
+
+function togglePrimary(mGroup: string) {
+  const idx = editForm.value.primary.indexOf(mGroup);
+  if (idx > -1) {
+    editForm.value.primary.splice(idx, 1);
+  } else {
+    editForm.value.primary.push(mGroup);
+    // Remove from secondary if present
+    const sIdx = editForm.value.secondary.indexOf(mGroup);
+    if (sIdx > -1) editForm.value.secondary.splice(sIdx, 1);
+  }
+}
+
+function toggleSecondary(mGroup: string) {
+  const idx = editForm.value.secondary.indexOf(mGroup);
+  if (idx > -1) {
+    editForm.value.secondary.splice(idx, 1);
+  } else {
+    editForm.value.secondary.push(mGroup);
+    // Remove from primary if present
+    const pIdx = editForm.value.primary.indexOf(mGroup);
+    if (pIdx > -1) editForm.value.primary.splice(pIdx, 1);
+  }
+}
+
+async function saveMapping() {
+  if (!editingExercise.value) return;
+  await setCustomMapping(editingExercise.value.name, {
+    primary: editForm.value.primary,
+    secondary: editForm.value.secondary
+  });
+  editingExercise.value = null;
+}
+
 function categorizeExerciseMuscles(rawName: string): { primary: string[]; secondary: string[] } {
   if (!rawName) return { primary: ['Chest'], secondary: [] };
+
+  // Check user custom mapping first!
+  const userOverride = getCustomMapping(rawName);
+  if (userOverride) {
+    return userOverride;
+  }
 
   const norm = rawName.toLowerCase().replace(/[-_]/g, ' ').trim();
   const demo = getExerciseDemo(rawName);
@@ -325,34 +441,73 @@ function categorizeExerciseMuscles(rawName: string): { primary: string[]; second
   const primary: string[] = [];
   const secondary: string[] = [];
 
+  // Face Pull Check
+  if (norm.includes('face pull') || norm.includes('facepull')) {
+    primary.push('Shoulders', 'Back');
+    secondary.push('Traps');
+    return { primary, secondary };
+  }
+
+  // Wrist / Forearm Check
+  if (norm.includes('wrist') || norm.includes('forearm')) {
+    primary.push('Forearms');
+    return { primary, secondary };
+  }
+
+  // Shrugs / Traps
+  if (norm.includes('shrug') || norm.includes('trap')) {
+    primary.push('Traps');
+    secondary.push('Shoulders');
+    return { primary, secondary };
+  }
+
+  // Chest Movements
   if (norm.includes('bench') || norm.includes('chest press') || norm.includes('push up') || norm.includes('flye') || norm.includes('pec') || norm.includes('chest')) {
     primary.push('Chest');
     secondary.push('Triceps', 'Shoulders');
   } else if (norm.includes('incline')) {
     primary.push('Chest', 'Shoulders');
     secondary.push('Triceps');
-  } else if (norm.includes('overhead') || norm.includes('military') || norm.includes('shoulder press') || norm.includes('lateral raise') || norm.includes('delt') || norm.includes('shoulder') || norm.includes('arnold')) {
+  } 
+  // Shoulder Movements
+  else if (norm.includes('overhead') || norm.includes('military') || norm.includes('shoulder press') || norm.includes('lateral raise') || norm.includes('delt') || norm.includes('shoulder') || norm.includes('arnold')) {
     primary.push('Shoulders');
     secondary.push('Triceps');
-  } else if (norm.includes('row') || norm.includes('pulldown') || norm.includes('pull up') || norm.includes('chin') || norm.includes('lat') || norm.includes('back')) {
+  } 
+  // Back Movements
+  else if (norm.includes('row') || norm.includes('pulldown') || norm.includes('pull up') || norm.includes('chin') || norm.includes('lat') || norm.includes('back')) {
     primary.push('Back');
     secondary.push('Biceps', 'Shoulders');
-  } else if (norm.includes('squat') || norm.includes('leg press') || norm.includes('leg extension') || norm.includes('lunge') || norm.includes('quad')) {
+  } 
+  // Leg / Quad Movements
+  else if (norm.includes('squat') || norm.includes('leg press') || norm.includes('leg extension') || norm.includes('quad extension') || norm.includes('lunge') || norm.includes('quad')) {
     primary.push('Quads');
     secondary.push('Hamstrings & Glutes');
-  } else if (norm.includes('deadlift') || norm.includes('rdl') || norm.includes('leg curl') || norm.includes('hip thrust') || norm.includes('glute') || norm.includes('hamstring')) {
+  } 
+  // Hamstring / Glute Movements
+  else if (norm.includes('deadlift') || norm.includes('rdl') || norm.includes('leg curl') || norm.includes('hip thrust') || norm.includes('glute') || norm.includes('hamstring')) {
     primary.push('Hamstrings & Glutes');
     secondary.push('Back');
-  } else if (norm.includes('curl') || norm.includes('bicep') || norm.includes('hammer')) {
+  } 
+  // Bicep Movements
+  else if (norm.includes('curl') || norm.includes('bicep') || norm.includes('hammer')) {
     primary.push('Biceps');
-  } else if (norm.includes('tricep') || norm.includes('pushdown') || norm.includes('skullcrusher') || norm.includes('dip')) {
+    secondary.push('Forearms');
+  } 
+  // Tricep Movements
+  else if (norm.includes('tricep') || norm.includes('pushdown') || norm.includes('skullcrusher') || norm.includes('dip')) {
     primary.push('Triceps');
     secondary.push('Chest');
-  } else if (norm.includes('crunch') || norm.includes('leg raise') || norm.includes('plank') || norm.includes('ab')) {
+  } 
+  // Abs & Core
+  else if (norm.includes('crunch') || norm.includes('leg raise') || norm.includes('plank') || norm.includes('ab')) {
     primary.push('Abs & Core');
-  } else if (norm.includes('calf') || norm.includes('calves')) {
+  } 
+  // Calves
+  else if (norm.includes('calf') || norm.includes('calves')) {
     primary.push('Calves');
-  } else {
+  } 
+  else {
     // Fallback using exerciseDemos category
     if (demo.category === 'Chest') {
       primary.push('Chest');
@@ -369,7 +524,7 @@ function categorizeExerciseMuscles(rawName: string): { primary: string[]; second
     } else if (demo.category === 'Arms') {
       primary.push('Biceps', 'Triceps');
     } else {
-      primary.push('Chest'); // Default fallback
+      primary.push('Chest');
     }
   }
 
@@ -514,7 +669,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
 }
 
 .canvas-wrapper {
-  height: 340px;
+  height: 380px;
   position: relative;
   width: 100%;
 }
@@ -550,16 +705,9 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
   border-radius: 12px;
 }
 
-.breakdown-content h4 {
-  margin: 0 0 4px 0;
-  font-size: 1em;
-  font-weight: 700;
-}
-
 .breakdown-subtitle {
   font-size: 0.8em;
   opacity: 0.75;
-  margin: 0 0 14px 0;
 }
 
 .table-responsive {
@@ -575,7 +723,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
 
 .breakdown-table th,
 .breakdown-table td {
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--color-card-border, rgba(255,255,255,0.1));
 }
 
@@ -585,9 +733,17 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
   opacity: 0.7;
 }
 
+.custom-tag {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 0.75em;
+  color: #3b82f6;
+  font-weight: 700;
+}
+
 .muscle-chip {
   display: inline-block;
-  padding: 2px 8px;
+  padding: 3px 8px;
   border-radius: 12px;
   font-size: 0.82em;
   font-weight: 600;
@@ -607,10 +763,96 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
   opacity: 0.4;
 }
 
+.edit-mapping-btn {
+  background-color: var(--color-card-mute, #222);
+  border: 1px solid var(--color-card-border, #444);
+  color: var(--color-card-text, #fff);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.edit-mapping-btn:hover {
+  background-color: var(--color-primary, #007bff);
+  color: #fff;
+}
+
 .no-data-text {
   text-align: center;
   font-size: 0.85em;
   opacity: 0.6;
   padding: 15px;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  padding: 16px;
+}
+
+.edit-modal-card {
+  width: 100%;
+  max-width: 520px;
+  padding: 24px;
+  border-radius: 16px;
+  text-align: left;
+}
+
+.modal-exercise-name {
+  font-size: 1.1em;
+  color: var(--color-primary, #007bff);
+  margin: 4px 0 16px 0;
+}
+
+.modal-label {
+  display: block;
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  opacity: 0.8;
+}
+
+.chips-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip-select-btn {
+  background-color: var(--color-card-mute, #222);
+  border: 1px solid var(--color-card-border, #444);
+  color: var(--color-card-text, #fff);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chip-select-btn.selected {
+  background-color: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+}
+
+.chip-select-btn.secondary.selected {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
 }
 </style>

@@ -55,13 +55,15 @@ import {
   Filler,
   type ChartOptions 
 } from 'chart.js';
+import type { LoggedWorkout } from '@/types';
 import { displayUnit } from '@/utils/weight';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, Filler);
 
 const props = withDefaults(
   defineProps<{
-    volumeIndex: any; // CalendarIndexData loosely typed
+    volumeIndex?: any;
+    workouts?: LoggedWorkout[];
     weightUnit: 'lbs' | 'kg';
     timeRange: string;
     aggregation?: 'weekly' | 'monthly';
@@ -94,13 +96,6 @@ const getObjDate = (dateVal: any): Date => {
 };
 
 const chartData = computed(() => {
-  if (!props.volumeIndex) return { labels: [], datasets: [] };
-
-  const validDateKeys = Object.keys(props.volumeIndex).filter(k => k !== 'lastUpdated' && k !== 'version');
-
-  let sortedKeys = validDateKeys.sort((a, b) => getObjDate(a).getTime() - getObjDate(b).getTime());
-
-  // Filter by Time Range
   const now = new Date();
   let cutoffDate: Date | null = null;
 
@@ -115,40 +110,88 @@ const chartData = computed(() => {
     cutoffDate.setFullYear(now.getFullYear() - 1);
   }
 
-  if (cutoffDate) {
-    sortedKeys = sortedKeys.filter(k => getObjDate(k) >= cutoffDate!);
-  }
-
   const metricGroupData: Record<string, { volume: number; workoutsCount: number; setsCount: number }> = {};
 
-  sortedKeys.forEach(key => {
-    const entry = props.volumeIndex[key];
-    if (!entry || !entry.hasWorkout) return;
+  if (props.workouts && props.workouts.length > 0) {
+    // Process directly from LoggedWorkout objects
+    const filtered = props.workouts.filter(w => {
+      const d = getObjDate(w.date);
+      return d.getTime() > 0 && (!cutoffDate || d >= cutoffDate);
+    });
 
-    const d = getObjDate(key);
-    if (d.getTime() === 0) return;
+    filtered.forEach(w => {
+      const d = getObjDate(w.date);
+      let label = '';
+      if (props.aggregation === 'monthly') {
+        const year = d.getFullYear();
+        const monthNum = d.getMonth() + 1;
+        label = `${year}-${monthNum.toString().padStart(2, '0')}`;
+      } else {
+        const year = d.getFullYear();
+        const onejan = new Date(year, 0, 1);
+        const millis = d.getTime() - onejan.getTime();
+        const week = Math.ceil((((millis / 86400000) + onejan.getDay() + 1) / 7));
+        label = `${year}-W${week.toString().padStart(2, '0')}`;
+      }
 
-    let label = '';
-    if (props.aggregation === 'monthly') {
-      const year = d.getFullYear();
-      const monthNum = d.getMonth() + 1;
-      label = `${year}-${monthNum.toString().padStart(2, '0')}`;
-    } else {
-      const year = d.getFullYear();
-      const onejan = new Date(year, 0, 1);
-      const millis = d.getTime() - onejan.getTime();
-      const week = Math.ceil((((millis / 86400000) + onejan.getDay() + 1) / 7));
-      label = `${year}-W${week.toString().padStart(2, '0')}`;
+      if (!metricGroupData[label]) {
+        metricGroupData[label] = { volume: 0, workoutsCount: 0, setsCount: 0 };
+      }
+
+      metricGroupData[label].workoutsCount += 1;
+
+      if (w.performedExercises) {
+        w.performedExercises.forEach(ex => {
+          if (!ex.sets) return;
+          const validSets = ex.sets.filter(s => s && s.status !== 'failed');
+          metricGroupData[label].setsCount += validSets.length;
+
+          validSets.forEach(s => {
+            if (typeof s.actualWeight === 'number' && typeof s.actualReps === 'number') {
+              metricGroupData[label].volume += (s.actualWeight * s.actualReps);
+            }
+          });
+        });
+      }
+    });
+  } else if (props.volumeIndex) {
+    // Fallback to CalendarIndex
+    const validDateKeys = Object.keys(props.volumeIndex).filter(k => k !== 'lastUpdated' && k !== 'version');
+    let sortedKeys = validDateKeys.sort((a, b) => getObjDate(a).getTime() - getObjDate(b).getTime());
+
+    if (cutoffDate) {
+      sortedKeys = sortedKeys.filter(k => getObjDate(k) >= cutoffDate!);
     }
 
-    if (!metricGroupData[label]) {
-      metricGroupData[label] = { volume: 0, workoutsCount: 0, setsCount: 0 };
-    }
+    sortedKeys.forEach(key => {
+      const entry = props.volumeIndex[key];
+      if (!entry || !entry.hasWorkout) return;
 
-    metricGroupData[label].volume += entry.totalVolume || 0;
-    metricGroupData[label].workoutsCount += 1;
-    metricGroupData[label].setsCount += entry.totalSets || 0;
-  });
+      const d = getObjDate(key);
+      if (d.getTime() === 0) return;
+
+      let label = '';
+      if (props.aggregation === 'monthly') {
+        const year = d.getFullYear();
+        const monthNum = d.getMonth() + 1;
+        label = `${year}-${monthNum.toString().padStart(2, '0')}`;
+      } else {
+        const year = d.getFullYear();
+        const onejan = new Date(year, 0, 1);
+        const millis = d.getTime() - onejan.getTime();
+        const week = Math.ceil((((millis / 86400000) + onejan.getDay() + 1) / 7));
+        label = `${year}-W${week.toString().padStart(2, '0')}`;
+      }
+
+      if (!metricGroupData[label]) {
+        metricGroupData[label] = { volume: 0, workoutsCount: 0, setsCount: 0 };
+      }
+
+      metricGroupData[label].volume += entry.totalVolume || 0;
+      metricGroupData[label].workoutsCount += 1;
+      metricGroupData[label].setsCount += entry.totalSets || 0;
+    });
+  }
 
   const rawKeys = Object.keys(metricGroupData).sort();
 
@@ -162,7 +205,6 @@ const chartData = computed(() => {
     return l;
   });
 
-  // Calculate raw values for selected metric
   const rawValues = rawKeys.map(key => {
     const item = metricGroupData[key];
     if (selectedMetric.value === 'workoutFrequency') return item.workoutsCount;
