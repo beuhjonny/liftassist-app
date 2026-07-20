@@ -424,6 +424,7 @@ declare global {
 }
 
 const activeProgramName = ref<string | null>(null);
+const activeProgramDefaultRest = ref<number>(90);
 const currentWorkoutDayDetails = ref<WorkoutDayInRoutine | null>(null);
 const sessionExercises = reactive<SessionExercise[]>([]); 
 const workoutLog = reactive<LoggedSetData[]>([]);
@@ -431,7 +432,7 @@ const workoutLog = reactive<LoggedSetData[]>([]);
 const currentExerciseIndex = ref(0);
 const currentSetNumber = ref(1);
 
-const DEFAULT_REST_SECONDS = computed(() => settings.value.defaultRestTimer || 90);
+const DEFAULT_REST_SECONDS = computed(() => activeProgramDefaultRest.value || settings.value.defaultRestTimer || 90);
 const restDurationToUse = ref(DEFAULT_REST_SECONDS.value);
 const restCountdown = ref(DEFAULT_REST_SECONDS.value);
 
@@ -1026,6 +1027,7 @@ const fetchWorkoutData = async () => {
     if (!programSnap.exists()) throw new Error(`Training program with ID ${props.programId} not found.`);
     const programData = programSnap.data();
     activeProgramName.value = programData?.programName || 'Unnamed Routine';
+    activeProgramDefaultRest.value = programData?.defaultRestTimer || 90;
     const workoutDay = programData?.workoutDays?.find((d: WorkoutDayInRoutine) => d.id === props.dayId);
     if (!workoutDay) throw new Error(`Workout day with ID ${props.dayId} not found in program.`);
     currentWorkoutDayDetails.value = workoutDay;

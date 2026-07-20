@@ -46,6 +46,7 @@ export interface TrainingProgram {
   id: string | null;
   programName: string;
   description: string;
+  defaultRestTimer?: number;
   workoutDays: WorkoutDay[];
 }
 

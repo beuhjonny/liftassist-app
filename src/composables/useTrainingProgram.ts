@@ -33,6 +33,7 @@ export default function useTrainingProgram() {
         activeProgram.id = null;
         activeProgram.programName = '';
         activeProgram.description = '';
+        activeProgram.defaultRestTimer = 90;
         activeProgram.workoutDays = [];
         programWorkoutsHistory.value = [];
         historyError.value = null;
@@ -82,6 +83,7 @@ export default function useTrainingProgram() {
                     activeProgram.workoutDays = Array.isArray(data.workoutDays) ? data.workoutDays : [];
                     activeProgram.programName = data.programName || 'Training Routine';
                     activeProgram.description = data.description || '';
+                    activeProgram.defaultRestTimer = data.defaultRestTimer || 90;
                     activeProgram.id = programSnap.id;
 
                     // HYDRATION: Fetch current weights/reps for each exercise

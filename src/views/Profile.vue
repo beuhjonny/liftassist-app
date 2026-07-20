@@ -14,7 +14,6 @@
           </div>
         </div>
         <button @click="handleLogout" class="logout-button">Logout</button>
-        <button @click="showDeleteConfirm = true" class="delete-account-button">Delete Account</button>
       </div>
 
       <!-- Delete Account Confirmation Modal -->
@@ -84,20 +83,6 @@
             <div class="segmented-control">
                 <button :class="{ active: settings.weightUnit === 'lbs' }" @click="updateUnit('lbs')">lbs</button>
                 <button :class="{ active: settings.weightUnit === 'kg' }" @click="updateUnit('kg')">kg</button>
-            </div>
-        </div>
-
-        <div class="setting-item">
-            <label style="white-space: nowrap;">Default Rest (sec)</label>
-            <div style="display: flex; align-items: center; justify-content: flex-end; width: 100%;">
-                <input 
-                    type="number" 
-                    min="0" 
-                    step="5" 
-                    :value="settings.defaultRestTimer" 
-                    @change="updateRestTimer($event)"
-                    style="padding: 8px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text); width: 80px; text-align: center;"
-                />
             </div>
         </div>
 
@@ -223,16 +208,16 @@
 
       </div>
 
-      <!-- Backup Card -->
+      <!-- Backup & Account Card -->
       <div class="backup-card card" style="margin-bottom: 20px;">
         <div @click="isBackupCardExpanded = !isBackupCardExpanded" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
-            <h2 style="margin: 0;">Backup & Restore 💾</h2>
+            <h2 style="margin: 0;">Backup, Restore & Account 💾</h2>
             <span style="font-size: 1.2em; transition: transform 0.2s;" :style="{ transform: isBackupCardExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }">▼</span>
         </div>
 
         <div v-show="isBackupCardExpanded" style="margin-top: 15px; border-top: 1px solid var(--color-card-border); padding-top: 15px;">
             <p class="subtitle" style="font-size: 0.9em; opacity: 0.8; margin-bottom: 15px; text-align: left;">
-              Export your routines, progress, workout history, and settings to an offline file, or restore from a previous backup.
+              Export your routines, progress, workout history, and settings to an offline file, restore from a backup, or manage account deletion.
             </p>
 
             <!-- Export Section -->
@@ -287,6 +272,17 @@
 
             <p v-if="backupSuccess" class="success-text" style="font-size: 0.9em; margin-top: 15px; font-weight: 600; color: var(--color-success);">{{ backupSuccess }}</p>
             <p v-if="backupError" class="error-text" style="font-size: 0.9em; margin-top: 15px; font-weight: 600; color: var(--color-danger);">{{ backupError }}</p>
+
+            <!-- Danger Zone / Delete Account -->
+            <div style="margin-top: 20px; border-top: 1px solid var(--color-card-border); padding-top: 15px; text-align: left;">
+                <h4 style="margin: 0 0 6px 0; color: var(--color-danger, #dc3545);">Delete Account ⚠️</h4>
+                <p style="font-size: 0.85em; opacity: 0.8; margin-bottom: 12px; line-height: 1.4;">
+                  Permanently erase your account, logged workouts, routines, and third-party links.
+                </p>
+                <button @click="showDeleteConfirm = true" class="delete-account-button" style="margin-top: 0; background-color: rgba(220, 53, 69, 0.15); border: 1px solid #dc3545; color: #ff4d4d; padding: 8px 16px;">
+                  Delete Account Permanently
+                </button>
+            </div>
         </div>
       </div>
 

@@ -267,7 +267,10 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
                  <button @click="toggleOverallEditMode" class="button-primary small">Edit Routine</button>
              </div>
         </div>
-        <p class="routine-description"><em>{{ activeProgram.description || 'No description.' }}</em></p>
+        <p class="routine-description">
+          <em>{{ activeProgram.description || 'No description.' }}</em>
+          <span style="margin-left: 12px; font-weight: 600; color: #10b981; font-size: 0.9em;">⏱️ Default Rest: {{ activeProgram.defaultRestTimer || 90 }}s</span>
+        </p>
       </div>
 
       <form v-if="isInOverallEditMode" @submit.prevent="saveActiveProgramBaseDetails" class="edit-details-form card-inset">
@@ -278,6 +281,10 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
         
         <div class="form-group"><label for="editProgramName">Routine Name:</label><input type="text" id="editProgramName" v-model="editableProgramDetails.programName" required /></div>
         <div class="form-group"><label for="editProgramDescription">Description (Optional):</label><textarea id="editProgramDescription" v-model="editableProgramDetails.description"></textarea></div>
+        <div class="form-group">
+          <label for="editProgramDefaultRest">Default Rest Timer (sec):</label>
+          <input type="number" id="editProgramDefaultRest" v-model.number="editableProgramDetails.defaultRestTimer" min="0" step="5" style="width: 100px;" />
+        </div>
       </form>
 
       <div class="workout-days-list">
@@ -754,7 +761,7 @@ const creationMode = ref<'manual' | 'ai' | 'fitnotes' | null>(null);
 
 // --- Routine Name/Description Edit State ---
 const showEditProgramDetailsForm = ref(false);
-const editableProgramDetails = reactive({ programName: '', description: '' });
+const editableProgramDetails = reactive({ programName: '', description: '', defaultRestTimer: 90 });
 
 // --- Workout Day Management State ---
 const newWorkoutDayName = ref('');
@@ -851,6 +858,7 @@ const toggleOverallEditMode = async () => {
     // Entering edit mode
     editableProgramDetails.programName = activeProgram.programName;
     editableProgramDetails.description = activeProgram.description;
+    editableProgramDetails.defaultRestTimer = activeProgram.defaultRestTimer || 90;
     isInOverallEditMode.value = true;
     showEditProgramDetailsForm.value = true;
   }
@@ -955,6 +963,7 @@ const saveActiveProgramBaseDetails = async () => {
     const dataToSave: any = {
       programName: editableProgramDetails.programName,
       description: editableProgramDetails.description,
+      defaultRestTimer: editableProgramDetails.defaultRestTimer || 90,
       workoutDays: workoutDaysToSave,
       updatedAt: serverTimestamp(),
     };
@@ -963,6 +972,7 @@ const saveActiveProgramBaseDetails = async () => {
 
     activeProgram.programName = editableProgramDetails.programName;
     activeProgram.description = editableProgramDetails.description;
+    activeProgram.defaultRestTimer = editableProgramDetails.defaultRestTimer || 90;
     
     await loadProgram(programId); 
     await fetchAllPrograms(); // Refresh list to show new name in switcher
