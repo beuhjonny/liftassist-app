@@ -98,11 +98,15 @@
             </div>
         </div>
 
-         <div class="setting-item" style="border-bottom: 1px dashed var(--color-card-border); padding-bottom: 10px; margin-bottom: 10px;">
+          <div class="setting-item" style="border-bottom: 1px dashed var(--color-card-border); padding-bottom: 10px; margin-bottom: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <label style="display: flex; align-items: center; gap: 6px; font-weight: 500;">
-                    Exercise Form Demos ℹ️
-                    <span style="font-size: 0.85em; cursor: help; opacity: 0.7;" title="Puts an info ℹ️ icon next to exercise names during active workouts and routine editing to watch video demos & form tips.">ℹ️</span>
+                    Exercise Form Demos
+                    <span 
+                      @click.stop.prevent="showTooltipAlert('Puts an info ℹ️ icon next to exercise names during active workouts and routine editing to watch video demos & form tips.')"
+                      style="font-size: 0.95em; cursor: pointer; opacity: 0.8;" 
+                      title="Puts an info ℹ️ icon next to exercise names during active workouts and routine editing to watch video demos & form tips."
+                    >💡</span>
                 </label>
                 <div style="display: flex; align-items: center;">
                     <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
@@ -118,8 +122,12 @@
         <div class="setting-item">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <label style="display: flex; align-items: center; gap: 6px; font-weight: 500;">
-                    Workout Skip Tracker ⚠️
-                    <span style="font-size: 0.85em; cursor: help; opacity: 0.7;" title="Shows warning badges (e.g. ⚠️ 1) on routine days when workouts are completed out of order (like skipping leg day). Turn off to hide skip shaming.">ℹ️</span>
+                    Workout Skip Tracker
+                    <span 
+                      @click.stop.prevent="showTooltipAlert('Shows warning badges (e.g. ⚠️ 1) on routine days when workouts are completed out of order (like skipping leg day). Turn off to hide skip shaming.')"
+                      style="font-size: 0.95em; cursor: pointer; opacity: 0.8;" 
+                      title="Shows warning badges (e.g. ⚠️ 1) on routine days when workouts are completed out of order (like skipping leg day). Turn off to hide skip shaming."
+                    >💡</span>
                 </label>
                 <div style="display: flex; align-items: center;">
                     <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
@@ -421,6 +429,10 @@ interface LifetimeStats {
 
 const { user, logout } = useAuth();
 const router = useRouter();
+
+const showTooltipAlert = (msg: string) => {
+  alert(msg);
+};
 
 const { fetchCalendarIndex: rebuildCalendarIndex } = useHistoryIndex();
 const { invalidateCache: invalidateWorkoutCache } = useLoggedWorkouts();

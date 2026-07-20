@@ -45,9 +45,14 @@
               @click="loadJonnyPPL" 
               class="button-secondary small" 
               style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-mute); color: var(--color-card-text); cursor: pointer; font-size: 0.9em; font-weight: 500;" 
-              title="If you have dumbbells, a bench and some doorway elastics, you can copy his excellent routine. You will need to adjust your weights."
+              title="Use a default Push/Pull/Leg routine you can customize. If you have dumbbells, elastics, and a bench, this is a good place to start."
             >
-                💪 Copy Jonny's PPL
+                💪 Use Default LiftLogic PPL
+                <span 
+                  @click.stop.prevent="showTooltipAlert('Use a default Push/Pull/Leg routine you can customize. If you have dumbbells, elastics, and a bench, this is a good place to start.')" 
+                  style="font-size: 0.95em; cursor: pointer; opacity: 0.8; margin-left: 2px;"
+                  title="Use a default Push/Pull/Leg routine you can customize. If you have dumbbells, elastics, and a bench, this is a good place to start."
+                >💡</span>
             </button>
         </div>
       </div>
@@ -717,6 +722,10 @@ const itemToDelete = ref<any>(null); // For generic delete if needed
 const showProgressionHint = ref(false);
 const showFailureProgressionHelp = ref(false);
 
+const showTooltipAlert = (msg: string) => {
+  alert(msg);
+};
+
 const validPrograms = computed(() => {
   return allPrograms.value.filter(p => p.id !== null) as (TrainingProgram & { id: string })[];
 });
@@ -1009,18 +1018,18 @@ const saveActiveProgramBaseDetails = async () => {
 
 const loadJonnyPPL = async () => {
   if (!user.value || !user.value.uid) {
-    alert("Please sign in to copy Jonny's PPL routine.");
+    alert("Please sign in to copy the default PPL routine.");
     return;
   }
 
-  if (confirm("Copy Jonny's PPL routine to your account? You will need to adjust your weights.")) {
+  if (confirm("Copy the Default LiftLogic PPL routine to your account? You will need to adjust your weights.")) {
     try {
       isSaving.value = true;
       const programsRef = collection(db, 'users', user.value.uid, 'trainingPrograms');
       
       const newProgramDoc = {
-        programName: "Jonny's PPL",
-        description: "High-efficiency Push/Pull/Legs split built for Dumbbells, an Adjustable Bench, and Doorway Resistance Bands.",
+        programName: "Default LiftLogic PPL",
+        description: "Standard Push/Pull/Legs split built for Dumbbells, an Adjustable Bench, and Doorway Resistance Bands.",
         defaultRestTimer: 90,
         workoutDays: [
           {
@@ -1266,9 +1275,9 @@ const loadJonnyPPL = async () => {
       await setActiveProgram(docRef.id);
       await loadProgram(docRef.id);
       creationMode.value = null;
-      alert("🎉 Jonny's PPL Routine copied and set as active!");
+      alert("🎉 Default LiftLogic PPL routine copied and set as active!");
     } catch (e: any) {
-      alert("Failed to copy Jonny's PPL: " + e.message);
+      alert("Failed to copy default PPL routine: " + e.message);
     } finally {
       isSaving.value = false;
     }
