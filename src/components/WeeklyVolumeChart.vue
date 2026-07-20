@@ -1,17 +1,63 @@
 <template>
   <div class="chart-container">
-    <Line v-if="chartData.labels.length > 0" :data="chartData" :options="chartOptions" />
-    <div v-else class="no-data">Not enough data for chart</div>
+    <div class="chart-controls-row">
+      <div class="control-group">
+        <label class="control-label">Metric</label>
+        <select v-model="selectedMetric" class="chart-select">
+          <option value="totalVolume">Total Volume ({{ weightUnit }})</option>
+          <option value="workoutFrequency">Workout Frequency (Sessions/wk)</option>
+          <option value="totalSets">Total Weekly Sets</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Smoothing</label>
+        <div class="toggle-buttons">
+          <button 
+            @click="useMovingAverage = false" 
+            class="toggle-btn"
+            :class="{ active: !useMovingAverage }"
+          >
+            Raw Logs
+          </button>
+          <button 
+            @click="useMovingAverage = true" 
+            class="toggle-btn"
+            :class="{ active: useMovingAverage }"
+          >
+            3-Wk Moving Avg
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="chartData.labels.length > 0" class="canvas-wrapper">
+      <Line :data="chartData" :options="chartOptions" />
+    </div>
+    <div v-else class="no-data card-inset">
+      <p>Not enough workout logs found in selected timeframe.</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import { Line } from 'vue-chartjs';
-import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale } from 'chart.js';
+import { 
+  Chart as ChartJS, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  LineElement, 
+  PointElement, 
+  CategoryScale, 
+  LinearScale, 
+  Filler,
+  type ChartOptions 
+} from 'chart.js';
+import { displayUnit } from '@/utils/weight';
 
-
-ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale);
+ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, Filler);
 
 const props = withDefaults(
   defineProps<{
@@ -25,37 +71,37 @@ const props = withDefaults(
   }
 );
 
+const selectedMetric = ref<'totalVolume' | 'workoutFrequency' | 'totalSets'>('totalVolume');
+const useMovingAverage = ref(false);
+
 const chartData = computed(() => {
-  const volumeByGroup: Record<string, number> = {};
-  
   if (!props.volumeIndex) return { labels: [], datasets: [] };
 
   const validDateKeys = Object.keys(props.volumeIndex).filter(k => k !== 'lastUpdated' && k !== 'version');
-  
-  const getDateFromKey = (key: string): Date => {
-      return new Date(key);
-  };
+  const getDateFromKey = (key: string): Date => new Date(key);
 
-  let sortedKeys = validDateKeys.sort((a,b) => getDateFromKey(a).getTime() - getDateFromKey(b).getTime());
+  let sortedKeys = validDateKeys.sort((a, b) => getDateFromKey(a).getTime() - getDateFromKey(b).getTime());
 
   // Filter by Time Range
   const now = new Date();
   let cutoffDate: Date | null = null;
-  
+
   if (props.timeRange === '12w') {
-      cutoffDate = new Date();
-      cutoffDate.setDate(now.getDate() - (12 * 7));
+    cutoffDate = new Date();
+    cutoffDate.setDate(now.getDate() - (12 * 7));
   } else if (props.timeRange === '6m') {
-      cutoffDate = new Date();
-      cutoffDate.setMonth(now.getMonth() - 6);
+    cutoffDate = new Date();
+    cutoffDate.setMonth(now.getMonth() - 6);
   } else if (props.timeRange === '1y') {
-      cutoffDate = new Date();
-      cutoffDate.setFullYear(now.getFullYear() - 1);
+    cutoffDate = new Date();
+    cutoffDate.setFullYear(now.getFullYear() - 1);
   }
 
   if (cutoffDate) {
-      sortedKeys = sortedKeys.filter(k => getDateFromKey(k) >= cutoffDate!);
+    sortedKeys = sortedKeys.filter(k => getDateFromKey(k) >= cutoffDate!);
   }
+
+  const metricGroupData: Record<string, { volume: number; workoutsCount: number; setsCount: number }> = {};
 
   sortedKeys.forEach(key => {
     const entry = props.volumeIndex[key];
@@ -77,13 +123,18 @@ const chartData = computed(() => {
       label = `${year}-W${week.toString().padStart(2, '0')}`;
     }
 
-    const totalVol = entry.totalVolume || 0;
-    volumeByGroup[label] = (volumeByGroup[label] || 0) + totalVol;
+    if (!metricGroupData[label]) {
+      metricGroupData[label] = { volume: 0, workoutsCount: 0, setsCount: 0 };
+    }
+
+    metricGroupData[label].volume += entry.totalVolume || 0;
+    metricGroupData[label].workoutsCount += 1;
+    metricGroupData[label].setsCount += entry.totalSets || 0;
   });
 
-  const rawLabels = Object.keys(volumeByGroup).sort();
-  
-  const displayLabels = rawLabels.map(l => {
+  const rawKeys = Object.keys(metricGroupData).sort();
+
+  const displayLabels = rawKeys.map(l => {
     if (props.aggregation === 'monthly') {
       const [year, monthStr] = l.split('-');
       const monthIdx = parseInt(monthStr) - 1;
@@ -93,78 +144,184 @@ const chartData = computed(() => {
     return l;
   });
 
+  // Calculate raw values for selected metric
+  const rawValues = rawKeys.map(key => {
+    const item = metricGroupData[key];
+    if (selectedMetric.value === 'workoutFrequency') return item.workoutsCount;
+    if (selectedMetric.value === 'totalSets') return item.setsCount;
+    return Math.round(item.volume);
+  });
+
+  // Calculate 3-Period Moving Average if enabled
+  let finalValues = rawValues;
+  if (useMovingAverage.value && rawValues.length > 0) {
+    finalValues = rawValues.map((val, idx, arr) => {
+      const start = Math.max(0, idx - 2);
+      const window = arr.slice(start, idx + 1);
+      const avg = window.reduce((sum, v) => sum + v, 0) / window.length;
+      return Math.round(avg * 10) / 10;
+    });
+  }
+
+  const metricLabel = getMetricLabel();
+
   return {
     labels: displayLabels,
     datasets: [
       {
-        label: `${props.aggregation === 'monthly' ? 'Monthly' : 'Weekly'} Volume (${props.weightUnit})`,
-        borderColor: '#007bff',
-        backgroundColor: 'rgba(0, 123, 255, 0.1)',
-        data: rawLabels.map(l => volumeByGroup[l]),
-        tension: 0.3,
+        label: metricLabel,
+        data: finalValues,
+        borderColor: '#10b981',
+        backgroundColor: (context: any) => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+          gradient.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
+          gradient.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+          return gradient;
+        },
         fill: true,
+        tension: 0.4, // Cubic spline smooth curves!
+        pointBackgroundColor: '#10b981',
+        pointBorderColor: '#ffffff',
         pointRadius: 4,
-        pointHoverRadius: 6
+        pointHoverRadius: 7
       }
     ]
   };
 });
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false
-    },
-    tooltip: {
-       callbacks: {
-          label: (context: any) => `${parseInt(context.raw).toLocaleString()} ${props.weightUnit}`
-       }
-    }
-  },
-  layout: {
-      padding: {
-          bottom: 0,
-          left: 10,
-          right: 10
-      }
-  },
-  scales: {
-      y: {
-          beginAtZero: true,
-          grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
-          },
-          ticks: { color: '#888' }
+function getMetricLabel(): string {
+  if (selectedMetric.value === 'workoutFrequency') return 'Workouts / Period';
+  if (selectedMetric.value === 'totalSets') return 'Total Sets';
+  return `Total Volume (${displayUnit(props.weightUnit)})`;
+}
+
+const chartOptions = computed<ChartOptions<'line'>>(() => {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
       },
-      x: {
-          grid: { display: false }, 
-          ticks: { 
-              color: '#888',
-              maxRotation: 0,
-              autoSkip: true,
-              maxTicksLimit: 8
+      tooltip: {
+        backgroundColor: '#1a1f29',
+        titleColor: '#ffffff',
+        bodyColor: '#10b981',
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        padding: 10,
+        callbacks: {
+          label: (context) => {
+            return ` ${context.parsed.y} ${getMetricLabel()}`;
           }
+        }
       }
-  }
-};
+    },
+    scales: {
+      x: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.05)'
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.6)',
+          font: { size: 11 }
+        }
+      },
+      y: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.05)'
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.6)',
+          font: { size: 11 }
+        },
+        beginAtZero: true
+      }
+    }
+  };
+});
 </script>
 
 <style scoped>
 .chart-container {
-  height: 300px;
-  width: 100%;
-  position: relative;
   display: flex;
   flex-direction: column;
+  gap: 16px;
 }
+
+.chart-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control-label {
+  font-size: 0.75em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-card-text);
+  opacity: 0.6;
+}
+
+.toggle-buttons {
+  display: flex;
+  gap: 6px;
+  background-color: var(--color-card-mute, #1a1a1a);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--color-card-border);
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: var(--color-card-text);
+  font-size: 0.8em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.toggle-btn.active {
+  background-color: #10b981;
+  color: #ffffff;
+  opacity: 1;
+}
+
+.chart-select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--color-card-border);
+  background-color: var(--color-card-mute, #1a1a1a);
+  color: var(--color-card-text, #ffffff);
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.canvas-wrapper {
+  height: 280px;
+  position: relative;
+  width: 100%;
+}
+
 .no-data {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    color: var(--color-text);
-    opacity: 0.6;
+  padding: 30px;
+  text-align: center;
+  border-radius: 12px;
+  color: var(--color-card-text);
+  opacity: 0.75;
+  font-size: 0.9em;
 }
 </style>

@@ -1,166 +1,288 @@
 <template>
   <div class="chart-container">
-    <div class="chart-controls">
-         <select v-model="selectedMetric" class="metric-select">
-             <option value="est1rm">Est. 1RM (Strength)</option>
-             <option value="maxVolume">Max Volume (Work)</option>
-             <option value="maxWeight">Top Weight</option>
-         </select>
+    <div class="chart-controls-row">
+      <div class="control-group">
+        <label class="control-label">Metric</label>
+        <select v-model="selectedMetric" class="chart-select">
+          <option value="est1rm">Est. 1RM (Strength)</option>
+          <option value="maxWeight">Top Weight Lifted</option>
+          <option value="maxVolume">Session Volume</option>
+          <option value="maxReps">Max Reps in Set</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label class="control-label">Time Range</label>
+        <select v-model="timeRange" class="chart-select">
+          <option value="1m">1 Month</option>
+          <option value="3m">3 Months</option>
+          <option value="6m">6 Months</option>
+          <option value="1y">1 Year</option>
+          <option value="all">All Time</option>
+        </select>
+      </div>
     </div>
-    <Line v-if="chartData.labels.length > 0" :data="chartData" :options="chartOptions" />
-    <div v-else class="no-data">Select an exercise to view stats</div>
+
+    <div v-if="chartData.labels.length > 0" class="canvas-wrapper">
+      <Line :data="chartData" :options="chartOptions" />
+    </div>
+    <div v-else class="no-data card-inset">
+      <p>No logged data available for <strong>{{ exerciseName }}</strong> in selected timeframe.</p>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Line } from 'vue-chartjs';
-import { Chart as ChartJS, Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, TimeScale } from 'chart.js';
+import { 
+  Chart as ChartJS, 
+  Title, 
+  Tooltip, 
+  Legend, 
+  LineElement, 
+  PointElement, 
+  CategoryScale, 
+  LinearScale, 
+  Filler,
+  type ChartOptions 
+} from 'chart.js';
 import type { LoggedWorkout } from '@/types';
+import { displayUnit } from '@/utils/weight';
 
-ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, TimeScale);
+ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, Filler);
 
-const props = defineProps<{
-  exerciseName: string;
-  workouts: LoggedWorkout[];
-  weightUnit: 'lbs' | 'kg';
-}>();
+const props = withDefaults(
+  defineProps<{
+    exerciseName: string;
+    workouts: LoggedWorkout[];
+    weightUnit: 'lbs' | 'kg';
+  }>(),
+  {}
+);
 
-const selectedMetric = ref<'est1rm' | 'maxVolume' | 'maxWeight'>('est1rm');
+const selectedMetric = ref<'est1rm' | 'maxWeight' | 'maxVolume' | 'maxReps'>('est1rm');
+const timeRange = ref<'1m' | '3m' | '6m' | '1y' | 'all'>('6m');
 
-const calculate1RM = (weight: number, reps: number) => {
-    // Brzycki Formula
-    if (reps === 0) return 0;
-    if (reps === 1) return weight;
-    return weight * (36 / (37 - reps));
+const calculate1RM = (weight: number, reps: number): number => {
+  if (reps <= 0) return 0;
+  if (reps === 1) return weight;
+  // Brzycki Formula
+  return weight * (36 / (37 - Math.min(reps, 30)));
+};
+
+const getObjDate = (dateVal: any): Date => {
+  if (dateVal && typeof dateVal.toDate === 'function') {
+    return dateVal.toDate();
+  }
+  return new Date(dateVal);
 };
 
 const chartData = computed(() => {
-  if (!props.exerciseName) return { labels: [], datasets: [] };
+  if (!props.exerciseName || !props.workouts) return { labels: [], datasets: [] };
 
-  const dataPoints: { date: string, value: number }[] = [];
+  const now = new Date();
+  let cutoffDate: Date | null = null;
 
-  // Robust Date Parsing
-  const getObjDate = (dateVal: any): Date => {
-      if (dateVal && typeof dateVal.toDate === 'function') {
-          return dateVal.toDate(); 
-      }
-      return new Date(dateVal);
-  };
+  if (timeRange.value === '1m') {
+    cutoffDate = new Date();
+    cutoffDate.setMonth(now.getMonth() - 1);
+  } else if (timeRange.value === '3m') {
+    cutoffDate = new Date();
+    cutoffDate.setMonth(now.getMonth() - 3);
+  } else if (timeRange.value === '6m') {
+    cutoffDate = new Date();
+    cutoffDate.setMonth(now.getMonth() - 6);
+  } else if (timeRange.value === '1y') {
+    cutoffDate = new Date();
+    cutoffDate.setFullYear(now.getFullYear() - 1);
+  }
 
-  // Sort workouts
-  const sorted = [...props.workouts].sort((a,b) => getObjDate(a.date).getTime() - getObjDate(b.date).getTime());
+  // Filter & sort workouts
+  const filtered = props.workouts
+    .filter(w => {
+      const d = getObjDate(w.date);
+      return !isNaN(d.getTime()) && (!cutoffDate || d >= cutoffDate);
+    })
+    .sort((a, b) => getObjDate(a.date).getTime() - getObjDate(b.date).getTime());
 
-  sorted.forEach(w => {
-      if (!w.performedExercises) return;
-      const ex = w.performedExercises.find(e => e.exerciseName === props.exerciseName);
-      if (ex) {
-          let dayBestValue = 0;
-          
-          ex.sets.forEach(s => {
-             if (s.status !== 'done' || !s.actualWeight || !s.actualReps) return;
-             
-             let val = 0;
-             if (selectedMetric.value === 'est1rm') {
-                 val = calculate1RM(s.actualWeight, s.actualReps);
-             } else if (selectedMetric.value === 'maxVolume') {
-                 val = s.actualWeight * s.actualReps; 
-             } else if (selectedMetric.value === 'maxWeight') {
-                 val = s.actualWeight;
-             }
+  const dataPoints: { label: string; value: number }[] = [];
 
-             if (selectedMetric.value !== 'maxVolume') {
-                if (val > dayBestValue) dayBestValue = val;
-             }
-          });
+  filtered.forEach(w => {
+    if (!w.performedExercises) return;
+    const ex = w.performedExercises.find(e => e.exerciseName.toLowerCase().trim() === props.exerciseName.toLowerCase().trim());
+    if (!ex || !ex.sets || ex.sets.length === 0) return;
 
-          if (selectedMetric.value === 'maxVolume') {
-             // Calculate total session volume for this exercise
-             dayBestValue = ex.sets.reduce((sum, s) => {
-                 if (s.status === 'done' && s.actualWeight && s.actualReps) return sum + (s.actualWeight * s.actualReps);
-                 return sum;
-             }, 0);
-          }
+    let dayValue = 0;
 
-          if (dayBestValue > 0) {
-              const d = getObjDate(w.date);
-              dataPoints.push({
-                  date: d.toLocaleDateString(),
-                  value: Math.round(dayBestValue)
-              });
-          }
-      }
+    if (selectedMetric.value === 'est1rm') {
+      ex.sets.forEach(s => {
+        if (s.status !== 'failed' && s.actualWeight && s.actualReps) {
+          const rm = calculate1RM(s.actualWeight, s.actualReps);
+          if (rm > dayValue) dayValue = rm;
+        }
+      });
+    } else if (selectedMetric.value === 'maxWeight') {
+      ex.sets.forEach(s => {
+        if (s.status !== 'failed' && s.actualWeight) {
+          if (s.actualWeight > dayValue) dayValue = s.actualWeight;
+        }
+      });
+    } else if (selectedMetric.value === 'maxVolume') {
+      dayValue = ex.sets.reduce((sum, s) => {
+        if (s.status !== 'failed' && s.actualWeight && s.actualReps) {
+          return sum + (s.actualWeight * s.actualReps);
+        }
+        return sum;
+      }, 0);
+    } else if (selectedMetric.value === 'maxReps') {
+      ex.sets.forEach(s => {
+        if (s.status !== 'failed' && s.actualReps) {
+          if (s.actualReps > dayValue) dayValue = s.actualReps;
+        }
+      });
+    }
+
+    if (dayValue > 0) {
+      const d = getObjDate(w.date);
+      const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      dataPoints.push({
+        label,
+        value: Math.round(dayValue)
+      });
+    }
   });
 
   return {
-      labels: dataPoints.map(d => d.date),
-      datasets: [
-          {
-              label: props.exerciseName,
-              borderColor: '#007bff',
-              backgroundColor: 'rgba(0, 123, 255, 0.1)',
-              data: dataPoints.map(d => d.value),
-              tension: 0.3,
-              fill: true
-          }
-      ]
+    labels: dataPoints.map(d => d.label),
+    datasets: [
+      {
+        label: `${props.exerciseName} (${getMetricUnitLabel()})`,
+        data: dataPoints.map(d => d.value),
+        borderColor: '#007bff',
+        backgroundColor: (context: any) => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+          gradient.addColorStop(0, 'rgba(0, 123, 255, 0.35)');
+          gradient.addColorStop(1, 'rgba(0, 123, 255, 0.01)');
+          return gradient;
+        },
+        fill: true,
+        tension: 0.35, // Smooth curves!
+        pointBackgroundColor: '#007bff',
+        pointBorderColor: '#ffffff',
+        pointHoverBackgroundColor: '#ffffff',
+        pointHoverBorderColor: '#007bff',
+        pointRadius: 4,
+        pointHoverRadius: 7
+      }
+    ]
   };
 });
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false }
-  },
-  layout: {
-      padding: {
-          bottom: 20,
-          left: 10,
-          right: 10
-      }
-  },
-  scales: {
-      y: {
-          grid: { color: 'rgba(255, 255, 255, 0.1)' },
-          ticks: { color: '#888' }
+function getMetricUnitLabel(): string {
+  if (selectedMetric.value === 'maxReps') return 'reps';
+  return displayUnit(props.weightUnit);
+}
+
+const chartOptions = computed<ChartOptions<'line'>>(() => {
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
       },
-      x: {
-          grid: { display: false },
-          ticks: { 
-              color: '#888',
-              maxRotation: 0,
-              autoSkip: true,
-              maxTicksLimit: 6
+      tooltip: {
+        backgroundColor: '#1a1f29',
+        titleColor: '#ffffff',
+        bodyColor: '#007bff',
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+        borderWidth: 1,
+        padding: 10,
+        callbacks: {
+          label: (context) => {
+            const unit = getMetricUnitLabel();
+            return ` ${context.parsed.y} ${unit}`;
           }
+        }
       }
-  }
-};
+    },
+    scales: {
+      x: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.05)'
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.6)',
+          font: { size: 11 }
+        }
+      },
+      y: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.05)'
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.6)',
+          font: { size: 11 }
+        },
+        beginAtZero: false
+      }
+    }
+  };
+});
 </script>
 
 <style scoped>
 .chart-container {
-  height: 300px;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chart-controls-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.control-label {
+  font-size: 0.75em;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-card-text);
+  opacity: 0.6;
+}
+
+.chart-select {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--color-card-border);
+  background-color: var(--color-card-mute, #1a1a1a);
+  color: var(--color-card-text, #ffffff);
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.canvas-wrapper {
+  height: 280px;
   position: relative;
+  width: 100%;
 }
-.chart-controls {
-    margin-bottom: 10px;
-    text-align: right;
-}
-.metric-select {
-    background: var(--color-background-soft);
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
-    padding: 5px;
-    border-radius: 4px;
-}
+
 .no-data {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    color: var(--color-text);
-    opacity: 0.6;
+  padding: 30px;
+  text-align: center;
+  border-radius: 12px;
+  color: var(--color-card-text);
+  opacity: 0.75;
+  font-size: 0.9em;
 }
 </style>

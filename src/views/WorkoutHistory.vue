@@ -63,9 +63,10 @@
     <!-- Analytics Section -->
     <div v-if="!isLoading && loggedWorkouts.length > 0" class="analytics-dashboard">
         
+        <!-- 1. Overall Training Trends -->
         <div class="chart-section card">
             <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
-                <h3 style="margin:0; line-height:1.2;">Volume Trend</h3>
+                <h3 style="margin:0; line-height:1.2;">📈 Overall Training Trends</h3>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     <select v-model="volumeAggregation" class="history-select" style="max-width: 100px;">
                          <option value="weekly">Weekly</option>
@@ -87,10 +88,22 @@
             />
         </div>
 
+        <!-- 2. Weekly Sets per Muscle Group (Direct vs. Indirect) -->
+        <div class="chart-section card">
+            <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0;">💪 Muscle Group Sets per Week</h3>
+            </div>
+            <MuscleGroupVolumeChart 
+                :workouts="loggedWorkouts" 
+                :weightUnit="settings?.weightUnit || 'lbs'"
+            />
+        </div>
+
+        <!-- 3. Exercise Strength & 1RM Progress -->
         <div class="chart-section card">
              <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                 <h3 style="margin:0;">Exercise Trends</h3>
-                 <select v-model="selectedExerciseForGraph" class="history-select" style="max-width: 200px; min-width: 150px;">
+                 <h3 style="margin:0;">🎯 Exercise Strength & 1RM Progress</h3>
+                 <select v-model="selectedExerciseForGraph" class="history-select" style="max-width: 220px; min-width: 150px;">
                      <option value="">Select Exercise</option>
                      <option v-for="ex in uniqueExercises" :key="ex" :value="ex">{{ ex }}</option>
                  </select>
@@ -101,8 +114,8 @@
                  :workouts="loggedWorkouts" 
                  :weightUnit="settings?.weightUnit || 'lbs'"
              />
-             <div v-else class="placeholder-text" style="text-align:center; padding: 40px; color: var(--color-card-text); opacity: 0.6;">
-                 Select an exercise to view 1RM & Volume trends.
+             <div v-else class="placeholder-text card-inset" style="text-align:center; padding: 40px; color: var(--color-card-text); opacity: 0.75; border-radius: 12px;">
+                 Select an exercise above to analyze 1RM strength, top weight, and volume progress.
              </div>
         </div>
     </div>
@@ -224,6 +237,7 @@ import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/typ
 
 import WeeklyVolumeChart from '../components/WeeklyVolumeChart.vue';
 import ExerciseProgressChart from '../components/ExerciseProgressChart.vue';
+import MuscleGroupVolumeChart from '../components/MuscleGroupVolumeChart.vue';
 import EditLoggedWorkoutModal from '../components/history/EditLoggedWorkoutModal.vue';
 import ShareWorkoutModal from '../components/history/ShareWorkoutModal.vue';
 
