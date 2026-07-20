@@ -98,11 +98,11 @@
             </div>
         </div>
 
-         <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 4px; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 10px; margin-bottom: 10px;">
+         <div class="setting-item" style="border-bottom: 1px dashed var(--color-card-border); padding-bottom: 10px; margin-bottom: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <label style="display: flex; align-items: center; gap: 6px; font-weight: 500;">
-                    Exercise Form Demos 📹
-                    <span style="font-size: 0.85em; cursor: help; opacity: 0.7;" title="Puts a camera 📹 icon next to exercise names during active workouts and routine editing to watch video demos & form tips.">ℹ️</span>
+                    Exercise Form Demos ℹ️
+                    <span style="font-size: 0.85em; cursor: help; opacity: 0.7;" title="Puts an info ℹ️ icon next to exercise names during active workouts and routine editing to watch video demos & form tips.">ℹ️</span>
                 </label>
                 <div style="display: flex; align-items: center;">
                     <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
@@ -113,10 +113,9 @@
                     <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.enableVideoDemos !== false ? 'On' : 'Off' }}</span>
                 </div>
             </div>
-            <p style="margin: 0; font-size: 0.8em; opacity: 0.7; color: var(--color-card-text);">Puts a camera 📹 icon next to exercise names for quick video & form tips.</p>
         </div>
 
-        <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+        <div class="setting-item">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <label style="display: flex; align-items: center; gap: 6px; font-weight: 500;">
                     Workout Skip Tracker ⚠️
@@ -131,7 +130,6 @@
                     <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.enableSkipTracker !== false ? 'On' : 'Off' }}</span>
                 </div>
             </div>
-            <p style="margin: 0; font-size: 0.8em; opacity: 0.7; color: var(--color-card-text);">Shows warning indicators on Home when routine days are done out of order.</p>
         </div>
       </div>
 

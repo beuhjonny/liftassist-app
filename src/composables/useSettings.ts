@@ -81,20 +81,22 @@ export default function useSettings() {
     };
 
     const applyTheme = () => {
-        const theme = settings.value.theme;
+        const theme = settings.value.theme || 'original';
         const root = document.documentElement;
 
         // Reset classes
-        root.classList.remove('theme-light', 'theme-dark');
+        root.classList.remove('theme-light', 'theme-dark', 'theme-original');
 
         if (theme === 'system') {
             root.removeAttribute('data-theme');
-            // Optional: Listen to system changes if we want real-time system switching
         } else {
             root.setAttribute('data-theme', theme);
             root.classList.add(`theme-${theme}`);
         }
     };
+
+    // Apply theme on initialization
+    applyTheme();
 
     // Watch for Auth changes to load settings
     watch(user, (newUser) => {
@@ -103,7 +105,7 @@ export default function useSettings() {
         } else {
             settings.value = { ...defaultSettings };
             isLoaded.value = false;
-            applyTheme(); // Reset to system/default
+            applyTheme(); // Reset to original default
         }
     }, { immediate: true });
 
