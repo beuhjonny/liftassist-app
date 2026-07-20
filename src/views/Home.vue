@@ -139,13 +139,13 @@
                 'button-workout-day',
                 { 'is-recommended': day.isNextRecommended && !day.isLastDoneOverall },
                 { 'is-last-done': day.isLastDoneOverall },
-                { 'has-skips': day.skipIndicatorCount > 0 }
+                { 'has-skips': settings?.enableSkipTracker !== false && day.skipIndicatorCount > 0 }
               ]"
             >
               Start {{ day.dayName }}
               <span v-if="day.isNextRecommended && !day.isLastDoneOverall" class="status-badge recommended-badge" title="Next Recommended Workout">🚀 Next</span>
               <span v-if="day.isLastDoneOverall" class="status-badge last-done-badge" title="Last Workout Completed">✓ Done</span>
-              <span v-if="day.skipIndicatorCount > 0" class="status-badge skipped-badge" :title="`${day.skipIndicatorCount} time(s) this day was due and another workout was done instead`">
+              <span v-if="settings?.enableSkipTracker !== false && day.skipIndicatorCount > 0" class="status-badge skipped-badge" :title="`${day.skipIndicatorCount} time(s) this day was due and another workout was done instead`">
                 ⚠️ {{ day.skipIndicatorCount }}
               </span>
             </button>
@@ -185,6 +185,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import useAuth from '../composables/useAuth';
+import useSettings from '../composables/useSettings';
 import useTrainingProgram from '../composables/useTrainingProgram';
 import { useRouter } from 'vue-router';
 import ManifestoComponent from '@/components/ManifestoComponent.vue'; // Can remove this if only used in AboutModal now, but wait, check if used in unauth view
@@ -193,6 +194,7 @@ import AboutModal from '@/components/AboutModal.vue';
 import type { WorkoutDay, EnhancedWorkoutDay } from '@/types';
 
 const { user } = useAuth();
+const { settings } = useSettings();
 const router = useRouter();
 
 const {

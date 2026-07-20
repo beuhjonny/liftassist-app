@@ -18,6 +18,7 @@ export interface UserSettings {
     embiggenButtons: boolean; // Accessible / large buttons mode
     cardioDistanceUnit?: CardioDistanceUnitOption;
     enableVideoDemos?: boolean; // Show in-app exercise form video demos
+    enableSkipTracker?: boolean; // Show warning indicators on skipped routine days
 }
 
 const defaultSettings: UserSettings = {
@@ -30,6 +31,7 @@ const defaultSettings: UserSettings = {
     embiggenButtons: false,
     cardioDistanceUnit: 'mi',
     enableVideoDemos: true,
+    enableSkipTracker: true,
 };
 
 const settings = ref<UserSettings>({ ...defaultSettings });

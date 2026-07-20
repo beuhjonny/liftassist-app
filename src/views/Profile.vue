@@ -98,16 +98,40 @@
             </div>
         </div>
 
-         <div class="setting-item">
-            <label>Exercise Form Demos</label>
-            <div style="display: flex; align-items: center;">
-                <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
-                    <input type="checkbox" :checked="settings.enableVideoDemos !== false" @change="toggleVideoDemos" style="opacity: 0; width: 0; height: 0;">
-                    <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-                    <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.enableVideoDemos !== false ? 'translateX(16px)' : 'translateX(0)' }"></span>
+         <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 4px; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 10px; margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <label style="display: flex; align-items: center; gap: 6px; font-weight: 500;">
+                    Exercise Form Demos 📹
+                    <span style="font-size: 0.85em; cursor: help; opacity: 0.7;" title="Puts a camera 📹 icon next to exercise names during active workouts and routine editing to watch video demos & form tips.">ℹ️</span>
                 </label>
-                <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.enableVideoDemos !== false ? 'On' : 'Off' }}</span>
+                <div style="display: flex; align-items: center;">
+                    <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                        <input type="checkbox" :checked="settings.enableVideoDemos !== false" @change="toggleVideoDemos" style="opacity: 0; width: 0; height: 0;">
+                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                        <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.enableVideoDemos !== false ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                    </label>
+                    <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.enableVideoDemos !== false ? 'On' : 'Off' }}</span>
+                </div>
             </div>
+            <p style="margin: 0; font-size: 0.8em; opacity: 0.7; color: var(--color-card-text);">Puts a camera 📹 icon next to exercise names for quick video & form tips.</p>
+        </div>
+
+        <div class="setting-item" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <label style="display: flex; align-items: center; gap: 6px; font-weight: 500;">
+                    Workout Skip Tracker ⚠️
+                    <span style="font-size: 0.85em; cursor: help; opacity: 0.7;" title="Shows warning badges (e.g. ⚠️ 1) on routine days when workouts are completed out of order (like skipping leg day). Turn off to hide skip shaming.">ℹ️</span>
+                </label>
+                <div style="display: flex; align-items: center;">
+                    <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                        <input type="checkbox" :checked="settings.enableSkipTracker !== false" @change="toggleSkipTracker" style="opacity: 0; width: 0; height: 0;">
+                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                        <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.enableSkipTracker !== false ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                    </label>
+                    <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.enableSkipTracker !== false ? 'On' : 'Off' }}</span>
+                </div>
+            </div>
+            <p style="margin: 0; font-size: 0.8em; opacity: 0.7; color: var(--color-card-text);">Shows warning indicators on Home when routine days are done out of order.</p>
         </div>
       </div>
 
@@ -1930,6 +1954,11 @@ const toggleEmbiggen = () => {
 const toggleVideoDemos = (e: Event) => {
   const checked = (e.target as HTMLInputElement).checked;
   saveSettings({ enableVideoDemos: checked });
+};
+
+const toggleSkipTracker = (e: Event) => {
+  const checked = (e.target as HTMLInputElement).checked;
+  saveSettings({ enableSkipTracker: checked });
 };
 
 // Device Pairing Logic
