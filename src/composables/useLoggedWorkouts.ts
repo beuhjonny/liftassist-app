@@ -1,5 +1,17 @@
 import { ref, reactive, computed } from 'vue';
-import { collection, query, getDocs, orderBy, limit, startAfter, Timestamp, type QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore';
+import { 
+  collection, 
+  query, 
+  getDocs, 
+  orderBy, 
+  limit, 
+  startAfter, 
+  doc, 
+  updateDoc, 
+  deleteDoc, 
+  type QueryDocumentSnapshot, 
+  type DocumentData 
+} from 'firebase/firestore';
 import { db } from '../firebase';
 import useAuth from './useAuth';
 import type { LoggedWorkout } from '@/types';
@@ -57,8 +69,6 @@ export default function useLoggedWorkouts() {
             return;
         }
 
-        // Return immediately if data is loaded and we don't want to force refresh
-        // Note: active charts/views will only see the first page initially. 
         if (isLoaded.value && !forceRefresh) {
             return;
         }
@@ -68,12 +78,10 @@ export default function useLoggedWorkouts() {
 
         try {
             const historyCollectionRef = collection(db, 'users', user.value.uid, 'loggedWorkouts');
-            // Initial Query: Order by date desc, Limit to PAGE_SIZE
             const q = query(historyCollectionRef, orderBy('date', 'desc'), limit(PAGE_SIZE));
 
             const querySnapshot = await getDocs(q);
-
-            processQuerySnapshot(querySnapshot, false); // False = replace existing list
+            processQuerySnapshot(querySnapshot, false);
 
             isLoaded.value = true;
             lastFetchTime.value = Date.now();
@@ -98,7 +106,6 @@ export default function useLoggedWorkouts() {
 
         try {
             const historyCollectionRef = collection(db, 'users', user.value.uid, 'loggedWorkouts');
-            // Next Page Query: Start After the last doc we saw
             const q = query(
                 historyCollectionRef,
                 orderBy('date', 'desc'),
@@ -107,9 +114,7 @@ export default function useLoggedWorkouts() {
             );
 
             const querySnapshot = await getDocs(q);
-
-            processQuerySnapshot(querySnapshot, true); // True = append to list
-
+            processQuerySnapshot(querySnapshot, true);
         } catch (e: any) {
             console.error("Error fetching more workouts:", e);
             error.value = e.message;
@@ -119,19 +124,61 @@ export default function useLoggedWorkouts() {
     };
 
     /**
+     * Updates an existing logged workout in Firestore and local reactive state.
+     */
+    const updateLoggedWorkout = async (workoutId: string, updatedData: Partial<LoggedWorkout>) => {
+        if (!user.value || !user.value.uid) {
+            throw new Error("User must be authenticated to update a workout.");
+        }
+
+        try {
+            const docRef = doc(db, 'users', user.value.uid, 'loggedWorkouts', workoutId);
+            await updateDoc(docRef, updatedData);
+
+            // Update in local array
+            const idx = globalLoggedWorkouts.findIndex(w => w.id === workoutId);
+            if (idx !== -1) {
+                globalLoggedWorkouts[idx] = { ...globalLoggedWorkouts[idx], ...updatedData };
+            }
+        } catch (e: any) {
+            console.error("Error updating logged workout:", e);
+            throw e;
+        }
+    };
+
+    /**
+     * Deletes a logged workout from Firestore and local reactive state.
+     */
+    const deleteLoggedWorkout = async (workoutId: string) => {
+        if (!user.value || !user.value.uid) {
+            throw new Error("User must be authenticated to delete a workout.");
+        }
+
+        try {
+            const docRef = doc(db, 'users', user.value.uid, 'loggedWorkouts', workoutId);
+            await deleteDoc(docRef);
+
+            // Remove from local array
+            const idx = globalLoggedWorkouts.findIndex(w => w.id === workoutId);
+            if (idx !== -1) {
+                globalLoggedWorkouts.splice(idx, 1);
+            }
+        } catch (e: any) {
+            console.error("Error deleting logged workout:", e);
+            throw e;
+        }
+    };
+
+    /**
      * Invalidates the cache so the next call to fetchLoggedWorkouts will hit the network.
-     * Resets pagination.
      */
     const invalidateCache = () => {
         isLoaded.value = false;
         lastVisibleDoc.value = null;
         hasMoreDocs.value = true;
-        globalLoggedWorkouts.length = 0; // Clear the list so it refetches and doesn't show old data
+        globalLoggedWorkouts.length = 0;
     };
 
-    /**
-     * Check if we have any data (useful for computed properties)
-     */
     const hasData = computed(() => globalLoggedWorkouts.length > 0);
 
     return {
@@ -142,6 +189,8 @@ export default function useLoggedWorkouts() {
         hasMoreDocs,
         fetchLoggedWorkouts,
         fetchMoreWorkouts,
+        updateLoggedWorkout,
+        deleteLoggedWorkout,
         invalidateCache,
         hasData
     };

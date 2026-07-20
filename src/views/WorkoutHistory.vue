@@ -122,14 +122,17 @@
     <div v-if="!isLoading && !error && user && loggedWorkouts.length > 0" class="history-list">
       <h3 style="margin: 30px 0 20px 0; font-size: 1.5em; border-bottom: 1px solid var(--color-border); padding-bottom: 10px; color: var(--color-heading);">Recent Logs</h3>
       <div v-for="workout in loggedWorkouts" :key="workout.id" class="history-item-card">
-        <div class="history-item-header">
-          <h2>{{ workout.workoutDayNameUsed || 'Workout Session' }}</h2>
-          <p class="workout-date">
-            {{ formatWorkoutDate(workout.date) }}
-          </p>
-          <p v-if="workout.trainingProgramNameUsed" class="program-name">
-            Routine: {{ workout.trainingProgramNameUsed }}
-          </p>
+        <div class="history-item-header" style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <h2>{{ workout.workoutDayNameUsed || 'Workout Session' }}</h2>
+            <p class="workout-date">
+              {{ formatWorkoutDate(workout.date) }}
+            </p>
+            <p v-if="workout.trainingProgramNameUsed" class="program-name">
+              Routine: {{ workout.trainingProgramNameUsed }}
+            </p>
+          </div>
+          <button @click="openEditModal(workout)" class="icon-button edit-btn" title="Edit Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">✏️</button>
         </div>
 
         <div class="workout-summary card-inset">
@@ -184,6 +187,15 @@
     <div v-if="!user && !isLoading" class="login-prompt">
       <p>Please <router-link to="/login">log in</router-link> to view your history.</p>
     </div>
+
+    <!-- Edit Logged Workout Modal -->
+    <EditLoggedWorkoutModal 
+      :show="showEditModal" 
+      :workout="editingWorkout" 
+      @close="showEditModal = false" 
+      @save="handleSaveEditedWorkout" 
+      @delete="handleDeleteWorkout" 
+    />
   </div>
 </template>
 
@@ -202,6 +214,7 @@ import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/typ
 
 import WeeklyVolumeChart from '../components/WeeklyVolumeChart.vue';
 import ExerciseProgressChart from '../components/ExerciseProgressChart.vue';
+import EditLoggedWorkoutModal from '../components/history/EditLoggedWorkoutModal.vue';
 
 interface CalendarDay {
   date: Date;
@@ -217,8 +230,39 @@ interface CalendarDay {
 
 const { user } = useAuth();
 const { settings } = useSettings();
-const { loggedWorkouts, isLoading, error, fetchLoggedWorkouts, fetchMoreWorkouts, hasMoreDocs } = useLoggedWorkouts();
+const { loggedWorkouts, isLoading, error, fetchLoggedWorkouts, fetchMoreWorkouts, updateLoggedWorkout, deleteLoggedWorkout, hasMoreDocs } = useLoggedWorkouts();
 const { calendarIndex, fetchCalendarIndex, isIndexLoading } = useHistoryIndex();
+
+const showEditModal = ref(false);
+const editingWorkout = ref<LoggedWorkout | null>(null);
+
+function openEditModal(workout: LoggedWorkout) {
+  editingWorkout.value = workout;
+  showEditModal.value = true;
+}
+
+async function handleSaveEditedWorkout(updatedWk: LoggedWorkout) {
+  if (!updatedWk.id) return;
+  try {
+    await updateLoggedWorkout(updatedWk.id, updatedWk);
+    showEditModal.value = false;
+    editingWorkout.value = null;
+    fetchCalendarIndex(true);
+  } catch (e: any) {
+    alert("Failed to save workout updates: " + e.message);
+  }
+}
+
+async function handleDeleteWorkout(workoutId: string) {
+  try {
+    await deleteLoggedWorkout(workoutId);
+    showEditModal.value = false;
+    editingWorkout.value = null;
+    fetchCalendarIndex(true);
+  } catch (e: any) {
+    alert("Failed to delete workout: " + e.message);
+  }
+}
 const { activeProgram } = useTrainingProgram();
 const allDetailsExpandedForWorkout = reactive<Record<string, boolean>>({});
 
