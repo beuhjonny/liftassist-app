@@ -8,28 +8,39 @@
         <h2>{{ exerciseName || demoInfo.name }}</h2>
       </div>
 
-      <!-- Animated Keyframe Motion Player -->
-      <div v-if="demoInfo.frames && demoInfo.frames.length > 0 && !imageError" class="demo-media-container card-inset">
-        <div class="motion-player">
+      <!-- Demo Media Container -->
+      <div class="demo-media-container card-inset">
+        <!-- 1. Primary High-Res GIF (If Available & Loading Successfully) -->
+        <div v-if="demoInfo.primaryGifUrl && !primaryGifError" class="motion-player">
+          <img 
+            :src="demoInfo.primaryGifUrl" 
+            :alt="demoInfo.name + ' animation'" 
+            class="demo-gif"
+            @error="primaryGifError = true"
+          />
+        </div>
+
+        <!-- 2. Bundled Keyframe Motion Loop Player (Fallback) -->
+        <div v-else-if="demoInfo.frames && demoInfo.frames.length > 0 && !imageError" class="motion-player">
           <img 
             :src="currentFrameUrl" 
-            :alt="demoInfo.name + ' demonstration frame'" 
+            :alt="demoInfo.name + ' motion frame'" 
             class="demo-gif"
             @error="handleImageError"
           />
           <div class="motion-indicator">
             <span class="pulse-dot"></span>
-            <span class="motion-label">Form Motion Loop (Frame {{ activeFrameIdx + 1 }}/2)</span>
+            <span class="motion-label">Form Motion Loop</span>
           </div>
         </div>
-      </div>
 
-      <!-- Clean Unknown Exercise Notice -->
-      <div v-else class="unknown-exercise-card card-inset">
-        <p class="unknown-title">No matching exercise demo found</p>
-        <p class="unknown-subtitle">
-          Form cues and demonstrations are available for standard strength training lifts.
-        </p>
+        <!-- 3. Clean Unknown Exercise Fallback -->
+        <div v-else class="unknown-exercise-card card-inset">
+          <p class="unknown-title">No matching exercise demo found</p>
+          <p class="unknown-subtitle">
+            Form cues and demonstrations are available for standard strength training lifts.
+          </p>
+        </div>
       </div>
 
       <!-- Target Muscles -->
@@ -72,6 +83,7 @@ defineEmits<{
   (e: 'close'): void;
 }>();
 
+const primaryGifError = ref(false);
 const imageError = ref(false);
 const activeFrameIdx = ref(0);
 let animationTimer: ReturnType<typeof setInterval> | null = null;
@@ -87,8 +99,9 @@ const currentFrameUrl = computed(() => {
 
 function startAnimationLoop() {
   stopAnimationLoop();
-  activeFrameIdx.value = 0;
+  primaryGifError.value = false;
   imageError.value = false;
+  activeFrameIdx.value = 0;
 
   if (demoInfo.value.frames && demoInfo.value.frames.length > 1) {
     animationTimer = setInterval(() => {
@@ -105,7 +118,6 @@ function stopAnimationLoop() {
 }
 
 function handleImageError() {
-  // If frame 1 fails to load, fallback to static frame 0 without hiding the player
   if (activeFrameIdx.value > 0) {
     stopAnimationLoop();
     activeFrameIdx.value = 0;
