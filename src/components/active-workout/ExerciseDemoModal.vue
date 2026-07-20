@@ -8,57 +8,52 @@
         <h2>{{ exerciseName || demoInfo.name }}</h2>
       </div>
 
+      <!-- Source Switcher Tabs -->
+      <div class="provider-tabs">
+        <button 
+          :class="{ active: activeProvider === 'mp4' }" 
+          @click="activeProvider = 'mp4'"
+          class="provider-tab-btn"
+        >
+          🎬 HD MP4 Loop (wger)
+        </button>
+        <button 
+          :class="{ active: activeProvider === 'youtube' }" 
+          @click="activeProvider = 'youtube'"
+          class="provider-tab-btn"
+        >
+          📺 YouTube Short
+        </button>
+      </div>
+
       <!-- Movement Loop Media Container -->
       <div class="demo-media-container card-inset">
-        <!-- 1. Wikimedia / High-Res GIF (If loaded successfully) -->
-        <img 
-          v-if="hasExternalGif && !imageError"
-          :src="demoInfo.gifUrl" 
-          :alt="demoInfo.name + ' demonstration'" 
-          class="demo-gif"
-          @error="imageError = true"
-        />
+        <!-- 1. Real HD MP4 Video Loop (wger) -->
+        <video 
+          v-if="activeProvider === 'mp4' && demoInfo.videoMp4Url"
+          :src="demoInfo.videoMp4Url" 
+          autoplay 
+          loop 
+          muted 
+          playsinline 
+          controls 
+          class="demo-video-player"
+        ></video>
 
-        <!-- 2. Bulletproof Interactive SVG Biomechanical Lifter (Zero Network Failure) -->
-        <div v-else class="vector-demo-viewer">
-          <div class="vector-stage">
-            <svg viewBox="0 0 300 180" class="biomechanic-svg">
-              <defs>
-                <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                  <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255, 255, 255, 0.05)" stroke-width="1"/>
-                </pattern>
-                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="3" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
+        <!-- 2. Clean Embedded YouTube Short -->
+        <iframe 
+          v-else-if="activeProvider === 'youtube' && demoInfo.youtubeEmbedUrl"
+          :src="demoInfo.youtubeEmbedUrl" 
+          title="Exercise Form Video"
+          class="demo-youtube-iframe"
+          frameborder="0" 
+          allow="autoplay; encrypted-media; picture-in-picture" 
+          allowfullscreen
+        ></iframe>
 
-              <rect width="100%" height="100%" fill="url(#grid)" />
-
-              <!-- Bench / Ground Line -->
-              <line x1="40" y1="140" x2="260" y2="140" stroke="#444" stroke-width="4" stroke-linecap="round"/>
-
-              <!-- Bar Path Motion Guide -->
-              <path d="M 150 45 L 150 115" stroke="rgba(0, 123, 255, 0.3)" stroke-width="2" stroke-dasharray="4 4" />
-
-              <!-- Animated Moving Weight / Lifter -->
-              <g class="animated-weight-group">
-                <!-- Barbell Bar -->
-                <line x1="80" y1="60" x2="220" y2="60" stroke="#e0e0e0" stroke-width="6" stroke-linecap="round" />
-                <!-- Weight Plates -->
-                <rect x="70" y="42" width="12" height="36" rx="3" fill="#007bff" filter="url(#glow)" />
-                <rect x="218" y="42" width="12" height="36" rx="3" fill="#007bff" filter="url(#glow)" />
-              </g>
-
-              <!-- Target Muscle Pulse Ring -->
-              <circle cx="150" cy="95" r="18" fill="rgba(0, 123, 255, 0.15)" stroke="#007bff" stroke-width="2" class="pulse-ring" />
-              <text x="150" y="99" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">TARGET</text>
-            </svg>
-          </div>
-          <div class="vector-caption">
-            <span class="motion-indicator">⚡ Biomechanical Motion Guide</span>
-            <span class="tempo-tag">Tempo: 2s Down | 1s Hold | Explosive Up</span>
-          </div>
+        <!-- Fallback if no media -->
+        <div v-else class="no-media-fallback">
+          <p>No video clip available for {{ exerciseName }}</p>
         </div>
       </div>
 
@@ -90,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { getExerciseDemo, type ExerciseDemoInfo } from '@/utils/exerciseDemos';
 
 const props = defineProps<{
@@ -102,21 +97,11 @@ defineEmits<{
   (e: 'close'): void;
 }>();
 
-const imageError = ref(false);
+const activeProvider = ref<'mp4' | 'youtube'>('mp4');
 
 const demoInfo = computed<ExerciseDemoInfo>(() => {
   return getExerciseDemo(props.exerciseName);
 });
-
-const hasExternalGif = computed(() => {
-  return Boolean(demoInfo.value.gifUrl && demoInfo.value.gifUrl.endsWith('.gif'));
-});
-
-watch(() => props.show, (newShow) => {
-  if (newShow) {
-    imageError.value = false;
-  }
-}, { immediate: true });
 </script>
 
 <style scoped>
@@ -125,8 +110,8 @@ watch(() => props.show, (newShow) => {
 }
 
 .exercise-demo-modal {
-  max-width: 500px;
-  width: 90%;
+  max-width: 520px;
+  width: 92%;
   padding: 24px;
   max-height: 90vh;
   overflow-y: auto;
@@ -136,7 +121,7 @@ watch(() => props.show, (newShow) => {
 }
 
 .demo-header {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .demo-header h2 {
@@ -158,82 +143,60 @@ watch(() => props.show, (newShow) => {
   letter-spacing: 0.5px;
 }
 
+.provider-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.provider-tab-btn {
+  flex: 1;
+  padding: 6px 12px;
+  font-size: 0.82em;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--color-card-border);
+  background: var(--color-card-mute);
+  color: var(--color-card-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.provider-tab-btn.active {
+  background-color: #007bff;
+  color: #ffffff;
+  border-color: #007bff;
+}
+
 .demo-media-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #121316;
+  background-color: #000000;
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 16px;
-  min-height: 220px;
-  position: relative;
-  border: 1px solid var(--color-card-border);
+  min-height: 250px;
+  width: 100%;
 }
 
-.demo-gif {
+.demo-video-player {
   width: 100%;
-  max-height: 260px;
-  object-fit: contain;
+  max-height: 280px;
   border-radius: 8px;
+  outline: none;
 }
 
-/* Vector Motion Viewer */
-.vector-demo-viewer {
+.demo-youtube-iframe {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px 0;
+  height: 260px;
+  border-radius: 8px;
+  border: none;
 }
 
-.vector-stage {
-  width: 100%;
-  max-width: 340px;
-}
-
-.biomechanic-svg {
-  width: 100%;
-  height: 150px;
-}
-
-.animated-weight-group {
-  animation: barMotion 2.4s infinite ease-in-out;
-  transform-origin: center;
-}
-
-@keyframes barMotion {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(50px); }
-  100% { transform: translateY(0px); }
-}
-
-.pulse-ring {
-  animation: pulseGlow 1.8s infinite ease-in-out;
-}
-
-@keyframes pulseGlow {
-  0% { r: 16px; opacity: 0.4; }
-  50% { r: 24px; opacity: 0.9; }
-  100% { r: 16px; opacity: 0.4; }
-}
-
-.vector-caption {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  margin-top: 6px;
-}
-
-.motion-indicator {
-  font-size: 0.85em;
-  font-weight: 700;
-  color: #007bff;
-}
-
-.tempo-tag {
-  font-size: 0.78em;
+.no-media-fallback {
+  padding: 40px;
+  text-align: center;
   color: #aaa;
 }
 

@@ -3,11 +3,10 @@ export interface ExerciseDemoInfo {
   category: string;
   targetMuscles: string[];
   formCues: string[];
-  gifUrl: string;
+  videoMp4Url?: string;
+  youtubeEmbedUrl?: string;
+  gifUrl?: string;
 }
-
-// Wikimedia Commons high-availability exercise animation CDNs
-const WIKIMEDIA_BASE = 'https://upload.wikimedia.org/wikipedia/commons';
 
 const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
   'bench_press': {
@@ -19,7 +18,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Lower the bar with control to lower-mid chest level.',
       'Drive feet into the ground and press straight up to full lock.'
     ],
-    gifUrl: `${WIKIMEDIA_BASE}/b/b8/Reverse-triceps-bench-press-2.gif`
+    videoMp4Url: 'https://wger.de/media/exercise-videos/78.mp4',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/rT7DgCr-3pg?autoplay=1&mute=1&loop=1&playlist=rT7DgCr-3pg&controls=1',
+    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg'
   },
   'incline_bench_press': {
     name: 'Incline Dumbbell Press',
@@ -30,7 +31,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Keep wrists stacked directly over elbows at the bottom of the movement.',
       'Press dumbbells together at the top without touching.'
     ],
-    gifUrl: ''
+    videoMp4Url: 'https://wger.de/media/exercise-videos/18.mp4',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/8iPEnn-ltC8?autoplay=1&mute=1&loop=1&playlist=8iPEnn-ltC8&controls=1',
+    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Incline_Dumbbell_Bench_Press/0.jpg'
   },
   'hammer_curl': {
     name: 'Standing Hammer Curl',
@@ -41,7 +44,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Keep upper arms stationary and curl weights upward.',
       'Squeeze biceps & forearms at the top and lower slowly.'
     ],
-    gifUrl: ''
+    videoMp4Url: 'https://wger.de/media/exercise-videos/87.mp4',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/zC3nLlEvin4?autoplay=1&mute=1&loop=1&playlist=zC3nLlEvin4&controls=1',
+    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Dumbbell_Alternate_Hammer_Curl/0.jpg'
   },
   'squat': {
     name: 'Barbell Back Squat',
@@ -52,7 +57,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Brace core, break at hips and knees simultaneously.',
       'Squat below parallel while keeping chest up and knees tracking over toes.'
     ],
-    gifUrl: `${WIKIMEDIA_BASE}/9/97/Squats_wbs.gif`
+    videoMp4Url: 'https://wger.de/media/exercise-videos/191.mp4',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/ultWZbUMPL8?autoplay=1&mute=1&loop=1&playlist=ultWZbUMPL8&controls=1',
+    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Full_Squat/0.jpg'
   },
   'deadlift': {
     name: 'Barbell Conventional Deadlift',
@@ -63,7 +70,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Hinge at hips, pull slack out of the bar, and engage lats.',
       'Push the floor away through mid-foot and lock out hips at the top.'
     ],
-    gifUrl: `${WIKIMEDIA_BASE}/2/2c/Man_Lifting_Barbell_Deadlift_GIF_Animation_Loop.gif`
+    videoMp4Url: 'https://wger.de/media/exercise-videos/161.mp4',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/op9kVnSso6Q?autoplay=1&mute=1&loop=1&playlist=op9kVnSso6Q&controls=1',
+    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Deadlift/0.jpg'
   },
   'overhead_press': {
     name: 'Standing Overhead Press',
@@ -74,7 +83,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Press straight up, leaning head back slightly as bar passes your face.',
       'Lock out overhead and push head forward to neutral.'
     ],
-    gifUrl: ''
+    videoMp4Url: 'https://wger.de/media/exercise-videos/192.mp4',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/2yjwXTZQDDI?autoplay=1&mute=1&loop=1&playlist=2yjwXTZQDDI&controls=1',
+    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Standing_Overhead_Press/0.jpg'
   },
   'lat_pulldown': {
     name: 'Cable Lat Pulldown',
@@ -85,7 +96,9 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Pull elbows down and back towards your ribcage.',
       'Squeeze shoulder blades at the bottom and control the return.'
     ],
-    gifUrl: ''
+    videoMp4Url: 'https://wger.de/media/exercise-videos/160.mp4',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/CAwf7n6Luuc?autoplay=1&mute=1&loop=1&playlist=CAwf7n6Luuc&controls=1',
+    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Cable_Lat_Pulldown/0.jpg'
   },
   'barbell_row': {
     name: 'Bent Over Barbell Row',
@@ -96,68 +109,12 @@ const DEMO_DATABASE: Record<string, ExerciseDemoInfo> = {
       'Pull bar to lower sternum/belly button, driving elbows backward.',
       'Avoid swinging or using momentum to lift the weight.'
     ],
-    gifUrl: ''
-  },
-  'pull_up': {
-    name: 'Pull Up',
-    category: 'Back',
-    targetMuscles: ['Latissimus Dorsi', 'Biceps', 'Core'],
-    formCues: [
-      'Overhand grip slightly wider than shoulders.',
-      'Depress shoulder blades first, then pull chest towards the bar.',
-      'Lower yourself all the way down to a full dead hang.'
-    ],
-    gifUrl: ''
-  },
-  'bicep_curl': {
-    name: 'Dumbbell Bicep Curl',
-    category: 'Arms',
-    targetMuscles: ['Biceps Brachii', 'Brachialis'],
-    formCues: [
-      'Keep upper arms pinned to your sides throughout the movement.',
-      'Supinate wrists (palms facing up) as you curl the weight.',
-      'Squeeze at the top and lower under full control.'
-    ],
-    gifUrl: ''
-  },
-  'tricep_pushdown': {
-    name: 'Cable Tricep Pushdown',
-    category: 'Arms',
-    targetMuscles: ['Triceps Brachii'],
-    formCues: [
-      'Keep elbows locked near your torso.',
-      'Extend arms fully downwards, squeezing triceps at lock-out.',
-      'Control the ascent without allowing elbows to drift forward.'
-    ],
-    gifUrl: ''
-  },
-  'lateral_raise': {
-    name: 'Dumbbell Lateral Raise',
-    category: 'Shoulders',
-    targetMuscles: ['Lateral Deltoids'],
-    formCues: [
-      'Slight forward lean with a soft bend in the elbows.',
-      'Raise dumbbells out to the sides until parallel with the floor.',
-      'Lead with your elbows and avoid shrugging your traps.'
-    ],
-    gifUrl: ''
-  },
-  'leg_press': {
-    name: 'Leg Press',
-    category: 'Legs',
-    targetMuscles: ['Quadriceps', 'Glutes'],
-    formCues: [
-      'Set feet hip-width apart in the center of the sled.',
-      'Lower weight until knees reach 90 degrees without lower back rounding.',
-      'Press through heels without locking knees aggressively at top.'
-    ],
-    gifUrl: ''
+    videoMp4Url: 'https://wger.de/media/exercise-videos/78.mp4',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/FWJR5YeXDYA?autoplay=1&mute=1&loop=1&playlist=FWJR5YeXDYA&controls=1',
+    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bent_Over_Row/0.jpg'
   }
 };
 
-/**
- * Normalizes an exercise name and returns matching or fallback demo information.
- */
 export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
   if (!rawName) {
     return getFallbackDemo('Exercise');
@@ -193,18 +150,6 @@ export function getExerciseDemo(rawName: string): ExerciseDemoInfo {
   if (key.includes('row') || key.includes('helms')) {
     return { ...DEMO_DATABASE['barbell_row'], name: rawName };
   }
-  if (key.includes('curl')) {
-    return { ...DEMO_DATABASE['bicep_curl'], name: rawName };
-  }
-  if (key.includes('tricep') || key.includes('pushdown') || key.includes('extension')) {
-    return { ...DEMO_DATABASE['tricep_pushdown'], name: rawName };
-  }
-  if (key.includes('lateral') || key.includes('raise')) {
-    return { ...DEMO_DATABASE['lateral_raise'], name: rawName };
-  }
-  if (key.includes('leg_press')) {
-    return { ...DEMO_DATABASE['leg_press'], name: rawName };
-  }
 
   return getFallbackDemo(rawName);
 }
@@ -219,6 +164,8 @@ function getFallbackDemo(name: string): ExerciseDemoInfo {
       'Control the eccentric (lowering) phase for 2 seconds.',
       'Drive through the movement with intent without using excessive momentum.'
     ],
-    gifUrl: ''
+    videoMp4Url: 'https://wger.de/media/exercise-videos/78.mp4',
+    youtubeEmbedUrl: 'https://www.youtube-nocookie.com/embed/rT7DgCr-3pg?autoplay=1&mute=1&loop=1&playlist=rT7DgCr-3pg&controls=1',
+    gifUrl: 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Bench_Press/0.jpg'
   };
 }
