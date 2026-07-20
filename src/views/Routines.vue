@@ -44,7 +44,7 @@
             <button 
               @click="loadJonnyPPL" 
               class="button-secondary small" 
-              style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; border: 1px solid #007bff; background: rgba(0, 123, 255, 0.08); color: var(--color-primary); cursor: pointer; font-size: 0.9em; font-weight: 600;" 
+              style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-mute); color: var(--color-card-text); cursor: pointer; font-size: 0.9em; font-weight: 500;" 
               title="If you have dumbbells, a bench and some doorway elastics, you can copy his excellent routine. You will need to adjust your weights."
             >
                 💪 Copy Jonny's PPL
@@ -619,16 +619,8 @@ Design a balanced program for me and output it <strong>ONLY as strict JSON</stro
         </div>
         
         <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="button-primary" @click="startCreatingNewRoutine" style="flex: 1; min-width: 150px;">
+            <button class="button-primary" @click="startCreatingNewRoutine" style="flex: 1; min-width: 160px;">
                 + Add New Routine
-            </button>
-            <button 
-              class="button-secondary" 
-              @click="loadJonnyPPL" 
-              style="flex: 1; min-width: 170px; display: flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #007bff; color: var(--color-primary); background: rgba(0, 123, 255, 0.05);"
-              title="If you have dumbbells, a bench and some doorway elastics, you can copy his excellent routine. You will need to adjust your weights."
-            >
-                💪 Copy Jonny's PPL
             </button>
             <button class="button-secondary" @click="showLogCardioModal = true" style="flex: 1; min-width: 160px; display: flex; align-items: center; justify-content: center; gap: 6px;">
                 🏃 Log Cardio Session
