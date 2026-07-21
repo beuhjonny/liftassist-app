@@ -608,7 +608,27 @@ REQUIRED JSON STRUCTURE:
                                   </div>
                                   
                                   <div class="exercise-options-container card-inset" style="padding: 10px; margin-bottom: 15px; background-color: var(--color-card-mute); border: 1px solid var(--color-card-border);">
-                                    <label class="form-section-label" style="font-weight:600; margin-bottom:8px; display:block; color: var(--color-card-heading);">Configuration</label>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                      <label class="form-section-label" style="font-weight:600; margin:0; color: var(--color-card-heading);">Configuration</label>
+                                      <button 
+                                        type="button" 
+                                        @click.prevent="showAutoProgressionHelp = !showAutoProgressionHelp" 
+                                        style="background: none; border: none; cursor: pointer; font-size: 0.85em; display: flex; align-items: center; gap: 4px; color: var(--color-card-text); opacity: 0.9;"
+                                        title="How Auto-Progression Works"
+                                      >
+                                        <span style="font-weight: 600;">How it works</span> 💡
+                                      </button>
+                                    </div>
+
+                                    <!-- Inline Auto-Progression Help Box -->
+                                    <div v-if="showAutoProgressionHelp" class="card-inset" style="padding: 10px 14px; margin-bottom: 12px; background: var(--color-card-bg); border: 1px solid var(--color-card-border); border-radius: 8px; font-size: 0.85em; line-height: 1.45; color: var(--color-card-text);">
+                                      <div style="font-weight: 700; color: var(--color-card-heading); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                                        💡 <span>How Auto-Progression Works</span>
+                                      </div>
+                                      <p style="margin: 0;">
+                                        Every time you succeed on your prescribed lift, your next session target reps will go up by the <strong>Rep Progression</strong> set below. Once you hit <strong>Max Reps</strong>, it resets to your <strong>Min Reps</strong> and increments by the <strong>Weight Progression</strong> set below.
+                                      </p>
+                                    </div>
 
                                     <div class="form-group" style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
                                         <label class="checkbox-label">
@@ -697,7 +717,27 @@ REQUIRED JSON STRUCTURE:
                           </div>
                           
                           <div class="exercise-options-container card-inset" style="padding: 10px; margin-bottom: 15px; background-color: var(--color-card-mute); border: 1px solid var(--color-card-border);">
-                            <label class="form-section-label" style="font-weight:600; margin-bottom:8px; display:block; color: var(--color-card-heading);">Configuration</label>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                              <label class="form-section-label" style="font-weight:600; margin:0; color: var(--color-card-heading);">Configuration</label>
+                              <button 
+                                type="button" 
+                                @click.prevent="showAutoProgressionHelp = !showAutoProgressionHelp" 
+                                style="background: none; border: none; cursor: pointer; font-size: 0.85em; display: flex; align-items: center; gap: 4px; color: var(--color-card-text); opacity: 0.9;"
+                                title="How Auto-Progression Works"
+                              >
+                                <span style="font-weight: 600;">How it works</span> 💡
+                              </button>
+                            </div>
+
+                            <!-- Inline Auto-Progression Help Box -->
+                            <div v-if="showAutoProgressionHelp" class="card-inset" style="padding: 10px 14px; margin-bottom: 12px; background: var(--color-card-bg); border: 1px solid var(--color-card-border); border-radius: 8px; font-size: 0.85em; line-height: 1.45; color: var(--color-card-text);">
+                              <div style="font-weight: 700; color: var(--color-card-heading); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+                                💡 <span>How Auto-Progression Works</span>
+                              </div>
+                              <p style="margin: 0;">
+                                Every time you succeed on your prescribed lift, your next session target reps will go up by the <strong>Rep Progression</strong> set below. Once you hit <strong>Max Reps</strong>, it resets to your <strong>Min Reps</strong> and increments by the <strong>Weight Progression</strong> set below.
+                              </p>
+                            </div>
                             
                             <div class="form-group" style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px;">
                                 <label class="checkbox-label"><input type="checkbox" v-model="editingExercise.enableProgression" /> Enable Auto-Progression</label>
@@ -1090,6 +1130,7 @@ const showExerciseDeleteConfirmation = ref(false); // Potential future use, but 
 const itemToDelete = ref<any>(null); // For generic delete if needed
 const showProgressionHint = ref(false);
 const showFailureProgressionHelp = ref(false);
+const showAutoProgressionHelp = ref(false);
 
 // --- Routine Bank & Library State ---
 const selectedBankCategory = ref<EquipmentCategory | 'all'>('all');
