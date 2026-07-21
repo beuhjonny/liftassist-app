@@ -180,7 +180,7 @@ export const onWorkoutLogged = onDocumentCreated("users/{userId}/loggedWorkouts/
     }
 
     const name = `LiftLogic: ${workout.workoutDayNameUsed || "Weight Training"}`;
-    const description = `Completed ${workout.performedExercises?.length || 0} exercises in ${workout.durationMinutes || 0} mins.`;
+    const description = `Completed ${workout.performedExercises?.length || 0} exercises in ${workout.durationMinutes || 0} mins.\n\nTracked with LiftLogic 🏋️‍♂️\nhttps://lift-logic-app.web.app`;
     const startDate = workout.startTime ? new Date(workout.startTime).toISOString() : new Date().toISOString();
     const elapsedTime = (workout.durationMinutes || 30) * 60;
 

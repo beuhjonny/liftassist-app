@@ -843,42 +843,35 @@ REQUIRED JSON STRUCTURE:
 
     <!-- Dedicated Cardio Routines & Tracking Card -->
     <div v-if="!isLoading && user" class="cardio-routines-section card" style="margin-top: 30px; text-align: left;">
-        <div class="header-with-actions" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-            <div>
-                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; color: var(--color-card-heading);">
-                    🏃 Cardio & Endurance
-                </h3>
-                <p style="margin: 4px 0 0 0; font-size: 0.85em; opacity: 0.8; color: var(--color-card-text);">
-                    Track runs, rides, swims, and cardio sessions alongside your strength routines.
-                </p>
-            </div>
-            <span style="font-size: 0.75em; font-weight: 700; text-transform: uppercase; background: rgba(59, 130, 246, 0.15); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); padding: 3px 8px; border-radius: 4px;">
-                Triathlon & Endurance Ready
-            </span>
+        <div style="margin-bottom: 16px;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px; color: var(--color-card-heading);">
+                🏃 Cardio & Endurance
+            </h3>
+            <p style="margin: 4px 0 0 0; font-size: 0.85em; opacity: 0.8; color: var(--color-card-text);">
+                Track runs, rides, swims, and cardio sessions alongside your strength routines.
+            </p>
         </div>
 
-        <div class="cardio-status-box card-inset" style="padding: 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-            <div>
-                <div style="font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; color: var(--color-card-text); margin-bottom: 4px;">
-                    Last Cardio Session
-                </div>
-                <div v-if="lastCardioDisplay" style="font-size: 1.05em; font-weight: 600; color: var(--color-card-heading); display: flex; align-items: center; gap: 6px;">
-                    <span>{{ lastCardioDisplay.icon }}</span>
-                    <span>{{ lastCardioDisplay.text }}</span>
-                </div>
-                <div v-else style="font-size: 0.9em; opacity: 0.75; color: var(--color-card-text);">
-                    No recent cardio sessions logged yet.
-                </div>
+        <div class="cardio-status-box card-inset" style="padding: 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 10px; margin-bottom: 16px;">
+            <div style="font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; color: var(--color-card-text); margin-bottom: 6px;">
+                Last Cardio Session
             </div>
-
-            <button 
-                @click="showLogCardioModal = true" 
-                class="button-primary" 
-                style="display: flex; align-items: center; gap: 8px; padding: 10px 18px; font-weight: 600; font-size: 0.95em;"
-            >
-                🏃 Log Cardio Session
-            </button>
+            <div v-if="lastCardioDisplay" style="font-size: 1.05em; font-weight: 600; color: var(--color-card-heading); display: flex; align-items: center; gap: 6px;">
+                <span>{{ lastCardioDisplay.icon }}</span>
+                <span>{{ lastCardioDisplay.text }}</span>
+            </div>
+            <div v-else style="font-size: 0.9em; opacity: 0.75; color: var(--color-card-text);">
+                No recent cardio sessions logged yet.
+            </div>
         </div>
+
+        <button 
+            @click="showLogCardioModal = true" 
+            class="button-primary full-width" 
+            style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; font-weight: 600; font-size: 0.95em;"
+        >
+            🏃 Log Cardio Session
+        </button>
     </div>
 
     <!-- Manual Cardio Log Modal -->
