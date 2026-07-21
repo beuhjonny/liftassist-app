@@ -341,18 +341,13 @@ REQUIRED JSON STRUCTURE:
           <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.9em; line-height: 1.5; color: var(--color-card-text);">
             <div style="display: flex; gap: 12px; align-items: flex-start;">
               <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">1</span>
-              <div><strong>STEP 1:</strong> Decide your goals (e.g. Muscle Gain, Strength), equipment, and weekly frequency.</div>
+              <div><strong>STEP 1:</strong> Write or dictate your desired program, your equipment, and any other relevant information, directly into the AI of your choice.</div>
             </div>
 
             <div style="display: flex; gap: 12px; align-items: flex-start;">
               <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">2</span>
-              <div><strong>STEP 2:</strong> Open your AI tool of choice (e.g. <strong>ChatGPT</strong>, <strong>Claude</strong>, or <strong>Gemini</strong>).</div>
-            </div>
-
-            <div style="display: flex; gap: 12px; align-items: flex-start;">
-              <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">3</span>
               <div style="flex: 1;">
-                <div><strong>STEP 3:</strong> Copy & paste the design prompt below into your AI:</div>
+                <div><strong>STEP 2:</strong> Paste this design prompt into the AI along with it:</div>
                 
                 <div class="code-block-container" style="background: var(--color-card-mute); border: 1px solid var(--color-card-border); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.8em; white-space: pre-wrap; font-family: monospace; color: var(--color-card-text); max-height: 180px; margin-top: 8px;">
 System Prompt:
@@ -407,8 +402,8 @@ REQUIRED JSON STRUCTURE:
             </div>
 
             <div style="display: flex; gap: 12px; align-items: flex-start;">
-              <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">4</span>
-              <div><strong>STEP 4:</strong> Copy that script from your AI and paste it into the importer below.</div>
+              <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">3</span>
+              <div><strong>STEP 3:</strong> Paste the returned JSON into the importer below.</div>
             </div>
           </div>
         </div>
