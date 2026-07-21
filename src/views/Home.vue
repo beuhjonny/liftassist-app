@@ -129,6 +129,45 @@
             </p>
           </div>
 
+          <!-- Slick CONSISTENCY & PROGRESS Card -->
+          <div v-if="consistencyStats" class="consistency-progress-card card-inset" style="margin-top: 15px; margin-bottom: 22px; padding: 16px 18px; border-radius: 12px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <span style="font-weight: 800; font-size: 0.82em; letter-spacing: 0.8px; text-transform: uppercase; color: var(--color-card-heading); display: flex; align-items: center; gap: 6px;">
+                🔥 CONSISTENCY & PROGRESSION
+              </span>
+              <span v-if="consistencyStats.weeklyStreak > 0" style="font-size: 0.78em; font-weight: 700; color: #10B981; background: rgba(16, 185, 129, 0.12); padding: 3px 9px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.25);">
+                {{ consistencyStats.weeklyStreak }} Wk Streak 🔥
+              </span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center;">
+              
+              <!-- Box 1: Consistency (Active Weekly Streak) -->
+              <div style="background: var(--color-card-bg); padding: 12px 8px; border-radius: 8px; border: 1px solid var(--color-card-border);">
+                <span style="font-size: 0.72em; text-transform: uppercase; font-weight: 700; color: var(--color-card-text); opacity: 0.75; display: block; margin-bottom: 3px;">Consistency</span>
+                <div style="font-size: 1.4em; font-weight: 900; color: var(--color-card-heading); display: flex; align-items: center; justify-content: center; gap: 4px; line-height: 1;">
+                  <span>{{ consistencyStats.weeklyStreak }}</span>
+                  <span style="font-size: 0.55em; font-weight: 600; opacity: 0.75;">{{ consistencyStats.weeklyStreak === 1 ? 'week' : 'weeks' }}</span>
+                </div>
+                <span style="font-size: 0.75em; color: var(--color-card-text); opacity: 0.85; display: block; margin-top: 5px; font-weight: 500;">
+                  {{ consistencyStats.workoutsThisWeek }}/2 workouts this wk
+                </span>
+              </div>
+
+              <!-- Box 2: Progress (2-Week Overload % Rate) -->
+              <div style="background: var(--color-card-bg); padding: 12px 8px; border-radius: 8px; border: 1px solid var(--color-card-border);">
+                <span style="font-size: 0.72em; text-transform: uppercase; font-weight: 700; color: var(--color-card-text); opacity: 0.75; display: block; margin-bottom: 3px;">2-Wk Progression</span>
+                <div style="font-size: 1.4em; font-weight: 900; color: var(--color-primary, #007bff); display: flex; align-items: center; justify-content: center; gap: 2px; line-height: 1;">
+                  <span>{{ consistencyStats.twoWeekOverloadRate }}%</span>
+                </div>
+                <span style="font-size: 0.75em; color: var(--color-card-text); opacity: 0.85; display: block; margin-top: 5px; font-weight: 500;">
+                  {{ consistencyStats.twoWeekOverloads }}/{{ consistencyStats.twoWeekTotalExercises }} exercises hit target
+                </span>
+              </div>
+
+            </div>
+          </div>
+
           <h3>Choose a Workout to Start:</h3>
           <div v-if="enhancedWorkoutDays.length > 0" class="workout-day-selection">
             <button
@@ -183,15 +222,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import useAuth from '../composables/useAuth';
 import useSettings from '../composables/useSettings';
 import useTrainingProgram from '../composables/useTrainingProgram';
+import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import { useRouter } from 'vue-router';
-import ManifestoComponent from '@/components/ManifestoComponent.vue'; // Can remove this if only used in AboutModal now, but wait, check if used in unauth view
+import ManifestoComponent from '@/components/ManifestoComponent.vue';
 import SkeletonLoader from '@/components/SkeletonLoader.vue';
 import AboutModal from '@/components/AboutModal.vue';
-import type { WorkoutDay, EnhancedWorkoutDay } from '@/types';
+import type { WorkoutDay, EnhancedWorkoutDay, LoggedWorkout } from '@/types';
 
 const { user } = useAuth();
 const { settings } = useSettings();
@@ -213,6 +253,91 @@ const {
   formatDate,
   deleteDraftWorkout
 } = useTrainingProgram();
+
+const { loggedWorkouts: allLoggedWorkouts } = useLoggedWorkouts();
+
+const consistencyStats = computed(() => {
+  const historyList: LoggedWorkout[] = (allLoggedWorkouts && (allLoggedWorkouts as any).length > 0)
+    ? (allLoggedWorkouts as LoggedWorkout[])
+    : (Array.isArray(programWorkoutsHistory) ? (programWorkoutsHistory as LoggedWorkout[]) : ((programWorkoutsHistory as any)?.value || []));
+
+  if (!historyList || historyList.length === 0) return null;
+
+  const now = new Date();
+  const getWeekStart = (d: Date) => {
+    const dt = new Date(d);
+    const day = dt.getDay();
+    const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
+    dt.setDate(diff);
+    dt.setHours(0, 0, 0, 0);
+    return dt.getTime();
+  };
+
+  const currentWeekStart = getWeekStart(now);
+  const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+  const twoWeeksAgoMs = now.getTime() - (14 * 24 * 60 * 60 * 1000);
+
+  const workoutsByWeek = new Map<number, number>();
+  let workoutsThisWeek = 0;
+  let twoWeekOverloads = 0;
+  let twoWeekTotalExercises = 0;
+
+  historyList.forEach((w: LoggedWorkout) => {
+    if (w.date) {
+      const rawDate = w.date;
+      const wDate: Date = rawDate instanceof Date 
+        ? rawDate 
+        : (rawDate && typeof (rawDate as any).toDate === 'function') 
+          ? (rawDate as any).toDate() 
+          : new Date(rawDate as any);
+
+      const wTime = wDate.getTime();
+      const weekStart = getWeekStart(wDate);
+      workoutsByWeek.set(weekStart, (workoutsByWeek.get(weekStart) || 0) + 1);
+
+      if (weekStart === currentWeekStart) {
+        workoutsThisWeek++;
+      }
+
+      if (wTime >= twoWeeksAgoMs) {
+        w.performedExercises?.forEach((ex: any) => {
+          twoWeekTotalExercises++;
+          if (ex.isPR) {
+            twoWeekOverloads++;
+          }
+        });
+      }
+    }
+  });
+
+  // Calculate Active Weekly Streak
+  let streak = 0;
+  if ((workoutsByWeek.get(currentWeekStart) || 0) >= 2) {
+    streak++;
+  }
+
+  let checkWeek = currentWeekStart - oneWeekMs;
+  while (true) {
+    if ((workoutsByWeek.get(checkWeek) || 0) >= 2) {
+      streak++;
+      checkWeek -= oneWeekMs;
+    } else {
+      break;
+    }
+  }
+
+  const twoWeekOverloadRate = twoWeekTotalExercises > 0 
+    ? Math.round((twoWeekOverloads / twoWeekTotalExercises) * 100) 
+    : 0;
+
+  return {
+    weeklyStreak: streak,
+    workoutsThisWeek,
+    twoWeekOverloads,
+    twoWeekTotalExercises,
+    twoWeekOverloadRate
+  };
+});
 
 const showManifestoModal = ref(false);
 const showDiscardDraftModal = ref(false);

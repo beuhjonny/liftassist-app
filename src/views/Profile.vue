@@ -360,10 +360,22 @@
             <span class="stat-value">{{ lifetimeStats.totalWorkouts }}</span>
           </li>
           
+          <li>
+            <span class="stat-icon">💪</span>
+            <span class="stat-label">Total Sets & Reps:</span>
+            <span class="stat-value">{{ lifetimeStats.totalSets.toLocaleString() }} Sets ({{ lifetimeStats.totalReps.toLocaleString() }} Reps)</span>
+          </li>
+
           <li :class="{ 'stat-highlight': lifetimeStats.weeklyStreak > 1 }">
             <span class="stat-icon">🔥</span>
             <span class="stat-label">Weekly Streak (2+):</span>
-            <span class="stat-value">{{ lifetimeStats.weeklyStreak }} {{ lifetimeStats.weeklyStreak === 1 ? 'Week' : 'Weeks' }}</span>
+            <span class="stat-value">{{ lifetimeStats.weeklyStreak }} {{ lifetimeStats.weeklyStreak === 1 ? 'Wk' : 'Wks' }} <small style="opacity: 0.8; font-size: 0.85em; font-weight: normal;">(Best: {{ lifetimeStats.bestWeeklyStreak }} Wks)</small></span>
+          </li>
+
+          <li>
+            <span class="stat-icon">🎯</span>
+            <span class="stat-label">Global Overload Rate:</span>
+            <span class="stat-value">{{ lifetimeStats.globalOverloadRate }}% Success</span>
           </li>
 
           <li>
@@ -476,9 +488,13 @@ interface LifetimeStats {
   totalWorkouts: number;
   totalTimeMinutes: number;
   totalOverloads: number;
+  totalSets: number;
+  totalReps: number;
   firstWorkoutDate: Date | null;
   weeklyStreak: number;
+  bestWeeklyStreak: number;
   heaviestLift: number;
+  globalOverloadRate: number;
 }
 
 interface InfoModalState {
@@ -1711,6 +1727,9 @@ const lifetimeStats = computed<LifetimeStats>(() => {
   let timeMinutes = 0;
   let overloadsCount = 0;
   let maxWeight = 0;
+  let totalSetsCount = 0;
+  let totalRepsCount = 0;
+  let totalExercisesAttempted = 0;
   let firstDate: Date | null = null;
   
   // Streak Calculation
@@ -1733,11 +1752,17 @@ const lifetimeStats = computed<LifetimeStats>(() => {
         }
 
       workout.performedExercises?.forEach(ex => {
+        totalExercisesAttempted++;
         ex.sets.forEach(set => {
+          if (set.status === 'done') {
+            totalSetsCount++;
+            if (typeof set.actualReps === 'number' && set.actualReps > 0) {
+              totalRepsCount += set.actualReps;
+            }
+          }
           if (typeof set.actualWeight === 'number' && typeof set.actualReps === 'number' && set.actualReps > 0) {
             volume += set.actualWeight * set.actualReps;
             
-            // Allow 0 reps? No, valid lift needs reps.
             if (set.status === 'done' && set.actualWeight > maxWeight) {
                 maxWeight = set.actualWeight;
             }
@@ -1754,7 +1779,7 @@ const lifetimeStats = computed<LifetimeStats>(() => {
     });
   }
 
-  // Calculate Streak
+  // Calculate Active Weekly Streak
   let streak = 0;
   const currentWeekStart = getWeekStart(new Date());
   const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
@@ -1775,14 +1800,42 @@ const lifetimeStats = computed<LifetimeStats>(() => {
       }
   }
 
+  // Calculate All-Time Best Streak
+  const weekTimestamps = Array.from(workoutsByWeek.keys()).sort((a, b) => a - b);
+  let bestStreak = 0;
+  let currentRun = 0;
+
+  for (let i = 0; i < weekTimestamps.length; i++) {
+    const week = weekTimestamps[i];
+    const count = workoutsByWeek.get(week) || 0;
+    if (count >= 2) {
+      if (i === 0 || week === weekTimestamps[i - 1] + oneWeekMs) {
+        currentRun++;
+      } else {
+        currentRun = 1;
+      }
+      if (currentRun > bestStreak) bestStreak = currentRun;
+    } else {
+      currentRun = 0;
+    }
+  }
+
+  const globalOverloadRate = totalExercisesAttempted > 0 
+    ? Math.round((overloadsCount / totalExercisesAttempted) * 100) 
+    : 0;
+
   return {
     totalVolume: toDisplay(volume, settings.value.weightUnit),
     totalWorkouts: workoutsCount,
     totalTimeMinutes: timeMinutes,
     totalOverloads: overloadsCount,
+    totalSets: totalSetsCount,
+    totalReps: totalRepsCount,
     firstWorkoutDate: firstDate,
     weeklyStreak: streak,
-    heaviestLift: toDisplay(maxWeight, settings.value.weightUnit)
+    bestWeeklyStreak: Math.max(streak, bestStreak),
+    heaviestLift: toDisplay(maxWeight, settings.value.weightUnit),
+    globalOverloadRate
   };
 });
 
