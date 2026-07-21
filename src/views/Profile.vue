@@ -432,8 +432,8 @@
           
           <li :class="{ 'stat-highlight': lifetimeStats.weeklyStreak > 1 }">
             <span class="stat-icon">🔥</span>
-            <span class="stat-label">Weekly Streak (2+):</span>
-            <span class="stat-value">{{ lifetimeStats.weeklyStreak }} {{ lifetimeStats.weeklyStreak === 1 ? 'Wk' : 'Wks' }} <small style="opacity: 0.8; font-size: 0.85em; font-weight: normal;">(Best: {{ lifetimeStats.bestWeeklyStreak }} Wks)</small></span>
+            <span class="stat-label">Weekly Streak ({{ settings.streakMinWorkoutsPerWeek ?? 2 }}+/wk):</span>
+            <span class="stat-value">{{ lifetimeStats.weeklyStreak }} {{ lifetimeStats.weeklyStreak === 1 ? 'Week' : 'Weeks' }} <small style="opacity: 0.8; font-size: 0.85em; font-weight: normal;">(Best: {{ lifetimeStats.bestWeeklyStreak }} Weeks)</small></span>
           </li>
 
           <li v-if="lifetimeStats.firstWorkoutDate">
@@ -1870,20 +1870,33 @@ const lifetimeStats = computed<LifetimeStats>(() => {
     });
   }
 
+  const minWorkoutsTarget = settings.value.streakMinWorkoutsPerWeek ?? 2;
+  const includeCardio = settings.value.streakIncludeCardio === true;
+
+  if (includeCardio && externalActivities.value && externalActivities.value.length > 0) {
+    externalActivities.value.forEach(act => {
+      if (act.date) {
+        const dateObj = ensureDateObject(act.date);
+        const weekStart = getWeekStart(dateObj);
+        workoutsByWeek.set(weekStart, (workoutsByWeek.get(weekStart) || 0) + 1);
+      }
+    });
+  }
+
   // Calculate Active Weekly Streak
   let streak = 0;
   const currentWeekStart = getWeekStart(new Date());
   const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
 
   // Check current week
-  if ((workoutsByWeek.get(currentWeekStart) || 0) >= 2) {
+  if ((workoutsByWeek.get(currentWeekStart) || 0) >= minWorkoutsTarget) {
       streak++;
   }
 
   // Check past weeks consecutively
   let checkWeek = currentWeekStart - oneWeekMs;
   while (true) {
-      if ((workoutsByWeek.get(checkWeek) || 0) >= 2) {
+      if ((workoutsByWeek.get(checkWeek) || 0) >= minWorkoutsTarget) {
           streak++;
           checkWeek -= oneWeekMs;
       } else {
@@ -1899,7 +1912,7 @@ const lifetimeStats = computed<LifetimeStats>(() => {
   for (let i = 0; i < weekTimestamps.length; i++) {
     const week = weekTimestamps[i];
     const count = workoutsByWeek.get(week) || 0;
-    if (count >= 2) {
+    if (count >= minWorkoutsTarget) {
       if (i === 0 || week === weekTimestamps[i - 1] + oneWeekMs) {
         currentRun++;
       } else {
