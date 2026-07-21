@@ -152,17 +152,25 @@
     </div>
 
     <!-- Skip Exercise Confirmation Modal -->
-    <div v-if="showSkipExerciseConfirm" class="modal-overlay animate-fade-in" style="z-index: 2000;">
+    <div v-if="showSkipExerciseConfirm" class="modal-overlay animate-fade-in" style="z-index: 2000;" @click.self="showSkipExerciseConfirm = false">
       <div class="modal-content card" style="max-width: 420px; text-align: center;">
         <h3 style="margin-top: 0; color: var(--color-card-heading);">Skip Exercise? ⏭️</h3>
         <p style="font-size: 0.95em; opacity: 0.9; line-height: 1.5; margin-bottom: 20px; color: var(--color-card-text);">
           Are you sure you want to skip <strong>{{ currentExercise?.exerciseName }}</strong>? Remaining sets for this exercise will be logged as 0 reps.
         </p>
-        <div style="display: flex; gap: 10px;">
-          <button @click="confirmSkipExercise" class="button-danger full-width" style="padding: 10px; font-weight: 600; border-radius: 6px; background-color: var(--color-danger, #dc3545); border: none; color: white; cursor: pointer; flex: 1;">
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <button 
+            @click="confirmSkipExercise" 
+            class="button-danger" 
+            style="flex: 1; height: 44px; display: flex; align-items: center; justify-content: center; padding: 0 12px; font-weight: 600; border-radius: 6px; background-color: var(--color-danger, #dc3545); border: 1px solid var(--color-danger, #dc3545); color: white; cursor: pointer; box-sizing: border-box; font-size: 0.95em; margin: 0;"
+          >
             Yes, Skip Exercise
           </button>
-          <button @click="showSkipExerciseConfirm = false" class="button-secondary full-width" style="padding: 10px; border-radius: 6px; cursor: pointer; flex: 1;">
+          <button 
+            @click="showSkipExerciseConfirm = false" 
+            class="button-secondary" 
+            style="flex: 1; height: 44px; display: flex; align-items: center; justify-content: center; padding: 0 12px; font-weight: 600; border-radius: 6px; cursor: pointer; box-sizing: border-box; font-size: 0.95em; margin: 0;"
+          >
             Cancel
           </button>
         </div>
