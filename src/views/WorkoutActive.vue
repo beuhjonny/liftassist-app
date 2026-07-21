@@ -84,9 +84,9 @@
       <!-- Header Grid: Back Action | Day Title | Timer -->
       <div class="card-header-grid">
           <div class="header-spacer">
-              <span v-if="workoutLog.length > 0" @click="correctLastSet" class="correct-last-set-action">
-                &larr; Correct Last Set
-              </span>
+              <button v-if="workoutLog.length > 0" @click="correctLastSet" class="correct-last-set-action" title="Undo or edit last logged set">
+                ↩ Undo Set
+              </button>
           </div>
           
           <div class="header-content">
@@ -2282,21 +2282,27 @@ const saveEditedWorkout = () => {
 }
 
 .correct-last-set-action {
-  font-size: 0.85em;
-  color: #007bff; 
+  font-size: 0.78em;
+  font-weight: 500;
+  color: var(--color-card-text);
+  opacity: 0.75;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background-color: transparent;
-  border: 1px solid transparent; 
-  transition: background-color 0.2s, color 0.2s;
-  display: inline-flex; 
+  padding: 4px 10px;
+  border-radius: 6px;
+  background-color: var(--color-card-mute);
+  border: 1px solid var(--color-card-border);
+  transition: all 0.2s ease;
+  display: inline-flex;
   align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 
 .correct-last-set-action:hover {
-  background-color: #e9ecef; 
-  text-decoration: none; 
+  opacity: 1;
+  color: var(--color-card-heading);
+  background-color: var(--color-card-bg);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 /* All other existing styles */
