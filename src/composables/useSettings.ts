@@ -19,6 +19,9 @@ export interface UserSettings {
     cardioDistanceUnit?: CardioDistanceUnitOption;
     enableVideoDemos?: boolean; // Show in-app exercise form video demos
     enableSkipTracker?: boolean; // Show warning indicators on skipped routine days
+    streakMinWorkoutsPerWeek?: number; // Target weekly workout count for streak (default 2)
+    streakIncludeCardio?: boolean; // Include cardio runs/activities in streak count (default false)
+    overloadTimeframeDays?: number; // Timeframe window in days for overload rate (default 14)
 }
 
 const defaultSettings: UserSettings = {
@@ -32,6 +35,9 @@ const defaultSettings: UserSettings = {
     cardioDistanceUnit: 'mi',
     enableVideoDemos: true,
     enableSkipTracker: true,
+    streakMinWorkoutsPerWeek: 2,
+    streakIncludeCardio: false,
+    overloadTimeframeDays: 14,
 };
 
 const settings = ref<UserSettings>({ ...defaultSettings });

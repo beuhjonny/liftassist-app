@@ -68,6 +68,45 @@
 
       <div v-if="activeProgram.id && !isProgramLoading && !programLoadingError">
         <div class="active-program-display card">
+
+          <!-- Consistency & Progress Momentum Bar (Above Routine Title) -->
+          <div v-if="consistencyStats" class="consistency-progress-card card-inset" style="margin-bottom: 20px; padding: 14px 16px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border);">
+            <div style="font-weight: 800; font-size: 0.8em; letter-spacing: 0.8px; text-transform: uppercase; color: var(--color-card-heading); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+              <span>🔥 CONSISTENCY & PROGRESS</span>
+              <span v-if="consistencyStats.weeklyStreak > 0" style="font-size: 0.85em; font-weight: 700; color: #10B981; text-transform: none; letter-spacing: 0;">
+                Active Streak 🔥
+              </span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
+              
+              <!-- Metric 1: Streak & Weekly Progress -->
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-weight: 800; font-size: 1.1em; color: var(--color-card-heading); letter-spacing: -0.2px;">
+                    {{ consistencyStats.weeklyStreak }} Wk Streak
+                  </span>
+                </div>
+                <span style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; font-weight: 500;">
+                  {{ consistencyStats.workoutsThisWeek }}/{{ consistencyStats.targetPerWeek }} workouts logged this wk
+                </span>
+              </div>
+
+              <!-- Metric 2: Overload Rate & Timeframe -->
+              <div style="display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--color-card-border); padding-left: 14px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-weight: 800; font-size: 1.1em; color: var(--color-card-heading); letter-spacing: -0.2px;">
+                    {{ consistencyStats.overloadRate }}% Overload
+                  </span>
+                </div>
+                <span style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; font-weight: 500;">
+                  {{ consistencyStats.overloadHits }}/{{ consistencyStats.overloadTotalExercises }} exercises hit target (last {{ consistencyStats.timeframeDays }}d)
+                </span>
+              </div>
+
+            </div>
+          </div>
+
           <h2>{{ activeProgram.programName }}</h2>
           <p class="routine-description"><em>{{ activeProgram.description || 'Time to train!' }}</em></p>
 
@@ -129,39 +168,6 @@
             </p>
           </div>
 
-          <!-- Minimal Momentum & Progression Bar -->
-          <div v-if="consistencyStats" class="consistency-progress-card card-inset" style="margin-top: 14px; margin-bottom: 22px; padding: 14px 16px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border);">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
-              
-              <!-- Metric 1: Streak & Weekly Progress -->
-              <div style="display: flex; flex-direction: column; gap: 2px;">
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="font-size: 1.1em; line-height: 1;">🔥</span>
-                  <span style="font-weight: 800; font-size: 1.05em; color: var(--color-card-heading); letter-spacing: -0.2px;">
-                    {{ consistencyStats.weeklyStreak }} Wk Streak
-                  </span>
-                </div>
-                <span style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; font-weight: 500;">
-                  {{ consistencyStats.workoutsThisWeek }}/2 workouts logged this wk
-                </span>
-              </div>
-
-              <!-- Metric 2: 2-Wk Overload Rate -->
-              <div style="display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--color-card-border); padding-left: 14px;">
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="font-size: 1.1em; line-height: 1;">⚡</span>
-                  <span style="font-weight: 800; font-size: 1.05em; color: var(--color-card-heading); letter-spacing: -0.2px;">
-                    {{ consistencyStats.twoWeekOverloadRate }}% Overload
-                  </span>
-                </div>
-                <span style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; font-weight: 500;">
-                  {{ consistencyStats.twoWeekOverloads }}/{{ consistencyStats.twoWeekTotalExercises }} exercises hit target
-                </span>
-              </div>
-
-            </div>
-          </div>
-
           <h3>Choose a Workout to Start:</h3>
           <div v-if="enhancedWorkoutDays.length > 0" class="workout-day-selection">
             <button
@@ -221,6 +227,7 @@ import useAuth from '../composables/useAuth';
 import useSettings from '../composables/useSettings';
 import useTrainingProgram from '../composables/useTrainingProgram';
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
+import useExternalActivities from '../composables/useExternalActivities';
 import { useRouter } from 'vue-router';
 import ManifestoComponent from '@/components/ManifestoComponent.vue';
 import SkeletonLoader from '@/components/SkeletonLoader.vue';
@@ -249,13 +256,20 @@ const {
 } = useTrainingProgram();
 
 const { loggedWorkouts: allLoggedWorkouts } = useLoggedWorkouts();
+const { externalActivities } = useExternalActivities();
 
 const consistencyStats = computed(() => {
   const historyList: LoggedWorkout[] = (allLoggedWorkouts && (allLoggedWorkouts as any).length > 0)
     ? (allLoggedWorkouts as LoggedWorkout[])
     : (Array.isArray(programWorkoutsHistory) ? (programWorkoutsHistory as LoggedWorkout[]) : ((programWorkoutsHistory as any)?.value || []));
 
-  if (!historyList || historyList.length === 0) return null;
+  const minWorkoutsTarget = settings.value.streakMinWorkoutsPerWeek ?? 2;
+  const includeCardio = settings.value.streakIncludeCardio === true;
+  const timeframeDays = settings.value.overloadTimeframeDays ?? 14;
+
+  if ((!historyList || historyList.length === 0) && (!includeCardio || !externalActivities || externalActivities.length === 0)) {
+    return null;
+  }
 
   const now = new Date();
   const getWeekStart = (d: Date) => {
@@ -269,13 +283,14 @@ const consistencyStats = computed(() => {
 
   const currentWeekStart = getWeekStart(now);
   const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
-  const twoWeeksAgoMs = now.getTime() - (14 * 24 * 60 * 60 * 1000);
+  const timeframeMs = now.getTime() - (timeframeDays * 24 * 60 * 60 * 1000);
 
-  const workoutsByWeek = new Map<number, number>();
+  const eventsByWeek = new Map<number, number>();
   let workoutsThisWeek = 0;
-  let twoWeekOverloads = 0;
-  let twoWeekTotalExercises = 0;
+  let overloadHits = 0;
+  let overloadTotalExercises = 0;
 
+  // Process Lifting Workouts
   historyList.forEach((w: LoggedWorkout) => {
     if (w.date) {
       const rawDate = w.date;
@@ -287,32 +302,52 @@ const consistencyStats = computed(() => {
 
       const wTime = wDate.getTime();
       const weekStart = getWeekStart(wDate);
-      workoutsByWeek.set(weekStart, (workoutsByWeek.get(weekStart) || 0) + 1);
+      eventsByWeek.set(weekStart, (eventsByWeek.get(weekStart) || 0) + 1);
 
       if (weekStart === currentWeekStart) {
         workoutsThisWeek++;
       }
 
-      if (wTime >= twoWeeksAgoMs) {
+      if (wTime >= timeframeMs) {
         w.performedExercises?.forEach((ex: any) => {
-          twoWeekTotalExercises++;
+          overloadTotalExercises++;
           if (ex.isPR) {
-            twoWeekOverloads++;
+            overloadHits++;
           }
         });
       }
     }
   });
 
+  // Process Cardio Activities if enabled
+  if (includeCardio && externalActivities && externalActivities.length > 0) {
+    externalActivities.forEach((act: any) => {
+      if (act.date) {
+        const rawDate = act.date;
+        const cDate: Date = rawDate instanceof Date 
+          ? rawDate 
+          : (rawDate && typeof (rawDate as any).toDate === 'function') 
+            ? (rawDate as any).toDate() 
+            : new Date(rawDate as any);
+        const weekStart = getWeekStart(cDate);
+        eventsByWeek.set(weekStart, (eventsByWeek.get(weekStart) || 0) + 1);
+
+        if (weekStart === currentWeekStart) {
+          workoutsThisWeek++;
+        }
+      }
+    });
+  }
+
   // Calculate Active Weekly Streak
   let streak = 0;
-  if ((workoutsByWeek.get(currentWeekStart) || 0) >= 2) {
+  if ((eventsByWeek.get(currentWeekStart) || 0) >= minWorkoutsTarget) {
     streak++;
   }
 
   let checkWeek = currentWeekStart - oneWeekMs;
   while (true) {
-    if ((workoutsByWeek.get(checkWeek) || 0) >= 2) {
+    if ((eventsByWeek.get(checkWeek) || 0) >= minWorkoutsTarget) {
       streak++;
       checkWeek -= oneWeekMs;
     } else {
@@ -320,16 +355,18 @@ const consistencyStats = computed(() => {
     }
   }
 
-  const twoWeekOverloadRate = twoWeekTotalExercises > 0 
-    ? Math.round((twoWeekOverloads / twoWeekTotalExercises) * 100) 
+  const overloadRate = overloadTotalExercises > 0 
+    ? Math.round((overloadHits / overloadTotalExercises) * 100) 
     : 0;
 
   return {
     weeklyStreak: streak,
     workoutsThisWeek,
-    twoWeekOverloads,
-    twoWeekTotalExercises,
-    twoWeekOverloadRate
+    targetPerWeek: minWorkoutsTarget,
+    overloadHits,
+    overloadTotalExercises,
+    overloadRate,
+    timeframeDays
   };
 });
 

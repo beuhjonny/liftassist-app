@@ -151,6 +151,65 @@
                 </div>
             </div>
         </div>
+
+        <!-- Consistency & Progression Options -->
+        <div style="border-top: 1px dashed var(--color-card-border); padding-top: 12px; margin-top: 12px;">
+          <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.95em; color: var(--color-card-heading); margin-bottom: 12px;">
+            Consistency & Progression Goals 🎯
+            <span 
+              @click.stop.prevent="showTooltipAlert('Customize your weekly streak target, cardio inclusion, and home dashboard overload timeframe window.')"
+              style="font-size: 0.95em; cursor: pointer; opacity: 0.8;" 
+              title="Customize your weekly streak target, cardio inclusion, and home dashboard overload timeframe window."
+            >💡</span>
+          </label>
+
+          <!-- Weekly Workout Goal -->
+          <div class="setting-item" style="margin-bottom: 10px;">
+            <label style="font-weight: 500; font-size: 0.9em;">Weekly Workout Target</label>
+            <div class="unit-toggle" style="display: flex; gap: 4px;">
+              <button 
+                v-for="num in [1, 2, 3, 4, 5]" 
+                :key="num"
+                @click="updateStreakMinWorkouts(num)"
+                :class="['button-secondary', { active: (settings.streakMinWorkoutsPerWeek ?? 2) === num }]"
+                style="padding: 4px 10px; font-weight: 600; font-size: 0.85em;"
+              >
+                {{ num }}/wk
+              </button>
+            </div>
+          </div>
+
+          <!-- Include Cardio in Streak -->
+          <div class="setting-item" style="margin-bottom: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <label style="font-weight: 500; font-size: 0.9em;">Include Cardio in Streak</label>
+              <div style="display: flex; align-items: center;">
+                <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                  <input type="checkbox" :checked="settings.streakIncludeCardio === true" @change="toggleStreakIncludeCardio" style="opacity: 0; width: 0; height: 0;">
+                  <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                  <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.streakIncludeCardio === true ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                </label>
+                <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.streakIncludeCardio === true ? 'On' : 'Off' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overload Timeframe -->
+          <div class="setting-item">
+            <label style="font-weight: 500; font-size: 0.9em;">Overload Timeframe Window</label>
+            <div class="unit-toggle" style="display: flex; gap: 4px;">
+              <button 
+                v-for="d in [7, 14, 30]" 
+                :key="d"
+                @click="updateOverloadTimeframe(d)"
+                :class="['button-secondary', { active: (settings.overloadTimeframeDays ?? 14) === d }]"
+                style="padding: 4px 10px; font-weight: 600; font-size: 0.85em;"
+              >
+                {{ d }} Days
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Connections Card (Collapsible) -->
@@ -2102,6 +2161,19 @@ const toggleVideoDemos = (e: Event) => {
 const toggleSkipTracker = (e: Event) => {
   const checked = (e.target as HTMLInputElement).checked;
   saveSettings({ enableSkipTracker: checked });
+};
+
+const updateStreakMinWorkouts = (count: number) => {
+  saveSettings({ streakMinWorkoutsPerWeek: count });
+};
+
+const toggleStreakIncludeCardio = (e: Event) => {
+  const checked = (e.target as HTMLInputElement).checked;
+  saveSettings({ streakIncludeCardio: checked });
+};
+
+const updateOverloadTimeframe = (days: number) => {
+  saveSettings({ overloadTimeframeDays: days });
 };
 
 // Device Pairing Logic
