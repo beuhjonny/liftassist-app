@@ -353,31 +353,14 @@ const overallOverloadStats = computed(() => {
   let overloadsCount = 0;
   let totalExercises = 0;
 
-  const sortedWorkouts = [...loggedWorkouts].sort((a: LoggedWorkout, b: LoggedWorkout) => {
-    const parseD = (raw: any): number => {
-      if (raw instanceof Date) return raw.getTime();
-      if (raw && typeof raw.toDate === 'function') return raw.toDate().getTime();
-      return new Date(raw || 0).getTime();
-    };
-    return parseD(a.date) - parseD(b.date);
-  });
-
-  const seenExercisesInHistory = new Set<string>();
-
-  sortedWorkouts.forEach((w: LoggedWorkout) => {
+  loggedWorkouts.forEach((w: LoggedWorkout) => {
     w.performedExercises?.forEach((ex: any) => {
-      const exKey = ex.exerciseName?.trim().toLowerCase();
-      const hasBaseline = exKey ? seenExercisesInHistory.has(exKey) : false;
-      if (exKey) seenExercisesInHistory.add(exKey);
-
       const isEligible = ex.enableProgression !== false && 
                          !(ex.sets && Array.isArray(ex.sets) && ex.sets.every((s: any) => s.isTimed === true));
       if (isEligible) {
+        totalExercises++;
         if (ex.isPR) {
           overloadsCount++;
-          totalExercises++;
-        } else if (hasBaseline) {
-          totalExercises++;
         }
       }
     });

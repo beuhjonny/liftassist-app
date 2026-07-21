@@ -339,16 +339,10 @@ const consistencyStats = computed(() => {
       }
 
       w.performedExercises?.forEach((ex: any) => {
-        const exKey = ex.exerciseName?.trim().toLowerCase();
-        const hasBaseline = exKey ? seenExercises.has(exKey) : false;
-        if (exKey) seenExercises.add(exKey);
-
         if (wTime >= timeframeMs && isExerciseEligibleForOverload(ex)) {
+          overloadTotalExercises++;
           if (ex.isPR) {
             overloadHits++;
-            overloadTotalExercises++;
-          } else if (hasBaseline) {
-            overloadTotalExercises++;
           }
         }
       });

@@ -1845,19 +1845,13 @@ const lifetimeStats = computed<LifetimeStats>(() => {
         }
 
         workout.performedExercises?.forEach(ex => {
-          const exKey = ex.exerciseName?.trim().toLowerCase();
-          const hasBaseline = exKey ? seenExercisesInProfile.has(exKey) : false;
-          if (exKey) seenExercisesInProfile.add(exKey);
-
           const isEligible = ex.enableProgression !== false && 
                              !(ex.sets && Array.isArray(ex.sets) && ex.sets.every((s: any) => s.isTimed === true));
 
           if (isEligible) {
+            totalExercisesAttempted++;
             if (ex.isPR) {
               overloadsCount++;
-              totalExercisesAttempted++;
-            } else if (hasBaseline) {
-              totalExercisesAttempted++;
             }
           }
 
