@@ -409,6 +409,26 @@
     <div v-else class="loading-message card">
       <p>Loading user information or not logged in...</p>
     </div>
+
+    <!-- Reusable Custom App Info Modal -->
+    <div v-if="activeInfoModal" class="modal-overlay animate-fade-in" @click.self="activeInfoModal = null" style="z-index: 3000;">
+      <div class="modal-content card" style="max-width: 480px; text-align: center; padding: 25px; position: relative;">
+        <button @click="activeInfoModal = null" class="modal-close-button">&times;</button>
+        
+        <h3 style="margin-top: 0; margin-bottom: 12px; color: var(--color-card-heading); font-size: 1.25em;">
+          {{ activeInfoModal.title || 'Information 💡' }}
+        </h3>
+        
+        <p style="font-size: 0.95em; line-height: 1.5; color: var(--color-card-text); margin-bottom: 22px; opacity: 0.9;">
+          {{ activeInfoModal.message }}
+        </p>
+
+        <button @click="activeInfoModal = null" class="button-primary full-width" style="padding: 12px; font-weight: 600; width: 100%;">
+          Got it
+        </button>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -442,8 +462,10 @@ interface LifetimeStats {
 const { user, logout } = useAuth();
 const router = useRouter();
 
-const showTooltipAlert = (msg: string) => {
-  alert(msg);
+const activeInfoModal = ref<{ title?: string; message: string } | null>(null);
+
+const showTooltipAlert = (msg: string, title: string = 'Information 💡') => {
+  activeInfoModal.value = { title, message: msg };
 };
 
 const { fetchCalendarIndex: rebuildCalendarIndex } = useHistoryIndex();

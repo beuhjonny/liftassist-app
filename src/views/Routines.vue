@@ -957,6 +957,25 @@ REQUIRED JSON STRUCTURE:
       </div>
     </div>
 
+    <!-- Reusable Custom App Info Modal -->
+    <div v-if="activeInfoModal" class="modal-overlay animate-fade-in" @click.self="activeInfoModal = null" style="z-index: 3000;">
+      <div class="modal-content card" style="max-width: 480px; text-align: center; padding: 25px; position: relative;">
+        <button @click="activeInfoModal = null" class="modal-close-button">&times;</button>
+        
+        <h3 style="margin-top: 0; margin-bottom: 12px; color: var(--color-card-heading); font-size: 1.25em;">
+          {{ activeInfoModal.title || 'Information 💡' }}
+        </h3>
+        
+        <p style="font-size: 0.95em; line-height: 1.5; color: var(--color-card-text); margin-bottom: 22px; opacity: 0.9;">
+          {{ activeInfoModal.message }}
+        </p>
+
+        <button @click="activeInfoModal = null" class="button-primary full-width" style="padding: 12px; font-weight: 600; width: 100%;">
+          Got it
+        </button>
+      </div>
+    </div>
+
   </div> <!-- End routines-view -->
 </template>
 
@@ -1053,19 +1072,30 @@ const filteredRoutineBank = computed(() => {
   });
 });
 
-const showTooltipAlert = (msg: string) => {
-  alert(msg);
+const activeInfoModal = ref<{ title?: string; message: string } | null>(null);
+
+const showTooltipAlert = (msg: string, title: string = 'Information 💡') => {
+  activeInfoModal.value = { title, message: msg };
 };
 
 const copyPromptToClipboard = (text: string) => {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(() => {
-      alert("📋 Prompt copied to clipboard! Paste it into ChatGPT, Claude, or Gemini.");
+      activeInfoModal.value = {
+        title: 'Prompt Copied! 📋',
+        message: 'Prompt copied to clipboard! Paste it into ChatGPT, Claude, or Gemini.'
+      };
     }).catch(() => {
-      alert("Could not copy automatically. Please select text manually.");
+      activeInfoModal.value = {
+        title: 'Clipboard Notice 📋',
+        message: 'Could not copy automatically. Please select text manually.'
+      };
     });
   } else {
-    alert("Clipboard access not available on this browser.");
+    activeInfoModal.value = {
+      title: 'Clipboard Notice 📋',
+      message: 'Clipboard access is not available on this browser.'
+    };
   }
 };
 
