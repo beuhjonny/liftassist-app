@@ -42,8 +42,9 @@
       <div class="current-set-info-header">
         <div class="set-header-spacer"></div>
         <h3>Set {{ setNumber }} of {{ exercise.targetSets }}</h3>
-        <div class="set-header-action">
+        <div class="set-header-action" style="display: flex; align-items: center; gap: 6px;">
             <button @click="$emit('openEdit')" class="button-icon extra-small" title="Edit Weight/Reps">✏️</button>
+            <button @click="$emit('skipExercise')" class="button-icon extra-small danger" title="Skip Exercise (Log 0 reps for remaining sets)" style="font-size: 0.9em; cursor: pointer; background: none; border: none; padding: 2px;">⏭️</button>
         </div>
       </div>
       <div class="prescription-details">
@@ -122,6 +123,7 @@ defineEmits<{
   (e: 'cancelHold'): void;
   (e: 'logSet', status: 'done' | 'failed'): void;
   (e: 'openDemo', name: string): void;
+  (e: 'skipExercise'): void;
 }>();
 </script>
 

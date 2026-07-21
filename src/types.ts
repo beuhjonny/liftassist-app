@@ -107,4 +107,8 @@ export interface TimelineSetInfo {
   supersetColorIndex?: number;
   separatorGroupIndex: number;
   isConnectedToNext?: boolean;
+  prescribedWeight?: number;
+  prescribedReps?: number;
+  isTimed?: boolean;
+  targetSets?: number;
 }

@@ -54,6 +54,7 @@
         <WorkoutTimeline 
           :timelineData="allSetsInSessionForTimeline" 
           :workoutLog="workoutLog" 
+          :weightUnit="settings.weightUnit"
         />
       </div>
 
@@ -77,6 +78,7 @@
         @cancelHold="stopHoldTimer(false)"
         @logSet="logSet"
         @openDemo="openDemoModal"
+        @skipExercise="showSkipExerciseConfirm = true"
       />
     </div>
 
@@ -106,6 +108,7 @@
         <WorkoutTimeline 
           :timelineData="allSetsInSessionForTimeline" 
           :workoutLog="workoutLog" 
+          :weightUnit="settings.weightUnit"
         />
       </div>
       <h2>RESTING...</h2>
@@ -131,10 +134,39 @@
           <strong>{{ nextSetDetails.prescribedReps }} {{ nextSetDetails.isTimed ? 'sec hold' : 'reps' }} @ {{ nextSetDetails.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}</strong>
         </p>
       </div>
-      <button @click="proceedToNextSet" class="button-primary start-next-set-button" :class="{ 'embiggened': settings.embiggenButtons }">
-        <template v-if="!nextSetDetails">Finish Workout</template>
-        <template v-else>{{ restCountdown > 0 ? 'Skip Rest & Start Next Set' : 'Start Next Set' }}</template>
-      </button>
+
+      <div style="display: flex; gap: 10px; margin-top: 15px; width: 100%; flex-wrap: wrap;">
+        <button @click="proceedToNextSet" class="button-primary start-next-set-button" :class="{ 'embiggened': settings.embiggenButtons }" style="flex: 3; min-width: 160px;">
+          <template v-if="!nextSetDetails">Finish Workout</template>
+          <template v-else>{{ restCountdown > 0 ? 'Skip Rest' : 'Start Next Set' }}</template>
+        </button>
+        <button 
+          @click="showSkipExerciseConfirm = true" 
+          class="button-secondary" 
+          style="flex: 1; margin-top: 0; padding: 12px 10px; background-color: rgba(220, 53, 69, 0.12); border: 1px solid rgba(220, 53, 69, 0.3); color: var(--color-danger, #dc3545); font-weight: 600; white-space: nowrap; border-radius: 6px; cursor: pointer; min-width: 120px;"
+          title="Skip all remaining sets for this exercise"
+        >
+          ⏭️ Skip Exercise
+        </button>
+      </div>
+    </div>
+
+    <!-- Skip Exercise Confirmation Modal -->
+    <div v-if="showSkipExerciseConfirm" class="modal-overlay animate-fade-in" style="z-index: 2000;">
+      <div class="modal-content card" style="max-width: 420px; text-align: center;">
+        <h3 style="margin-top: 0; color: var(--color-card-heading);">Skip Exercise? ⏭️</h3>
+        <p style="font-size: 0.95em; opacity: 0.9; line-height: 1.5; margin-bottom: 20px; color: var(--color-card-text);">
+          Are you sure you want to skip <strong>{{ currentExercise?.exerciseName }}</strong>? Remaining sets for this exercise will be logged as 0 reps.
+        </p>
+        <div style="display: flex; gap: 10px;">
+          <button @click="confirmSkipExercise" class="button-danger full-width" style="padding: 10px; font-weight: 600; border-radius: 6px; background-color: var(--color-danger, #dc3545); border: none; color: white; cursor: pointer; flex: 1;">
+            Yes, Skip Exercise
+          </button>
+          <button @click="showSkipExerciseConfirm = false" class="button-secondary full-width" style="padding: 10px; border-radius: 6px; cursor: pointer; flex: 1;">
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
 
     <div v-if="workoutPhase === 'complete'" class="workout-content card">
@@ -697,6 +729,57 @@ const getEffectivePrescribedWeight = computed((): number => {
 const formattedRestTime = computed(() => { const m = Math.floor(restCountdown.value / 60); const s = restCountdown.value % 60; return `${m}:${s < 10 ? '0' : ''}${s}`; });
 const timerProgressPercentage = computed(() => (workoutPhase.value === 'resting' && restDurationToUse.value > 0) ? (restCountdown.value / restDurationToUse.value) * 100 : 100);
 
+const showSkipExerciseConfirm = ref(false);
+
+const confirmSkipExercise = async () => {
+  showSkipExerciseConfirm.value = false;
+  if (!currentExercise.value) return;
+
+  const currentExId = currentExercise.value.id;
+  const currentExName = currentExercise.value.exerciseName;
+  const targetSets = currentExercise.value.targetSets;
+
+  // Log all remaining sets for current exercise as 0 reps / failed
+  for (let s = currentSetNumber.value; s <= targetSets; s++) {
+    workoutLog.push({
+      exerciseId: currentExId,
+      exerciseName: currentExName,
+      setNumber: s,
+      prescribedWeight: currentExercise.value.prescribedWeight,
+      prescribedReps: currentExercise.value.prescribedReps,
+      actualWeight: currentExercise.value.prescribedWeight,
+      actualReps: 0,
+      status: 'failed',
+      timestamp: new Date(),
+      isTimed: currentExercise.value.isTimed
+    });
+  }
+
+  if (timerInterval) {
+    clearInterval(timerInterval);
+    timerInterval = undefined;
+  }
+  stopActivitySetTimer();
+
+  // Advance past this exercise and any connected superset slaves
+  let nextExIndex = currentExerciseIndex.value + 1;
+  while (nextExIndex < sessionExercises.length && sessionExercises[nextExIndex].isSupersetWithPrevious) {
+    nextExIndex++;
+  }
+
+  if (nextExIndex >= sessionExercises.length) {
+    workoutPhase.value = 'complete';
+    workoutEndTime.value = new Date();
+  } else {
+    currentExerciseIndex.value = nextExIndex;
+    currentSetNumber.value = 1;
+    workoutPhase.value = 'activeSet';
+    startActivitySetTimer();
+  }
+
+  await saveDraftWorkout();
+};
+
 const allSetsInSessionForTimeline = computed<TimelineSetInfo[]>(() => {
   const flatList: TimelineSetInfo[] = [];
   let i = 0;
@@ -704,7 +787,6 @@ const allSetsInSessionForTimeline = computed<TimelineSetInfo[]>(() => {
   
   while (i < sessionExercises.length) {
       const currentEx = sessionExercises[i];
-      // Check if this is the start of a superset chain
       const chain = [currentEx];
       let j = i + 1;
       while (j < sessionExercises.length && sessionExercises[j].isSupersetWithPrevious) {
@@ -713,17 +795,17 @@ const allSetsInSessionForTimeline = computed<TimelineSetInfo[]>(() => {
       }
       
       if (chain.length > 1) {
-          // It is a superset chain. Interleave sets.
           const sets = currentEx.targetSets || 0;
           for (let s = 1; s <= sets; s++) {
               chain.forEach((ex, idx) => {
-                  // Determine if this dot should connect to the next one
-                  // It connects if it is NOT the last item in the chain
                   const connects = idx < chain.length - 1;
-                  
                   flatList.push({ 
                       exerciseName: ex.exerciseName, 
                       setNumberWithinExercise: s,
+                      targetSets: ex.targetSets || 0,
+                      prescribedWeight: toDisplay(ex.prescribedWeight, settings.value.weightUnit),
+                      prescribedReps: ex.prescribedReps,
+                      isTimed: ex.isTimed,
                       isSuperset: true,
                       supersetColorIndex: idx,
                       separatorGroupIndex: groupCounter,
@@ -731,18 +813,21 @@ const allSetsInSessionForTimeline = computed<TimelineSetInfo[]>(() => {
                   });
               });
           }
-          groupCounter++; // Increment group only after the entire superset chain is processed
-          i = j; // Skip processed exercises
+          groupCounter++;
+          i = j;
       } else {
-          // Normal exercise
           for (let s = 1; s <= (currentEx.targetSets || 0); s++) {
               flatList.push({ 
                   exerciseName: currentEx.exerciseName, 
                   setNumberWithinExercise: s,
+                  targetSets: currentEx.targetSets || 0,
+                  prescribedWeight: toDisplay(currentEx.prescribedWeight, settings.value.weightUnit),
+                  prescribedReps: currentEx.prescribedReps,
+                  isTimed: currentEx.isTimed,
                   separatorGroupIndex: groupCounter 
               });
           }
-          groupCounter++; // Increment group only after all sets of this exercise
+          groupCounter++;
           i++;
       }
   }
@@ -751,8 +836,7 @@ const allSetsInSessionForTimeline = computed<TimelineSetInfo[]>(() => {
 
 const nextSetDetails = computed(() => {
   if (!currentExercise.value && workoutPhase.value !== 'overview') return null;
-  let tempCurrentSetNumber = currentSetNumber.value;
-  let tempCurrentExerciseIndex = currentExerciseIndex.value;
+  
   if (workoutPhase.value === 'overview' && sessionExercises.length > 0) {
       const firstExercise = sessionExercises[0];
       return { 
@@ -761,31 +845,58 @@ const nextSetDetails = computed(() => {
         setNumber: 1, 
         targetSets: firstExercise.targetSets, 
         prescribedReps: firstExercise.prescribedReps, 
-        prescribedWeight: firstExercise.prescribedWeight,
+        prescribedWeight: toDisplay(firstExercise.prescribedWeight, settings.value.weightUnit),
         isTimed: firstExercise.isTimed
       };
   }
+
   if (!currentExercise.value) return null;
-  let nextExerciseDetails = currentExercise.value;
-  if (tempCurrentSetNumber < nextExerciseDetails.targetSets) {
-    tempCurrentSetNumber++;
-  } else {
-    tempCurrentExerciseIndex++;
-    if (tempCurrentExerciseIndex < sessionExercises.length) {
-      nextExerciseDetails = sessionExercises[tempCurrentExerciseIndex];
-      tempCurrentSetNumber = 1;
+
+  let nextExIndex = currentExerciseIndex.value;
+  let nextSetNum = currentSetNumber.value;
+
+  const currentEx = currentExercise.value;
+  const isSupersetChain = currentEx.isSupersetWithPrevious || 
+                          (nextExIndex + 1 < sessionExercises.length && sessionExercises[nextExIndex + 1].isSupersetWithPrevious);
+
+  if (isSupersetChain) {
+    let headIndex = nextExIndex;
+    while (headIndex > 0 && sessionExercises[headIndex].isSupersetWithPrevious) {
+      headIndex--;
+    }
+    const headEx = sessionExercises[headIndex];
+
+    if (nextSetNum < headEx.targetSets) {
+      nextExIndex = headIndex;
+      nextSetNum = nextSetNum + 1;
     } else {
-      return null;
+      let nextIndex = headIndex + 1;
+      while (nextIndex < sessionExercises.length && sessionExercises[nextIndex].isSupersetWithPrevious) {
+        nextIndex++;
+      }
+      nextExIndex = nextIndex;
+      nextSetNum = 1;
+    }
+  } else {
+    if (nextSetNum < currentEx.targetSets) {
+      nextSetNum++;
+    } else {
+      nextExIndex++;
+      nextSetNum = 1;
     }
   }
+
+  if (nextExIndex >= sessionExercises.length) return null;
+
+  const targetEx = sessionExercises[nextExIndex];
   return {
-    ...nextExerciseDetails,
-    exerciseName: nextExerciseDetails.exerciseName,
-    setNumber: tempCurrentSetNumber,
-    targetSets: nextExerciseDetails.targetSets,
-    prescribedReps: nextExerciseDetails.prescribedReps,
-    prescribedWeight: toDisplay(nextExerciseDetails.prescribedWeight, settings.value.weightUnit),
-    isTimed: nextExerciseDetails.isTimed
+    ...targetEx,
+    exerciseName: targetEx.exerciseName,
+    setNumber: nextSetNum,
+    targetSets: targetEx.targetSets,
+    prescribedReps: targetEx.prescribedReps,
+    prescribedWeight: toDisplay(targetEx.prescribedWeight, settings.value.weightUnit),
+    isTimed: targetEx.isTimed
   };
 });
 

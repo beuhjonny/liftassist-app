@@ -11,8 +11,8 @@
             'tooltip-active': activeTooltipIndex === index,
             'connected-dot': set.isConnectedToNext
           }"
-          :title="`${set.exerciseName} - Set ${set.setNumberWithinExercise}`"
-          @click="toggleTooltip(index, `${set.exerciseName} - Set ${set.setNumberWithinExercise}`)"
+          :title="formatSetInfo(set, index)"
+          @click="toggleTooltip(index, set)"
         ></span>
         <span
           v-if="index < timelineData.length - 1 && set.separatorGroupIndex !== timelineData[index + 1].separatorGroupIndex"
@@ -29,32 +29,49 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { TimelineSetInfo, LoggedSetData } from '@/types';
+import { displayUnit } from '@/utils/weight';
 
 const props = defineProps<{
   timelineData: TimelineSetInfo[];
   workoutLog: LoggedSetData[];
+  weightUnit?: 'lbs' | 'kg';
 }>();
 
 const activeTooltipIndex = ref<number | null>(null);
 const tooltipText = ref('');
 
-// Computed based on log length
-const completedSetsCount = props.workoutLog.length; // Actually simpler, we can just use length directly in template but consistency is nice
+const completedSetsCount = props.workoutLog.length;
 
 const getSetStatus = (index: number) => {
     if (index < props.workoutLog.length) {
         return props.workoutLog[index].status;
     }
     return null;
-}
+};
 
-const toggleTooltip = (index: number, text: string) => {
+const formatSetInfo = (set: TimelineSetInfo, index: number): string => {
+  const unit = displayUnit(props.weightUnit || 'lbs');
+  const loggedSet = props.workoutLog[index];
+  
+  let setDetail = '';
+  if (loggedSet) {
+    const statusText = loggedSet.status === 'done' ? '✓ Logged' : '⚠️ Skipped';
+    setDetail = `: ${loggedSet.actualReps} ${loggedSet.isTimed ? 'sec' : 'reps'} @ ${loggedSet.actualWeight} ${unit} (${statusText})`;
+  } else if (typeof set.prescribedReps === 'number') {
+    setDetail = `: ${set.prescribedReps} ${set.isTimed ? 'sec' : 'reps'} @ ${set.prescribedWeight ?? 0} ${unit}`;
+  }
+
+  const setTotal = set.targetSets ? ` of ${set.targetSets}` : '';
+  return `${set.exerciseName} - Set ${set.setNumberWithinExercise}${setTotal}${setDetail}`;
+};
+
+const toggleTooltip = (index: number, set: TimelineSetInfo) => {
   if (activeTooltipIndex.value === index) {
     activeTooltipIndex.value = null;
     tooltipText.value = '';
   } else {
     activeTooltipIndex.value = index;
-    tooltipText.value = text;
+    tooltipText.value = formatSetInfo(set, index);
   }
 };
 </script>
