@@ -205,6 +205,21 @@
             </div>
           </div>
 
+          <!-- Show Cardio on Homepage -->
+          <div class="setting-item">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <label style="font-weight: 500; font-size: 0.95em; color: var(--color-card-heading);">Show Cardio on Homepage</label>
+              <div style="display: flex; align-items: center;">
+                <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                  <input type="checkbox" :checked="settings.showCardioOnHome === true" @change="toggleShowCardioOnHome" style="opacity: 0; width: 0; height: 0;">
+                  <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                  <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.showCardioOnHome === true ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                </label>
+                <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8; font-weight: 600;">{{ settings.showCardioOnHome === true ? 'On' : 'Off' }}</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Overload Timeframe -->
           <div class="setting-item">
             <label style="font-weight: 500; font-size: 0.95em; color: var(--color-card-heading);">Overload Timeframe Window</label>
@@ -2216,6 +2231,11 @@ const updateStreakMinWorkouts = (count: number) => {
 const toggleStreakIncludeCardio = (e: Event) => {
   const checked = (e.target as HTMLInputElement).checked;
   saveSettings({ streakIncludeCardio: checked });
+};
+
+const toggleShowCardioOnHome = (e: Event) => {
+  const checked = (e.target as HTMLInputElement).checked;
+  saveSettings({ showCardioOnHome: checked });
 };
 
 const updateOverloadTimeframe = (days: number) => {

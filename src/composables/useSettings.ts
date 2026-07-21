@@ -22,6 +22,7 @@ export interface UserSettings {
     streakMinWorkoutsPerWeek?: number; // Target weekly workout count for streak (default 2)
     streakIncludeCardio?: boolean; // Include cardio runs/activities in streak count (default false)
     overloadTimeframeDays?: number; // Timeframe window in days for overload rate (default 14)
+    showCardioOnHome?: boolean; // Render Cardio box on Homepage (default false)
 }
 
 const defaultSettings: UserSettings = {
@@ -38,6 +39,7 @@ const defaultSettings: UserSettings = {
     streakMinWorkoutsPerWeek: 2,
     streakIncludeCardio: false,
     overloadTimeframeDays: 14,
+    showCardioOnHome: false,
 };
 
 const settings = ref<UserSettings>({ ...defaultSettings });
