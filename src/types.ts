@@ -75,6 +75,7 @@ export interface PerformedExerciseInLog {
   exerciseName: string;
   sets: LoggedSetData[];
   isPR?: boolean;
+  enableProgression?: boolean;
 }
 
 export interface LoggedWorkout {

@@ -355,9 +355,13 @@ const overallOverloadStats = computed(() => {
 
   loggedWorkouts.forEach((w: LoggedWorkout) => {
     w.performedExercises?.forEach((ex: any) => {
-      totalExercises++;
-      if (ex.isPR) {
-        overloadsCount++;
+      const isEligible = ex.enableProgression !== false && 
+                         !(ex.sets && Array.isArray(ex.sets) && ex.sets.every((s: any) => s.isTimed === true));
+      if (isEligible) {
+        totalExercises++;
+        if (ex.isPR) {
+          overloadsCount++;
+        }
       }
     });
   });

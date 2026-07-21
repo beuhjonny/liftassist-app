@@ -143,9 +143,14 @@ const chartData = computed(() => {
 
       if (w.performedExercises) {
         w.performedExercises.forEach(ex => {
-          metricGroupData[label].totalExercises += 1;
-          if (ex.isPR) {
-            metricGroupData[label].overloadHits += 1;
+          const isEligible = ex.enableProgression !== false && 
+                             !(ex.sets && Array.isArray(ex.sets) && ex.sets.every((s: any) => s.isTimed === true));
+
+          if (isEligible) {
+            metricGroupData[label].totalExercises += 1;
+            if (ex.isPR) {
+              metricGroupData[label].overloadHits += 1;
+            }
           }
 
           if (!ex.sets) return;

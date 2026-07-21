@@ -894,6 +894,7 @@ const completedPerformedExercisesSummary = computed<PerformedExerciseInLog[]>(()
         exerciseName: exConfig.exerciseName,
         sets: setsForThisEx,
         isPR: isExercisePR,
+        enableProgression: exConfig.enableProgression !== false && exConfig.isToFailure !== true,
       };
     })
     .filter(ex => ex !== null) as PerformedExerciseInLog[];

@@ -287,6 +287,27 @@ const consistencyStats = computed(() => {
   let overloadHits = 0;
   let overloadTotalExercises = 0;
 
+  const isExerciseEligibleForOverload = (ex: any): boolean => {
+    if (!ex) return false;
+    if (ex.enableProgression === false) return false;
+    if (ex.sets && Array.isArray(ex.sets) && ex.sets.length > 0) {
+      if (ex.sets.every((s: any) => s.isTimed === true)) return false;
+    }
+    if (activeProgram && activeProgram.workoutDays) {
+      for (const day of activeProgram.workoutDays) {
+        if (day.exercises) {
+          const config = day.exercises.find(
+            e => e.exerciseName && e.exerciseName.trim().toLowerCase() === ex.exerciseName?.trim().toLowerCase()
+          );
+          if (config) {
+            if (config.enableProgression === false || config.isToFailure === true) return false;
+          }
+        }
+      }
+    }
+    return true;
+  };
+
   // Process Lifting Workouts
   historyList.forEach((w: LoggedWorkout) => {
     if (w.date) {
@@ -307,9 +328,11 @@ const consistencyStats = computed(() => {
 
       if (wTime >= timeframeMs) {
         w.performedExercises?.forEach((ex: any) => {
-          overloadTotalExercises++;
-          if (ex.isPR) {
-            overloadHits++;
+          if (isExerciseEligibleForOverload(ex)) {
+            overloadTotalExercises++;
+            if (ex.isPR) {
+              overloadHits++;
+            }
           }
         });
       }

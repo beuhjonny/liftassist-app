@@ -1843,7 +1843,16 @@ const lifetimeStats = computed<LifetimeStats>(() => {
         }
 
       workout.performedExercises?.forEach(ex => {
-        totalExercisesAttempted++;
+        const isEligible = ex.enableProgression !== false && 
+                           !(ex.sets && Array.isArray(ex.sets) && ex.sets.every((s: any) => s.isTimed === true));
+
+        if (isEligible) {
+          totalExercisesAttempted++;
+          if (ex.isPR) {
+            overloadsCount++;
+          }
+        }
+
         ex.sets.forEach(set => {
           if (set.status === 'done') {
             totalSetsCount++;
@@ -1859,9 +1868,6 @@ const lifetimeStats = computed<LifetimeStats>(() => {
             }
           }
         });
-        if (ex.isPR) {
-          overloadsCount++;
-        }
       });
 
       if (typeof workout.durationMinutes === 'number' && workout.durationMinutes > 0) {
