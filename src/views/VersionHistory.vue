@@ -24,6 +24,19 @@
                 <h3>Change Log</h3>
 
                 <div class="log-entry">
+                    <span class="log-date">Jul 21, 2026</span>
+                    <h4>Routine Bank Library, AI Prompting & App Modals Update</h4>
+                    <p>A major quality-of-life update focused on routine creation, app customization, and seamless user experience:</p>
+                    <ul class="feature-list">
+                         <li><strong>Routine Preset Library (24 Routines):</strong> Browse and adopt 24 popular training routines grouped by split type and equipment availability with Light/Medium/Heavy starting weight presets.</li>
+                         <li><strong>Streamlined AI Setup:</strong> Integrated 3-step and 4-step inline guides for designing routines or converting workout notes using any AI assistant with copyable JSON transformation prompts.</li>
+                         <li><strong>Units Preferences:</strong> Replaced single weight setting with dual independent toggles for Weight (lbs / kg) and Distance (miles / km).</li>
+                         <li><strong>Garmin Link & Tooltips:</strong> Added a collapsible Connections card and Garmin Watch Sync tooltip with direct links to the Garmin Connect IQ app store.</li>
+                         <li><strong>Custom App Modals:</strong> Replaced system chrome alert popups with native-styled, backdrop-dismissible app info modals.</li>
+                    </ul>
+                </div>
+
+                <div class="log-entry">
                     <span class="log-date">Jul 20, 2026</span>
                     <h4>The Cardio, Sharing & FitNotes Expansion</h4>
                     <p>A massive update featuring FitNotes import/export, workout share cards, cardio tracking, analytics overhauls, and per-routine timers:</p>
@@ -178,7 +191,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useChangelog } from '../utils/changelog';
+
+const { markAsRead } = useChangelog();
+
+onMounted(() => {
+  markAsRead();
+});
 
 const modalImage = ref<string | null>(null);
 const modalCaption = ref<string | null>(null);

@@ -1,7 +1,13 @@
 <template>
   <div class="about-modal-container">
     <button @click="openModal" class="button-about">
-      <span class="info-icon" aria-hidden="true">ⓘ</span> About <span style="font-family: 'Montserrat', sans-serif; margin-left:4px;"><span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span></span>
+      <span class="info-icon" aria-hidden="true">ⓘ</span> 
+      <span>About <span style="font-family: 'Montserrat', sans-serif; margin-left: 2px; margin-right: 6px;"><span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span></span></span>
+      
+      <!-- New Changelog Indicator Badge -->
+      <span v-if="hasNewChangelog" class="changelog-indicator-badge" title="New features & changelog available!">
+        <span class="badge-dot"></span> NEW
+      </span>
     </button>
 
     <div v-if="isOpen" class="manifesto-modal-overlay" @click.self="closeModal">
@@ -12,9 +18,32 @@
                <span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span>
              </h1>
              <p class="welcome-subtitle" style="margin-bottom: 15px;">Get Stronger Progressively.</p>
+
+             <!-- Version History / What's New Card -->
+             <div style="margin: 15px 0; padding: 12px 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <div style="text-align: left;">
+                  <strong style="font-size: 0.95em; color: var(--color-card-heading); display: flex; align-items: center; gap: 6px;">
+                    🚀 What's New / Changelog
+                    <span v-if="hasNewChangelog" style="background: #FF3B30; color: white; font-size: 0.7em; font-weight: 700; padding: 2px 6px; border-radius: 10px;">NEW</span>
+                  </strong>
+                  <span style="font-size: 0.8em; opacity: 0.8; color: var(--color-card-text); display: block; margin-top: 2px;">View release history & recent features</span>
+                </div>
+                <router-link 
+                  to="/version-history" 
+                  @click="handleVersionHistoryClick" 
+                  class="button-primary small" 
+                  style="white-space: nowrap; text-decoration: none; padding: 6px 12px; font-size: 0.85em; font-weight: 600;"
+                >
+                  View Changelog
+                </router-link>
+             </div>
         </div>
+
         <ManifestoComponent />
-        <div class="modal-footer-links" style="text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px dashed var(--color-card-border); font-size: 0.85em; display: flex; justify-content: center; gap: 15px;">
+
+        <div class="modal-footer-links" style="text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px dashed var(--color-card-border); font-size: 0.85em; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+          <router-link to="/version-history" @click="handleVersionHistoryClick" style="color: #007bff; text-decoration: underline; padding: 0;">Version History / Changelog 🚀</router-link>
+          <span style="opacity: 0.5;">|</span>
           <router-link to="/privacy" @click="closeModal" style="color: #007bff; text-decoration: underline; padding: 0;">Privacy Policy</router-link>
           <span style="opacity: 0.5;">|</span>
           <router-link to="/terms" @click="closeModal" style="color: #007bff; text-decoration: underline; padding: 0;">Terms of Service</router-link>
@@ -27,7 +56,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import ManifestoComponent from './ManifestoComponent.vue';
+import { useChangelog } from '../utils/changelog';
 
+const { hasNewChangelog, markAsRead } = useChangelog();
 const isOpen = ref(false);
 
 const openModal = () => {
@@ -36,6 +67,11 @@ const openModal = () => {
 
 const closeModal = () => {
   isOpen.value = false;
+};
+
+const handleVersionHistoryClick = () => {
+  markAsRead();
+  closeModal();
 };
 </script>
 
@@ -55,14 +91,50 @@ const closeModal = () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
-  opacity: 0.8;
-  transition: opacity 0.2s;
+  padding: 8px 12px;
+  opacity: 0.9;
+  transition: opacity 0.2s, transform 0.1s;
+  border-radius: 20px;
 }
 
 .button-about:hover {
   opacity: 1;
   text-decoration: underline;
+}
+
+.changelog-indicator-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #FF3B30;
+  color: white;
+  font-size: 0.7em;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 10px;
+  line-height: 1;
+  margin-left: 4px;
+  box-shadow: 0 0 8px rgba(255, 59, 48, 0.6);
+  animation: pulse-glow 2s infinite;
+}
+
+.badge-dot {
+  width: 5px;
+  height: 5px;
+  background-color: white;
+  border-radius: 50%;
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(255, 59, 48, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 59, 48, 0);
+  }
 }
 
 .info-icon {
@@ -77,7 +149,7 @@ const closeModal = () => {
   font-weight: 400;
 }
 
-/* Modal Styles - Duplicated/Adapted from Home.vue */
+/* Modal Styles */
 .manifesto-modal-overlay {
   position: fixed;
   top: 0;
@@ -94,7 +166,7 @@ const closeModal = () => {
 }
 
 .manifesto-modal-content {
-  background-color: var(--color-card-bg); /* Use theme color */
+  background-color: var(--color-card-bg);
   padding: 30px;
   border-radius: 12px;
   max-width: 600px;
