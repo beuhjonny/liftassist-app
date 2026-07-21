@@ -122,8 +122,8 @@ defineEmits<{
   padding: 10px 12px;
   border-radius: 6px;
   border: 1px solid var(--color-card-border);
-  background-color: var(--color-background);
-  color: var(--color-text);
+  background-color: var(--color-card-mute);
+  color: var(--color-card-text);
   font-size: 1em;
   font-weight: 500;
   width: 100%;
