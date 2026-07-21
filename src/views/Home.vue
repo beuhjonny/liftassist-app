@@ -308,8 +308,20 @@ const consistencyStats = computed(() => {
     return true;
   };
 
+  // Sort history ascending to accurately track exercise baselines
+  const sortedHistory = [...historyList].sort((a: LoggedWorkout, b: LoggedWorkout) => {
+    const parseD = (raw: any): number => {
+      if (raw instanceof Date) return raw.getTime();
+      if (raw && typeof raw.toDate === 'function') return raw.toDate().getTime();
+      return new Date(raw || 0).getTime();
+    };
+    return parseD(a.date) - parseD(b.date);
+  });
+
+  const seenExercises = new Set<string>();
+
   // Process Lifting Workouts
-  historyList.forEach((w: LoggedWorkout) => {
+  sortedHistory.forEach((w: LoggedWorkout) => {
     if (w.date) {
       const rawDate = w.date;
       const wDate: Date = rawDate instanceof Date 
@@ -326,16 +338,20 @@ const consistencyStats = computed(() => {
         workoutsThisWeek++;
       }
 
-      if (wTime >= timeframeMs) {
-        w.performedExercises?.forEach((ex: any) => {
-          if (isExerciseEligibleForOverload(ex)) {
+      w.performedExercises?.forEach((ex: any) => {
+        const exKey = ex.exerciseName?.trim().toLowerCase();
+        const hasBaseline = exKey ? seenExercises.has(exKey) : false;
+        if (exKey) seenExercises.add(exKey);
+
+        if (wTime >= timeframeMs && isExerciseEligibleForOverload(ex)) {
+          if (ex.isPR) {
+            overloadHits++;
             overloadTotalExercises++;
-            if (ex.isPR) {
-              overloadHits++;
-            }
+          } else if (hasBaseline) {
+            overloadTotalExercises++;
           }
-        });
-      }
+        }
+      });
     }
   });
 

@@ -1834,6 +1834,8 @@ const lifetimeStats = computed<LifetimeStats>(() => {
         firstDate = ensureDateObject(loggedWorkouts.value[0].date);
     }
 
+    const seenExercisesInProfile = new Set<string>();
+
     loggedWorkouts.value.forEach(workout => {
         // Group by week for streak
         if (workout.date) {
@@ -1842,38 +1844,44 @@ const lifetimeStats = computed<LifetimeStats>(() => {
             workoutsByWeek.set(weekStart, (workoutsByWeek.get(weekStart) || 0) + 1);
         }
 
-      workout.performedExercises?.forEach(ex => {
-        const isEligible = ex.enableProgression !== false && 
-                           !(ex.sets && Array.isArray(ex.sets) && ex.sets.every((s: any) => s.isTimed === true));
+        workout.performedExercises?.forEach(ex => {
+          const exKey = ex.exerciseName?.trim().toLowerCase();
+          const hasBaseline = exKey ? seenExercisesInProfile.has(exKey) : false;
+          if (exKey) seenExercisesInProfile.add(exKey);
 
-        if (isEligible) {
-          totalExercisesAttempted++;
-          if (ex.isPR) {
-            overloadsCount++;
-          }
-        }
+          const isEligible = ex.enableProgression !== false && 
+                             !(ex.sets && Array.isArray(ex.sets) && ex.sets.every((s: any) => s.isTimed === true));
 
-        ex.sets.forEach(set => {
-          if (set.status === 'done') {
-            totalSetsCount++;
-            if (typeof set.actualReps === 'number' && set.actualReps > 0) {
-              totalRepsCount += set.actualReps;
+          if (isEligible) {
+            if (ex.isPR) {
+              overloadsCount++;
+              totalExercisesAttempted++;
+            } else if (hasBaseline) {
+              totalExercisesAttempted++;
             }
           }
-          if (typeof set.actualWeight === 'number' && typeof set.actualReps === 'number' && set.actualReps > 0) {
-            volume += set.actualWeight * set.actualReps;
-            
-            if (set.status === 'done' && set.actualWeight > maxWeight) {
-                maxWeight = set.actualWeight;
+
+          ex.sets?.forEach(set => {
+            if (set.status === 'done') {
+              totalSetsCount++;
+              if (typeof set.actualReps === 'number' && set.actualReps > 0) {
+                totalRepsCount += set.actualReps;
+              }
             }
-          }
+            if (typeof set.actualWeight === 'number' && typeof set.actualReps === 'number' && set.actualReps > 0) {
+              volume += set.actualWeight * set.actualReps;
+              
+              if (set.status === 'done' && set.actualWeight > maxWeight) {
+                  maxWeight = set.actualWeight;
+              }
+            }
+          });
         });
-      });
 
-      if (typeof workout.durationMinutes === 'number' && workout.durationMinutes > 0) {
-        timeMinutes += workout.durationMinutes;
-      }
-    });
+        if (typeof workout.durationMinutes === 'number' && workout.durationMinutes > 0) {
+          timeMinutes += workout.durationMinutes;
+        }
+      });
   }
 
   const minWorkoutsTarget = settings.value.streakMinWorkoutsPerWeek ?? 2;

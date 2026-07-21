@@ -113,9 +113,20 @@ const chartData = computed(() => {
 
   const metricGroupData: Record<string, { volume: number; workoutsCount: number; setsCount: number; overloadHits: number; totalExercises: number }> = {};
 
+  const seenExercisesInChart = new Set<string>();
+
   if (props.workouts && props.workouts.length > 0) {
-    // Process directly from LoggedWorkout objects
-    const filtered = props.workouts.filter(w => {
+    // Sort workouts ascending for baseline tracking
+    const sortedPropsWorkouts = [...props.workouts].sort((a, b) => {
+      const parseD = (raw: any): number => {
+        if (raw instanceof Date) return raw.getTime();
+        if (raw && typeof raw.toDate === 'function') return raw.toDate().getTime();
+        return new Date(raw || 0).getTime();
+      };
+      return parseD(a.date) - parseD(b.date);
+    });
+
+    const filtered = sortedPropsWorkouts.filter(w => {
       const d = getObjDate(w.date);
       return d.getTime() > 0 && (!cutoffDate || d >= cutoffDate);
     });
@@ -143,13 +154,19 @@ const chartData = computed(() => {
 
       if (w.performedExercises) {
         w.performedExercises.forEach(ex => {
+          const exKey = ex.exerciseName?.trim().toLowerCase();
+          const hasBaseline = exKey ? seenExercisesInChart.has(exKey) : false;
+          if (exKey) seenExercisesInChart.add(exKey);
+
           const isEligible = ex.enableProgression !== false && 
                              !(ex.sets && Array.isArray(ex.sets) && ex.sets.every((s: any) => s.isTimed === true));
 
           if (isEligible) {
-            metricGroupData[label].totalExercises += 1;
             if (ex.isPR) {
               metricGroupData[label].overloadHits += 1;
+              metricGroupData[label].totalExercises += 1;
+            } else if (hasBaseline) {
+              metricGroupData[label].totalExercises += 1;
             }
           }
 
