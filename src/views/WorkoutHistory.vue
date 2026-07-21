@@ -552,6 +552,60 @@ const daySequenceColorPalette = [
 ];
 const defaultWorkoutColor = '#10B981'; // Vibrant Vue/emerald green
 
+const programDayTypeEncounterOrder: Record<string, Record<string, number>> = {};
+const programNextAvailableColorIndex: Record<string, number> = {};
+
+const getDayColorForProgramAndName = (dayName?: string, programId?: string, explicitColor?: string | null): string => {
+  if (explicitColor) return explicitColor;
+  if (!dayName) return defaultWorkoutColor;
+
+  const normalizedName = dayName.trim().toLowerCase();
+
+  // 1. Exact or partial match against activeProgram workoutDays
+  if (activeProgram && activeProgram.workoutDays && activeProgram.workoutDays.length > 0) {
+    const exactMatch = activeProgram.workoutDays.find(
+      d => d.dayName && d.dayName.trim().toLowerCase() === normalizedName
+    );
+    if (exactMatch) {
+      if (exactMatch.color) return exactMatch.color;
+      if (typeof exactMatch.order === 'number' && exactMatch.order > 0) {
+        return daySequenceColorPalette[(exactMatch.order - 1) % daySequenceColorPalette.length];
+      }
+    }
+
+    const partialMatch = activeProgram.workoutDays.find(
+      d => d.dayName && (
+        d.dayName.trim().toLowerCase().includes(normalizedName) ||
+        normalizedName.includes(d.dayName.trim().toLowerCase())
+      )
+    );
+    if (partialMatch) {
+      if (partialMatch.color) return partialMatch.color;
+      if (typeof partialMatch.order === 'number' && partialMatch.order > 0) {
+        return daySequenceColorPalette[(partialMatch.order - 1) % daySequenceColorPalette.length];
+      }
+    }
+  }
+
+  // 2. Fallback to encounter order for past/deleted routine day names
+  const progKey = programId || 'DEFAULT_PROGRAM';
+  if (!programDayTypeEncounterOrder[progKey]) {
+    programDayTypeEncounterOrder[progKey] = {};
+    programNextAvailableColorIndex[progKey] = 0;
+  }
+
+  if (programDayTypeEncounterOrder[progKey][normalizedName] === undefined) {
+    const idx = programNextAvailableColorIndex[progKey];
+    programDayTypeEncounterOrder[progKey][normalizedName] = idx;
+    if (idx < daySequenceColorPalette.length) {
+      programNextAvailableColorIndex[progKey]++;
+    }
+  }
+
+  const assignedIdx = programDayTypeEncounterOrder[progKey][normalizedName];
+  return assignedIdx < daySequenceColorPalette.length ? daySequenceColorPalette[assignedIdx] : defaultWorkoutColor;
+};
+
 const calendarWeeks = computed<CalendarDay[][]>(() => {
   return generateCalendarGridData(calendarIndex, 52); // Show last 52 weeks (1 year)
 });
@@ -664,9 +718,6 @@ const generateCalendarGridData = (
   const calendarStartDate = new Date(calendarEndDate);
   calendarStartDate.setDate(calendarEndDate.getDate() - (numWeeksToShow * 7) + 1);
   
-  const programDayTypeEncounterOrder: Record<string, Record<string, number>> = {};
-  const programNextAvailableColorIndex: Record<string, number> = {};
-  
   const sortedDateKeys = Object.keys(idxData).sort().filter(k => k !== 'lastUpdated');
 
   const activitiesByDate: Record<string, {
@@ -685,29 +736,8 @@ const generateCalendarGridData = (
     if (entry.hasWorkout) {
       const programId = entry.programId || 'UNKNOWN_PROGRAM';
       const dayName = entry.dayName || 'Unknown Day';
-      
-      let color = entry.workoutColor;
-      if (!color) {
-        if (!programDayTypeEncounterOrder[programId]) {
-          programDayTypeEncounterOrder[programId] = {};
-          programNextAvailableColorIndex[programId] = 0;
-        }
-
-        if (programDayTypeEncounterOrder[programId][dayName] === undefined) {
-          const colorIndex = programNextAvailableColorIndex[programId];
-          programDayTypeEncounterOrder[programId][dayName] = colorIndex;
-          if (colorIndex < daySequenceColorPalette.length) {
-              programNextAvailableColorIndex[programId]++;
-          }
-        }
-        
-        const assignedOrderIndex = programDayTypeEncounterOrder[programId][dayName];
-        color = defaultWorkoutColor;
-        if (assignedOrderIndex < daySequenceColorPalette.length) {
-          color = daySequenceColorPalette[assignedOrderIndex];
-        }
-      }
-      workoutInfo = { name: dayName, color: color };
+      const color = getDayColorForProgramAndName(dayName, programId, entry.workoutColor);
+      workoutInfo = { name: dayName, color };
     }
 
     activitiesByDate[dateKey] = {
@@ -747,24 +777,12 @@ const generateCalendarGridData = (
           const programId = wk.trainingProgramIdUsed || 'UNKNOWN_PROGRAM';
           const dayName = wk.workoutDayNameUsed || 'Workout';
           workoutNamesForDate.push(dayName);
-
-          if (!programDayTypeEncounterOrder[programId]) {
-            programDayTypeEncounterOrder[programId] = {};
-            programNextAvailableColorIndex[programId] = 0;
-          }
-          if (programDayTypeEncounterOrder[programId][dayName] === undefined) {
-            const colorIndex = programNextAvailableColorIndex[programId];
-            programDayTypeEncounterOrder[programId][dayName] = colorIndex;
-            if (colorIndex < daySequenceColorPalette.length) {
-              programNextAvailableColorIndex[programId]++;
-            }
-          }
-          const assignedIndex = programDayTypeEncounterOrder[programId][dayName];
-          const color = assignedIndex < daySequenceColorPalette.length ? daySequenceColorPalette[assignedIndex] : defaultWorkoutColor;
+          const color = getDayColorForProgramAndName(dayName, programId);
           workoutColorsForDate.push(color);
         });
       } else if (dayInfo && dayInfo.isWorkoutDay) {
-        workoutColorsForDate.push(dayInfo.workoutColor || defaultWorkoutColor);
+        const color = getDayColorForProgramAndName(dayInfo.workoutName, undefined, dayInfo.workoutColor);
+        workoutColorsForDate.push(color);
         if (dayInfo.workoutName) workoutNamesForDate.push(dayInfo.workoutName);
       }
       
