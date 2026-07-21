@@ -71,11 +71,8 @@
 
           <!-- Consistency & Progress Momentum Bar (Above Routine Title) -->
           <div v-if="consistencyStats" class="consistency-progress-card card-inset" style="margin-bottom: 20px; padding: 14px 16px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border);">
-            <div style="font-weight: 800; font-size: 0.8em; letter-spacing: 0.8px; text-transform: uppercase; color: var(--color-card-heading); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
-              <span>🔥 CONSISTENCY & PROGRESS</span>
-              <span v-if="consistencyStats.weeklyStreak > 0" style="font-size: 0.85em; font-weight: 700; color: #10B981; text-transform: none; letter-spacing: 0;">
-                Active Streak 🔥
-              </span>
+            <div style="font-weight: 800; font-size: 0.8em; letter-spacing: 0.8px; text-transform: uppercase; color: var(--color-card-heading); margin-bottom: 10px;">
+              🔥 CONSISTENCY & PROGRESS
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
@@ -84,11 +81,11 @@
               <div style="display: flex; flex-direction: column; gap: 2px;">
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <span style="font-weight: 800; font-size: 1.1em; color: var(--color-card-heading); letter-spacing: -0.2px;">
-                    {{ consistencyStats.weeklyStreak }} Wk Streak
+                    {{ consistencyStats.weeklyStreak }} {{ consistencyStats.weeklyStreak === 1 ? 'Week' : 'Weeks' }} Streak
                   </span>
                 </div>
                 <span style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; font-weight: 500;">
-                  {{ consistencyStats.workoutsThisWeek }}/{{ consistencyStats.targetPerWeek }} workouts logged this wk
+                  {{ consistencyStats.workoutsThisWeek }}/{{ consistencyStats.targetPerWeek }} workouts logged this week
                 </span>
               </div>
 
@@ -96,11 +93,11 @@
               <div style="display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--color-card-border); padding-left: 14px;">
                 <div style="display: flex; align-items: center; gap: 6px;">
                   <span style="font-weight: 800; font-size: 1.1em; color: var(--color-card-heading); letter-spacing: -0.2px;">
-                    {{ consistencyStats.overloadRate }}% Overload
+                    {{ consistencyStats.overloadRate }}% Overload Rate
                   </span>
                 </div>
                 <span style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; font-weight: 500;">
-                  {{ consistencyStats.overloadHits }}/{{ consistencyStats.overloadTotalExercises }} exercises hit target (last {{ consistencyStats.timeframeDays }}d)
+                  {{ consistencyStats.overloadHits }}/{{ consistencyStats.overloadTotalExercises }} exercises hit target (last {{ consistencyStats.timeframeDays }} days)
                 </span>
               </div>
 

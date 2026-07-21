@@ -152,63 +152,79 @@
             </div>
         </div>
 
-        <!-- Consistency & Progression Options -->
-        <div style="border-top: 1px dashed var(--color-card-border); padding-top: 12px; margin-top: 12px;">
-          <label style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.95em; color: var(--color-card-heading); margin-bottom: 12px;">
-            Consistency & Progression Goals 🎯
-            <span 
-              @click.stop.prevent="showTooltipAlert('Customize your weekly streak target, cardio inclusion, and home dashboard overload timeframe window.')"
-              style="font-size: 0.95em; cursor: pointer; opacity: 0.8;" 
-              title="Customize your weekly streak target, cardio inclusion, and home dashboard overload timeframe window."
-            >💡</span>
-          </label>
+        </div>
 
+      <!-- CONSISTENCY & PROGRESS Card (Collapsible) -->
+      <div class="consistency-settings-card card" style="margin-bottom: 20px;">
+        <div @click="isConsistencyCardExpanded = !isConsistencyCardExpanded" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h2 style="margin: 0;">CONSISTENCY & PROGRESS 🎯</h2>
+              <span 
+                @click.stop.prevent="showConsistencyInfoModal"
+                style="font-size: 1.1em; cursor: pointer; opacity: 0.9;" 
+                title="Consistency & Progression Manifesto Info"
+              >💡</span>
+            </div>
+            <span style="font-size: 1.2em; transition: transform 0.2s;" :style="{ transform: isConsistencyCardExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }">▼</span>
+        </div>
+
+        <div v-show="isConsistencyCardExpanded" style="margin-top: 15px; border-top: 1px dashed var(--color-card-border); padding-top: 15px; display: flex; flex-direction: column; gap: 14px;">
+          
           <!-- Weekly Workout Goal -->
-          <div class="setting-item" style="margin-bottom: 10px;">
-            <label style="font-weight: 500; font-size: 0.9em;">Weekly Workout Target</label>
-            <div class="unit-toggle" style="display: flex; gap: 4px;">
+          <div class="setting-item">
+            <label style="font-weight: 500; font-size: 0.95em; color: var(--color-card-heading);">Weekly Workout Target</label>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
               <button 
                 v-for="num in [1, 2, 3, 4, 5]" 
                 :key="num"
                 @click="updateStreakMinWorkouts(num)"
-                :class="['button-secondary', { active: (settings.streakMinWorkoutsPerWeek ?? 2) === num }]"
-                style="padding: 4px 10px; font-weight: 600; font-size: 0.85em;"
+                :style="{
+                  backgroundColor: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? 'var(--color-primary, #007bff)' : 'var(--color-card-mute)',
+                  color: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? '#ffffff' : 'var(--color-card-text)',
+                  borderColor: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? 'var(--color-primary, #007bff)' : 'var(--color-card-border)'
+                }"
+                style="padding: 6px 12px; border-radius: 6px; font-size: 0.88em; border: 1px solid; cursor: pointer; transition: all 0.2s;"
               >
-                {{ num }}/wk
+                {{ num }} / week
               </button>
             </div>
           </div>
 
           <!-- Include Cardio in Streak -->
-          <div class="setting-item" style="margin-bottom: 10px;">
+          <div class="setting-item">
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-              <label style="font-weight: 500; font-size: 0.9em;">Include Cardio in Streak</label>
+              <label style="font-weight: 500; font-size: 0.95em; color: var(--color-card-heading);">Include Cardio in Streak</label>
               <div style="display: flex; align-items: center;">
                 <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
                   <input type="checkbox" :checked="settings.streakIncludeCardio === true" @change="toggleStreakIncludeCardio" style="opacity: 0; width: 0; height: 0;">
                   <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
                   <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.streakIncludeCardio === true ? 'translateX(16px)' : 'translateX(0)' }"></span>
                 </label>
-                <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.streakIncludeCardio === true ? 'On' : 'Off' }}</span>
+                <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8; font-weight: 600;">{{ settings.streakIncludeCardio === true ? 'On' : 'Off' }}</span>
               </div>
             </div>
           </div>
 
           <!-- Overload Timeframe -->
           <div class="setting-item">
-            <label style="font-weight: 500; font-size: 0.9em;">Overload Timeframe Window</label>
-            <div class="unit-toggle" style="display: flex; gap: 4px;">
+            <label style="font-weight: 500; font-size: 0.95em; color: var(--color-card-heading);">Overload Timeframe Window</label>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
               <button 
                 v-for="d in [7, 14, 30]" 
                 :key="d"
                 @click="updateOverloadTimeframe(d)"
-                :class="['button-secondary', { active: (settings.overloadTimeframeDays ?? 14) === d }]"
-                style="padding: 4px 10px; font-weight: 600; font-size: 0.85em;"
+                :style="{
+                  backgroundColor: (settings.overloadTimeframeDays ?? 14) === d ? 'var(--color-primary, #007bff)' : 'var(--color-card-mute)',
+                  color: (settings.overloadTimeframeDays ?? 14) === d ? '#ffffff' : 'var(--color-card-text)',
+                  borderColor: (settings.overloadTimeframeDays ?? 14) === d ? 'var(--color-primary, #007bff)' : 'var(--color-card-border)'
+                }"
+                style="padding: 6px 12px; border-radius: 6px; font-size: 0.88em; border: 1px solid; cursor: pointer; transition: all 0.2s;"
               >
                 {{ d }} Days
               </button>
             </div>
           </div>
+
         </div>
       </div>
 
@@ -528,7 +544,6 @@
         </button>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -575,9 +590,19 @@ const router = useRouter();
 
 const activeInfoModal = ref<InfoModalState | null>(null);
 const isConnectionsCardExpanded = ref(false);
+const isConsistencyCardExpanded = ref(false);
 
 const showTooltipAlert = (msg: string, title: string = 'Information 💡') => {
   activeInfoModal.value = { title, message: msg };
+};
+
+const showConsistencyInfoModal = () => {
+  activeInfoModal.value = {
+    title: 'Consistency & Progress 🎯',
+    message: 'Consistency and progression are the two most important things. See manifesto.',
+    linkUrl: 'https://lift-logic-app.web.app/version-history',
+    linkLabel: '📜 Read Manifesto & Updates'
+  };
 };
 
 const showGarminHelpModal = () => {

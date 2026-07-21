@@ -80,6 +80,16 @@
                     </select>
                 </div>
             </div>
+
+            <!-- Overload Rate Summary Strip -->
+            <div style="display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap;">
+              <div class="card-inset" style="flex: 1; min-width: 160px; padding: 10px 14px; border-radius: 8px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); text-align: center;">
+                <span style="font-size: 0.75em; text-transform: uppercase; font-weight: 700; color: var(--color-card-text); opacity: 0.75; display: block; margin-bottom: 2px;">Overload Success Rate</span>
+                <span style="font-size: 1.3em; font-weight: 800; color: var(--color-card-heading);">⚡ {{ overallOverloadStats.overloadRate }}%</span>
+                <span style="font-size: 0.75em; color: var(--color-card-text); opacity: 0.75; display: block; margin-top: 2px;">{{ overallOverloadStats.overloadsCount }} overloads across {{ overallOverloadStats.totalExercises }} exercises</span>
+              </div>
+            </div>
+
             <WeeklyVolumeChart 
                 :volumeIndex="calendarIndex" 
                 :workouts="loggedWorkouts"
@@ -342,7 +352,30 @@ interface CalendarDay {
 
 const { user } = useAuth();
 const { settings } = useSettings();
-const { loggedWorkouts, isLoading, error, fetchLoggedWorkouts, fetchMoreWorkouts, updateLoggedWorkout, deleteLoggedWorkout, hasMoreDocs } = useLoggedWorkouts();
+const { loggedWorkouts, isLoading: isWorkoutsLoading, error: workoutsError } = useLoggedWorkouts();
+
+const overallOverloadStats = computed(() => {
+  if (!loggedWorkouts || loggedWorkouts.length === 0) {
+    return { overloadRate: 0, overloadsCount: 0, totalExercises: 0 };
+  }
+
+  let overloadsCount = 0;
+  let totalExercises = 0;
+
+  loggedWorkouts.forEach((w: LoggedWorkout) => {
+    w.performedExercises?.forEach((ex: any) => {
+      totalExercises++;
+      if (ex.isPR) {
+        overloadsCount++;
+      }
+    });
+  });
+
+  const overloadRate = totalExercises > 0 ? Math.round((overloadsCount / totalExercises) * 100) : 0;
+  return { overloadRate, overloadsCount, totalExercises };
+});
+
+const { isLoading, error, fetchLoggedWorkouts, fetchMoreWorkouts, updateLoggedWorkout, deleteLoggedWorkout, hasMoreDocs } = useLoggedWorkouts();
 const { externalActivities, fetchExternalActivities, deleteExternalActivity } = useExternalActivities();
 const { calendarIndex, fetchCalendarIndex, isIndexLoading } = useHistoryIndex();
 
