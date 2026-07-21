@@ -129,38 +129,32 @@
             </p>
           </div>
 
-          <!-- Slick CONSISTENCY & PROGRESS Card -->
-          <div v-if="consistencyStats" class="consistency-progress-card card-inset" style="margin-top: 15px; margin-bottom: 22px; padding: 16px 18px; border-radius: 12px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <span style="font-weight: 800; font-size: 0.82em; letter-spacing: 0.8px; text-transform: uppercase; color: var(--color-card-heading); display: flex; align-items: center; gap: 6px;">
-                🔥 CONSISTENCY & PROGRESSION
-              </span>
-              <span v-if="consistencyStats.weeklyStreak > 0" style="font-size: 0.78em; font-weight: 700; color: #10B981; background: rgba(16, 185, 129, 0.12); padding: 3px 9px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.25);">
-                {{ consistencyStats.weeklyStreak }} Wk Streak 🔥
-              </span>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center;">
+          <!-- Minimal Momentum & Progression Bar -->
+          <div v-if="consistencyStats" class="consistency-progress-card card-inset" style="margin-top: 14px; margin-bottom: 22px; padding: 14px 16px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border);">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
               
-              <!-- Box 1: Consistency (Active Weekly Streak) -->
-              <div style="background: var(--color-card-bg); padding: 12px 8px; border-radius: 8px; border: 1px solid var(--color-card-border);">
-                <span style="font-size: 0.72em; text-transform: uppercase; font-weight: 700; color: var(--color-card-text); opacity: 0.75; display: block; margin-bottom: 3px;">Consistency</span>
-                <div style="font-size: 1.4em; font-weight: 900; color: var(--color-card-heading); display: flex; align-items: center; justify-content: center; gap: 4px; line-height: 1;">
-                  <span>{{ consistencyStats.weeklyStreak }}</span>
-                  <span style="font-size: 0.55em; font-weight: 600; opacity: 0.75;">{{ consistencyStats.weeklyStreak === 1 ? 'week' : 'weeks' }}</span>
+              <!-- Metric 1: Streak & Weekly Progress -->
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1.1em; line-height: 1;">🔥</span>
+                  <span style="font-weight: 800; font-size: 1.05em; color: var(--color-card-heading); letter-spacing: -0.2px;">
+                    {{ consistencyStats.weeklyStreak }} Wk Streak
+                  </span>
                 </div>
-                <span style="font-size: 0.75em; color: var(--color-card-text); opacity: 0.85; display: block; margin-top: 5px; font-weight: 500;">
-                  {{ consistencyStats.workoutsThisWeek }}/2 workouts this wk
+                <span style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; font-weight: 500;">
+                  {{ consistencyStats.workoutsThisWeek }}/2 workouts logged this wk
                 </span>
               </div>
 
-              <!-- Box 2: Progress (2-Week Overload % Rate) -->
-              <div style="background: var(--color-card-bg); padding: 12px 8px; border-radius: 8px; border: 1px solid var(--color-card-border);">
-                <span style="font-size: 0.72em; text-transform: uppercase; font-weight: 700; color: var(--color-card-text); opacity: 0.75; display: block; margin-bottom: 3px;">2-Wk Progression</span>
-                <div style="font-size: 1.4em; font-weight: 900; color: var(--color-primary, #007bff); display: flex; align-items: center; justify-content: center; gap: 2px; line-height: 1;">
-                  <span>{{ consistencyStats.twoWeekOverloadRate }}%</span>
+              <!-- Metric 2: 2-Wk Overload Rate -->
+              <div style="display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--color-card-border); padding-left: 14px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 1.1em; line-height: 1;">⚡</span>
+                  <span style="font-weight: 800; font-size: 1.05em; color: var(--color-card-heading); letter-spacing: -0.2px;">
+                    {{ consistencyStats.twoWeekOverloadRate }}% Overload
+                  </span>
                 </div>
-                <span style="font-size: 0.75em; color: var(--color-card-text); opacity: 0.85; display: block; margin-top: 5px; font-weight: 500;">
+                <span style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; font-weight: 500;">
                   {{ consistencyStats.twoWeekOverloads }}/{{ consistencyStats.twoWeekTotalExercises }} exercises hit target
                 </span>
               </div>
