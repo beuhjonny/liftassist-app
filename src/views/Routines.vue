@@ -61,6 +61,9 @@
           <button @click="creationMode = null" class="back-link" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 0; font-size: 0.95em; font-weight: 500;">← Back to choices</button>
           <h2 style="margin-top: 10px;">Routine Library</h2>
           <p style="font-size: 0.9em; opacity: 0.85; margin-top: 4px; color: var(--color-card-text);">Choose from 24 proven workout routines. All weights can be customized before or during your workouts.</p>
+          <div style="margin-top: 10px; padding: 10px 14px; background: var(--color-card-bg); border-left: 4px solid var(--color-primary); border-radius: 6px; font-size: 0.85em; color: var(--color-card-text); border-top: 1px solid var(--color-card-border); border-right: 1px solid var(--color-card-border); border-bottom: 1px solid var(--color-card-border);">
+            💡 <strong>Note:</strong> No preselected routine is perfect for you. Choose the closest one, and then edit it to suit your specific needs.
+          </div>
         </header>
 
         <!-- Search Bar -->
@@ -218,117 +221,63 @@
       </div>
 
 
-      <div v-if="creationMode === 'ai'" class="ai-creation-flow card animate-fade-in">
-        <header class="flow-header" style="margin-bottom: 15px; text-align: left;">
+      <div v-if="creationMode === 'ai'" class="ai-creation-flow card animate-fade-in" style="text-align: left;">
+        <header class="flow-header" style="margin-bottom: 20px;">
           <button @click="creationMode = null" class="back-link" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 0; font-size: 0.95em; font-weight: 500;">← Back to choices</button>
           <h2 style="margin-top: 10px;">AI Assisted Setup</h2>
+          <p style="font-size: 0.9em; opacity: 0.85; margin-top: 4px; color: var(--color-card-text);">Use the external AI of your choice (such as ChatGPT, Claude, or Gemini) to create a routine for LiftLogic.</p>
         </header>
 
-        <p style="font-size: 0.95em; opacity: 0.85; margin-bottom: 25px; line-height: 1.5; text-align: left; background: var(--color-card-mute); padding: 14px 18px; border-radius: 8px; border: 1px solid var(--color-card-border);">
-          The following two options use the external AI agent of your choice (such as <strong>ChatGPT</strong>, <strong>Claude</strong>, or <strong>Gemini</strong>) to create a routine for LiftLogic. Simply follow the instructions to import from any source, or create a custom plan from scratch.
-        </p>
-
-        <div class="ai-sub-options" style="text-align: left;">
-          <h4 style="margin-top: 0; margin-bottom: 12px; font-weight: 600;">Step 1: Choose Method & Copy AI Prompt</h4>
-          
-          <div class="ai-nudge-section" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 30px;">
-             <button @click="toggleExistingRoutineHelp" class="ai-nudge-card" style="padding: 16px; border-radius: 8px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: flex-start; gap: 12px;">
-               <div class="nudge-icon" style="font-size: 1.8em;">📸</div>
-               <div class="nudge-text" style="display: flex; flex-direction: column; gap: 4px;">
-                 <strong style="color: var(--color-card-text); font-size: 1em;">Import Existing Routine</strong>
-                 <span style="font-size: 0.85em; opacity: 0.7;">Convert notes, screenshots, or text via AI prompt</span>
-               </div>
-             </button>
-
-             <button @click="toggleNewRoutineHelp" class="ai-nudge-card" style="padding: 16px; border-radius: 8px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: flex-start; gap: 12px;">
-               <div class="nudge-icon" style="font-size: 1.8em;">🤖</div>
-               <div class="nudge-text" style="display: flex; flex-direction: column; gap: 4px;">
-                 <strong style="color: var(--color-card-text); font-size: 1em;">Design New with AI</strong>
-                 <span style="font-size: 0.85em; opacity: 0.7;">Let AI build a tailored plan based on your goals</span>
-               </div>
-             </button>
-          </div>
-
-          <div class="import-routine-section card-inset" style="padding: 20px; background: var(--color-card-mute); border-radius: 8px; border: 1px solid var(--color-card-border);">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-              <span style="font-size: 1.2em;">📋</span>
-              <h4 style="margin: 0; font-weight: 600;">Step 2: Paste Generated Routine JSON</h4>
+        <!-- Mode Selector Cards -->
+        <div class="ai-mode-selector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 20px;">
+          <button 
+            type="button"
+            @click="activeAiTab = 'existing'" 
+            :style="{ borderColor: activeAiTab === 'existing' ? 'var(--color-primary)' : 'var(--color-card-border)', background: activeAiTab === 'existing' ? 'var(--color-card-bg)' : 'var(--color-card-mute)' }"
+            style="padding: 16px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: flex-start; gap: 12px;"
+          >
+            <div style="font-size: 1.8em;">📸</div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <strong style="color: var(--color-card-heading); font-size: 0.95em;">Import Existing Routine</strong>
+              <span style="font-size: 0.8em; color: var(--color-card-text); opacity: 0.8;">Convert notes, screenshots, or text via AI prompt</span>
             </div>
-            <p class="small-text" style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px; line-height: 1.4;">
-              Once you've copied the prompt above into ChatGPT, Claude, or Gemini and received your routine JSON code block, paste it below to build your routine.
-            </p>
-            <form @submit.prevent="importPastedRoutine">
-              <div class="form-group" style="margin-bottom: 15px;">
-                <textarea 
-                  id="routineJsonData" 
-                  v-model="pastedRoutineJson" 
-                  rows="2" 
-                  placeholder="Paste your generated routine JSON code block here..."
-                  style="width: 100%; border-radius: 6px; border: 1px solid var(--color-card-border); padding: 8px 12px; font-family: monospace; font-size: 0.85em; background: var(--color-card-bg); color: var(--color-card-text); resize: vertical; min-height: 52px; max-height: 180px;"
-                ></textarea>
-              </div>
-              <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary button-large full-width" style="padding: 12px; font-weight: 600; font-size: 1em; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                {{ isSaving ? 'Importing Routine...' : '🚀 Import Routine JSON' }}
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      <!-- FitNotes SQLite Import Flow -->
-      <div v-if="creationMode === 'fitnotes'" class="fitnotes-creation-flow card animate-fade-in">
-        <header class="flow-header" style="margin-bottom: 20px; text-align: left; display: flex; flex-direction: column; align-items: flex-start; gap: 5px;">
-          <button @click="creationMode = null" class="back-link" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 0; font-size: 0.95em; display: flex; align-items: center; gap: 5px; font-weight: 500;">← Back to choices</button>
-          <h2 style="margin-top: 10px; font-family: 'Montserrat', sans-serif;">FitNotes SQLite Import</h2>
-        </header>
-
-        <div class="import-routine-section card-inset" style="padding: 20px; background: var(--color-card-mute); border-radius: 8px; border: 1px solid var(--color-card-border); text-align: left;">
-          <h4 style="margin-top: 0; margin-bottom: 10px; font-weight: 600;">Select FitNotes Backup File</h4>
-          <p class="small-text" style="font-size: 0.85em; opacity: 0.8; margin-bottom: 20px; line-height: 1.4;">
-            Select your <strong>.fitnotes</strong> or <strong>.db</strong> SQLite backup file exported from the FitNotes app settings. 
-            All parsing will happen locally in your browser.
-          </p>
-
-          <div class="form-group" style="margin-bottom: 20px;">
-            <input type="file" accept=".fitnotes,.db,.sqlite" @change="handleFitNotesFile" style="width: 100%; padding: 8px; border: 1px solid var(--color-card-border); border-radius: 6px; background: var(--color-card-bg); color: var(--color-card-text); font-size: 0.9em;" />
-          </div>
-
-          <div v-if="fitnotesParsedData" class="import-preview card-inset" style="margin-bottom: 20px; padding: 15px; background: var(--color-card-bg); border-radius: 6px; border: 1px solid var(--color-card-border); font-size: 0.95em;">
-             <h5 style="margin-top:0; margin-bottom: 12px; font-weight: 600; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 8px;">Backup Contents:</h5>
-             <ul style="list-style: none; padding-left: 0; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px;">
-                <li style="display: flex; align-items: center; gap: 8px;">📅 <span><strong>Workout Days Logged:</strong> {{ fitnotesParsedData.workoutsCount }}</span></li>
-                <li style="display: flex; align-items: center; gap: 8px;">🏋️ <span><strong>Unique Exercises:</strong> {{ fitnotesParsedData.exercisesCount }}</span></li>
-                <li style="display: flex; align-items: center; gap: 8px;">📋 <span><strong>Pre-defined Routines:</strong> {{ fitnotesParsedData.routinesCount }}</span></li>
-             </ul>
-          </div>
-
-          <button @click="performFitNotesImport" :disabled="isSaving || !fitnotesFile" class="button-primary button-large full-width" style="padding: 12px; font-size: 1.1em; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; width: 100%;">
-            {{ isSaving ? 'Importing... ' + importProgressStatus : '🚀 Start Import' }}
           </button>
-          
-          <div v-if="isSaving && importProgressPercentage > 0" style="margin-top: 15px; width: 100%; background-color: var(--color-card-border); height: 10px; border-radius: 5px; overflow: hidden;">
-              <div :style="{ width: importProgressPercentage + '%' }" style="background-color: var(--color-primary); height: 100%; transition: width 0.3s ease;"></div>
-          </div>
+
+          <button 
+            type="button"
+            @click="activeAiTab = 'new'" 
+            :style="{ borderColor: activeAiTab === 'new' ? 'var(--color-primary)' : 'var(--color-card-border)', background: activeAiTab === 'new' ? 'var(--color-card-bg)' : 'var(--color-card-mute)' }"
+            style="padding: 16px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: flex-start; gap: 12px;"
+          >
+            <div style="font-size: 1.8em;">🤖</div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <strong style="color: var(--color-card-heading); font-size: 0.95em;">Design New with AI</strong>
+              <span style="font-size: 0.8em; color: var(--color-card-text); opacity: 0.8;">Let AI build a tailored plan based on your goals</span>
+            </div>
+          </button>
         </div>
-      </div>
-    </div>
 
-    <!-- AI/Import Help Modals -->
+        <!-- Inline Instructions for Import Existing Routine -->
+        <div v-if="activeAiTab === 'existing'" class="inline-ai-instructions card-inset" style="margin-bottom: 20px; padding: 20px; background: var(--color-card-bg); border-radius: 8px; border: 1px solid var(--color-card-border);">
+          <h4 style="margin-top: 0; margin-bottom: 16px; font-weight: 700; color: var(--color-card-heading); font-size: 1em; display: flex; align-items: center; gap: 6px;">📸 How to Import Any Existing Routine via AI</h4>
+          
+          <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.9em; line-height: 1.5; color: var(--color-card-text);">
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">1</span>
+              <div><strong>STEP 1:</strong> Get a routine from text, written notes, or a screenshot.</div>
+            </div>
 
-    <div v-if="showExistingRoutineHelpDialog" class="modal-overlay">
-        <div class="modal-content" style="max-width: 700px; text-align: left;">
-            <button @click="showExistingRoutineHelpDialog = false" class="modal-close-button">&times;</button>
-            <h3 style="margin-top:0;">Import Existing Routine</h3>
-            <p style="font-size: 1em; line-height: 1.5; color: var(--color-card-text); opacity: 0.9;">
-                Take <strong>ANY</strong> routine you already have (notes, screenshot, or dictation) and convert it to LiftLogic format using your preferred AI.
-            </p>
-            
-            <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
-                <div>
-                    <strong>Step 1:</strong> Copy the prompt below into ChatGPT, Claude, or Gemini along with your routine text or image.
-                </div>
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">2</span>
+              <div><strong>STEP 2:</strong> Open your AI tool of choice (e.g. <strong>ChatGPT</strong>, <strong>Claude</strong>, or <strong>Gemini</strong>) and paste your text or upload your screenshot.</div>
+            </div>
+
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">3</span>
+              <div style="flex: 1;">
+                <div><strong>STEP 3:</strong> Copy & paste the prompt below into your AI. It will convert your input into a JSON script:</div>
                 
-                <div class="code-block-container" style="background: var(--color-card-mute); border: 1px solid var(--color-card-border); padding: 14px; border-radius: 6px; overflow-x: auto; font-size: 0.8em; white-space: pre-wrap; font-family: monospace; color: var(--color-card-text); max-height: 250px;">
+                <div class="code-block-container" style="background: var(--color-card-mute); border: 1px solid var(--color-card-border); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.8em; white-space: pre-wrap; font-family: monospace; color: var(--color-card-text); max-height: 180px; margin-top: 8px;">
 System Prompt:
 You are an expert fitness data assistant for the LiftLogic app.
 I am providing a workout routine (text, notes, or image). Convert it into the specific JSON format required by the app.
@@ -366,40 +315,46 @@ REQUIRED JSON STRUCTURE:
   ]
 }
                 </div>
-                
+
                 <button 
+                  type="button"
                   @click="copyExistingRoutinePrompt" 
                   class="button-secondary small" 
-                  style="align-self: flex-start; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; font-weight: 500;"
+                  style="margin-top: 10px; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; font-weight: 600;"
                 >
-                    📋 Copy Prompt to Clipboard
+                  📋 Copy Conversion Prompt
                 </button>
+              </div>
+            </div>
 
-                <div>
-                    <strong>Step 2:</strong> Copy the resulting JSON code block output from the AI and paste it into the JSON box below.
-                </div>
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">4</span>
+              <div><strong>STEP 4:</strong> Copy that script from your AI and paste it into the importer below.</div>
             </div>
-            
-            <div class="form-actions" style="justify-content: flex-end; margin-top: 20px;">
-                <button @click="showExistingRoutineHelpDialog = false" class="button-primary small">Got it</button>
-            </div>
+          </div>
         </div>
-    </div>
 
-    <div v-if="showNewRoutineHelpDialog" class="modal-overlay">
-        <div class="modal-content" style="max-width: 700px; text-align: left;">
-            <button @click="showNewRoutineHelpDialog = false" class="modal-close-button">&times;</button>
-            <h3 style="margin-top:0;">Design Fresh with AI</h3>
-            <p style="font-size: 1em; line-height: 1.5; color: var(--color-card-text); opacity: 0.9;">
-                Ask ChatGPT, Claude, or Gemini to design a custom training program from scratch based on your goals and equipment.
-            </p>
+        <!-- Inline Instructions for Design New with AI -->
+        <div v-if="activeAiTab === 'new'" class="inline-ai-instructions card-inset" style="margin-bottom: 20px; padding: 20px; background: var(--color-card-bg); border-radius: 8px; border: 1px solid var(--color-card-border);">
+          <h4 style="margin-top: 0; margin-bottom: 16px; font-weight: 700; color: var(--color-card-heading); font-size: 1em; display: flex; align-items: center; gap: 6px;">🤖 How to Design a New Routine with AI</h4>
+          
+          <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.9em; line-height: 1.5; color: var(--color-card-text);">
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">1</span>
+              <div><strong>STEP 1:</strong> Decide your goals (e.g. Muscle Gain, Strength), equipment, and weekly frequency.</div>
+            </div>
 
-            <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
-                <div>
-                    <strong>Step 1:</strong> Copy the prompt below into your favorite AI tool and fill in your goal, equipment, and training frequency.
-                </div>
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">2</span>
+              <div><strong>STEP 2:</strong> Open your AI tool of choice (e.g. <strong>ChatGPT</strong>, <strong>Claude</strong>, or <strong>Gemini</strong>).</div>
+            </div>
 
-                <div class="code-block-container" style="background: var(--color-card-mute); border: 1px solid var(--color-card-border); padding: 14px; border-radius: 6px; overflow-x: auto; font-size: 0.8em; white-space: pre-wrap; font-family: monospace; color: var(--color-card-text); max-height: 250px;">
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">3</span>
+              <div style="flex: 1;">
+                <div><strong>STEP 3:</strong> Copy & paste the design prompt below into your AI:</div>
+                
+                <div class="code-block-container" style="background: var(--color-card-mute); border: 1px solid var(--color-card-border); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.8em; white-space: pre-wrap; font-family: monospace; color: var(--color-card-text); max-height: 180px; margin-top: 8px;">
 System Prompt:
 Act as an expert strength coach for the LiftLogic app. I want a new workout routine.
 
@@ -441,23 +396,88 @@ REQUIRED JSON STRUCTURE:
                 </div>
 
                 <button 
+                  type="button"
                   @click="copyNewRoutinePrompt" 
                   class="button-secondary small" 
-                  style="align-self: flex-start; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; font-weight: 500;"
+                  style="margin-top: 10px; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; font-weight: 600;"
                 >
-                    📋 Copy Prompt to Clipboard
+                  📋 Copy Creation Prompt
                 </button>
-
-                <div>
-                    <strong>Step 2:</strong> Paste the resulting JSON code block output into the box on the setup screen.
-                </div>
+              </div>
             </div>
 
-            <div class="form-actions" style="justify-content: flex-end; margin-top: 20px;">
-                <button @click="showNewRoutineHelpDialog = false" class="button-primary small">Got it</button>
+            <div style="display: flex; gap: 12px; align-items: flex-start;">
+              <span style="font-weight: 700; background: var(--color-primary); color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.85em;">4</span>
+              <div><strong>STEP 4:</strong> Copy that script from your AI and paste it into the importer below.</div>
             </div>
+          </div>
         </div>
+
+        <!-- JSON Importer Input -->
+        <div class="import-routine-section card-inset" style="padding: 20px; background: var(--color-card-mute); border-radius: 8px; border: 1px solid var(--color-card-border);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span style="font-size: 1.2em;">📋</span>
+            <h4 style="margin: 0; font-weight: 600;">Paste Generated Routine JSON</h4>
+          </div>
+          <p class="small-text" style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px; line-height: 1.4;">
+            Once you've copied the script from your AI, paste it below to create your routine.
+          </p>
+          <form @submit.prevent="importPastedRoutine">
+            <div class="form-group" style="margin-bottom: 15px;">
+              <textarea 
+                id="routineJsonData" 
+                v-model="pastedRoutineJson" 
+                rows="3" 
+                placeholder="Paste your generated routine JSON script here..."
+                style="width: 100%; border-radius: 6px; border: 1px solid var(--color-card-border); padding: 8px 12px; font-family: monospace; font-size: 0.85em; background: var(--color-card-bg); color: var(--color-card-text); resize: vertical; min-height: 60px; max-height: 180px;"
+              ></textarea>
+            </div>
+            <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary button-large full-width" style="padding: 12px; font-weight: 600; font-size: 1em; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              {{ isSaving ? 'Importing Routine...' : '🚀 Import Routine JSON' }}
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- FitNotes SQLite Import Flow -->
+      <div v-if="creationMode === 'fitnotes'" class="fitnotes-creation-flow card animate-fade-in">
+        <header class="flow-header" style="margin-bottom: 20px; text-align: left; display: flex; flex-direction: column; align-items: flex-start; gap: 5px;">
+          <button @click="creationMode = null" class="back-link" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 0; font-size: 0.95em; display: flex; align-items: center; gap: 5px; font-weight: 500;">← Back to choices</button>
+          <h2 style="margin-top: 10px; font-family: 'Montserrat', sans-serif;">FitNotes SQLite Import</h2>
+        </header>
+
+        <div class="import-routine-section card-inset" style="padding: 20px; background: var(--color-card-mute); border-radius: 8px; border: 1px solid var(--color-card-border); text-align: left;">
+          <h4 style="margin-top: 0; margin-bottom: 10px; font-weight: 600;">Select FitNotes Backup File</h4>
+          <p class="small-text" style="font-size: 0.85em; opacity: 0.8; margin-bottom: 20px; line-height: 1.4;">
+            Select your <strong>.fitnotes</strong> or <strong>.db</strong> SQLite backup file exported from the FitNotes app settings. 
+            All parsing will happen locally in your browser.
+          </p>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <input type="file" accept=".fitnotes,.db,.sqlite" @change="handleFitNotesFile" style="width: 100%; padding: 8px; border: 1px solid var(--color-card-border); border-radius: 6px; background: var(--color-card-bg); color: var(--color-card-text); font-size: 0.9em;" />
+          </div>
+
+          <div v-if="fitnotesParsedData" class="import-preview card-inset" style="margin-bottom: 20px; padding: 15px; background: var(--color-card-bg); border-radius: 6px; border: 1px solid var(--color-card-border); font-size: 0.95em;">
+             <h5 style="margin-top:0; margin-bottom: 12px; font-weight: 600; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 8px;">Backup Contents:</h5>
+             <ul style="list-style: none; padding-left: 0; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px;">
+                <li style="display: flex; align-items: center; gap: 8px;">📅 <span><strong>Workout Days Logged:</strong> {{ fitnotesParsedData.workoutsCount }}</span></li>
+                <li style="display: flex; align-items: center; gap: 8px;">🏋️ <span><strong>Unique Exercises:</strong> {{ fitnotesParsedData.exercisesCount }}</span></li>
+                <li style="display: flex; align-items: center; gap: 8px;">📋 <span><strong>Pre-defined Routines:</strong> {{ fitnotesParsedData.routinesCount }}</span></li>
+             </ul>
+          </div>
+
+          <button @click="performFitNotesImport" :disabled="isSaving || !fitnotesFile" class="button-primary button-large full-width" style="padding: 12px; font-size: 1.1em; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; width: 100%;">
+            {{ isSaving ? 'Importing... ' + importProgressStatus : '🚀 Start Import' }}
+          </button>
+          
+          <div v-if="isSaving && importProgressPercentage > 0" style="margin-top: 15px; width: 100%; background-color: var(--color-card-border); height: 10px; border-radius: 5px; overflow: hidden;">
+              <div :style="{ width: importProgressPercentage + '%' }" style="background-color: var(--color-primary); height: 100%; transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+      </div>
     </div>
+
+
 
     <!-- Active Routine Display -->
     <div v-if="activeProgram.id && !isLoading && user" class="active-routine-display card">
@@ -1022,6 +1042,7 @@ const bankSearchQuery = ref('');
 const selectedPresetRoutine = ref<PresetRoutine | null>(null);
 const selectedIntensity = ref<IntensityLevel>('medium');
 const importTab = ref<'fitnotes' | 'json'>('fitnotes');
+const activeAiTab = ref<'existing' | 'new'>('existing');
 
 const filteredRoutineBank = computed(() => {
   return ROUTINE_BANK.filter(routine => {
@@ -1177,8 +1198,6 @@ const startCreatingNewRoutine = () => {
 
 // --- Import Routine State ---
 const pastedRoutineJson = ref('');
-const showExistingRoutineHelpDialog = ref(false);
-const showNewRoutineHelpDialog = ref(false);
 
 // --- FitNotes SQLite Import State ---
 const fitnotesFile = ref<File | null>(null);
@@ -1266,17 +1285,11 @@ const onDayDragEnd = async () => {
 
 
 const toggleExistingRoutineHelp = () => {
-  showExistingRoutineHelpDialog.value = !showExistingRoutineHelpDialog.value;
-  if (showExistingRoutineHelpDialog.value) {
-    showNewRoutineHelpDialog.value = false; 
-  }
+  activeAiTab.value = 'existing';
 };
 
 const toggleNewRoutineHelp = () => {
-  showNewRoutineHelpDialog.value = !showNewRoutineHelpDialog.value;
-  if (showNewRoutineHelpDialog.value) {
-    showExistingRoutineHelpDialog.value = false; 
-  }
+  activeAiTab.value = 'new';
 };
 
 const toggleOverallEditMode = async () => {
