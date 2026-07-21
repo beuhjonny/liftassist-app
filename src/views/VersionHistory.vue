@@ -25,6 +25,22 @@
 
                 <div class="log-entry">
                     <span class="log-date">Jul 21, 2026</span>
+                    <h4>Active Workout Suite, Cardio Dashboard & UI Refinements</h4>
+                    <p>A comprehensive update introducing Skip Whole Exercise controls, superset next-up tracking, cardio homepage integration, Strava web linking, and UI polish across the app:</p>
+                    <ul class="feature-list">
+                         <li><strong>Skip Whole Exercise:</strong> Added a <code>⏭️ Skip Exercise</code> button and confirmation modal to quickly log remaining sets as 0 reps and advance to the next exercise or workout summary. Tapping outside the modal dismisses it smoothly.</li>
+                         <li><strong>Superset Next-Up Tracking:</strong> Fixed superset progression prediction on rest screens to accurately display interleaved superset moves (e.g. Wrist Extension → Face Pull Set 2).</li>
+                         <li><strong>Timeline Bubble Bar Details:</strong> Tapping or hovering over any timeline progress dot now displays full target weight, prescribed reps, and set numbers in popovers.</li>
+                         <li><strong>Cardio Dashboard Option:</strong> Added a "Show Cardio on Homepage" setting toggle and consolidated cardio tracking into a single reusable component with distance unit support (miles / km).</li>
+                         <li><strong>Strava Web Link Integration:</strong> Automatically appends the live web app URL (<code>https://lift-logic-app.web.app</code>) to all workout descriptions uploaded to Strava.</li>
+                         <li><strong>Auto-Progression Inline Guidance:</strong> Added inline 💡 guidance popovers inside exercise configuration boxes explaining min/max reps, rep overload increments, and weight steps without obscuring inputs.</li>
+                         <li><strong>Vector SVG Trash Icons:</strong> Upgraded legacy OS wire basket emojis to crisp vector SVG trash icons across all delete action buttons.</li>
+                         <li><strong>Rest Screen & Header Polish:</strong> Simplified "Skip Rest" button text, right-aligned set action icons, and restyled "Correct Last Set" into a subtle <code>↩ Undo Set</code> pill button.</li>
+                    </ul>
+                </div>
+
+                <div class="log-entry">
+                    <span class="log-date">Jul 21, 2026</span>
                     <h4>Routine Bank Library, AI Prompting & App Modals Update</h4>
                     <p>A major quality-of-life update focused on routine creation, app customization, and seamless user experience:</p>
                     <ul class="feature-list">

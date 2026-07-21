@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 
 // Bump version ID so the user can test the "see updates" badge immediately
-export const LATEST_CHANGELOG_VERSION = '2026-07-21-v2';
+export const LATEST_CHANGELOG_VERSION = '2026-07-21-v3';
 const STORAGE_KEY = 'liftlogic_last_read_changelog';
 
 function checkHasNewChangelog(): boolean {
