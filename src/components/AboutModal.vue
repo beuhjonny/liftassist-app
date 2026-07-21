@@ -5,7 +5,12 @@
       <span>About <span style="font-family: 'Montserrat', sans-serif; margin-left: 2px; margin-right: 6px;"><span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span></span></span>
       
       <!-- Subdued Changelog Indicator Badge -->
-      <span v-if="hasNewChangelog" class="changelog-indicator-badge" title="New features & updates available!">
+      <span 
+        v-if="hasNewChangelog" 
+        @click.stop.prevent="goToChangelog"
+        class="changelog-indicator-badge" 
+        title="Click to view new features & changelog!"
+      >
         see updates ✨
       </span>
     </button>
@@ -55,10 +60,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import ManifestoComponent from './ManifestoComponent.vue';
 import { useChangelog } from '../utils/changelog';
 
 const { hasNewChangelog, markAsRead } = useChangelog();
+const router = useRouter();
 const isOpen = ref(false);
 
 const openModal = () => {
@@ -67,6 +74,12 @@ const openModal = () => {
 
 const closeModal = () => {
   isOpen.value = false;
+};
+
+const goToChangelog = () => {
+  markAsRead();
+  closeModal();
+  router.push('/version-history');
 };
 
 const handleVersionHistoryClick = () => {
