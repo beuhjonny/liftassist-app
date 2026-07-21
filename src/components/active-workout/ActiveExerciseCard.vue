@@ -42,9 +42,9 @@
       <div class="current-set-info-header">
         <div class="set-header-spacer"></div>
         <h3>Set {{ setNumber }} of {{ exercise.targetSets }}</h3>
-        <div class="set-header-action" style="display: flex; align-items: center; gap: 6px;">
-            <button @click="$emit('openEdit')" class="button-icon extra-small" title="Edit Weight/Reps">✏️</button>
-            <button @click="$emit('skipExercise')" class="button-icon extra-small danger" title="Skip Exercise (Log 0 reps for remaining sets)" style="font-size: 0.9em; cursor: pointer; background: none; border: none; padding: 2px;">⏭️</button>
+        <div class="set-header-action" style="display: flex; align-items: center; justify-content: flex-end; gap: 4px;">
+            <button @click="$emit('openEdit')" class="action-icon-btn" title="Edit Weight/Reps">✏️</button>
+            <button @click="$emit('skipExercise')" class="action-icon-btn danger-icon-btn" title="Skip Exercise (Log 0 reps for remaining sets)">⏭️</button>
         </div>
       </div>
       <div class="prescription-details">
@@ -217,7 +217,32 @@ defineEmits<{
   margin-bottom: 15px;
 }
 .set-header-spacer { width: 100%; }
-.set-header-action { text-align: right; }
+.set-header-action { 
+  display: flex; 
+  align-items: center; 
+  justify-content: flex-end;
+}
+
+.action-icon-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 3px 6px;
+  font-size: 0.9em;
+  opacity: 0.7;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-card-text);
+}
+
+.action-icon-btn:hover {
+  opacity: 1;
+  background-color: var(--color-card-bg);
+  border-color: var(--color-card-border);
+}
 
 .current-set-info-header h3 {
   margin: 0;

@@ -739,8 +739,11 @@ const confirmSkipExercise = async () => {
   const currentExName = currentExercise.value.exerciseName;
   const targetSets = currentExercise.value.targetSets;
 
-  // Log all remaining sets for current exercise as 0 reps / failed
-  for (let s = currentSetNumber.value; s <= targetSets; s++) {
+  // Count how many sets are ALREADY logged for this exercise in workoutLog
+  const alreadyLoggedSetsCount = workoutLog.filter(s => s.exerciseId === currentExId).length;
+
+  // Log only the unlogged remaining sets (from alreadyLoggedSetsCount + 1 up to targetSets)
+  for (let s = alreadyLoggedSetsCount + 1; s <= targetSets; s++) {
     workoutLog.push({
       exerciseId: currentExId,
       exerciseName: currentExName,
@@ -755,11 +758,15 @@ const confirmSkipExercise = async () => {
     });
   }
 
+  // Clear timers and set overrides
   if (timerInterval) {
     clearInterval(timerInterval);
     timerInterval = undefined;
   }
   stopActivitySetTimer();
+
+  overriddenRepsForCurrentSet.value = null;
+  overriddenWeightForCurrentSet.value = null;
 
   // Advance past this exercise and any connected superset slaves
   let nextExIndex = currentExerciseIndex.value + 1;
