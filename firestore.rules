@@ -12,11 +12,12 @@ service cloud.firestore {
     }
 
     // Public Shared Workout Cards:
-    // Anyone (including unauthenticated link visitors) can read shared cards.
-    // Logged in users can create/update shared cards.
+    // Anyone (including unauthenticated visitors) can read shared cards.
+    // Only logged-in owners can create or update/delete their own shared cards.
     match /public_workouts/{shareId} {
       allow read: if true;
-      allow create, update: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
     }
 
     // User Subtree Rules: User has full access to their own data

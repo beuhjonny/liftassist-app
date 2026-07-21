@@ -5,6 +5,7 @@ import type { LoggedWorkout } from '@/types';
 
 export interface PublicWorkoutShareData {
   id: string;
+  ownerId?: string;
   workoutDayName: string;
   programName?: string;
   dateStr: string;
@@ -44,6 +45,7 @@ export default function usePublicShare() {
 
       const sharePayload: PublicWorkoutShareData = {
         id: shareId,
+        ownerId: workout.userId || '',
         workoutDayName: workout.workoutDayNameUsed || 'Workout Session',
         programName: workout.trainingProgramNameUsed || '',
         dateStr: formatDateStr(workout.date),
