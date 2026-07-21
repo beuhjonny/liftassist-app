@@ -12,48 +12,208 @@
     </div>
 
     <!-- Creation Choices (Active ID null) -->
+    <!-- Creation Choices (Active ID null) -->
     <div v-if="!activeProgram.id && !isLoading && user" class="create-routine-section">
       <div v-if="!creationMode" class="creation-choice-phase card">
-        <h2>How would you like to start?</h2>
-        <p class="choice-subtitle">Choose the method that works best for your training style.</p>
+        <h2>Choose how you want to build your routine</h2>
+        <p class="choice-subtitle">Select a preset routine, generate with AI, import existing data, or build from scratch.</p>
         
-        <div class="choice-grid">
-          <button @click="quickStartManualRoutine" class="choice-card manual-choice">
-            <div class="choice-icon">✍️</div>
+        <div class="choice-grid-primary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 24px;">
+          
+          <button @click="creationMode = 'library'" class="choice-card hero-choice" style="border-left: 4px solid #3b82f6; text-align: left; padding: 20px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
+            <div class="choice-icon" style="font-size: 2rem; margin-bottom: 8px;">📚</div>
             <div class="choice-content">
-              <h3>Create Manually</h3>
-              <p>Build your routine from scratch, exercise by exercise.</p>
+              <h3 style="margin: 0 0 6px 0; font-size: 1.1em; color: var(--color-card-heading);">Browse Routine Library</h3>
+              <p style="margin: 0; font-size: 0.85em; opacity: 0.8; color: var(--color-card-text); line-height: 1.4;">Select from 24+ popular splits (PPL, Upper/Lower, Full Body) with preset Light/Med/Heavy starting weights.</p>
             </div>
-            <div class="choice-arrow">→</div>
           </button>
 
-          <button @click="creationMode = 'ai'" class="choice-card ai-choice">
-            <div class="choice-icon">✨</div>
+          <button @click="creationMode = 'ai'" class="choice-card ai-choice" style="border-left: 4px solid #8b5cf6; text-align: left; padding: 20px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
+            <div class="choice-icon" style="font-size: 2rem; margin-bottom: 8px;">✨</div>
             <div class="choice-content">
-              <h3>AI Assisted</h3>
-              <p>Import from notes, screenshots, or let AI design a plan for you.</p>
+              <h3 style="margin: 0 0 6px 0; font-size: 1.1em; color: var(--color-card-heading);">AI Assisted Setup</h3>
+              <p style="margin: 0; font-size: 0.85em; opacity: 0.8; color: var(--color-card-text); line-height: 1.4;">Copy guided prompts for ChatGPT, Claude, or Gemini to build a custom routine.</p>
             </div>
-            <div class="choice-arrow">→</div>
+          </button>
+
+          <button @click="creationMode = 'import'" class="choice-card import-choice" style="border-left: 4px solid #10b981; text-align: left; padding: 20px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
+            <div class="choice-icon" style="font-size: 2rem; margin-bottom: 8px;">📥</div>
+            <div class="choice-content">
+              <h3 style="margin: 0 0 6px 0; font-size: 1.1em; color: var(--color-card-heading);">Import Routine</h3>
+              <p style="margin: 0; font-size: 0.85em; opacity: 0.8; color: var(--color-card-text); line-height: 1.4;">Import from FitNotes backups (.fitnotes / .db) or paste a raw routine JSON code block.</p>
+            </div>
+          </button>
+
+          <button @click="quickStartManualRoutine" class="choice-card manual-choice" style="border-left: 4px solid #f59e0b; text-align: left; padding: 20px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
+            <div class="choice-icon" style="font-size: 2rem; margin-bottom: 8px;">✍️</div>
+            <div class="choice-content">
+              <h3 style="margin: 0 0 6px 0; font-size: 1.1em; color: var(--color-card-heading);">Build from Scratch</h3>
+              <p style="margin: 0; font-size: 0.85em; opacity: 0.8; color: var(--color-card-text); line-height: 1.4;">Start with a clean slate and manually add your custom exercises and sessions.</p>
+            </div>
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Routine Library Browser Flow -->
+      <div v-if="creationMode === 'library'" class="routine-library-flow card animate-fade-in" style="text-align: left;">
+        <header class="flow-header" style="margin-bottom: 20px;">
+          <button @click="creationMode = null" class="back-link" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 0; font-size: 0.95em; font-weight: 500;">← Back to choices</button>
+          <h2 style="margin-top: 10px;">Routine Library</h2>
+          <p style="font-size: 0.9em; opacity: 0.85; margin-top: 4px; color: var(--color-card-text);">Choose from 24 proven workout routines. All weights can be customized before or during your workouts.</p>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="bank-search-bar" style="margin-bottom: 20px;">
+          <input 
+            type="text" 
+            v-model="bankSearchQuery" 
+            placeholder="🔍 Search routines by name, exercise, or goal (e.g. Bench, PPL, Dumbbells)..." 
+            style="width: 100%; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text); font-size: 0.95em;"
+          />
+        </div>
+
+        <!-- Equipment Filters -->
+        <div class="filter-group" style="margin-bottom: 16px;">
+          <label style="font-size: 0.85em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; margin-bottom: 8px; display: block;">Equipment Access:</label>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button @click="selectedBankCategory = 'all'" :style="{ background: selectedBankCategory === 'all' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'all' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">All Equipment</button>
+            <button @click="selectedBankCategory = 'dumbbells'" :style="{ background: selectedBankCategory === 'dumbbells' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'dumbbells' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">🏋️ Dumbbells & Bench</button>
+            <button @click="selectedBankCategory = 'full_gym'" :style="{ background: selectedBankCategory === 'full_gym' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'full_gym' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">💪 Full Gym</button>
+            <button @click="selectedBankCategory = 'smith_machine'" :style="{ background: selectedBankCategory === 'smith_machine' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'smith_machine' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">⚙️ Smith / Machines</button>
+            <button @click="selectedBankCategory = 'bodyweight'" :style="{ background: selectedBankCategory === 'bodyweight' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'bodyweight' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">🤸 Bodyweight</button>
+          </div>
+        </div>
+
+        <!-- Split Filters -->
+        <div class="filter-group" style="margin-bottom: 24px;">
+          <label style="font-size: 0.85em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; margin-bottom: 8px; display: block;">Split Type:</label>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button @click="selectedBankSplit = 'all'" :style="{ background: selectedBankSplit === 'all' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankSplit === 'all' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">All Splits</button>
+            <button @click="selectedBankSplit = 'ppl'" :style="{ background: selectedBankSplit === 'ppl' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankSplit === 'ppl' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">Push / Pull / Legs</button>
+            <button @click="selectedBankSplit = 'upper_lower'" :style="{ background: selectedBankSplit === 'upper_lower' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankSplit === 'upper_lower' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">Upper / Lower</button>
+            <button @click="selectedBankSplit = 'full_body'" :style="{ background: selectedBankSplit === 'full_body' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankSplit === 'full_body' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">Full Body</button>
+            <button @click="selectedBankSplit = 'bro_split'" :style="{ background: selectedBankSplit === 'bro_split' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankSplit === 'bro_split' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">Bro Split</button>
+            <button @click="selectedBankSplit = 'express'" :style="{ background: selectedBankSplit === 'express' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankSplit === 'express' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">Express 20-Min</button>
+          </div>
+        </div>
+
+        <!-- Routine Cards Grid -->
+        <div class="bank-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px;">
+          <div 
+            v-for="routine in filteredRoutineBank" 
+            :key="routine.id" 
+            class="bank-card card-inset"
+            style="padding: 20px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px;"
+          >
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
+                <span style="font-size: 0.75em; font-weight: 700; text-transform: uppercase; background: var(--color-primary); color: white; padding: 3px 8px; border-radius: 4px;">{{ routine.daysPerWeek }} Days / Wk</span>
+                <span style="font-size: 0.8em; opacity: 0.75; font-weight: 500;">{{ routine.equipmentLabel }}</span>
+              </div>
+
+              <h3 style="margin: 0 0 8px 0; font-size: 1.15em; color: var(--color-card-heading);">{{ routine.name }}</h3>
+              <p style="margin: 0 0 12px 0; font-size: 0.85em; opacity: 0.85; color: var(--color-card-text); line-height: 1.4;">{{ routine.description }}</p>
+
+              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+                <span v-for="tag in routine.tags" :key="tag" style="font-size: 0.75em; padding: 2px 8px; border-radius: 12px; background: var(--color-card-bg); border: 1px solid var(--color-card-border); color: var(--color-card-text); opacity: 0.9;">#{{ tag }}</span>
+              </div>
+            </div>
+
+            <button 
+              @click="selectedPresetRoutine = routine; selectedIntensity = 'medium'" 
+              class="button-primary full-width" 
+              style="padding: 10px; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 6px;"
+            >
+              👀 Inspect & Select Routine
+            </button>
+          </div>
+        </div>
+
+        <div v-if="filteredRoutineBank.length === 0" style="text-align: center; padding: 40px; color: var(--color-card-text); opacity: 0.7;">
+          <p style="font-size: 1.1em;">No routines match your current filters.</p>
+          <button @click="selectedBankCategory = 'all'; selectedBankSplit = 'all'; bankSearchQuery = '';" class="button-secondary small" style="margin-top: 10px;">Reset Filters</button>
+        </div>
+      </div>
+
+      <!-- Consolidated Import Flow -->
+      <div v-if="creationMode === 'import'" class="import-hub-flow card animate-fade-in" style="text-align: left;">
+        <header class="flow-header" style="margin-bottom: 20px;">
+          <button @click="creationMode = null" class="back-link" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 0; font-size: 0.95em; font-weight: 500;">← Back to choices</button>
+          <h2 style="margin-top: 10px;">Import Routine</h2>
+          <p style="font-size: 0.9em; opacity: 0.85; margin-top: 4px; color: var(--color-card-text);">Import your training data from external sources.</p>
+        </header>
+
+        <!-- Import Mode Tabs -->
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid var(--color-card-border); padding-bottom: 12px;">
+          <button 
+            @click="importTab = 'fitnotes'" 
+            :style="{ background: importTab === 'fitnotes' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: importTab === 'fitnotes' ? 'white' : 'var(--color-card-text)' }"
+            style="padding: 8px 16px; border-radius: 6px; border: 1px solid var(--color-card-border); cursor: pointer; font-weight: 600; font-size: 0.9em;"
+          >
+            📋 FitNotes Backup (.fitnotes)
+          </button>
+          <button 
+            @click="importTab = 'json'" 
+            :style="{ background: importTab === 'json' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: importTab === 'json' ? 'white' : 'var(--color-card-text)' }"
+            style="padding: 8px 16px; border-radius: 6px; border: 1px solid var(--color-card-border); cursor: pointer; font-weight: 600; font-size: 0.9em;"
+          >
+            📄 Raw JSON Paste
           </button>
         </div>
 
-        <div class="secondary-choice-actions" style="margin-top: 30px; border-top: 1px solid var(--color-card-border); padding-top: 20px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
-            <button @click="creationMode = 'fitnotes'" class="button-secondary small" style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-mute); color: var(--color-card-text); cursor: pointer; font-size: 0.9em; font-weight: 500;">
-                📋 Import from FitNotes (.fitnotes)
+        <!-- Tab 1: FitNotes -->
+        <div v-if="importTab === 'fitnotes'" class="fitnotes-tab-content">
+          <div class="import-routine-section card-inset" style="padding: 20px; background: var(--color-card-mute); border-radius: 8px; border: 1px solid var(--color-card-border);">
+            <h4 style="margin-top: 0; margin-bottom: 10px; font-weight: 600;">Select FitNotes Backup File</h4>
+            <p class="small-text" style="font-size: 0.85em; opacity: 0.8; margin-bottom: 20px; line-height: 1.4;">
+              Select your <strong>.fitnotes</strong> or <strong>.db</strong> SQLite backup file exported from FitNotes. 
+              All parsing runs locally on your device.
+            </p>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+              <input type="file" accept=".fitnotes,.db,.sqlite" @change="handleFitNotesFile" style="width: 100%; padding: 8px; border: 1px solid var(--color-card-border); border-radius: 6px; background: var(--color-card-bg); color: var(--color-card-text); font-size: 0.9em;" />
+            </div>
+
+            <div v-if="fitnotesParsedData" class="import-preview card-inset" style="margin-bottom: 20px; padding: 15px; background: var(--color-card-bg); border-radius: 6px; border: 1px solid var(--color-card-border); font-size: 0.95em;">
+               <h5 style="margin-top:0; margin-bottom: 12px; font-weight: 600; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 8px;">Backup Contents:</h5>
+               <ul style="list-style: none; padding-left: 0; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px;">
+                  <li style="display: flex; align-items: center; gap: 8px;">📅 <span><strong>Workout Days Logged:</strong> {{ fitnotesParsedData.workoutsCount }}</span></li>
+                  <li style="display: flex; align-items: center; gap: 8px;">🏋️ <span><strong>Unique Exercises:</strong> {{ fitnotesParsedData.exercisesCount }}</span></li>
+               </ul>
+            </div>
+
+            <button v-if="fitnotesParsedData" @click="performFitNotesImport" :disabled="isSaving" class="button-primary button-large full-width" style="padding: 12px; font-weight: 600;">
+              {{ isSaving ? importProgressStatus || 'Importing FitNotes...' : '🚀 Execute FitNotes Import' }}
             </button>
-            <button 
-              @click="loadJonnyPPL" 
-              class="button-secondary small" 
-              style="display: flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 6px; border: 1px solid var(--color-card-border); background: var(--color-card-mute); color: var(--color-card-text); cursor: pointer; font-size: 0.9em; font-weight: 500;" 
-              title="Use a default Push/Pull/Leg routine you can customize. If you have dumbbells, elastics, and a bench, this is a good place to start."
-            >
-                💪 Use Default LiftLogic PPL
-                <span 
-                  @click.stop.prevent="showTooltipAlert('Use a default Push/Pull/Leg routine you can customize. If you have dumbbells, elastics, and a bench, this is a good place to start.')" 
-                  style="font-size: 0.95em; cursor: pointer; opacity: 0.8; margin-left: 2px;"
-                  title="Use a default Push/Pull/Leg routine you can customize. If you have dumbbells, elastics, and a bench, this is a good place to start."
-                >💡</span>
-            </button>
+          </div>
+        </div>
+
+        <!-- Tab 2: Raw JSON Paste -->
+        <div v-if="importTab === 'json'" class="json-tab-content">
+          <div class="import-routine-section card-inset" style="padding: 20px; background: var(--color-card-mute); border-radius: 8px; border: 1px solid var(--color-card-border);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span style="font-size: 1.2em;">📋</span>
+              <h4 style="margin: 0; font-weight: 600;">Paste Routine JSON Code Block</h4>
+            </div>
+            <p class="small-text" style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px; line-height: 1.4;">
+              Paste any valid LiftLogic routine JSON structure below.
+            </p>
+            <form @submit.prevent="importPastedRoutine">
+              <div class="form-group" style="margin-bottom: 15px;">
+                <textarea 
+                  id="routineJsonDataHub" 
+                  v-model="pastedRoutineJson" 
+                  rows="3" 
+                  placeholder="Paste your generated routine JSON code block here..."
+                  style="width: 100%; border-radius: 6px; border: 1px solid var(--color-card-border); padding: 8px 12px; font-family: monospace; font-size: 0.85em; background: var(--color-card-bg); color: var(--color-card-text); resize: vertical; min-height: 70px; max-height: 200px;"
+                ></textarea>
+              </div>
+              <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary button-large full-width" style="padding: 12px; font-weight: 600; font-size: 1em; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                {{ isSaving ? 'Importing Routine...' : '🚀 Import Routine JSON' }}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
@@ -692,6 +852,96 @@ REQUIRED JSON STRUCTURE:
         </div>
     </div>
 
+    <!-- Routine Detail & Weight Intensity Selector Modal -->
+    <div v-if="selectedPresetRoutine" class="modal-overlay animate-fade-in" style="z-index: 2000;">
+      <div class="modal-content" style="max-width: 650px; max-height: 90vh; overflow-y: auto; text-align: left;">
+        <button @click="selectedPresetRoutine = null" class="modal-close-button">&times;</button>
+
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 0.75em; font-weight: 700; text-transform: uppercase; background: var(--color-primary); color: white; padding: 2px 8px; border-radius: 4px;">{{ selectedPresetRoutine.daysPerWeek }} Days / Wk</span>
+          <span style="font-size: 0.85em; opacity: 0.75; color: var(--color-card-text);">{{ selectedPresetRoutine.equipmentLabel }}</span>
+        </div>
+
+        <h2 style="margin: 0 0 10px 0; color: var(--color-card-heading);">{{ selectedPresetRoutine.name }}</h2>
+        <p style="font-size: 0.9em; opacity: 0.85; line-height: 1.5; margin-bottom: 20px; color: var(--color-card-text);">{{ selectedPresetRoutine.description }}</p>
+
+        <!-- Sessions & Exercises Preview -->
+        <h4 style="margin-bottom: 10px; font-weight: 600; color: var(--color-card-heading);">Workout Sessions Overview:</h4>
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+          <div 
+            v-for="day in selectedPresetRoutine.workoutDays" 
+            :key="day.order"
+            class="card-inset"
+            style="padding: 12px 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 8px;"
+          >
+            <strong style="color: var(--color-card-heading); font-size: 0.95em; display: block; margin-bottom: 6px;">{{ day.dayName }} ({{ day.exercises.length }} exercises)</strong>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <span 
+                v-for="ex in day.exercises" 
+                :key="ex.exerciseName" 
+                style="font-size: 0.8em; padding: 3px 8px; border-radius: 4px; background: var(--color-card-bg); border: 1px solid var(--color-card-border); color: var(--color-card-text);"
+              >
+                {{ ex.exerciseName }} ({{ ex.targetSets }}x{{ ex.minReps }}-{{ ex.maxReps }})
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Starting Weight Intensity Level Selector -->
+        <div class="intensity-selector-section card-inset" style="padding: 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 10px; margin-bottom: 20px;">
+          <h4 style="margin-top: 0; margin-bottom: 8px; font-weight: 600; color: var(--color-card-heading);">Select Starting Weight Level:</h4>
+          <p style="font-size: 0.85em; opacity: 0.8; margin-bottom: 14px; line-height: 1.4; color: var(--color-card-text);">Presets initial starting weights across all exercises based on your experience level.</p>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px;">
+            <button 
+              type="button"
+              @click="selectedIntensity = 'light'" 
+              :style="{ borderColor: selectedIntensity === 'light' ? 'var(--color-primary)' : 'var(--color-card-border)', background: selectedIntensity === 'light' ? 'var(--color-card-bg)' : 'var(--color-card-mute)' }"
+              style="padding: 12px 8px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: center;"
+            >
+              <div style="font-size: 1.2em; margin-bottom: 4px;">🟢</div>
+              <strong style="font-size: 0.85em; display: block; color: var(--color-card-text);">Light / Beginner</strong>
+            </button>
+
+            <button 
+              type="button"
+              @click="selectedIntensity = 'medium'" 
+              :style="{ borderColor: selectedIntensity === 'medium' ? 'var(--color-primary)' : 'var(--color-card-border)', background: selectedIntensity === 'medium' ? 'var(--color-card-bg)' : 'var(--color-card-mute)' }"
+              style="padding: 12px 8px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: center;"
+            >
+              <div style="font-size: 1.2em; margin-bottom: 4px;">🟡</div>
+              <strong style="font-size: 0.85em; display: block; color: var(--color-card-text);">Medium / Interm.</strong>
+            </button>
+
+            <button 
+              type="button"
+              @click="selectedIntensity = 'heavy'" 
+              :style="{ borderColor: selectedIntensity === 'heavy' ? 'var(--color-primary)' : 'var(--color-card-border)', background: selectedIntensity === 'heavy' ? 'var(--color-card-bg)' : 'var(--color-card-mute)' }"
+              style="padding: 12px 8px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: center;"
+            >
+              <div style="font-size: 1.2em; margin-bottom: 4px;">🔴</div>
+              <strong style="font-size: 0.85em; display: block; color: var(--color-card-text);">Heavy / Advanced</strong>
+            </button>
+          </div>
+
+          <!-- Adjust Weight Tip Notice -->
+          <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85em; color: var(--color-card-text); opacity: 0.9; background: var(--color-card-bg); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--color-card-border);">
+            <span style="font-size: 1.1em;">✏️</span>
+            <span><strong>Tip:</strong> Don't worry about getting exact weights now! You can adjust your actual weight for any exercise anytime during your workout using the <strong>✏️ pencil button</strong>.</span>
+          </div>
+        </div>
+
+        <button 
+          @click="adoptBankRoutine(selectedPresetRoutine, selectedIntensity)" 
+          :disabled="isSaving" 
+          class="button-primary button-large full-width" 
+          style="padding: 14px; font-size: 1em; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;"
+        >
+          {{ isSaving ? 'Adding Routine...' : `🚀 Adopt Routine (${selectedIntensity.toUpperCase()} Preset)` }}
+        </button>
+      </div>
+    </div>
+
   </div> <!-- End routines-view -->
 </template>
 
@@ -720,6 +970,13 @@ import {
   type LoggedSetData
 } from '../types';
 import draggable from 'vuedraggable';
+import {
+  ROUTINE_BANK,
+  type PresetRoutine,
+  type EquipmentCategory,
+  type SplitType,
+  type IntensityLevel
+} from '../data/routineBank';
 
 const daySequenceColorPalette = [
   '#FF5252', // Vibrant Red
@@ -757,6 +1014,28 @@ const showExerciseDeleteConfirmation = ref(false); // Potential future use, but 
 const itemToDelete = ref<any>(null); // For generic delete if needed
 const showProgressionHint = ref(false);
 const showFailureProgressionHelp = ref(false);
+
+// --- Routine Bank & Library State ---
+const selectedBankCategory = ref<EquipmentCategory | 'all'>('all');
+const selectedBankSplit = ref<SplitType | 'all'>('all');
+const bankSearchQuery = ref('');
+const selectedPresetRoutine = ref<PresetRoutine | null>(null);
+const selectedIntensity = ref<IntensityLevel>('medium');
+const importTab = ref<'fitnotes' | 'json'>('fitnotes');
+
+const filteredRoutineBank = computed(() => {
+  return ROUTINE_BANK.filter(routine => {
+    const matchesCategory = selectedBankCategory.value === 'all' || routine.equipmentCategory === selectedBankCategory.value;
+    const matchesSplit = selectedBankSplit.value === 'all' || routine.splitType === selectedBankSplit.value;
+    const query = bankSearchQuery.value.trim().toLowerCase();
+    const matchesSearch = !query || 
+      routine.name.toLowerCase().includes(query) || 
+      routine.description.toLowerCase().includes(query) ||
+      routine.tags.some(tag => tag.toLowerCase().includes(query)) ||
+      routine.workoutDays.some(day => day.exercises.some(ex => ex.exerciseName.toLowerCase().includes(query)));
+    return matchesCategory && matchesSplit && matchesSearch;
+  });
+});
 
 const showTooltipAlert = (msg: string) => {
   alert(msg);
@@ -914,7 +1193,7 @@ const importProgressPercentage = ref(0);
 
 // --- Overall Edit Mode State ---
 const isInOverallEditMode = ref(false);
-const creationMode = ref<'manual' | 'ai' | 'fitnotes' | null>(null);
+const creationMode = ref<'manual' | 'ai' | 'fitnotes' | 'library' | 'import' | null>(null);
 
 // --- Routine Name/Description Edit State ---
 const showEditProgramDetailsForm = ref(false);
@@ -1146,271 +1425,61 @@ const saveActiveProgramBaseDetails = async () => {
   finally { isSaving.value = false; }
 };
 
-const loadJonnyPPL = async () => {
+const adoptBankRoutine = async (routine: PresetRoutine, intensity: IntensityLevel) => {
   if (!user.value || !user.value.uid) {
-    alert("Please sign in to copy the default PPL routine.");
+    alert("Please sign in to adopt a routine.");
     return;
   }
 
-  if (confirm("Copy the Default LiftLogic PPL routine to your account? You will need to adjust your weights.")) {
-    try {
-      isSaving.value = true;
-      const programsRef = collection(db, 'users', user.value.uid, 'trainingPrograms');
-      
-      const newProgramDoc = {
-        programName: "Default LiftLogic PPL",
-        description: "Standard Push/Pull/Legs split built for Dumbbells, an Adjustable Bench, and Doorway Resistance Bands.",
-        defaultRestTimer: 90,
-        workoutDays: [
-          {
-            id: 'day_push_' + Date.now(),
-            dayName: "Push (Chest, Shoulders, Triceps)",
-            order: 1,
-            workoutColor: "#FF5252",
-            exercises: [
-              {
-                id: "ex_push_1_" + Date.now(),
-                exerciseName: "Dumbbell Bench Press",
-                targetSets: 3,
-                minReps: 8,
-                maxReps: 12,
-                startingWeight: 50,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 90,
-                notesForExercise: "Flat or slight incline bench. Retract shoulder blades."
-              },
-              {
-                id: "ex_push_2_" + Date.now(),
-                exerciseName: "Seated Dumbbell Overhead Press",
-                targetSets: 3,
-                minReps: 8,
-                maxReps: 12,
-                startingWeight: 35,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 90,
-                notesForExercise: "Upright bench support. Press vertically without arching lower back."
-              },
-              {
-                id: "ex_push_3_" + Date.now(),
-                exerciseName: "Incline Dumbbell Flyes",
-                targetSets: 3,
-                minReps: 10,
-                maxReps: 15,
-                startingWeight: 25,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 60,
-                notesForExercise: "Deep chest stretch at the bottom with a slight bend in elbows."
-              },
-              {
-                id: "ex_push_4_" + Date.now(),
-                exerciseName: "Dumbbell Lateral Raise",
-                targetSets: 3,
-                minReps: 12,
-                maxReps: 15,
-                startingWeight: 15,
-                weightIncrement: 2.5,
-                repOverloadStep: 1,
-                enableProgression: true,
-                customRestSeconds: 60,
-                notesForExercise: "Lead with elbows, raise to shoulder height."
-              },
-              {
-                id: "ex_push_5_" + Date.now(),
-                exerciseName: "Overhead Dumbbell Tricep Extension",
-                targetSets: 3,
-                minReps: 10,
-                maxReps: 12,
-                startingWeight: 30,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 60,
-                notesForExercise: "Keep elbows pointed forward and close to head."
-              },
-              {
-                id: "ex_push_6_" + Date.now(),
-                exerciseName: "Doorway Band Tricep Pushdown",
-                targetSets: 3,
-                minReps: 12,
-                maxReps: 15,
-                startingWeight: 20,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 60,
-                notesForExercise: "Anchor band at top of doorframe. Lock out elbows at the bottom."
-              }
-            ]
-          },
-          {
-            id: 'day_pull_' + Date.now(),
-            dayName: "Pull (Back, Rear Delts, Biceps)",
-            order: 2,
-            workoutColor: "#2ECC71",
-            exercises: [
-              {
-                id: "ex_pull_1_" + Date.now(),
-                exerciseName: "One-Arm Dumbbell Row",
-                targetSets: 3,
-                minReps: 8,
-                maxReps: 12,
-                startingWeight: 45,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 90,
-                notesForExercise: "Hand and knee on bench. Pull dumbbell to hip."
-              },
-              {
-                id: "ex_pull_2_" + Date.now(),
-                exerciseName: "Doorway Band Lat Pulldown",
-                targetSets: 3,
-                minReps: 10,
-                maxReps: 15,
-                startingWeight: 30,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 75,
-                notesForExercise: "Kneel down, anchor band at top of door, pull down to collarbone."
-              },
-              {
-                id: "ex_pull_3_" + Date.now(),
-                exerciseName: "Doorway Band Face Pull",
-                targetSets: 3,
-                minReps: 12,
-                maxReps: 15,
-                startingWeight: 20,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 60,
-                notesForExercise: "Anchor band at chest level. Pull hands back towards ears."
-              },
-              {
-                id: "ex_pull_4_" + Date.now(),
-                exerciseName: "Dumbbell Bicep Curl",
-                targetSets: 3,
-                minReps: 8,
-                maxReps: 12,
-                startingWeight: 25,
-                weightIncrement: 2.5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 60,
-                notesForExercise: "Strict form, rotate palms up as you curl."
-              },
-              {
-                id: "ex_pull_5_" + Date.now(),
-                exerciseName: "Dumbbell Hammer Curl",
-                targetSets: 3,
-                minReps: 10,
-                maxReps: 12,
-                startingWeight: 25,
-                weightIncrement: 2.5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 60,
-                notesForExercise: "Palms facing each other throughout the lift."
-              }
-            ]
-          },
-          {
-            id: 'day_legs_' + Date.now(),
-            dayName: "Legs & Core",
-            order: 3,
-            workoutColor: "#2979FF",
-            exercises: [
-              {
-                id: "ex_legs_1_" + Date.now(),
-                exerciseName: "Dumbbell Goblet Squat",
-                targetSets: 3,
-                minReps: 8,
-                maxReps: 12,
-                startingWeight: 55,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 90,
-                notesForExercise: "Hold dumbbell against upper chest, squat below parallel."
-              },
-              {
-                id: "ex_legs_2_" + Date.now(),
-                exerciseName: "Dumbbell Romanian Deadlift",
-                targetSets: 3,
-                minReps: 8,
-                maxReps: 12,
-                startingWeight: 50,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 90,
-                notesForExercise: "Soft knees, hinge hips back until hamstrings stretch."
-              },
-              {
-                id: "ex_legs_3_" + Date.now(),
-                exerciseName: "Dumbbell Lunge",
-                targetSets: 3,
-                minReps: 10,
-                maxReps: 12,
-                startingWeight: 30,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 75,
-                notesForExercise: "Step forward into a deep lunge with torso upright."
-              },
-              {
-                id: "ex_legs_4_" + Date.now(),
-                exerciseName: "Single-Leg Dumbbell Calf Raise",
-                targetSets: 3,
-                minReps: 12,
-                maxReps: 15,
-                startingWeight: 30,
-                weightIncrement: 5,
-                repOverloadStep: 2,
-                enableProgression: true,
-                customRestSeconds: 60,
-                notesForExercise: "Balance on step or plate for full stretch at bottom."
-              },
-              {
-                id: "ex_legs_5_" + Date.now(),
-                exerciseName: "Weighted Plank",
-                targetSets: 3,
-                minReps: 45,
-                maxReps: 60,
-                startingWeight: 0,
-                weightIncrement: 5,
-                repOverloadStep: 15,
-                enableProgression: true,
-                isTimed: true,
-                customRestSeconds: 60,
-                notesForExercise: "Keep core rigid and glutes engaged throughout."
-              }
-            ]
-          }
-        ],
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
+  try {
+    isSaving.value = true;
+    error.value = null;
 
-      const docRef = await addDoc(programsRef, newProgramDoc);
-      await fetchAllPrograms();
+    const createdDays: WorkoutDay[] = routine.workoutDays.map((day, dIdx) => ({
+      id: `day_${Date.now()}_${dIdx}`,
+      dayName: day.dayName,
+      order: day.order,
+      exercises: day.exercises.map((ex, eIdx) => ({
+        id: `ex_${Date.now()}_${dIdx}_${eIdx}`,
+        exerciseName: ex.exerciseName,
+        targetSets: ex.targetSets,
+        minReps: ex.minReps,
+        maxReps: ex.maxReps,
+        startingWeight: ex.weights[intensity],
+        weightIncrement: ex.weightIncrement,
+        repOverloadStep: ex.repOverloadStep,
+        enableProgression: true,
+        isTimed: ex.isTimed || false,
+        isToFailure: ex.isToFailure || false,
+        customRestSeconds: ex.customRestSeconds || routine.defaultRestTimer,
+        notesForExercise: ex.notesForExercise || ''
+      }))
+    }));
+
+    const programsRef = collection(db, 'users', user.value.uid, 'trainingPrograms');
+    const programData = {
+      programName: routine.name,
+      description: `${routine.description} (Starting Level: ${intensity.toUpperCase()})`,
+      defaultRestTimer: routine.defaultRestTimer,
+      workoutDays: createdDays,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    const docRef = await addDoc(programsRef, programData);
+    if (docRef.id) {
       await setActiveProgram(docRef.id);
       await loadProgram(docRef.id);
-      creationMode.value = null;
-      alert("🎉 Default LiftLogic PPL routine copied and set as active!");
-    } catch (e: any) {
-      alert("Failed to copy default PPL routine: " + e.message);
-    } finally {
-      isSaving.value = false;
+      await fetchAllPrograms();
     }
+
+    selectedPresetRoutine.value = null;
+    creationMode.value = null;
+  } catch (err: any) {
+    console.error("Error adopting bank routine:", err);
+    error.value = err.message || "Failed to add routine to account.";
+  } finally {
+    isSaving.value = false;
   }
 };
 
