@@ -348,28 +348,30 @@
       <div v-else-if="loggedWorkouts.length > 0" class="lifetime-stats-card card">
         <h2>Lifetime Stats 💪</h2>
         <ul>
-          <li>
-            <span class="stat-icon">🏋️</span>
-            <span class="stat-label">Total Volume Lifted:</span>
-            <span class="stat-value">{{ lifetimeStats.totalVolume.toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</span>
-          </li>
-
+          <!-- Consistency & History -->
           <li>
             <span class="stat-icon">🗓️</span>
             <span class="stat-label">Workouts Completed:</span>
             <span class="stat-value">{{ lifetimeStats.totalWorkouts }}</span>
           </li>
           
-          <li>
-            <span class="stat-icon">💪</span>
-            <span class="stat-label">Total Sets & Reps:</span>
-            <span class="stat-value">{{ lifetimeStats.totalSets.toLocaleString() }} Sets ({{ lifetimeStats.totalReps.toLocaleString() }} Reps)</span>
-          </li>
-
           <li :class="{ 'stat-highlight': lifetimeStats.weeklyStreak > 1 }">
             <span class="stat-icon">🔥</span>
             <span class="stat-label">Weekly Streak (2+):</span>
             <span class="stat-value">{{ lifetimeStats.weeklyStreak }} {{ lifetimeStats.weeklyStreak === 1 ? 'Wk' : 'Wks' }} <small style="opacity: 0.8; font-size: 0.85em; font-weight: normal;">(Best: {{ lifetimeStats.bestWeeklyStreak }} Wks)</small></span>
+          </li>
+
+          <li v-if="lifetimeStats.firstWorkoutDate">
+            <span class="stat-icon">🚀</span>
+            <span class="stat-label">Lifting Since:</span>
+            <span class="stat-value">{{ formatDateForDisplay(lifetimeStats.firstWorkoutDate) }}</span>
+          </li>
+
+          <!-- Progression & Strength -->
+          <li style="border-top: 1px dashed var(--color-card-border); padding-top: 10px; margin-top: 4px;">
+            <span class="stat-icon">📈</span>
+            <span class="stat-label">Overloads Triggered:</span>
+            <span class="stat-value">{{ lifetimeStats.totalOverloads }}</span>
           </li>
 
           <li>
@@ -379,30 +381,35 @@
           </li>
 
           <li>
-            <span class="stat-icon">⏱️</span>
-            <span class="stat-label">Total Training Time:</span>
-            <span class="stat-value">{{ formatLifetimeDuration(lifetimeStats.totalTimeMinutes) }}</span>
-          </li>
-          <li>
-            <span class="stat-icon">📈</span>
-            <span class="stat-label">Overloads Triggered:</span>
-            <span class="stat-value">{{ lifetimeStats.totalOverloads }}</span>
-          </li>
-          <li>
             <span class="stat-icon">🦍</span>
             <span class="stat-label">Heaviest Lift Ever:</span>
             <span class="stat-value">{{ lifetimeStats.heaviestLift.toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</span>
           </li>
-          <li v-if="lifetimeStats.firstWorkoutDate">
-            <span class="stat-icon">🚀</span>
-            <span class="stat-label">Lifting Since:</span>
-            <span class="stat-value">{{ formatDateForDisplay(lifetimeStats.firstWorkoutDate) }}</span>
+
+          <li>
+            <span class="stat-icon">🏋️</span>
+            <span class="stat-label">Total Volume Lifted:</span>
+            <span class="stat-value">{{ lifetimeStats.totalVolume.toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</span>
           </li>
-          
-          <template v-if="isConnected">
-            <li style="border-top: 1px dashed var(--color-card-border); font-weight: 600; color: #FC4C02; justify-content: center; padding-top: 18px; margin-top: 5px;">
+
+          <!-- Volume & Time -->
+          <li style="border-top: 1px dashed var(--color-card-border); padding-top: 10px; margin-top: 4px;">
+            <span class="stat-icon">💪</span>
+            <span class="stat-label">Total Sets & Reps:</span>
+            <span class="stat-value">{{ lifetimeStats.totalSets.toLocaleString() }} Sets ({{ lifetimeStats.totalReps.toLocaleString() }} Reps)</span>
+          </li>
+
+          <li>
+            <span class="stat-icon">⏱️</span>
+            <span class="stat-label">Total Training Time:</span>
+            <span class="stat-value">{{ formatLifetimeDuration(lifetimeStats.totalTimeMinutes) }}</span>
+          </li>
+
+          <!-- Cardio Stats (Manual & Strava) -->
+          <template v-if="externalActivities.length > 0">
+            <li style="border-top: 1px dashed var(--color-card-border); font-weight: 600; color: #FC4C02; justify-content: center; padding-top: 14px; margin-top: 8px;">
               <span class="stat-icon" style="color: #FC4C02;">🏃</span>
-              <span class="stat-label" style="color: #FC4C02; margin-right: 0;">Strava Cardio Stats</span>
+              <span class="stat-label" style="color: #FC4C02; margin-right: 0;">Cardio Stats</span>
             </li>
             <li>
               <span class="stat-icon" style="color: #FC4C02;">👟</span>
