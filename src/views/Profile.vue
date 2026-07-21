@@ -78,11 +78,23 @@
             </div>
         </div>
 
-         <div class="setting-item">
-            <label>Weight Unit</label>
-            <div class="segmented-control">
-                <button :class="{ active: settings.weightUnit === 'lbs' }" @click="updateUnit('lbs')">lbs</button>
-                <button :class="{ active: settings.weightUnit === 'kg' }" @click="updateUnit('kg')">kg</button>
+        <div class="setting-item units-group-item" style="display: flex; flex-direction: column; gap: 10px; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 12px; margin-bottom: 12px;">
+            <label style="font-weight: 700; color: var(--color-card-heading); width: 100%; margin-bottom: 2px;">Units 📏</label>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span style="font-size: 0.95em; color: var(--color-card-text);">Weight</span>
+                <div class="segmented-control">
+                    <button :class="{ active: settings.weightUnit === 'lbs' }" @click="updateUnit('lbs')">lbs</button>
+                    <button :class="{ active: settings.weightUnit === 'kg' }" @click="updateUnit('kg')">kg</button>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span style="font-size: 0.95em; color: var(--color-card-text);">Distance</span>
+                <div class="segmented-control">
+                    <button :class="{ active: settings.cardioDistanceUnit !== 'km' }" @click="updateCardioUnit('mi')">mi</button>
+                    <button :class="{ active: settings.cardioDistanceUnit === 'km' }" @click="updateCardioUnit('km')">km</button>
+                </div>
             </div>
         </div>
 
