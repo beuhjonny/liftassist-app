@@ -7,6 +7,7 @@
           <option value="totalVolume">Total Volume ({{ weightUnit }})</option>
           <option value="workoutFrequency">Workout Frequency (Sessions/wk)</option>
           <option value="totalSets">Total Weekly Sets</option>
+          <option value="overloadRate">Overload Rate (%)</option>
         </select>
       </div>
 
@@ -73,7 +74,7 @@ const props = withDefaults(
   }
 );
 
-const selectedMetric = ref<'totalVolume' | 'workoutFrequency' | 'totalSets'>('totalVolume');
+const selectedMetric = ref<'totalVolume' | 'workoutFrequency' | 'totalSets' | 'overloadRate'>('totalVolume');
 const useMovingAverage = ref(false);
 
 /**
@@ -110,7 +111,7 @@ const chartData = computed(() => {
     cutoffDate.setFullYear(now.getFullYear() - 1);
   }
 
-  const metricGroupData: Record<string, { volume: number; workoutsCount: number; setsCount: number }> = {};
+  const metricGroupData: Record<string, { volume: number; workoutsCount: number; setsCount: number; overloadHits: number; totalExercises: number }> = {};
 
   if (props.workouts && props.workouts.length > 0) {
     // Process directly from LoggedWorkout objects
@@ -135,13 +136,18 @@ const chartData = computed(() => {
       }
 
       if (!metricGroupData[label]) {
-        metricGroupData[label] = { volume: 0, workoutsCount: 0, setsCount: 0 };
+        metricGroupData[label] = { volume: 0, workoutsCount: 0, setsCount: 0, overloadHits: 0, totalExercises: 0 };
       }
 
       metricGroupData[label].workoutsCount += 1;
 
       if (w.performedExercises) {
         w.performedExercises.forEach(ex => {
+          metricGroupData[label].totalExercises += 1;
+          if (ex.isPR) {
+            metricGroupData[label].overloadHits += 1;
+          }
+
           if (!ex.sets) return;
           const validSets = ex.sets.filter(s => s && s.status !== 'failed');
           metricGroupData[label].setsCount += validSets.length;
@@ -184,7 +190,7 @@ const chartData = computed(() => {
       }
 
       if (!metricGroupData[label]) {
-        metricGroupData[label] = { volume: 0, workoutsCount: 0, setsCount: 0 };
+        metricGroupData[label] = { volume: 0, workoutsCount: 0, setsCount: 0, overloadHits: 0, totalExercises: 0 };
       }
 
       metricGroupData[label].volume += entry.totalVolume || 0;
@@ -209,6 +215,9 @@ const chartData = computed(() => {
     const item = metricGroupData[key];
     if (selectedMetric.value === 'workoutFrequency') return item.workoutsCount;
     if (selectedMetric.value === 'totalSets') return item.setsCount;
+    if (selectedMetric.value === 'overloadRate') {
+      return item.totalExercises > 0 ? Math.round((item.overloadHits / item.totalExercises) * 100) : 0;
+    }
     return Math.round(item.volume);
   });
 
@@ -253,6 +262,7 @@ const chartData = computed(() => {
 function getMetricLabel(): string {
   if (selectedMetric.value === 'workoutFrequency') return 'Workouts / Period';
   if (selectedMetric.value === 'totalSets') return 'Total Sets';
+  if (selectedMetric.value === 'overloadRate') return 'Overload Rate (%)';
   return `Total Volume (${displayUnit(props.weightUnit)})`;
 }
 

@@ -158,7 +158,7 @@
       <div class="consistency-settings-card card" style="margin-bottom: 20px;">
         <div @click="isConsistencyCardExpanded = !isConsistencyCardExpanded" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <h2 style="margin: 0;">CONSISTENCY & PROGRESS 🎯</h2>
+              <h2 style="margin: 0;">Consistency & Progress 🎯</h2>
               <span 
                 @click.stop.prevent="showConsistencyInfoModal"
                 style="font-size: 1.1em; cursor: pointer; opacity: 0.9;" 

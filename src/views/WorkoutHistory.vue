@@ -81,15 +81,6 @@
                 </div>
             </div>
 
-            <!-- Overload Rate Summary Strip -->
-            <div style="display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap;">
-              <div class="card-inset" style="flex: 1; min-width: 160px; padding: 10px 14px; border-radius: 8px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); text-align: center;">
-                <span style="font-size: 0.75em; text-transform: uppercase; font-weight: 700; color: var(--color-card-text); opacity: 0.75; display: block; margin-bottom: 2px;">Overload Success Rate</span>
-                <span style="font-size: 1.3em; font-weight: 800; color: var(--color-card-heading);">⚡ {{ overallOverloadStats.overloadRate }}%</span>
-                <span style="font-size: 0.75em; color: var(--color-card-text); opacity: 0.75; display: block; margin-top: 2px;">{{ overallOverloadStats.overloadsCount }} overloads across {{ overallOverloadStats.totalExercises }} exercises</span>
-              </div>
-            </div>
-
             <WeeklyVolumeChart 
                 :volumeIndex="calendarIndex" 
                 :workouts="loggedWorkouts"
