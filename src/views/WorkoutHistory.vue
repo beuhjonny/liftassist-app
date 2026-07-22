@@ -154,6 +154,7 @@
             <!-- 5. Comparative Strength Standards ("How Do I Compare?") -->
             <div class="chart-section">
                 <StrengthStandardsCard 
+                    :selectedExerciseName="selectedExerciseForGraph"
                     :workouts="loggedWorkouts"
                     :weightUnit="settings?.weightUnit || 'lbs'"
                 />

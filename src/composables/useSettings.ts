@@ -25,6 +25,7 @@ export interface UserSettings {
     showCardioOnHome?: boolean; // Render Cardio box on Homepage (default false)
     cardioStreakMinPerWeek?: number; // Target weekly cardio sessions for cardio streak (default 2)
     bodyweight?: number; // User bodyweight for strength standards
+    userAgeBracket?: string; // User age bracket for strength standards ('20-29', '30-39', '40-49', '50-59', '60+')
 }
 
 const defaultSettings: UserSettings = {

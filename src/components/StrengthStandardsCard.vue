@@ -1,21 +1,38 @@
 <template>
   <div class="strength-standards-container card-inset" style="padding: 14px 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 10px;">
-    <div style="font-size: 0.8em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.75; color: var(--color-card-text); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+    <div style="font-size: 0.8em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.75; color: var(--color-card-text); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
       <span>🎖️ Comparative Strength Standards ("How Do I Compare?")</span>
       
-      <!-- Bodyweight Setting Input -->
-      <div style="display: flex; align-items: center; gap: 6px;">
-        <span style="font-size: 0.85em; font-weight: 500; text-transform: none; opacity: 0.8;">Your Bodyweight:</span>
-        <input 
-          v-model.number="bodyweight" 
-          type="number" 
-          min="50" 
-          max="500" 
-          step="1"
-          style="width: 65px; padding: 3px 6px; border-radius: 4px; border: 1px solid var(--color-card-border); font-size: 0.85em; background: var(--color-card-bg); color: var(--color-card-text); text-align: center; font-weight: 600;"
-          @change="saveBodyweight"
-        />
-        <span style="font-size: 0.85em; opacity: 0.8;">{{ weightUnit }}</span>
+      <!-- Bodyweight & Age Setting Inputs -->
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="font-size: 0.85em; font-weight: 500; text-transform: none; opacity: 0.85;">BW:</span>
+          <input 
+            v-model.number="bodyweight" 
+            type="number" 
+            min="50" 
+            max="500" 
+            step="1"
+            style="width: 60px; padding: 3px 6px; border-radius: 4px; border: 1px solid var(--color-card-border); font-size: 0.85em; background: var(--color-card-bg); color: var(--color-card-text); text-align: center; font-weight: 600;"
+            @change="saveUserSettings"
+          />
+          <span style="font-size: 0.85em; opacity: 0.8;">{{ weightUnit }}</span>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <span style="font-size: 0.85em; font-weight: 500; text-transform: none; opacity: 0.85;">Age:</span>
+          <select 
+            v-model="ageBracket" 
+            @change="saveUserSettings"
+            style="padding: 3px 6px; border-radius: 4px; border: 1px solid var(--color-card-border); font-size: 0.85em; background: var(--color-card-bg); color: var(--color-card-text); font-weight: 600;"
+          >
+            <option value="20-29">20–29</option>
+            <option value="30-39">30–39</option>
+            <option value="40-49">40–49</option>
+            <option value="50-59">50–59</option>
+            <option value="60+">60+</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -30,11 +47,14 @@
           <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-card-heading); font-size: 0.95em;">
             <span>{{ lift.icon }}</span>
             <span>{{ lift.exerciseName }}</span>
+            <small v-if="lift.matchedStandardName !== lift.exerciseName" style="opacity: 0.65; font-weight: normal; font-size: 0.8em;">
+              (Matched: {{ lift.matchedStandardName }})
+            </small>
           </div>
 
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 0.85em; font-weight: 600; opacity: 0.8; color: var(--color-card-text);">
-              1RM: {{ lift.bestWeight }} {{ weightUnit }} <small>({{ lift.bwRatio }}x BW)</small>
+              Est. 1RM: {{ lift.bestWeight }} {{ weightUnit }} <small>({{ lift.bwRatio }}x BW)</small>
             </span>
             <span 
               :style="{ backgroundColor: lift.tierBadge.bg, color: lift.tierBadge.color }"
@@ -66,7 +86,7 @@
     </div>
 
     <div v-else style="text-align: center; padding: 16px; opacity: 0.75; font-size: 0.9em; color: var(--color-card-text);">
-      Log workouts for major lifts (Bench, Squat, Deadlift, OHP, Incline DB Press) to calculate strength standards.
+      Select an exercise above or log workouts for major movements to view comparative strength standards.
     </div>
   </div>
 </template>
@@ -79,51 +99,135 @@ import useSettings from '../composables/useSettings';
 const props = defineProps<{
   workouts: LoggedWorkout[];
   weightUnit?: string;
+  selectedExerciseName?: string;
 }>();
 
 const { settings, saveSettings } = useSettings();
 
 const bodyweight = ref<number>(settings.value.bodyweight || 180);
+const ageBracket = ref<string>(settings.value.userAgeBracket || '30-39');
 
-const saveBodyweight = () => {
-  if (bodyweight.value > 0) {
-    saveSettings({ bodyweight: bodyweight.value });
+const saveUserSettings = () => {
+  saveSettings({ 
+    bodyweight: bodyweight.value > 0 ? bodyweight.value : 180,
+    userAgeBracket: ageBracket.value
+  });
+};
+
+// Age adjustment multipliers (Standards become proportionally adjusted for age brackets)
+const getAgeMultiplier = (bracket: string): number => {
+  switch (bracket) {
+    case '40-49': return 0.95; // 5% adjustment for age 40s
+    case '50-59': return 0.88; // 12% adjustment for age 50s
+    case '60+': return 0.78;   // 22% adjustment for age 60+
+    default: return 1.00;     // 20-39 baseline
   }
 };
 
-// Recognized major lifts with standard ratios (relative to 1RM / Bodyweight)
+// Jaccard Token Similarity Fuzzy Matching Algorithm
+const calculateJaccardSimilarity = (str1: string, str2: string): number => {
+  const cleanTokens = (s: string) => {
+    return new Set(
+      s.toLowerCase()
+       .replace(/[^a-z0-9\s]/g, ' ')
+       .split(/\s+/)
+       .filter(t => t.length > 1 && !['barbell', 'dumbbell', 'db', 'bb', 'machine', 'cable', 'smith'].includes(t))
+    );
+  };
+
+  const tokens1 = cleanTokens(str1);
+  const tokens2 = cleanTokens(str2);
+
+  if (tokens1.size === 0 || tokens2.size === 0) return 0;
+
+  let intersectionCount = 0;
+  tokens1.forEach(t => {
+    if (tokens2.has(t)) intersectionCount++;
+  });
+
+  const unionCount = tokens1.size + tokens2.size - intersectionCount;
+  return unionCount > 0 ? intersectionCount / unionCount : 0;
+};
+
+// Standard strength reference categories
 const standardLiftsConfig = [
   {
+    id: 'bench_press',
     name: 'Bench Press',
     icon: '🏋️‍♂️',
-    keywords: ['bench press', 'barbell bench press', 'flat bench'],
+    keywords: ['bench', 'press', 'chest', 'pec'],
     ratios: { beginner: 0.50, novice: 0.75, intermediate: 1.10, advanced: 1.50, elite: 1.90 }
   },
   {
-    name: 'Incline DB Bench',
+    id: 'incline_press',
+    name: 'Incline Press',
     icon: '🏋️',
-    keywords: ['incline dumbbell bench press', 'incline db bench', 'incline dumbbell press', 'incline db press'],
+    keywords: ['incline', 'bench', 'press', 'upper chest'],
     ratios: { beginner: 0.25, novice: 0.35, intermediate: 0.50, advanced: 0.65, elite: 0.85 }
   },
   {
+    id: 'overhead_press',
+    name: 'Overhead Press',
+    icon: '🙆‍♂️',
+    keywords: ['overhead', 'press', 'ohp', 'shoulder', 'military'],
+    ratios: { beginner: 0.35, novice: 0.55, intermediate: 0.75, advanced: 1.00, elite: 1.25 }
+  },
+  {
+    id: 'squat',
     name: 'Squat',
     icon: '🦵',
-    keywords: ['squat', 'barbell squat', 'back squat'],
+    keywords: ['squat', 'back squat', 'front squat', 'leg press'],
     ratios: { beginner: 0.75, novice: 1.10, intermediate: 1.50, advanced: 2.00, elite: 2.40 }
   },
   {
+    id: 'deadlift',
     name: 'Deadlift',
     icon: '💥',
-    keywords: ['deadlift', 'barbell deadlift', 'conventional deadlift'],
+    keywords: ['deadlift', 'sumo', 'rdl', 'romanian'],
     ratios: { beginner: 0.90, novice: 1.30, intermediate: 1.75, advanced: 2.25, elite: 2.75 }
   },
   {
-    name: 'Overhead Press',
-    icon: '🙆‍♂️',
-    keywords: ['overhead press', 'ohp', 'military press', 'shoulder press', 'barbell shoulder press'],
-    ratios: { beginner: 0.35, novice: 0.55, intermediate: 0.75, advanced: 1.00, elite: 1.25 }
+    id: 'bicep_curl',
+    name: 'Bicep Curl',
+    icon: '💪',
+    keywords: ['curl', 'bicep', 'hammer', 'preacher'],
+    ratios: { beginner: 0.15, novice: 0.25, intermediate: 0.38, advanced: 0.52, elite: 0.68 }
+  },
+  {
+    id: 'barbell_row',
+    name: 'Row / Pull',
+    icon: '🚣',
+    keywords: ['row', 'pullup', 'pulldown', 'lat', 'back'],
+    ratios: { beginner: 0.40, novice: 0.65, intermediate: 0.90, advanced: 1.20, elite: 1.50 }
   }
 ];
+
+// Match user exercise name to closest standard category using Jaccard similarity
+const matchStandardCategory = (userExName: string) => {
+  const nameLower = userExName.toLowerCase();
+  
+  // 1. Direct Keyword Check
+  for (const config of standardLiftsConfig) {
+    if (config.keywords.some(k => nameLower.includes(k))) {
+      return config;
+    }
+  }
+
+  // 2. Jaccard Similarity Fuzzy Match
+  let bestMatch = standardLiftsConfig[0];
+  let maxScore = 0;
+
+  standardLiftsConfig.forEach(config => {
+    const configString = `${config.name} ${config.keywords.join(' ')}`;
+    const score = calculateJaccardSimilarity(userExName, configString);
+    if (score > maxScore) {
+      maxScore = score;
+      bestMatch = config;
+    }
+  });
+
+  return maxScore >= 0.15 ? bestMatch : standardLiftsConfig[0];
+};
 
 interface TierInfo {
   name: string;
@@ -133,11 +237,19 @@ interface TierInfo {
 }
 
 const getTierBadge = (ratio: number, config: any): { badge: TierInfo; nextTier: { name: string; weight: number } | null; progressPercent: number } => {
-  const r = config.ratios;
   const bw = bodyweight.value || 180;
+  const ageMult = getAgeMultiplier(ageBracket.value);
+
+  // Age-adjusted ratio thresholds
+  const r = {
+    beginner: config.ratios.beginner * ageMult,
+    novice: config.ratios.novice * ageMult,
+    intermediate: config.ratios.intermediate * ageMult,
+    advanced: config.ratios.advanced * ageMult,
+    elite: config.ratios.elite * ageMult
+  };
 
   if (ratio < r.novice) {
-    const minW = Math.round(r.beginner * bw);
     const nextW = Math.round(r.novice * bw);
     const pct = Math.min(100, Math.max(0, Math.round(((ratio - r.beginner) / (r.novice - r.beginner)) * 100)));
     return {
@@ -182,42 +294,49 @@ const liftEvaluations = computed(() => {
   if (!props.workouts || props.workouts.length === 0) return [];
   const bw = bodyweight.value || 180;
 
-  const results: any[] = [];
+  // Build map of all exercises performed in history with their max estimated 1RM
+  const exerciseMaxes = new Map<string, number>();
 
-  standardLiftsConfig.forEach(config => {
-    let maxEstimated1RM = 0;
+  props.workouts.forEach(workout => {
+    workout.performedExercises?.forEach((ex: any) => {
+      const name = ex.exerciseName?.trim();
+      if (!name) return;
 
-    props.workouts.forEach(workout => {
-      workout.performedExercises?.forEach((ex: any) => {
-        const nameClean = ex.exerciseName?.trim().toLowerCase();
-        if (!nameClean) return;
+      ex.sets?.forEach((set: any) => {
+        const w = typeof set.actualWeight === 'number' ? set.actualWeight : (typeof set.prescribedWeight === 'number' ? set.prescribedWeight : 0);
+        const r = typeof set.actualReps === 'number' ? set.actualReps : (typeof set.prescribedReps === 'number' ? set.prescribedReps : 0);
 
-        const isMatch = config.keywords.some(k => nameClean.includes(k) || k.includes(nameClean));
-        if (isMatch) {
-          ex.sets?.forEach((set: any) => {
-            const w = typeof set.actualWeight === 'number' ? set.actualWeight : (typeof set.prescribedWeight === 'number' ? set.prescribedWeight : 0);
-            const r = typeof set.actualReps === 'number' ? set.actualReps : (typeof set.prescribedReps === 'number' ? set.prescribedReps : 0);
-
-            if (w > 0 && r > 0 && set.status !== 'failed') {
-              const epley = r === 1 ? w : w * (1 + r / 30);
-              if (epley > maxEstimated1RM) {
-                maxEstimated1RM = Math.round(epley);
-              }
-            }
-          });
+        if (w > 0 && r > 0 && set.status !== 'failed') {
+          const epley = r === 1 ? w : w * (1 + r / 30);
+          const currentMax = exerciseMaxes.get(name) || 0;
+          if (epley > currentMax) {
+            exerciseMaxes.set(name, Math.round(epley));
+          }
         }
       });
     });
+  });
 
-    if (maxEstimated1RM > 0) {
-      const ratio = Math.round((maxEstimated1RM / bw) * 100) / 100;
-      const { badge, nextTier, progressPercent } = getTierBadge(ratio, config);
-      const lbsNeeded = nextTier ? Math.max(1, nextTier.weight - maxEstimated1RM) : 0;
+  const results: any[] = [];
+
+  // Filter exercises: if selectedExerciseName is passed, focus on that exercise; otherwise evaluate all exercises
+  const exercisesToEvaluate = props.selectedExerciseName 
+    ? [props.selectedExerciseName] 
+    : Array.from(exerciseMaxes.keys());
+
+  exercisesToEvaluate.forEach(exName => {
+    const bestWeight = exerciseMaxes.get(exName) || 0;
+    if (bestWeight > 0) {
+      const category = matchStandardCategory(exName);
+      const ratio = Math.round((bestWeight / bw) * 100) / 100;
+      const { badge, nextTier, progressPercent } = getTierBadge(ratio, category);
+      const lbsNeeded = nextTier ? Math.max(1, nextTier.weight - bestWeight) : 0;
 
       results.push({
-        exerciseName: config.name,
-        icon: config.icon,
-        bestWeight: maxEstimated1RM,
+        exerciseName: exName,
+        matchedStandardName: category.name,
+        icon: category.icon,
+        bestWeight,
         bwRatio: ratio,
         tierBadge: badge,
         nextTier,
@@ -227,6 +346,6 @@ const liftEvaluations = computed(() => {
     }
   });
 
-  return results;
+  return results.slice(0, 10);
 });
 </script>
