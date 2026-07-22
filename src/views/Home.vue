@@ -144,30 +144,44 @@
                 </button>
               </div>
             </div>
-            <p v-if="lastDoneDayOverallDisplay" class="insight-item">
-              <span class="insight-label">Last Workout:</span>
-              <span class="insight-value">{{ lastDoneDayOverallDisplay.name }}
-                <span class="insight-date"> (on {{ formatDate(lastDoneDayOverallDisplay.date) }})</span>
-              </span>
-            </p>
-            <p v-if="nextRecommendedDayObject" class="insight-item">
-              <span class="insight-label">Next Up:</span>
-              <button
-                v-if="nextRecommendedDayObject.dayName"
-                @click="startWorkout(nextRecommendedDayObject)"
-                class="clickable-next-up-text insight-value next-up-highlight"
-                :title="`Start ${nextRecommendedDayObject.dayName} workout`"
-              >
-                {{ nextRecommendedDayObject.dayName }}
-              </button>
-            </p>
-            <p v-else-if="nextRecommendedDayNameDisplay && !nextRecommendedDayObject" class="insight-item">
-                <span class="insight-label">Next Up:</span>
-                <span class="insight-value next-up-highlight">{{ nextRecommendedDayNameDisplay }}</span>
-            </p>
-            <p v-if="!lastDoneDayOverallDisplay && !isLoadingHistory && sortedWorkoutDays.length > 0 && !nextRecommendedDayObject" class="insight-item">
-              <span class="insight-label">Let's get started with your first session for this routine!</span>
-            </p>
+            <!-- Last Workout & Next Up Status Box (Matching Cardio Box visual style) -->
+            <div class="workout-status-box card-inset" style="padding: 14px 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 10px; margin-bottom: 16px;">
+              <div style="font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; color: var(--color-card-text); margin-bottom: 6px;">
+                Last Workout
+              </div>
+              
+              <div v-if="lastDoneDayOverallDisplay" style="font-size: 1em; font-weight: 600; color: var(--color-card-heading); display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span>🏋️</span>
+                  <span>{{ lastDoneDayOverallDisplay.name }}</span>
+                </div>
+                <span v-if="lastDoneDayOverallDisplay.date" style="font-size: 0.85em; font-weight: 500; opacity: 0.85; color: var(--color-card-text); background: var(--color-card-bg); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--color-card-border);">
+                  {{ formatRelativeDate(lastDoneDayOverallDisplay.date) }}
+                </span>
+              </div>
+              <div v-else style="font-size: 0.9em; opacity: 0.75; color: var(--color-card-text);">
+                No workout logged yet.
+              </div>
+
+              <!-- Next Up Sub-row -->
+              <div v-if="nextRecommendedDayObject || nextRecommendedDayNameDisplay" style="border-top: 1px dashed var(--color-card-border); padding-top: 10px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                <div style="font-size: 0.88em; font-weight: 600; color: var(--color-card-text); display: flex; align-items: center; gap: 6px;">
+                  <span style="opacity: 0.7;">Next Up:</span>
+                  <button
+                    v-if="nextRecommendedDayObject?.dayName"
+                    @click="startWorkout(nextRecommendedDayObject)"
+                    class="clickable-next-up-text"
+                    style="background: none; border: none; padding: 0; color: var(--color-primary, #007bff); font-weight: 700; font-size: 1.05em; cursor: pointer; text-decoration: underline;"
+                    :title="`Start ${nextRecommendedDayObject.dayName} workout`"
+                  >
+                    ✨ {{ nextRecommendedDayObject.dayName }}
+                  </button>
+                  <span v-else-if="nextRecommendedDayNameDisplay" style="color: var(--color-primary, #007bff); font-weight: 700;">
+                    ✨ {{ nextRecommendedDayNameDisplay }}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <h3>Choose a Workout to Start:</h3>
@@ -263,6 +277,27 @@ const {
 
 const { loggedWorkouts: allLoggedWorkouts } = useLoggedWorkouts();
 const { externalActivities } = useExternalActivities();
+
+const formatRelativeDate = (rawDate: any): string => {
+  if (!rawDate) return '';
+  const d = rawDate instanceof Date 
+    ? rawDate 
+    : (rawDate && typeof rawDate.toDate === 'function') 
+      ? rawDate.toDate() 
+      : new Date(rawDate);
+
+  if (isNaN(d.getTime())) return '';
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const targetDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.round((today.getTime() - targetDay.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays > 1 && diffDays < 7) return `${diffDays} days ago`;
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};
 
 const consistencyStats = computed(() => {
   const historyList: LoggedWorkout[] = (allLoggedWorkouts && (allLoggedWorkouts as any).length > 0)
