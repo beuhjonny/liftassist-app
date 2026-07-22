@@ -24,6 +24,7 @@ export interface UserSettings {
     overloadTimeframeDays?: number; // Timeframe window in days for overload rate (default 14)
     showCardioOnHome?: boolean; // Render Cardio box on Homepage (default false)
     cardioStreakMinPerWeek?: number; // Target weekly cardio sessions for cardio streak (default 2)
+    bodyweight?: number; // User bodyweight for strength standards
 }
 
 const defaultSettings: UserSettings = {

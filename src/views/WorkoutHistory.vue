@@ -137,6 +137,27 @@
                      Select an exercise above to analyze 1RM strength, top weight, and volume progress.
                  </div>
             </div>
+
+            <hr style="border: none; border-top: 1px dashed var(--color-card-border); margin: 4px 0;" />
+
+            <!-- 4. Actual Rep Max (RM) Spectrum Table & Working Weight Calculator -->
+            <div class="chart-section">
+                <ExerciseRepMaxTable 
+                    :exerciseName="selectedExerciseForGraph" 
+                    :workouts="loggedWorkouts"
+                    :weightUnit="settings?.weightUnit || 'lbs'"
+                />
+            </div>
+
+            <hr style="border: none; border-top: 1px dashed var(--color-card-border); margin: 4px 0;" />
+
+            <!-- 5. Comparative Strength Standards ("How Do I Compare?") -->
+            <div class="chart-section">
+                <StrengthStandardsCard 
+                    :workouts="loggedWorkouts"
+                    :weightUnit="settings?.weightUnit || 'lbs'"
+                />
+            </div>
           </div>
         </div>
     </div>
@@ -324,6 +345,8 @@ import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/typ
 import WeeklyVolumeChart from '../components/WeeklyVolumeChart.vue';
 import ExerciseProgressChart from '../components/ExerciseProgressChart.vue';
 import MuscleGroupVolumeChart from '../components/MuscleGroupVolumeChart.vue';
+import ExerciseRepMaxTable from '../components/ExerciseRepMaxTable.vue';
+import StrengthStandardsCard from '../components/StrengthStandardsCard.vue';
 import EditLoggedWorkoutModal from '../components/history/EditLoggedWorkoutModal.vue';
 import ShareWorkoutModal from '../components/history/ShareWorkoutModal.vue';
 import LogCardioModal from '../components/history/LogCardioModal.vue';
