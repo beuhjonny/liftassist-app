@@ -168,75 +168,122 @@
             <span style="font-size: 1.2em; transition: transform 0.2s;" :style="{ transform: isConsistencyCardExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }">▼</span>
         </div>
 
-        <div v-show="isConsistencyCardExpanded" style="margin-top: 15px; border-top: 1px dashed var(--color-card-border); padding-top: 15px; display: flex; flex-direction: column; gap: 14px;">
+        <div v-show="isConsistencyCardExpanded" style="margin-top: 15px; border-top: 1px dashed var(--color-card-border); padding-top: 15px; display: flex; flex-direction: column; gap: 18px;">
           
-          <!-- Weekly Workout Goal -->
-          <div class="setting-item">
-            <label style="font-weight: 500; font-size: 0.95em; color: var(--color-card-heading);">Weekly Workout Target</label>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <button 
-                v-for="num in [1, 2, 3, 4, 5]" 
-                :key="num"
-                @click="updateStreakMinWorkouts(num)"
-                :style="{
-                  backgroundColor: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? 'var(--color-primary, #007bff)' : 'var(--color-card-mute)',
-                  color: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? '#ffffff' : 'var(--color-card-text)',
-                  borderColor: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? 'var(--color-primary, #007bff)' : 'var(--color-card-border)'
-                }"
-                style="padding: 6px 12px; border-radius: 6px; font-size: 0.88em; border: 1px solid; cursor: pointer; transition: all 0.2s;"
-              >
-                {{ num }} / week
-              </button>
-            </div>
-          </div>
+          <!-- Workout Consistency Section -->
+          <div>
+            <h4 style="margin: 0 0 10px 0; color: var(--color-card-heading); font-size: 0.95em; display: flex; align-items: center; gap: 6px;">
+              <span>🏋️</span> Workout Consistency
+            </h4>
+            <div style="display: flex; flex-direction: column; gap: 12px; padding-left: 4px;">
+              <!-- Weekly Workout Target -->
+              <div class="setting-item">
+                <label style="font-weight: 500; font-size: 0.9em; color: var(--color-card-heading);">Weekly Workout Target</label>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <button 
+                    v-for="num in [1, 2, 3, 4, 5]" 
+                    :key="num"
+                    @click="updateStreakMinWorkouts(num)"
+                    :style="{
+                      backgroundColor: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? 'var(--color-primary, #007bff)' : 'var(--color-card-mute)',
+                      color: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? '#ffffff' : 'var(--color-card-text)',
+                      borderColor: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? 'var(--color-primary, #007bff)' : 'var(--color-card-border)'
+                    }"
+                    style="padding: 5px 10px; border-radius: 6px; font-size: 0.85em; border: 1px solid; cursor: pointer; transition: all 0.2s;"
+                  >
+                    {{ num }} / week
+                  </button>
+                </div>
+              </div>
 
-          <!-- Include Cardio in Streak -->
-          <div class="setting-item">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-              <label style="font-weight: 500; font-size: 0.95em; color: var(--color-card-heading);">Include Cardio in Streak</label>
-              <div style="display: flex; align-items: center;">
-                <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
-                  <input type="checkbox" :checked="settings.streakIncludeCardio === true" @change="toggleStreakIncludeCardio" style="opacity: 0; width: 0; height: 0;">
-                  <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-                  <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.streakIncludeCardio === true ? 'translateX(16px)' : 'translateX(0)' }"></span>
-                </label>
-                <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8; font-weight: 600;">{{ settings.streakIncludeCardio === true ? 'On' : 'Off' }}</span>
+              <!-- Include Cardio in Overall Streak -->
+              <div class="setting-item">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                  <label style="font-weight: 500; font-size: 0.9em; color: var(--color-card-heading);">Include Cardio in Total Streak</label>
+                  <div style="display: flex; align-items: center;">
+                    <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                      <input type="checkbox" :checked="settings.streakIncludeCardio === true" @change="toggleStreakIncludeCardio" style="opacity: 0; width: 0; height: 0;">
+                      <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                      <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.streakIncludeCardio === true ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                    </label>
+                    <span style="margin-left: 10px; font-size: 0.85em; opacity: 0.8; font-weight: 600;">{{ settings.streakIncludeCardio === true ? 'On' : 'Off' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Overload Timeframe -->
+              <div class="setting-item">
+                <label style="font-weight: 500; font-size: 0.9em; color: var(--color-card-heading);">Overload Timeframe Window</label>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <button 
+                    v-for="d in [7, 14, 30]" 
+                    :key="d"
+                    @click="updateOverloadTimeframe(d)"
+                    :style="{
+                      backgroundColor: (settings.overloadTimeframeDays ?? 14) === d ? 'var(--color-primary, #007bff)' : 'var(--color-card-mute)',
+                      color: (settings.overloadTimeframeDays ?? 14) === d ? '#ffffff' : 'var(--color-card-text)',
+                      borderColor: (settings.overloadTimeframeDays ?? 14) === d ? 'var(--color-primary, #007bff)' : 'var(--color-card-border)'
+                    }"
+                    style="padding: 5px 10px; border-radius: 6px; font-size: 0.85em; border: 1px solid; cursor: pointer; transition: all 0.2s;"
+                  >
+                    {{ d }} Days
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Show Cardio on Homepage -->
-          <div class="setting-item">
-            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-              <label style="font-weight: 500; font-size: 0.95em; color: var(--color-card-heading);">Show Cardio on Homepage</label>
-              <div style="display: flex; align-items: center;">
-                <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
-                  <input type="checkbox" :checked="settings.showCardioOnHome === true" @change="toggleShowCardioOnHome" style="opacity: 0; width: 0; height: 0;">
-                  <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-                  <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.showCardioOnHome === true ? 'translateX(16px)' : 'translateX(0)' }"></span>
-                </label>
-                <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8; font-weight: 600;">{{ settings.showCardioOnHome === true ? 'On' : 'Off' }}</span>
+          <!-- Cardio Consistency Section -->
+          <div style="border-top: 1px dashed var(--color-card-border); padding-top: 14px;">
+            <h4 style="margin: 0 0 10px 0; color: #FC4C02; font-size: 0.95em; display: flex; align-items: center; gap: 6px;">
+              <span>🏃</span> Cardio Consistency
+            </h4>
+            <div style="display: flex; flex-direction: column; gap: 12px; padding-left: 4px;">
+              <!-- Show Cardio on Homepage -->
+              <div class="setting-item">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                  <label style="font-weight: 500; font-size: 0.9em; color: var(--color-card-heading);">Show Cardio on Homepage</label>
+                  <div style="display: flex; align-items: center;">
+                    <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                      <input type="checkbox" :checked="settings.showCardioOnHome === true" @change="toggleShowCardioOnHome" style="opacity: 0; width: 0; height: 0;">
+                      <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                      <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.showCardioOnHome === true ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                    </label>
+                    <span style="margin-left: 10px; font-size: 0.85em; opacity: 0.8; font-weight: 600;">{{ settings.showCardioOnHome === true ? 'On' : 'Off' }}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Overload Timeframe -->
-          <div class="setting-item">
-            <label style="font-weight: 500; font-size: 0.95em; color: var(--color-card-heading);">Overload Timeframe Window</label>
-            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-              <button 
-                v-for="d in [7, 14, 30]" 
-                :key="d"
-                @click="updateOverloadTimeframe(d)"
-                :style="{
-                  backgroundColor: (settings.overloadTimeframeDays ?? 14) === d ? 'var(--color-primary, #007bff)' : 'var(--color-card-mute)',
-                  color: (settings.overloadTimeframeDays ?? 14) === d ? '#ffffff' : 'var(--color-card-text)',
-                  borderColor: (settings.overloadTimeframeDays ?? 14) === d ? 'var(--color-primary, #007bff)' : 'var(--color-card-border)'
-                }"
-                style="padding: 6px 12px; border-radius: 6px; font-size: 0.88em; border: 1px solid; cursor: pointer; transition: all 0.2s;"
-              >
-                {{ d }} Days
-              </button>
+              <!-- Cardio Weekly Target -->
+              <div class="setting-item">
+                <label style="font-weight: 500; font-size: 0.9em; color: var(--color-card-heading);">Weekly Cardio Target</label>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                  <button 
+                    v-for="num in [1, 2, 3, 4, 5]" 
+                    :key="num"
+                    @click="updateCardioStreakMin(num)"
+                    :style="{
+                      backgroundColor: (settings.cardioStreakMinPerWeek ?? 2) === num ? '#FC4C02' : 'var(--color-card-mute)',
+                      color: (settings.cardioStreakMinPerWeek ?? 2) === num ? '#ffffff' : 'var(--color-card-text)',
+                      borderColor: (settings.cardioStreakMinPerWeek ?? 2) === num ? '#FC4C02' : 'var(--color-card-border)'
+                    }"
+                    style="padding: 5px 10px; border-radius: 6px; font-size: 0.85em; border: 1px solid; cursor: pointer; transition: all 0.2s;"
+                  >
+                    {{ num }} / week
+                  </button>
+                </div>
+              </div>
+
+              <!-- Cardio Distance Unit -->
+              <div class="setting-item">
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                  <label style="font-weight: 500; font-size: 0.9em; color: var(--color-card-heading);">Distance Unit</label>
+                  <div class="segmented-control" style="max-width: 120px; margin: 0;">
+                    <button :class="{ active: settings.cardioDistanceUnit !== 'km' }" @click="updateCardioUnit('mi')" style="padding: 4px 10px; font-size: 0.85em;">mi</button>
+                    <button :class="{ active: settings.cardioDistanceUnit === 'km' }" @click="updateCardioUnit('km')" style="padding: 4px 10px; font-size: 0.85em;">km</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -500,6 +547,11 @@
             <li style="border-top: 1px dashed var(--color-card-border); font-weight: 600; color: #FC4C02; justify-content: center; padding-top: 14px; margin-top: 8px;">
               <span class="stat-icon" style="color: #FC4C02;">🏃</span>
               <span class="stat-label" style="color: #FC4C02; margin-right: 0;">Cardio Stats</span>
+            </li>
+            <li :class="{ 'stat-highlight': lifetimeCardioStats.streak > 1 }">
+              <span class="stat-icon" style="color: #FC4C02;">🔥</span>
+              <span class="stat-label">Cardio Streak ({{ settings.cardioStreakMinPerWeek ?? 2 }}+/wk):</span>
+              <span class="stat-value" style="color: #FC4C02;">{{ lifetimeCardioStats.streak }} {{ lifetimeCardioStats.streak === 1 ? 'Week' : 'Weeks' }} <small style="opacity: 0.8; font-size: 0.85em; font-weight: normal; color: var(--color-card-text);">(Best: {{ lifetimeCardioStats.bestStreak }} Weeks)</small></span>
             </li>
             <li>
               <span class="stat-icon" style="color: #FC4C02;">👟</span>
@@ -2112,6 +2164,7 @@ const fetchAllExternalActivitiesForStats = async () => {
 const lifetimeCardioStats = computed(() => {
   let runsCount = 0;
   let totalDistanceMiles = 0;
+  const activitiesByWeek = new Map<number, number>();
 
   externalActivities.value.forEach(act => {
     if (act.type?.toLowerCase() === 'run') {
@@ -2119,6 +2172,11 @@ const lifetimeCardioStats = computed(() => {
     }
     if (act.distanceMiles) {
       totalDistanceMiles += act.distanceMiles;
+    }
+    if (act.date) {
+      const dateObj = ensureDateObject(act.date);
+      const weekStart = getWeekStart(dateObj);
+      activitiesByWeek.set(weekStart, (activitiesByWeek.get(weekStart) || 0) + 1);
     }
   });
 
@@ -2131,9 +2189,51 @@ const lifetimeCardioStats = computed(() => {
     formattedDistance = `${totalDistanceMiles.toLocaleString(undefined, { maximumFractionDigits: 1 })} mi`;
   }
 
+  // Calculate Cardio Streak
+  const minCardioTarget = settings.value.cardioStreakMinPerWeek ?? 2;
+  const currentWeekStart = getWeekStart(new Date());
+  const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+
+  let streak = 0;
+  if ((activitiesByWeek.get(currentWeekStart) || 0) >= minCardioTarget) {
+      streak++;
+  }
+
+  let checkWeek = currentWeekStart - oneWeekMs;
+  while (true) {
+      if ((activitiesByWeek.get(checkWeek) || 0) >= minCardioTarget) {
+          streak++;
+          checkWeek -= oneWeekMs;
+      } else {
+          break;
+      }
+  }
+
+  // Best Cardio Streak
+  const weekTimestamps = Array.from(activitiesByWeek.keys()).sort((a, b) => a - b);
+  let bestStreak = 0;
+  let currentRun = 0;
+
+  for (let i = 0; i < weekTimestamps.length; i++) {
+    const week = weekTimestamps[i];
+    const count = activitiesByWeek.get(week) || 0;
+    if (count >= minCardioTarget) {
+      if (i === 0 || week === weekTimestamps[i - 1] + oneWeekMs) {
+        currentRun++;
+      } else {
+        currentRun = 1;
+      }
+      if (currentRun > bestStreak) bestStreak = currentRun;
+    } else {
+      currentRun = 0;
+    }
+  }
+
   return {
     runsCount,
-    formattedDistance
+    formattedDistance,
+    streak,
+    bestStreak: Math.max(streak, bestStreak)
   };
 });
 
@@ -2270,6 +2370,10 @@ const toggleSkipTracker = (e: Event) => {
 
 const updateStreakMinWorkouts = (count: number) => {
   saveSettings({ streakMinWorkoutsPerWeek: count });
+};
+
+const updateCardioStreakMin = (count: number) => {
+  saveSettings({ cardioStreakMinPerWeek: count });
 };
 
 const toggleStreakIncludeCardio = (e: Event) => {
