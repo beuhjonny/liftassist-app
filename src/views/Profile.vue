@@ -1849,7 +1849,7 @@ const lifetimeStats = computed<LifetimeStats>(() => {
         firstDate = ensureDateObject(loggedWorkouts.value[0].date);
     }
 
-    const seenExercisesInProfile = new Set<string>();
+    const lastPerfMap = new Map<string, { maxWeight: number; maxRepsAtMaxWeight: number }>();
 
     loggedWorkouts.value.forEach(workout => {
         // Group by week for streak
@@ -1860,31 +1860,75 @@ const lifetimeStats = computed<LifetimeStats>(() => {
         }
 
         workout.performedExercises?.forEach(ex => {
-          const isEligible = ex.enableProgression !== false && 
-                             !(ex.sets && Array.isArray(ex.sets) && ex.sets.every((s: any) => s.isTimed === true));
+          if (!ex || !ex.exerciseName) return;
+          const isTimed = ex.sets && Array.isArray(ex.sets) && ex.sets.length > 0 && ex.sets.every((s: any) => s.isTimed === true);
+          const isExplicitlyDisabled = ex.enableProgression === false;
 
-          if (isEligible) {
-            totalExercisesAttempted++;
-            if (ex.isPR) {
-              overloadsCount++;
-            }
-          }
+          if (!isTimed && !isExplicitlyDisabled) {
+            let currentMaxWeight = 0;
+            let currentMaxReps = 0;
+            let hasValidSets = false;
 
-          ex.sets?.forEach(set => {
-            if (set.status === 'done') {
-              totalSetsCount++;
-              if (typeof set.actualReps === 'number' && set.actualReps > 0) {
-                totalRepsCount += set.actualReps;
+            ex.sets?.forEach(set => {
+              if (set.status === 'done') {
+                totalSetsCount++;
+                if (typeof set.actualReps === 'number' && set.actualReps > 0) {
+                  totalRepsCount += set.actualReps;
+                }
               }
-            }
-            if (typeof set.actualWeight === 'number' && typeof set.actualReps === 'number' && set.actualReps > 0) {
-              volume += set.actualWeight * set.actualReps;
+              const w = typeof set.actualWeight === 'number' ? set.actualWeight : (typeof set.prescribedWeight === 'number' ? set.prescribedWeight : 0);
+              const r = typeof set.actualReps === 'number' ? set.actualReps : (typeof set.prescribedReps === 'number' ? set.prescribedReps : 0);
               
-              if (set.status === 'done' && set.actualWeight > maxWeight) {
-                  maxWeight = set.actualWeight;
+              if (r > 0 && w >= 0 && set.status !== 'failed') {
+                hasValidSets = true;
+                if (w > currentMaxWeight) {
+                  currentMaxWeight = w;
+                  currentMaxReps = r;
+                } else if (w === currentMaxWeight && r > currentMaxReps) {
+                  currentMaxReps = r;
+                }
               }
+
+              if (typeof set.actualWeight === 'number' && typeof set.actualReps === 'number' && set.actualReps > 0) {
+                volume += set.actualWeight * set.actualReps;
+                if (set.status === 'done' && set.actualWeight > maxWeight) {
+                  maxWeight = set.actualWeight;
+                }
+              }
+            });
+
+            if (hasValidSets) {
+              const exKey = ex.exerciseName.trim().toLowerCase();
+              const prevPerf = lastPerfMap.get(exKey);
+
+              const isHit = ex.isPR === true || (!!prevPerf && (currentMaxWeight > prevPerf.maxWeight || (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight)));
+
+              // Only count as an attempt if a prior baseline existed OR if ex.isPR was explicitly stored
+              if (prevPerf || ex.isPR !== undefined) {
+                totalExercisesAttempted++;
+                if (isHit) {
+                  overloadsCount++;
+                }
+              }
+
+              lastPerfMap.set(exKey, { maxWeight: currentMaxWeight, maxRepsAtMaxWeight: currentMaxReps });
             }
-          });
+          } else {
+            ex.sets?.forEach(set => {
+              if (set.status === 'done') {
+                totalSetsCount++;
+                if (typeof set.actualReps === 'number' && set.actualReps > 0) {
+                  totalRepsCount += set.actualReps;
+                }
+              }
+              if (typeof set.actualWeight === 'number' && typeof set.actualReps === 'number' && set.actualReps > 0) {
+                volume += set.actualWeight * set.actualReps;
+                if (set.status === 'done' && set.actualWeight > maxWeight) {
+                  maxWeight = set.actualWeight;
+                }
+              }
+            });
+          }
         });
 
         if (typeof workout.durationMinutes === 'number' && workout.durationMinutes > 0) {
@@ -2494,6 +2538,8 @@ const handleDeleteAccount = async () => {
   color: var(--color-card-text);
   padding: 12px 5px;
   border-bottom: 1px solid var(--color-card-border);
+  flex-wrap: wrap;
+  gap: 4px 8px;
 }
 
 .lifetime-stats-card li:last-child {
@@ -2512,20 +2558,16 @@ const handleDeleteAccount = async () => {
   font-weight: 500;
   margin-right: 8px;
   color: var(--color-card-heading);
-  flex-shrink: 0; /* Prevent label from shrinking */
 }
 
-
 .stat-value {
-font-weight: bold;
-  color: #28a745; /* Or a CSS variable */
-  margin-left: auto; /* Pushes value to the right */
+  font-weight: bold;
+  color: #28a745;
+  margin-left: auto;
   text-align: right;
-  white-space: nowrap; /* Keep on one line */
-  overflow: hidden;    /* Hide overflow */
-  text-overflow: ellipsis; /* Show ... if too long */
-  min-width: 0; /* Crucial for text-overflow to work reliably in flex children */
-  /* max-width: 180px; /* Optional: if you need to cap it even if space is available */
+  white-space: normal;
+  word-break: break-word;
+  min-width: 0;
 }
 
 .no-stats,

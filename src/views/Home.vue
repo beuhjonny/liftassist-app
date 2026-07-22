@@ -327,7 +327,7 @@ const consistencyStats = computed(() => {
     return parseD(a.date) - parseD(b.date);
   });
 
-  const seenExercises = new Set<string>();
+  const lastPerfMap = new Map<string, { maxWeight: number; maxRepsAtMaxWeight: number }>();
 
   // Process Lifting Workouts
   sortedHistory.forEach((w: LoggedWorkout) => {
@@ -348,11 +348,43 @@ const consistencyStats = computed(() => {
       }
 
       w.performedExercises?.forEach((ex: any) => {
-        if (wTime >= timeframeMs && isExerciseEligibleForOverload(ex)) {
-          overloadTotalExercises++;
-          if (ex.isPR) {
-            overloadHits++;
+        if (!ex || !ex.exerciseName) return;
+
+        let currentMaxWeight = 0;
+        let currentMaxReps = 0;
+        let hasValidSets = false;
+
+        ex.sets?.forEach((set: any) => {
+          const weight = typeof set.actualWeight === 'number' ? set.actualWeight : (typeof set.prescribedWeight === 'number' ? set.prescribedWeight : 0);
+          const reps = typeof set.actualReps === 'number' ? set.actualReps : (typeof set.prescribedReps === 'number' ? set.prescribedReps : 0);
+          if (reps > 0 && weight >= 0 && set.status !== 'failed') {
+            hasValidSets = true;
+            if (weight > currentMaxWeight) {
+              currentMaxWeight = weight;
+              currentMaxReps = reps;
+            } else if (weight === currentMaxWeight && reps > currentMaxReps) {
+              currentMaxReps = reps;
+            }
           }
+        });
+
+        const exKey = ex.exerciseName.trim().toLowerCase();
+        const prevPerf = lastPerfMap.get(exKey);
+
+        if (wTime >= timeframeMs && isExerciseEligibleForOverload(ex) && hasValidSets) {
+          const isHit = ex.isPR === true || (!!prevPerf && (currentMaxWeight > prevPerf.maxWeight || (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight)));
+
+          // Only count as an attempt if a prior baseline existed OR if ex.isPR was explicitly stored
+          if (prevPerf || ex.isPR !== undefined) {
+            overloadTotalExercises++;
+            if (isHit) {
+              overloadHits++;
+            }
+          }
+        }
+
+        if (hasValidSets) {
+          lastPerfMap.set(exKey, { maxWeight: currentMaxWeight, maxRepsAtMaxWeight: currentMaxReps });
         }
       });
     }
