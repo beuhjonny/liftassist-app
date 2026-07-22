@@ -3,6 +3,7 @@ import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { db, functions } from '../firebase';
 import useAuth from './useAuth';
+import useExternalActivities from './useExternalActivities';
 import useHistoryIndex from './useHistoryIndex';
 
 export interface StravaConfig {
@@ -166,7 +167,9 @@ export default function useStrava() {
       );
       const res = await syncFunc({ fullSync });
       if (res.data.success) {
-        // Trigger local calendar index rebuild
+        const { fetchExternalActivities } = useExternalActivities();
+        await fetchExternalActivities(true);
+        const { fetchCalendarIndex } = useHistoryIndex();
         await fetchCalendarIndex(true);
         return res.data.count;
       } else {

@@ -273,17 +273,6 @@
                   </button>
                 </div>
               </div>
-
-              <!-- Cardio Distance Unit -->
-              <div class="setting-item">
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                  <label style="font-weight: 500; font-size: 0.9em; color: var(--color-card-heading);">Distance Unit</label>
-                  <div class="segmented-control" style="max-width: 120px; margin: 0;">
-                    <button :class="{ active: settings.cardioDistanceUnit !== 'km' }" @click="updateCardioUnit('mi')" style="padding: 4px 10px; font-size: 0.85em;">mi</button>
-                    <button :class="{ active: settings.cardioDistanceUnit === 'km' }" @click="updateCardioUnit('km')" style="padding: 4px 10px; font-size: 0.85em;">km</button>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 

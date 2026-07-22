@@ -48,7 +48,11 @@ export const exchangeStravaCode = onCall(async (request) => {
         const accessToken = data.access_token;
         const refreshToken = data.refresh_token;
         const expiresAt = data.expires_at;
+        const firstname = data.athlete?.firstname || '';
+        const lastname = data.athlete?.lastname || '';
+        const athleteName = `${firstname} ${lastname}`.trim() || `Athlete #${athleteId}`;
 
+        // Save OAuth Tokens
         await db.collection("users").doc(request.auth.uid).collection("strava").doc("tokens").set({
             athleteId,
             accessToken,
@@ -57,7 +61,21 @@ export const exchangeStravaCode = onCall(async (request) => {
             updatedAt: FieldValue.serverTimestamp(),
         });
 
-        return { success: true, athleteId };
+        // Save Public Auth Status for Client App
+        await db.collection("users").doc(request.auth.uid).collection("strava").doc("auth").set({
+            athleteId,
+            athleteName,
+            connectedAt: FieldValue.serverTimestamp(),
+        });
+
+        // Save Default Preferences
+        await db.collection("users").doc(request.auth.uid).collection("strava").doc("config").set({
+            enablePushToStrava: true,
+            enablePullFromStrava: true,
+            updatedAt: FieldValue.serverTimestamp(),
+        }, { merge: true });
+
+        return { success: true, athleteId, athleteName };
     } catch (err: any) {
         logger.error("Error exchanging Strava code", err);
         if (err instanceof HttpsError) throw err;
@@ -118,8 +136,11 @@ export const syncStravaActivities = onCall(async (request) => {
         });
     }
 
-    const after = Math.floor(Date.now() / 1000) - (30 * 24 * 60 * 60);
-    const activitiesRes = await fetch(`https://www.strava.com/api/v3/athlete/activities?after=${after}&per_page=100`, {
+    const isFullSync = request.data?.fullSync === true;
+    const after = isFullSync ? 0 : Math.floor(Date.now() / 1000) - (60 * 24 * 60 * 60); // Default last 60 days
+    const activitiesUrl = `https://www.strava.com/api/v3/athlete/activities?${after > 0 ? `after=${after}&` : ''}per_page=200`;
+
+    const activitiesRes = await fetch(activitiesUrl, {
         headers: { Authorization: `Bearer ${accessToken}` },
     });
 
@@ -128,7 +149,42 @@ export const syncStravaActivities = onCall(async (request) => {
     }
 
     const activities = await activitiesRes.json();
-    return { success: true, count: activities.length, activities };
+    let syncedCount = 0;
+
+    if (Array.isArray(activities)) {
+        const extRef = db.collection("users").doc(uid).collection("externalActivities");
+        const batch = db.batch();
+
+        for (const act of activities) {
+            const docId = `strava_${act.id}`;
+            const docRef = extRef.doc(docId);
+
+            // Convert distance in meters to miles (1 meter = 0.000621371 miles)
+            const distanceMiles = act.distance ? (act.distance * 0.000621371) : 0;
+            // Convert duration in seconds to minutes
+            const durationMinutes = act.moving_time ? Math.round(act.moving_time / 60) : Math.round((act.elapsed_time || 0) / 60);
+
+            batch.set(docRef, {
+                name: act.name || act.type || 'Cardio',
+                type: act.type || 'Cardio',
+                date: act.start_date || new Date().toISOString(),
+                durationMinutes,
+                distanceMiles: Math.round(distanceMiles * 100) / 100,
+                source: 'strava',
+                stravaActivityId: String(act.id),
+                notes: act.description || '',
+                updatedAt: FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            syncedCount++;
+        }
+
+        if (syncedCount > 0) {
+            await batch.commit();
+        }
+    }
+
+    return { success: true, count: syncedCount };
 });
 
 /**
