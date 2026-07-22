@@ -27,7 +27,33 @@ export interface ExternalActivity {
   notes?: string;
 }
 
-const externalActivities = reactive<ExternalActivity[]>([]);
+const LOCAL_STORAGE_KEY = 'liftlogic_external_activities_cache';
+
+const loadCacheFromLocalStorage = (): ExternalActivity[] => {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {}
+  return [];
+};
+
+const saveCacheToLocalStorage = (activities: ExternalActivity[]) => {
+  try {
+    const clean = activities.map(act => ({
+      ...act,
+      date: typeof act.date?.seconds === 'number' 
+        ? new Date(act.date.seconds * 1000).toISOString() 
+        : (act.date instanceof Date ? act.date.toISOString() : act.date)
+    }));
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(clean));
+  } catch (e) {}
+};
+
+const cachedInitial = loadCacheFromLocalStorage();
+const externalActivities = reactive<ExternalActivity[]>(cachedInitial);
 const isLoaded = ref(false);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
@@ -40,6 +66,7 @@ export default function useExternalActivities() {
     if (!user.value || !user.value.uid) {
       externalActivities.length = 0;
       isLoaded.value = false;
+      try { localStorage.removeItem(LOCAL_STORAGE_KEY); } catch (e) {}
       return;
     }
 
@@ -59,6 +86,7 @@ export default function useExternalActivities() {
       });
 
       externalActivities.splice(0, externalActivities.length, ...items);
+      saveCacheToLocalStorage(items);
       isLoaded.value = true;
     } catch (e: any) {
       console.error('Error fetching external activities:', e);
@@ -104,7 +132,8 @@ export default function useExternalActivities() {
         return db - da;
       });
 
-      // Update Calendar Index
+      // Update Calendar Index & Cache
+      saveCacheToLocalStorage(externalActivities);
       await fetchCalendarIndex(true);
       return docRef.id;
     } catch (e: any) {
@@ -125,6 +154,7 @@ export default function useExternalActivities() {
       const idx = externalActivities.findIndex(a => a.id === id);
       if (idx > -1) {
         externalActivities.splice(idx, 1);
+        saveCacheToLocalStorage(externalActivities);
       }
 
       await fetchCalendarIndex(true);
