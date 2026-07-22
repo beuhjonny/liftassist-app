@@ -36,7 +36,7 @@
       </div>
     </div>
 
-    <!-- Overview Cards Grid -->
+    <!-- Matched Overview Cards Grid -->
     <div v-if="liftEvaluations.length > 0" style="display: flex; flex-direction: column; gap: 10px;">
       <div 
         v-for="lift in liftEvaluations" 
@@ -141,6 +141,39 @@
     <div v-else style="text-align: center; padding: 16px; opacity: 0.75; font-size: 0.9em; color: var(--color-card-text);">
       Select an exercise above or log workouts for major movements to view comparative strength standards.
     </div>
+
+    <!-- Manage Unmatched / Excluded Lifts Drawer Toggle -->
+    <div v-if="unmatchedExercises.length > 0" style="margin-top: 14px; border-top: 1px dashed var(--color-card-border); padding-top: 10px; text-align: center;">
+      <button 
+        @click="showUnmatchedDrawer = !showUnmatchedDrawer" 
+        style="background: none; border: none; color: var(--color-card-text); opacity: 0.75; cursor: pointer; font-size: 0.8em; font-weight: 600; text-decoration: underline;"
+      >
+        {{ showUnmatchedDrawer ? '🙈 Hide Excluded Lifts' : `👁️ Manage Excluded & Unmatched Lifts (${unmatchedExercises.length})` }}
+      </button>
+
+      <div v-if="showUnmatchedDrawer" style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px; text-align: left;">
+        <div 
+          v-for="unmatched in unmatchedExercises" 
+          :key="unmatched.exerciseName"
+          style="background: var(--color-card-bg); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--color-card-border); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.85em;"
+        >
+          <span style="font-weight: 600; color: var(--color-card-text);">{{ unmatched.exerciseName }}</span>
+          
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label style="opacity: 0.75; font-size: 0.8em;">Match to:</label>
+            <select 
+              @change="updateOverrideCategory(unmatched.exerciseName, ($event.target as HTMLSelectElement).value)"
+              style="padding: 2px 6px; border-radius: 4px; border: 1px solid var(--color-card-border); background: var(--color-card-mute); color: var(--color-card-text); font-size: 0.8em;"
+            >
+              <option value="none">❌ Do Not Match</option>
+              <option v-for="cat in standardLiftsConfig" :key="cat.id" :value="cat.id">
+                {{ cat.name }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -160,6 +193,7 @@ const { settings, saveSettings } = useSettings();
 const bodyweight = ref<number>(settings.value.bodyweight || 180);
 const ageBracket = ref<string>(settings.value.userAgeBracket || '30-39');
 const editingExerciseName = ref<string | null>(null);
+const showUnmatchedDrawer = ref<boolean>(false);
 
 // Sync with settings when loaded from Firestore
 watch(() => settings.value, (s) => {
@@ -407,12 +441,12 @@ const getTierBadge = (ratio: number, config: any, equipment: 'barbell' | 'dumbbe
   }
 };
 
-const liftEvaluations = computed(() => {
-  if (!props.workouts || props.workouts.length === 0) return [];
+// Process all exercises from workout history
+const processedExercises = computed(() => {
+  if (!props.workouts || props.workouts.length === 0) return { matched: [], unmatched: [] };
   const bw = bodyweight.value || 180;
   const userOverrides = settings.value.standardsOverrides || {};
 
-  // Build map of all exercises performed in history with their max estimated 1RM
   const exerciseMaxes = new Map<string, number>();
 
   props.workouts.forEach(workout => {
@@ -435,9 +469,9 @@ const liftEvaluations = computed(() => {
     });
   });
 
-  const results: any[] = [];
+  const matched: any[] = [];
+  const unmatched: any[] = [];
 
-  // Filter exercises: if selectedExerciseName is passed, focus on that exercise; otherwise evaluate all exercises
   const exercisesToEvaluate = props.selectedExerciseName 
     ? [props.selectedExerciseName] 
     : Array.from(exerciseMaxes.keys());
@@ -450,7 +484,7 @@ const liftEvaluations = computed(() => {
       let category: any = null;
       if (override) {
         if (override.categoryId === 'none') {
-          category = null; // User explicitly set to "Do Not Match"
+          category = null;
         } else {
           category = standardLiftsConfig.find(c => c.id === override.categoryId) || matchStandardCategory(exName);
         }
@@ -458,14 +492,13 @@ const liftEvaluations = computed(() => {
         category = matchStandardCategory(exName);
       }
 
-      // If category is valid (matched or manually selected), include in evaluation
       if (category) {
         const equipment: 'barbell' | 'dumbbell' = override?.equipment || detectEquipmentType(exName);
         const ratio = Math.round((bestWeight / bw) * 100) / 100;
         const { badge, nextTier, progressPercent } = getTierBadge(ratio, category, equipment);
         const lbsNeeded = nextTier ? Math.max(1, nextTier.weight - bestWeight) : 0;
 
-        results.push({
+        matched.push({
           exerciseName: exName,
           matchedCategoryId: category.id,
           matchedStandardName: category.name,
@@ -478,10 +511,18 @@ const liftEvaluations = computed(() => {
           lbsNeeded,
           progressPercent
         });
+      } else {
+        unmatched.push({
+          exerciseName: exName,
+          bestWeight
+        });
       }
     }
   });
 
-  return results.slice(0, 10);
+  return { matched, unmatched };
 });
+
+const liftEvaluations = computed(() => processedExercises.value.matched.slice(0, 10));
+const unmatchedExercises = computed(() => processedExercises.value.unmatched);
 </script>
