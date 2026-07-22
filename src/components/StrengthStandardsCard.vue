@@ -270,23 +270,23 @@ const calculateJaccardSimilarity = (str1: string, str2: string): number => {
 // Standard strength reference categories with separate ratios for Barbell vs Dumbbell per hand
 const standardLiftsConfig = [
   {
-    id: 'bench_press',
-    name: 'Bench Press',
-    icon: '🏋️‍♂️',
-    keywords: ['bench', 'chest', 'pec', 'flat bench'],
-    ratios: {
-      barbell: { beginner: 0.50, novice: 0.75, intermediate: 1.10, advanced: 1.50, elite: 1.90 },
-      dumbbell: { beginner: 0.22, novice: 0.35, intermediate: 0.50, advanced: 0.68, elite: 0.85 }
-    }
-  },
-  {
     id: 'incline_press',
     name: 'Incline Bench Press',
     icon: '🏋️',
-    keywords: ['incline bench', 'incline press', 'upper chest'],
+    keywords: ['incline bench', 'incline press', 'incline dumbbell', 'incline db', 'incline'],
     ratios: {
       barbell: { beginner: 0.42, novice: 0.65, intermediate: 0.95, advanced: 1.30, elite: 1.65 },
-      dumbbell: { beginner: 0.18, novice: 0.28, intermediate: 0.42, advanced: 0.58, elite: 0.75 }
+      dumbbell: { beginner: 0.14, novice: 0.23, intermediate: 0.35, advanced: 0.48, elite: 0.62 }
+    }
+  },
+  {
+    id: 'bench_press',
+    name: 'Bench Press',
+    icon: '🏋️‍♂️',
+    keywords: ['flat bench', 'bench press', 'chest press', 'pec press', 'bench'],
+    ratios: {
+      barbell: { beginner: 0.50, novice: 0.75, intermediate: 1.10, advanced: 1.50, elite: 1.90 },
+      dumbbell: { beginner: 0.18, novice: 0.28, intermediate: 0.40, advanced: 0.55, elite: 0.70 }
     }
   },
   {
@@ -296,7 +296,7 @@ const standardLiftsConfig = [
     keywords: ['overhead press', 'ohp', 'shoulder press', 'military press'],
     ratios: {
       barbell: { beginner: 0.35, novice: 0.55, intermediate: 0.75, advanced: 1.00, elite: 1.25 },
-      dumbbell: { beginner: 0.14, novice: 0.22, intermediate: 0.33, advanced: 0.46, elite: 0.60 }
+      dumbbell: { beginner: 0.12, novice: 0.20, intermediate: 0.30, advanced: 0.42, elite: 0.55 }
     }
   },
   {
@@ -306,7 +306,7 @@ const standardLiftsConfig = [
     keywords: ['squat', 'back squat', 'front squat'],
     ratios: {
       barbell: { beginner: 0.75, novice: 1.10, intermediate: 1.50, advanced: 2.00, elite: 2.40 },
-      dumbbell: { beginner: 0.32, novice: 0.48, intermediate: 0.65, advanced: 0.88, elite: 1.10 }
+      dumbbell: { beginner: 0.28, novice: 0.42, intermediate: 0.58, advanced: 0.78, elite: 1.00 }
     }
   },
   {
@@ -316,27 +316,27 @@ const standardLiftsConfig = [
     keywords: ['deadlift', 'sumo deadlift', 'rdl', 'romanian deadlift'],
     ratios: {
       barbell: { beginner: 0.90, novice: 1.30, intermediate: 1.75, advanced: 2.25, elite: 2.75 },
-      dumbbell: { beginner: 0.38, novice: 0.58, intermediate: 0.80, advanced: 1.05, elite: 1.30 }
+      dumbbell: { beginner: 0.35, novice: 0.52, intermediate: 0.72, advanced: 0.95, elite: 1.20 }
     }
   },
   {
     id: 'bicep_curl',
     name: 'Bicep / Hammer Curl',
     icon: '💪',
-    keywords: ['bicep curl', 'hammer curl', 'spider curl', 'preacher curl', 'dumbbell curl'],
+    keywords: ['bicep curl', 'hammer curl', 'spider curl', 'preacher curl', 'dumbbell curl', 'curl'],
     ratios: {
       barbell: { beginner: 0.25, novice: 0.40, intermediate: 0.60, advanced: 0.82, elite: 1.05 },
-      dumbbell: { beginner: 0.12, novice: 0.20, intermediate: 0.30, advanced: 0.42, elite: 0.55 }
+      dumbbell: { beginner: 0.10, novice: 0.16, intermediate: 0.24, advanced: 0.34, elite: 0.45 }
     }
   },
   {
     id: 'barbell_row',
     name: 'Row / Lat Pulldown',
     icon: '🚣',
-    keywords: ['bent row', 'barbell row', 'helms row', 'dumbbell row', 'lat pulldown', 'pull up'],
+    keywords: ['bent row', 'barbell row', 'helms row', 'dumbbell row', 'lat pulldown', 'pull up', 'row'],
     ratios: {
       barbell: { beginner: 0.40, novice: 0.65, intermediate: 0.90, advanced: 1.20, elite: 1.50 },
-      dumbbell: { beginner: 0.25, novice: 0.38, intermediate: 0.52, advanced: 0.68, elite: 0.85 }
+      dumbbell: { beginner: 0.22, novice: 0.34, intermediate: 0.46, advanced: 0.60, elite: 0.75 }
     }
   }
 ];
