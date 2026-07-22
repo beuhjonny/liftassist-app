@@ -1,4 +1,4 @@
-import { ref, reactive } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import { 
   collection, 
   query, 
@@ -39,6 +39,7 @@ export default function useExternalActivities() {
   const fetchExternalActivities = async (forceRefresh = false) => {
     if (!user.value || !user.value.uid) {
       externalActivities.length = 0;
+      isLoaded.value = false;
       return;
     }
 
@@ -141,6 +142,15 @@ export default function useExternalActivities() {
     const d = new Date(dateVal);
     return isNaN(d.getTime()) ? new Date(0) : d;
   };
+
+  watch(user, (newUser) => {
+    if (newUser && newUser.uid) {
+      fetchExternalActivities();
+    } else {
+      externalActivities.length = 0;
+      isLoaded.value = false;
+    }
+  }, { immediate: true });
 
   return {
     externalActivities,

@@ -49,14 +49,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import useSettings from '@/composables/useSettings';
 import useExternalActivities from '@/composables/useExternalActivities';
 import LogCardioModal from '@/components/history/LogCardioModal.vue';
 
 const { settings } = useSettings();
-const { externalActivities } = useExternalActivities();
+const { externalActivities, fetchExternalActivities } = useExternalActivities();
 const showLogCardioModal = ref(false);
+
+onMounted(() => {
+  fetchExternalActivities();
+});
 
 const cardioStreak = computed(() => {
   if (!externalActivities || externalActivities.length === 0) {
