@@ -113,7 +113,8 @@
           <div v-else-if="historyError" class="error-message">
              <p>Could not load workout insights: {{ historyError }}</p>
           </div>
-          <div v-else class="program-insights">
+          <div v-else class="program-insights card-inset" style="padding: 14px 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 10px; margin-bottom: 16px;">
+            <!-- Unfinished Draft Alert -->
             <div v-if="activeDraft" class="draft-workout-alert card-inset" style="background-color: #fff3cd; border: 1px solid #ffc107; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
               <p style="margin: 0 0 10px 0; font-weight: 600; color: #856404;">
                 ⚠️ Unfinished Workout
@@ -144,42 +145,41 @@
                 </button>
               </div>
             </div>
-            <!-- Last Workout & Next Up Status Box (Matching Cardio Box visual style) -->
-            <div class="workout-status-box card-inset" style="padding: 14px 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 10px; margin-bottom: 16px;">
-              <div style="font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; color: var(--color-card-text); margin-bottom: 6px;">
-                Last Workout
-              </div>
-              
-              <div v-if="lastDoneDayOverallDisplay" style="font-size: 1em; font-weight: 600; color: var(--color-card-heading); display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <span>🏋️</span>
-                  <span>{{ lastDoneDayOverallDisplay.name }}</span>
-                </div>
-                <span v-if="lastDoneDayOverallDisplay.date" style="font-size: 0.85em; font-weight: 500; opacity: 0.85; color: var(--color-card-text); background: var(--color-card-bg); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--color-card-border);">
-                  {{ formatRelativeDate(lastDoneDayOverallDisplay.date) }}
-                </span>
-              </div>
-              <div v-else style="font-size: 0.9em; opacity: 0.75; color: var(--color-card-text);">
-                No workout logged yet.
-              </div>
 
-              <!-- Next Up Sub-row -->
-              <div v-if="nextRecommendedDayObject || nextRecommendedDayNameDisplay" style="border-top: 1px dashed var(--color-card-border); padding-top: 10px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
-                <div style="font-size: 0.88em; font-weight: 600; color: var(--color-card-text); display: flex; align-items: center; gap: 6px;">
-                  <span style="opacity: 0.7;">Next Up:</span>
-                  <button
-                    v-if="nextRecommendedDayObject?.dayName"
-                    @click="startWorkout(nextRecommendedDayObject)"
-                    class="clickable-next-up-text"
-                    style="background: none; border: none; padding: 0; color: var(--color-primary, #007bff); font-weight: 700; font-size: 1.05em; cursor: pointer; text-decoration: underline;"
-                    :title="`Start ${nextRecommendedDayObject.dayName} workout`"
-                  >
-                    ✨ {{ nextRecommendedDayObject.dayName }}
-                  </button>
-                  <span v-else-if="nextRecommendedDayNameDisplay" style="color: var(--color-primary, #007bff); font-weight: 700;">
-                    ✨ {{ nextRecommendedDayNameDisplay }}
-                  </span>
-                </div>
+            <!-- Last Workout Header & Info -->
+            <div style="font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; color: var(--color-card-text); margin-bottom: 6px;">
+              Last Workout
+            </div>
+            
+            <div v-if="lastDoneDayOverallDisplay" style="font-size: 1em; font-weight: 600; color: var(--color-card-heading); display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span>🏋️</span>
+                <span>{{ lastDoneDayOverallDisplay.name }}</span>
+              </div>
+              <span v-if="lastDoneDayOverallDisplay.date" style="font-size: 0.85em; font-weight: 500; opacity: 0.85; color: var(--color-card-text); background: var(--color-card-bg); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--color-card-border);">
+                {{ formatRelativeDate(lastDoneDayOverallDisplay.date) }}
+              </span>
+            </div>
+            <div v-else style="font-size: 0.9em; opacity: 0.75; color: var(--color-card-text);">
+              No workout logged yet.
+            </div>
+
+            <!-- Next Up Sub-row -->
+            <div v-if="nextRecommendedDayObject || nextRecommendedDayNameDisplay" style="border-top: 1px dashed var(--color-card-border); padding-top: 10px; margin-top: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+              <div style="font-size: 0.88em; font-weight: 600; color: var(--color-card-text); display: flex; align-items: center; gap: 6px;">
+                <span style="opacity: 0.7;">Next Up:</span>
+                <button
+                  v-if="nextRecommendedDayObject?.dayName"
+                  @click="startWorkout(nextRecommendedDayObject)"
+                  class="clickable-next-up-text"
+                  style="background: none; border: none; padding: 0; color: var(--color-primary, #007bff); font-weight: 700; font-size: 1.05em; cursor: pointer; text-decoration: underline;"
+                  :title="`Start ${nextRecommendedDayObject.dayName} workout`"
+                >
+                  ✨ {{ nextRecommendedDayObject.dayName }}
+                </button>
+                <span v-else-if="nextRecommendedDayNameDisplay" style="color: var(--color-primary, #007bff); font-weight: 700;">
+                  ✨ {{ nextRecommendedDayNameDisplay }}
+                </span>
               </div>
             </div>
           </div>
