@@ -99,14 +99,16 @@
         </div>
 
          <div class="setting-item">
-            <label>Embiggen Buttons</label>
-            <div style="display: flex; align-items: center;">
-                <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
-                    <input type="checkbox" :checked="settings.embiggenButtons" @change="toggleEmbiggen" style="opacity: 0; width: 0; height: 0;">
-                    <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
-                    <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.embiggenButtons ? 'translateX(16px)' : 'translateX(0)' }"></span>
-                </label>
-                <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.embiggenButtons ? 'On' : 'Off' }}</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <label style="font-weight: 500;">Embiggen Buttons</label>
+                <div style="display: flex; align-items: center;">
+                    <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
+                        <input type="checkbox" :checked="settings.embiggenButtons" @change="toggleEmbiggen" style="opacity: 0; width: 0; height: 0;">
+                        <span class="slider round" :style="{ backgroundColor: settings.embiggenButtons ? '#007bff' : '#ccc' }" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; transition: .4s; border-radius: 34px;"></span>
+                        <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.embiggenButtons ? 'translateX(16px)' : 'translateX(0)' }"></span>
+                    </label>
+                    <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8; font-weight: 600;">{{ settings.embiggenButtons ? 'On' : 'Off' }}</span>
+                </div>
             </div>
         </div>
 
@@ -123,10 +125,10 @@
                 <div style="display: flex; align-items: center;">
                     <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
                         <input type="checkbox" :checked="settings.enableVideoDemos !== false" @change="toggleVideoDemos" style="opacity: 0; width: 0; height: 0;">
-                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                        <span class="slider round" :style="{ backgroundColor: (settings.enableVideoDemos !== false) ? '#007bff' : '#ccc' }" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; transition: .4s; border-radius: 34px;"></span>
                         <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.enableVideoDemos !== false ? 'translateX(16px)' : 'translateX(0)' }"></span>
                     </label>
-                    <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.enableVideoDemos !== false ? 'On' : 'Off' }}</span>
+                    <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8; font-weight: 600;">{{ settings.enableVideoDemos !== false ? 'On' : 'Off' }}</span>
                 </div>
             </div>
         </div>
@@ -144,10 +146,10 @@
                 <div style="display: flex; align-items: center;">
                     <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
                         <input type="checkbox" :checked="settings.enableSkipTracker !== false" @change="toggleSkipTracker" style="opacity: 0; width: 0; height: 0;">
-                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                        <span class="slider round" :style="{ backgroundColor: (settings.enableSkipTracker !== false) ? '#007bff' : '#ccc' }" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; transition: .4s; border-radius: 34px;"></span>
                         <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.enableSkipTracker !== false ? 'translateX(16px)' : 'translateX(0)' }"></span>
                     </label>
-                    <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8;">{{ settings.enableSkipTracker !== false ? 'On' : 'Off' }}</span>
+                    <span style="margin-left: 10px; font-size: 0.9em; opacity: 0.8; font-weight: 600;">{{ settings.enableSkipTracker !== false ? 'On' : 'Off' }}</span>
                 </div>
             </div>
         </div>
@@ -203,7 +205,7 @@
                   <div style="display: flex; align-items: center;">
                     <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
                       <input type="checkbox" :checked="settings.streakIncludeCardio === true" @change="toggleStreakIncludeCardio" style="opacity: 0; width: 0; height: 0;">
-                      <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                      <span class="slider round" :style="{ backgroundColor: (settings.streakIncludeCardio === true) ? '#007bff' : '#ccc' }" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; transition: .4s; border-radius: 34px;"></span>
                       <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.streakIncludeCardio === true ? 'translateX(16px)' : 'translateX(0)' }"></span>
                     </label>
                     <span style="margin-left: 10px; font-size: 0.85em; opacity: 0.8; font-weight: 600;">{{ settings.streakIncludeCardio === true ? 'On' : 'Off' }}</span>
@@ -246,7 +248,7 @@
                   <div style="display: flex; align-items: center;">
                     <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
                       <input type="checkbox" :checked="settings.showCardioOnHome === true" @change="toggleShowCardioOnHome" style="opacity: 0; width: 0; height: 0;">
-                      <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                      <span class="slider round" :style="{ backgroundColor: (settings.showCardioOnHome === true) ? '#007bff' : '#ccc' }" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; transition: .4s; border-radius: 34px;"></span>
                       <span class="slider-before" :style="{ position: 'absolute', content: '\'\'', height: '16px', width: '16px', left: '4px', bottom: '4px', backgroundColor: 'white', transition: '.4s', borderRadius: '50%', transform: settings.showCardioOnHome === true ? 'translateX(16px)' : 'translateX(0)' }"></span>
                     </label>
                     <span style="margin-left: 10px; font-size: 0.85em; opacity: 0.8; font-weight: 600;">{{ settings.showCardioOnHome === true ? 'On' : 'Off' }}</span>
@@ -2847,14 +2849,14 @@ select {
     padding: 15px; /* Reduced padding on mobile */
   }
   
-  /* Stack settings */
-  .setting-item, .timer-combined-row {
+  /* Stack settings for complex rows */
+  .timer-combined-row {
      flex-direction: column;
      align-items: flex-start;
      gap: 8px;
   }
   
-  .setting-item label, .timer-combined-row label {
+  .timer-combined-row label {
       margin-bottom: 5px; 
   }
   
@@ -2863,10 +2865,9 @@ select {
       justify-content: space-between; 
   }
   
-  .segmented-control {
-      width: 100%;
-      justify-content: center;
-      flex-wrap: wrap; /* Allow wrapping on very small screens */
+  .units-group-item .segmented-control {
+      width: auto !important;
+      flex-shrink: 0;
   }
   
   .volume-control {
