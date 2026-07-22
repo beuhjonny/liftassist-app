@@ -1852,11 +1852,19 @@ const handleRollback = async () => {
   }
 };
 
-const ensureDateObject = (dateInput: Timestamp | Date): Date => {
-  if (dateInput instanceof Timestamp) {
-    return dateInput.toDate();
-  }
-  return new Date(dateInput.getTime()); // Create a new Date instance from milliseconds
+const ensureDateObject = (val: any): Date => {
+  if (!val) return new Date(0);
+  if (val instanceof Date) return isNaN(val.getTime()) ? new Date(0) : val;
+  if (val instanceof Timestamp) return val.toDate();
+  if (typeof val?.toDate === 'function') return val.toDate();
+  if (typeof val?.seconds === 'number') return new Date(val.seconds * 1000);
+  
+  try {
+    const parsed = new Date(val);
+    if (!isNaN(parsed.getTime())) return parsed;
+  } catch (e) {}
+
+  return new Date(0);
 };
 
 const getWeekStart = (date: Date): number => {
