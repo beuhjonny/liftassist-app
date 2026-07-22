@@ -43,19 +43,14 @@
         :key="lift.exerciseName"
         style="background: var(--color-card-bg); padding: 12px 14px; border-radius: 8px; border: 1px solid var(--color-card-border);"
       >
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
-          <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-card-heading); font-size: 0.95em;">
+        <!-- Row 1: Exercise Name (Left) + Badge & Pencil Edit Button (Right) -->
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; color: var(--color-card-heading); font-size: 0.95em; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
             <span>{{ lift.icon }}</span>
-            <span>{{ lift.exerciseName }}</span>
-            <span style="font-size: 0.75em; opacity: 0.75; font-weight: normal; background: var(--color-card-mute); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--color-card-border);">
-              {{ lift.equipment === 'dumbbell' ? '🤹 DB per hand' : '🏋️ Barbell total' }}
-            </span>
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ lift.exerciseName }}</span>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 0.85em; font-weight: 600; opacity: 0.85; color: var(--color-card-text);">
-              Est. 1RM: {{ lift.bestWeight }} {{ weightUnit }} <small>({{ lift.bwRatio }}x BW)</small>
-            </span>
+          <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
             <span 
               :style="{ backgroundColor: lift.tierBadge.bg, color: lift.tierBadge.color }"
               style="padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.8em; display: inline-flex; align-items: center; gap: 4px;"
@@ -64,21 +59,31 @@
               <span>{{ lift.tierBadge.name }}</span>
             </span>
 
-            <!-- Edit Match Toggle Button -->
+            <!-- Pencil Edit Match Button -->
             <button 
               @click="toggleEditMatch(lift.exerciseName)"
-              style="background: none; border: none; cursor: pointer; font-size: 0.9em; opacity: 0.65; padding: 2px 4px;"
+              style="background: none; border: none; cursor: pointer; font-size: 0.9em; opacity: 0.7; padding: 2px 4px;"
               title="Edit Movement Category or Equipment Type"
             >
-              ⚙️
+              ✏️
             </button>
           </div>
+        </div>
+
+        <!-- Row 2: Stats & Equipment Tag -->
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85em; margin-bottom: 8px; flex-wrap: wrap;">
+          <span style="font-size: 0.85em; opacity: 0.75; background: var(--color-card-mute); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--color-card-border); font-weight: 500;">
+            {{ lift.equipment === 'dumbbell' ? '🤹 DB per hand' : '🏋️ Barbell total' }}
+          </span>
+          <span style="font-weight: 600; color: var(--color-card-text);">
+            Est. 1RM: {{ lift.bestWeight }} {{ weightUnit }} <small style="opacity: 0.75;">({{ lift.bwRatio }}x BW)</small>
+          </span>
         </div>
 
         <!-- Edit Match Inline Drawer -->
         <div 
           v-if="editingExerciseName === lift.exerciseName" 
-          style="margin-top: 8px; margin-bottom: 8px; padding: 10px 12px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 6px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-size: 0.85em;"
+          style="margin-top: 8px; margin-bottom: 10px; padding: 10px 12px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 6px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; font-size: 0.85em;"
         >
           <div style="display: flex; align-items: center; gap: 6px;">
             <label style="font-weight: 600; opacity: 0.8;">Movement:</label>
@@ -87,13 +92,14 @@
               @change="updateOverrideCategory(lift.exerciseName, ($event.target as HTMLSelectElement).value)"
               style="padding: 4px 6px; border-radius: 4px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text);"
             >
+              <option value="none">❌ None / Do Not Match</option>
               <option v-for="cat in standardLiftsConfig" :key="cat.id" :value="cat.id">
                 {{ cat.name }}
               </option>
             </select>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 6px;">
+          <div v-if="lift.matchedCategoryId !== 'none'" style="display: flex; align-items: center; gap: 6px;">
             <label style="font-weight: 600; opacity: 0.8;">Equipment:</label>
             <select 
               :value="lift.equipment"
@@ -113,8 +119,8 @@
           </button>
         </div>
 
-        <!-- Next Milestone Progress Bar -->
-        <div v-if="lift.nextTier" style="margin-top: 6px;">
+        <!-- Row 3: Next Milestone Progress Bar -->
+        <div v-if="lift.nextTier" style="margin-top: 4px;">
           <div style="display: flex; justify-content: space-between; font-size: 0.75em; opacity: 0.75; color: var(--color-card-text); margin-bottom: 4px;">
             <span>Next Rank: {{ lift.nextTier.name }} ({{ lift.nextTier.weight }} {{ weightUnit }})</span>
             <span>+{{ lift.lbsNeeded }} {{ weightUnit }} away</span>
@@ -192,7 +198,7 @@ const updateOverrideEquipment = (exName: string, equipment: 'barbell' | 'dumbbel
   saveSettings({ standardsOverrides: currentOverrides });
 };
 
-// Age adjustment multipliers (Standards become proportionally adjusted for age brackets)
+// Age adjustment multipliers
 const getAgeMultiplier = (bracket: string): number => {
   switch (bracket) {
     case '40-49': return 0.95; // 5% adjustment for age 40s
@@ -209,7 +215,7 @@ const calculateJaccardSimilarity = (str1: string, str2: string): number => {
       s.toLowerCase()
        .replace(/[^a-z0-9\s]/g, ' ')
        .split(/\s+/)
-       .filter(t => t.length > 1 && !['barbell', 'dumbbell', 'db', 'bb', 'machine', 'cable', 'smith'].includes(t))
+       .filter(t => t.length > 1 && !['barbell', 'dumbbell', 'db', 'bb', 'machine', 'cable', 'smith', 'elastics', 'band', 'underhand'].includes(t))
     );
   };
 
@@ -233,7 +239,7 @@ const standardLiftsConfig = [
     id: 'bench_press',
     name: 'Bench Press',
     icon: '🏋️‍♂️',
-    keywords: ['bench', 'chest', 'pec', 'flat'],
+    keywords: ['bench', 'chest', 'pec', 'flat bench'],
     ratios: {
       barbell: { beginner: 0.50, novice: 0.75, intermediate: 1.10, advanced: 1.50, elite: 1.90 },
       dumbbell: { beginner: 0.22, novice: 0.35, intermediate: 0.50, advanced: 0.68, elite: 0.85 }
@@ -241,9 +247,9 @@ const standardLiftsConfig = [
   },
   {
     id: 'incline_press',
-    name: 'Incline Press',
+    name: 'Incline Bench Press',
     icon: '🏋️',
-    keywords: ['incline', 'upper chest'],
+    keywords: ['incline bench', 'incline press', 'upper chest'],
     ratios: {
       barbell: { beginner: 0.42, novice: 0.65, intermediate: 0.95, advanced: 1.30, elite: 1.65 },
       dumbbell: { beginner: 0.18, novice: 0.28, intermediate: 0.42, advanced: 0.58, elite: 0.75 }
@@ -251,9 +257,9 @@ const standardLiftsConfig = [
   },
   {
     id: 'overhead_press',
-    name: 'Overhead Press',
+    name: 'Overhead / Shoulder Press',
     icon: '🙆‍♂️',
-    keywords: ['overhead', 'ohp', 'shoulder', 'military'],
+    keywords: ['overhead press', 'ohp', 'shoulder press', 'military press'],
     ratios: {
       barbell: { beginner: 0.35, novice: 0.55, intermediate: 0.75, advanced: 1.00, elite: 1.25 },
       dumbbell: { beginner: 0.14, novice: 0.22, intermediate: 0.33, advanced: 0.46, elite: 0.60 }
@@ -263,7 +269,7 @@ const standardLiftsConfig = [
     id: 'squat',
     name: 'Squat',
     icon: '🦵',
-    keywords: ['squat', 'back squat', 'front squat', 'leg press'],
+    keywords: ['squat', 'back squat', 'front squat'],
     ratios: {
       barbell: { beginner: 0.75, novice: 1.10, intermediate: 1.50, advanced: 2.00, elite: 2.40 },
       dumbbell: { beginner: 0.32, novice: 0.48, intermediate: 0.65, advanced: 0.88, elite: 1.10 }
@@ -273,7 +279,7 @@ const standardLiftsConfig = [
     id: 'deadlift',
     name: 'Deadlift',
     icon: '💥',
-    keywords: ['deadlift', 'sumo', 'rdl', 'romanian'],
+    keywords: ['deadlift', 'sumo deadlift', 'rdl', 'romanian deadlift'],
     ratios: {
       barbell: { beginner: 0.90, novice: 1.30, intermediate: 1.75, advanced: 2.25, elite: 2.75 },
       dumbbell: { beginner: 0.38, novice: 0.58, intermediate: 0.80, advanced: 1.05, elite: 1.30 }
@@ -281,9 +287,9 @@ const standardLiftsConfig = [
   },
   {
     id: 'bicep_curl',
-    name: 'Bicep Curl',
+    name: 'Bicep / Hammer Curl',
     icon: '💪',
-    keywords: ['curl', 'bicep', 'hammer', 'preacher'],
+    keywords: ['bicep curl', 'hammer curl', 'spider curl', 'preacher curl', 'dumbbell curl'],
     ratios: {
       barbell: { beginner: 0.25, novice: 0.40, intermediate: 0.60, advanced: 0.82, elite: 1.05 },
       dumbbell: { beginner: 0.12, novice: 0.20, intermediate: 0.30, advanced: 0.42, elite: 0.55 }
@@ -291,9 +297,9 @@ const standardLiftsConfig = [
   },
   {
     id: 'barbell_row',
-    name: 'Row / Pull',
+    name: 'Row / Lat Pulldown',
     icon: '🚣',
-    keywords: ['row', 'pullup', 'pulldown', 'lat', 'back'],
+    keywords: ['bent row', 'barbell row', 'helms row', 'dumbbell row', 'lat pulldown', 'pull up'],
     ratios: {
       barbell: { beginner: 0.40, novice: 0.65, intermediate: 0.90, advanced: 1.20, elite: 1.50 },
       dumbbell: { beginner: 0.25, novice: 0.38, intermediate: 0.52, advanced: 0.68, elite: 0.85 }
@@ -304,7 +310,7 @@ const standardLiftsConfig = [
 // Determine equipment default (Dumbbell vs Barbell) based on name
 const detectEquipmentType = (name: string): 'barbell' | 'dumbbell' => {
   const lower = name.toLowerCase();
-  if (lower.includes('dumbbell') || lower.includes('db') || lower.includes('hammer') || lower.includes('curl')) {
+  if (lower.includes('dumbbell') || lower.includes('db') || lower.includes('hammer') || lower.includes('curl') || lower.includes('helms')) {
     return 'dumbbell';
   }
   return 'barbell';
@@ -322,7 +328,7 @@ const matchStandardCategory = (userExName: string) => {
   }
 
   // 2. Jaccard Similarity Fuzzy Match
-  let bestMatch = standardLiftsConfig[0];
+  let bestMatch: any = null;
   let maxScore = 0;
 
   standardLiftsConfig.forEach(config => {
@@ -334,7 +340,8 @@ const matchStandardCategory = (userExName: string) => {
     }
   });
 
-  return bestMatch;
+  // Only auto-match if Jaccard similarity score is sufficiently high (>= 0.35)
+  return maxScore >= 0.35 ? bestMatch : null;
 };
 
 interface TierInfo {
@@ -438,31 +445,40 @@ const liftEvaluations = computed(() => {
   exercisesToEvaluate.forEach(exName => {
     const bestWeight = exerciseMaxes.get(exName) || 0;
     if (bestWeight > 0) {
-      // Check user overrides or fallback to auto-detection & Jaccard matching
       const override = userOverrides[exName];
-      let category = override?.categoryId 
-        ? (standardLiftsConfig.find(c => c.id === override.categoryId) || matchStandardCategory(exName))
-        : matchStandardCategory(exName);
       
-      const equipment: 'barbell' | 'dumbbell' = override?.equipment || detectEquipmentType(exName);
+      let category: any = null;
+      if (override) {
+        if (override.categoryId === 'none') {
+          category = null; // User explicitly set to "Do Not Match"
+        } else {
+          category = standardLiftsConfig.find(c => c.id === override.categoryId) || matchStandardCategory(exName);
+        }
+      } else {
+        category = matchStandardCategory(exName);
+      }
 
-      const ratio = Math.round((bestWeight / bw) * 100) / 100;
-      const { badge, nextTier, progressPercent } = getTierBadge(ratio, category, equipment);
-      const lbsNeeded = nextTier ? Math.max(1, nextTier.weight - bestWeight) : 0;
+      // If category is valid (matched or manually selected), include in evaluation
+      if (category) {
+        const equipment: 'barbell' | 'dumbbell' = override?.equipment || detectEquipmentType(exName);
+        const ratio = Math.round((bestWeight / bw) * 100) / 100;
+        const { badge, nextTier, progressPercent } = getTierBadge(ratio, category, equipment);
+        const lbsNeeded = nextTier ? Math.max(1, nextTier.weight - bestWeight) : 0;
 
-      results.push({
-        exerciseName: exName,
-        matchedCategoryId: category.id,
-        matchedStandardName: category.name,
-        equipment,
-        icon: category.icon,
-        bestWeight,
-        bwRatio: ratio,
-        tierBadge: badge,
-        nextTier,
-        lbsNeeded,
-        progressPercent
-      });
+        results.push({
+          exerciseName: exName,
+          matchedCategoryId: category.id,
+          matchedStandardName: category.name,
+          equipment,
+          icon: category.icon,
+          bestWeight,
+          bwRatio: ratio,
+          tierBadge: badge,
+          nextTier,
+          lbsNeeded,
+          progressPercent
+        });
+      }
     }
   });
 
