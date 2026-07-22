@@ -26,6 +26,7 @@ export interface UserSettings {
     cardioStreakMinPerWeek?: number; // Target weekly cardio sessions for cardio streak (default 2)
     bodyweight?: number; // User bodyweight for strength standards
     userAgeBracket?: string; // User age bracket for strength standards ('20-29', '30-39', '40-49', '50-59', '60+')
+    standardsOverrides?: Record<string, { categoryId: string; equipment: 'barbell' | 'dumbbell' }>;
 }
 
 const defaultSettings: UserSettings = {
