@@ -1950,7 +1950,11 @@ const lifetimeStats = computed<LifetimeStats>(() => {
               const exKey = ex.exerciseName.trim().toLowerCase();
               const prevPerf = lastPerfMap.get(exKey);
 
-              const isHit = (!!prevPerf && (currentMaxWeight > prevPerf.maxWeight || (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight))) || ex.isPR === true;
+              // True Progressive Overload: weight increased OR reps increased at same weight
+              const isHit = !!prevPerf && (
+                currentMaxWeight > prevPerf.maxWeight || 
+                (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight)
+              );
 
               // Only count as an overload attempt if a prior baseline existed in history
               if (prevPerf) {

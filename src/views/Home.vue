@@ -372,7 +372,11 @@ const consistencyStats = computed(() => {
         const prevPerf = lastPerfMap.get(exKey);
 
         if (isExerciseEligibleForOverload(ex) && hasValidSets) {
-          const isHit = (!!prevPerf && (currentMaxWeight > prevPerf.maxWeight || (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight))) || ex.isPR === true;
+          // True Progressive Overload: weight increased OR reps increased at same weight
+          const isHit = !!prevPerf && (
+            currentMaxWeight > prevPerf.maxWeight || 
+            (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight)
+          );
 
           // Only count as an attempt if a prior baseline existed in history
           if (prevPerf) {
