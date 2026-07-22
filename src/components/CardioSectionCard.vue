@@ -6,10 +6,9 @@
         🏃 Cardio
       </h3>
 
-      <div v-if="cardioStreak" style="font-size: 0.9em; font-weight: 600; color: #FC4C02; display: flex; align-items: center; gap: 4px;">
+      <div v-if="cardioStreak" style="font-size: 0.9em; font-weight: 600; color: var(--color-card-heading); display: flex; align-items: center; gap: 4px;">
         <span>🔥</span>
         <span>Streak: {{ cardioStreak.current }} {{ cardioStreak.current === 1 ? 'Week' : 'Weeks' }}</span>
-        <small style="opacity: 0.8; font-weight: normal; color: var(--color-card-text); margin-left: 2px;">(Best: {{ cardioStreak.best }})</small>
       </div>
     </div>
 
