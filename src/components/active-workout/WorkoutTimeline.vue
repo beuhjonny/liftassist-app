@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import type { TimelineSetInfo, LoggedSetData } from '@/types';
 import { displayUnit } from '@/utils/weight';
 
@@ -40,7 +40,7 @@ const props = defineProps<{
 const activeTooltipIndex = ref<number | null>(null);
 const tooltipText = ref('');
 
-const completedSetsCount = props.workoutLog.length;
+const completedSetsCount = computed(() => props.workoutLog.length);
 
 const getSetStatus = (index: number) => {
     if (index < props.workoutLog.length) {
