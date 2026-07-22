@@ -371,20 +371,23 @@ const consistencyStats = computed(() => {
         const exKey = ex.exerciseName.trim().toLowerCase();
         const prevPerf = lastPerfMap.get(exKey);
 
-        if (wTime >= timeframeMs && isExerciseEligibleForOverload(ex) && hasValidSets) {
-          const isHit = ex.isPR === true || (!!prevPerf && (currentMaxWeight > prevPerf.maxWeight || (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight)));
+        if (isExerciseEligibleForOverload(ex) && hasValidSets) {
+          const isHit = (!!prevPerf && (currentMaxWeight > prevPerf.maxWeight || (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight))) || ex.isPR === true;
 
-          // Only count as an attempt if a prior baseline existed OR if ex.isPR was explicitly stored
-          if (prevPerf || ex.isPR !== undefined) {
-            overloadTotalExercises++;
-            if (isHit) {
-              overloadHits++;
+          // Only count as an attempt if a prior baseline existed in history
+          if (prevPerf) {
+            if (wTime >= timeframeMs) {
+              overloadTotalExercises++;
+              if (isHit) {
+                overloadHits++;
+              }
             }
           }
-        }
 
-        if (hasValidSets) {
-          lastPerfMap.set(exKey, { maxWeight: currentMaxWeight, maxRepsAtMaxWeight: currentMaxReps });
+          // Update baseline performance map
+          if (!prevPerf || currentMaxWeight > prevPerf.maxWeight || (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight)) {
+            lastPerfMap.set(exKey, { maxWeight: currentMaxWeight, maxRepsAtMaxWeight: currentMaxReps });
+          }
         }
       });
     }

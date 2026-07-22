@@ -1950,17 +1950,20 @@ const lifetimeStats = computed<LifetimeStats>(() => {
               const exKey = ex.exerciseName.trim().toLowerCase();
               const prevPerf = lastPerfMap.get(exKey);
 
-              const isHit = ex.isPR === true || (!!prevPerf && (currentMaxWeight > prevPerf.maxWeight || (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight)));
+              const isHit = (!!prevPerf && (currentMaxWeight > prevPerf.maxWeight || (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight))) || ex.isPR === true;
 
-              // Only count as an attempt if a prior baseline existed OR if ex.isPR was explicitly stored
-              if (prevPerf || ex.isPR !== undefined) {
+              // Only count as an overload attempt if a prior baseline existed in history
+              if (prevPerf) {
                 totalExercisesAttempted++;
                 if (isHit) {
                   overloadsCount++;
                 }
               }
 
-              lastPerfMap.set(exKey, { maxWeight: currentMaxWeight, maxRepsAtMaxWeight: currentMaxReps });
+              // Update baseline performance map
+              if (!prevPerf || currentMaxWeight > prevPerf.maxWeight || (currentMaxWeight === prevPerf.maxWeight && currentMaxReps > prevPerf.maxRepsAtMaxWeight)) {
+                lastPerfMap.set(exKey, { maxWeight: currentMaxWeight, maxRepsAtMaxWeight: currentMaxReps });
+              }
             }
           } else {
             ex.sets?.forEach(set => {
