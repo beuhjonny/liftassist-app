@@ -9,6 +9,8 @@ export interface ExerciseProgress {
   consecutiveFailedWorkoutsAtCurrentWeightAndReps?: number;
   lastPerformedDate?: Timestamp | Date | FieldValue | null;
   isTimed?: boolean;
+  /** Plain-language explanation of the last prescription change (why this weight). */
+  lastProgressionReason?: string;
 }
 
 export interface ExerciseConfig {
@@ -65,7 +67,7 @@ export interface LoggedSetData {
   prescribedReps: number;
   actualWeight: number;
   actualReps: number;
-  status: 'done' | 'failed';
+  status: 'done' | 'failed' | 'skipped';
   timestamp: Date | Timestamp;
   isTimed?: boolean;
 }

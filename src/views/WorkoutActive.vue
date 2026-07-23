@@ -375,6 +375,7 @@ import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import useHistoryIndex from '../composables/useHistoryIndex';
 import { toDisplay, fromInput, displayUnit } from '../utils/weight';
 import { playTone } from '../utils/audio';
+import { computeNextPrescription, type ProgressionConfig, type ProgressionState } from '../utils/progression';
 import type { LoggedSetData, PerformedExerciseInLog, ExerciseProgress, SessionExercise, TimelineSetInfo } from '@/types';
 import WorkoutTimeline from '../components/active-workout/WorkoutTimeline.vue';
 import TimerDisplay from '../components/active-workout/TimerDisplay.vue';
@@ -760,7 +761,7 @@ const confirmSkipExercise = async () => {
       prescribedReps: currentExercise.value.prescribedReps,
       actualWeight: currentExercise.value.prescribedWeight,
       actualReps: 0,
-      status: 'failed',
+      status: 'skipped',
       timestamp: new Date(),
       isTimed: currentExercise.value.isTimed
     });
@@ -1933,13 +1934,11 @@ const finishWorkoutAndSave = async () => {
   const batch = writeBatch(db);
   batch.set(newLoggedWorkoutRef, loggedWorkoutData);
 
-  // Update the lightweight calendar index
+  // Prepared here, but only CALLED after batch.commit() succeeds so a failed
+  // save never leaves a phantom calendar day pointing at a workout that was
+  // never written.
   const { updateCalendarIndex } = useHistoryIndex();
-  updateCalendarIndex(loggedWorkoutData as any); // Cast because LoggedWorkout has stricter types than the initial object
-
-  // Invalidate workout history cache so the list updates when user goes to History
   const { invalidateCache } = useLoggedWorkouts();
-  invalidateCache();
 
   try {
     for (const performedEx of performedExercisesForDatabase) { 
@@ -1954,117 +1953,54 @@ const finishWorkoutAndSave = async () => {
       
       const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
       
-      // Determine if progression criteria met
-      let criteriaMet = false;
-      let allSetsMarkedDone = true;
+      // Compute the next prescription with the pure, tested engine.
+      const progConfig: ProgressionConfig = {
+        targetSets: exConfigFromRoutine.targetSets,
+        minReps: exConfigFromRoutine.minReps,
+        maxReps: exConfigFromRoutine.maxReps,
+        repOverloadStep: exConfigFromRoutine.repOverloadStep,
+        weightIncrement: exConfigFromRoutine.weightIncrement,
+        enableProgression: exConfigFromRoutine.enableProgression,
+        isToFailure: exConfigFromRoutine.isToFailure,
+      };
+      const progState: ProgressionState = {
+        currentWeightToAttempt: currentProgress.currentWeightToAttempt,
+        repsToAttemptNext: currentProgress.repsToAttemptNext,
+        consecutiveFailedWorkoutsAtCurrentWeightAndReps:
+          currentProgress.consecutiveFailedWorkoutsAtCurrentWeightAndReps ?? 0,
+        lastWorkoutAllSetsSuccessfulAtCurrentWeight:
+          currentProgress.lastWorkoutAllSetsSuccessfulAtCurrentWeight ?? false,
+      };
+      const result = computeNextPrescription(
+        progConfig,
+        progState,
+        performedEx.sets.map((s) => ({
+          actualWeight: s.actualWeight,
+          actualReps: s.actualReps,
+          status: s.status,
+        })),
+      );
 
-      // Check for valid sets
-      const performedSets = performedEx.sets;
-
-      // Default logic: All sets must be "done" (unless it's failure mode where "done" logic is different)
-      if (performedSets.length < exConfigFromRoutine.targetSets) { 
-        allSetsMarkedDone = false; 
-      } else { 
-        for (const set of performedSets) { 
-          // For failure mode, status might be 'failed' or 'done', but we care about the rep count threshold
-          if (exConfigFromRoutine.isToFailure) {
-             // For failure, we don't strictly require 'done' status if we are using the rep threshold logic
-             // But usually user logs 'done' or 'failed'.
-             // Let's rely on the Rep Threshold check primarily for failure mode.
-          } else {
-             if (set.status !== 'done') { allSetsMarkedDone = false; break; } 
-          }
-        } 
-      }
-
-      if (exConfigFromRoutine.isToFailure) {
-          // Failure Mode Logic: Check Max Reps Threshold
-          // If all sets exceeded the maxReps, we progress.
-          const threshold = exConfigFromRoutine.maxReps;
-          let allSetsExceededThreshold = true;
-          
-          if (performedSets.length < exConfigFromRoutine.targetSets) {
-              allSetsExceededThreshold = false;
-          } else {
-              for (const set of performedSets) {
-                  const reps = set.actualReps || 0; // Handle partials or 0
-                  if (reps <= threshold) { // Must be GREATER than threshold? User said: "able to go above that number"
-                      allSetsExceededThreshold = false;
-                      break;
-                  }
-              }
-          }
-          
-          if (allSetsExceededThreshold) {
-              criteriaMet = true;
-          }
-      } else {
-          // Standard Logic
-          if (allSetsMarkedDone && currentProgress.repsToAttemptNext >= exConfigFromRoutine.maxReps) {
-              criteriaMet = true;
-          }
-      }
-
-      const newProgressUpdate: Partial<ExerciseProgress> = { lastPerformedDate: serverTimestamp() };
-      
-      if (criteriaMet) {
-        newProgressUpdate.consecutiveFailedWorkoutsAtCurrentWeightAndReps = 0;
-        newProgressUpdate.lastWorkoutAllSetsSuccessfulAtCurrentWeight = true; // Use this flag to mean "Progression Triggered" contextually
-        
-        // Increase Weight
-        newProgressUpdate.currentWeightToAttempt = currentProgress.currentWeightToAttempt + exConfigFromRoutine.weightIncrement;
-        
-        // Reset Reps
-        if (exConfigFromRoutine.isToFailure) {
-            // For failure, we don't really have a "reps to attempt", but maybe reset to minReps just in case?
-            // Or keep it at maxReps? Usually resetting to bottom of range is standard.
-            newProgressUpdate.repsToAttemptNext = exConfigFromRoutine.minReps || 1; 
-        } else {
-            newProgressUpdate.repsToAttemptNext = exConfigFromRoutine.minReps;
-        }
-      } else {
-        // Progression NOT met
-        // For standard:
-        if (!exConfigFromRoutine.isToFailure) {
-           if (allSetsMarkedDone) {
-               // Good workout, just building reps
-               newProgressUpdate.lastWorkoutAllSetsSuccessfulAtCurrentWeight = true;
-               newProgressUpdate.currentWeightToAttempt = currentProgress.currentWeightToAttempt;
-               newProgressUpdate.repsToAttemptNext = Math.min(currentProgress.repsToAttemptNext + exConfigFromRoutine.repOverloadStep, exConfigFromRoutine.maxReps);
-               newProgressUpdate.consecutiveFailedWorkoutsAtCurrentWeightAndReps = 0;
-           } else {
-               // Failed a set
-               newProgressUpdate.lastWorkoutAllSetsSuccessfulAtCurrentWeight = false;
-               newProgressUpdate.consecutiveFailedWorkoutsAtCurrentWeightAndReps = (currentProgress.consecutiveFailedWorkoutsAtCurrentWeightAndReps || 0) + 1;
-               newProgressUpdate.currentWeightToAttempt = currentProgress.currentWeightToAttempt;
-               newProgressUpdate.repsToAttemptNext = currentProgress.repsToAttemptNext;
-           }
-        } else {
-           // Failure Mode - Not met threshold
-           // Treat as "maintenance" or "failed" depending on view, but for progression sys:
-           // If they didn't hit the jump, they stay at current weight.
-           // We'll mark consecutive failures only if they performed poorly? 
-           // Or just standard "stay same".
-           // Let's just keep weight same.
-           newProgressUpdate.currentWeightToAttempt = currentProgress.currentWeightToAttempt;
-           
-           // For failure, we don't increment reps target usually.
-           newProgressUpdate.repsToAttemptNext = currentProgress.repsToAttemptNext; 
-           
-           // Mark as successful workout conceptually (didn't "fail" fail), just didn't progress?
-           // Or should we track "failure" to progress?
-           // Let's just reset consecutive fails if they logged sets.
-           if (performedSets.length >= exConfigFromRoutine.targetSets) {
-                newProgressUpdate.consecutiveFailedWorkoutsAtCurrentWeightAndReps = 0; // You did the work
-           }
-           newProgressUpdate.lastWorkoutAllSetsSuccessfulAtCurrentWeight = false; // Didn't trigger progression
-        }
-      }
-      batch.update(progressDocRef, newProgressUpdate);
+      const newProgressUpdate: Partial<ExerciseProgress> = {
+        exerciseName: performedEx.exerciseName,
+        currentWeightToAttempt: result.next.currentWeightToAttempt,
+        repsToAttemptNext: result.next.repsToAttemptNext,
+        consecutiveFailedWorkoutsAtCurrentWeightAndReps:
+          result.next.consecutiveFailedWorkoutsAtCurrentWeightAndReps,
+        lastWorkoutAllSetsSuccessfulAtCurrentWeight:
+          result.next.lastWorkoutAllSetsSuccessfulAtCurrentWeight,
+        lastProgressionReason: result.reason,
+        lastPerformedDate: serverTimestamp(),
+      };
+      // set(merge) so a first-ever session (no progress doc yet) creates the
+      // doc instead of aborting the whole batch and losing the logged workout.
+      batch.set(progressDocRef, newProgressUpdate, { merge: true });
     }
     await batch.commit();
 
-    // Invalidate cache so history page reloads
+    // Committed successfully: now it is safe to reflect the workout in the
+    // calendar index and drop the stale history cache.
+    updateCalendarIndex(loggedWorkoutData as any);
     invalidateCache();
 
     // 5. Clean up draft if it exists
