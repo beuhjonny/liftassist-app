@@ -21,10 +21,11 @@
       
       <div class="input-control-row">
         <button type="button" class="btn-adjust minus" @click="$emit('decrement', item.index)">−</button>
-        <input 
-          type="number" 
-          :id="'reps-input-' + item.index" 
-          :value="inputMap[item.index]" 
+        <input
+          type="number"
+          inputmode="numeric"
+          :id="'reps-input-' + item.index"
+          :value="inputMap[item.index]"
           min="0"
           placeholder="Reps"
           class="rep-number-input"

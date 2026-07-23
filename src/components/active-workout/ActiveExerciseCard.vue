@@ -55,12 +55,13 @@
           <template v-else>{{ effectiveReps }} {{ exercise.isTimed ? 'sec hold' : 'reps' }}</template>
         </span>
         <span class="prescription-separator">@</span>
-        <span 
-          class="prescription-weight" 
+        <span
+          class="prescription-weight"
           :class="{ 'failed-last-attempt-text': didFailLastAttempt }">
           {{ displayWeight }} {{ displayUnit(weightUnit) }}
         </span>
       </div>
+      <p v-if="whyReason" class="why-reason">{{ whyReason }}</p>
     </div>
 
     <!-- History / Context Block -->
@@ -115,6 +116,8 @@ defineProps<{
   formattedHoldTime: string;
   embiggenButtons: boolean;
   showVideoDemos?: boolean;
+  // Plain-language explanation of why this weight/reps was prescribed.
+  whyReason?: string;
 }>();
 
 defineEmits<{
@@ -130,6 +133,15 @@ defineEmits<{
 <style scoped>
 .current-exercise-block {
   text-align: center;
+}
+
+.why-reason {
+  margin: var(--space-2, 8px) auto 0;
+  max-width: 34ch;
+  font-size: var(--text-xs, 0.75rem);
+  line-height: var(--leading-normal, 1.5);
+  color: var(--color-card-text);
+  opacity: 0.72;
 }
 
 /* Header Grid Layout */

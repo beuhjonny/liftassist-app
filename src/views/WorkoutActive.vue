@@ -76,6 +76,7 @@
         :didFailLastAttempt="didFailLastAttemptAtCurrentPrescription"
         :lastPerformance="lastPerformanceForCurrentSet || null"
         :failureStreak="currentExerciseProgress?.consecutiveFailedWorkoutsAtCurrentWeightAndReps"
+        :whyReason="currentExerciseProgress?.lastProgressionReason"
         :isHoldTimerRunning="isHoldTimerRunning"
         :formattedHoldTime="formattedHoldTime"
         :embiggenButtons="settings.embiggenButtons"
