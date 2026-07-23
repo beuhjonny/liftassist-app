@@ -111,6 +111,20 @@ const routes = [
     name: 'PublicWorkoutShare',
     component: () => import('../views/WorkoutSharePublicView.vue'),
     props: true
+  },
+  {
+    // Selection list (staging basket) for imported workouts.
+    path: '/import',
+    name: 'ImportWorkout',
+    component: () => import('../views/ImportWorkout.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    // PWA share-target lands here with ?url=&text=&title= from the OS share sheet.
+    path: '/import/share',
+    name: 'ImportShare',
+    component: () => import('../views/ImportWorkout.vue'),
+    meta: { requiresAuth: true }
   }
 ];
 
