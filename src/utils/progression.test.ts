@@ -212,6 +212,21 @@ describe('reason strings (why this weight)', () => {
   });
 });
 
+describe('unit-aware reason strings (kg users)', () => {
+  it('formats reason weights via the injected formatter', () => {
+    // Simulate a kg formatter: 100 lbs -> "45.4 kg", 105 -> "47.6 kg", 5 -> "2.3 kg".
+    const kg = (lbs: number) => `${(lbs * 0.4536).toFixed(1)} kg`;
+    const r = computeNextPrescription(std, state(100, 12), sets(3, 100, 12), kg);
+    expect(r.reason).toContain('kg');
+    expect(r.reason).not.toMatch(/\b105\b/); // no raw lbs number
+  });
+
+  it('defaults to lbs numbers when no formatter is given', () => {
+    const r = computeNextPrescription(std, state(100, 12), sets(3, 100, 12));
+    expect(r.reason).toContain('105');
+  });
+});
+
 describe('fractional weights (kg-converted increments)', () => {
   it('formats non-integer weights to one decimal in the reason', () => {
     const cfg: ProgressionConfig = { ...std, weightIncrement: 2.5 };

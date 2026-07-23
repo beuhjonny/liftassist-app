@@ -5,15 +5,15 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
-  getDoc,
   onSnapshot,
   query,
   orderBy,
   serverTimestamp,
+  runTransaction,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import useAuth from './useAuth';
-import { detectSource, parseWorkoutText, type WorkoutSourceType } from '../utils/workoutParser';
+import { detectSource, parseWorkoutText, safeHttpUrl, type WorkoutSourceType } from '../utils/workoutParser';
 import type { WorkoutDay, ExerciseConfig } from '@/types';
 
 export interface ImportExercise {
@@ -43,15 +43,15 @@ export type AddTarget =
   | { mode: 'newDay'; programId: string; dayName: string }
   | { mode: 'existingDay'; programId: string; dayId: string };
 
-const uid4 = (): string =>
-  (globalThis.crypto?.randomUUID?.() ??
-    'id-' + Math.abs(hashString(String(performance.now()))).toString(36));
-
-function hashString(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
-  return h;
-}
+let uidCounter = 0;
+const uid4 = (): string => {
+  const native = globalThis.crypto?.randomUUID?.();
+  if (native) return native;
+  // Insecure-context fallback (plain-http LAN dev): a bare performance.now()
+  // hash collides for same-tick calls, so combine a monotonic counter with
+  // randomness and the clock. Uniqueness is a contract exercise ids depend on.
+  return `id-${Date.now().toString(36)}-${(uidCounter++).toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+};
 
 /** Map a staged exercise onto the app's ExerciseConfig with sane defaults. */
 function toExerciseConfig(ex: ImportExercise): ExerciseConfig {
@@ -100,7 +100,11 @@ export default function useWorkoutImport() {
    * analyzer) can supply a description/transcript.
    */
   const stageFromShare = async (payload: { url?: string; text?: string; title?: string }) => {
-    const sourceUrl = payload.url || extractUrl(payload.text) || '';
+    // Only ever store a validated http(s) URL. A shared payload is untrusted
+    // (it comes from the OS share sheet / a crafted link), so a javascript: or
+    // data: scheme must never reach Firestore or a rendered href.
+    const rawUrl = payload.url || extractUrl(payload.text) || '';
+    const sourceUrl = safeHttpUrl(rawUrl);
     const rawText = payload.text || '';
     const parsed = parseWorkoutText(rawText);
     const exercises: ImportExercise[] = parsed.map((p) => ({ ...p, selected: true }));
@@ -167,25 +171,29 @@ export default function useWorkoutImport() {
       programId = created.id;
     } else {
       const progRef = doc(programsRef, target.programId);
-      const snap = await getDoc(progRef);
-      if (!snap.exists()) throw new Error('That routine no longer exists.');
-      const data = snap.data() as { workoutDays?: WorkoutDay[] };
-      const days: WorkoutDay[] = Array.isArray(data.workoutDays) ? data.workoutDays : [];
+      // Transaction so a concurrent edit to the same program (another tab or a
+      // replayed offline write) cannot be clobbered by a stale whole-array write.
+      await runTransaction(db, async (tx) => {
+        const snap = await tx.get(progRef);
+        if (!snap.exists()) throw new Error('That routine no longer exists.');
+        const data = snap.data() as { workoutDays?: WorkoutDay[] };
+        const days: WorkoutDay[] = Array.isArray(data.workoutDays) ? [...data.workoutDays] : [];
 
-      if (target.mode === 'newDay') {
-        const maxOrder = days.reduce((m, d) => Math.max(m, d.order ?? 0), -1);
-        days.push({
-          id: uid4(),
-          dayName: target.dayName || item.routineName || 'Imported Day',
-          order: maxOrder + 1,
-          exercises: chosen,
-        });
-      } else {
-        const day = days.find((d) => d.id === target.dayId);
-        if (!day) throw new Error('That day no longer exists.');
-        day.exercises = [...(day.exercises || []), ...chosen];
-      }
-      await updateDoc(progRef, { workoutDays: days, updatedAt: serverTimestamp() });
+        if (target.mode === 'newDay') {
+          const maxOrder = days.reduce((m, d) => Math.max(m, d.order ?? 0), -1);
+          days.push({
+            id: uid4(),
+            dayName: target.dayName || item.routineName || 'Imported Day',
+            order: maxOrder + 1,
+            exercises: chosen,
+          });
+        } else {
+          const idx = days.findIndex((d) => d.id === target.dayId);
+          if (idx === -1) throw new Error('That day no longer exists.');
+          days[idx] = { ...days[idx], exercises: [...(days[idx].exercises || []), ...chosen] };
+        }
+        tx.update(progRef, { workoutDays: days, updatedAt: serverTimestamp() });
+      });
       programId = target.programId;
     }
 

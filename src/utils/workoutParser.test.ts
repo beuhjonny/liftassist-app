@@ -1,5 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { parseWorkoutText, detectSource } from './workoutParser';
+import { parseWorkoutText, detectSource, safeHttpUrl } from './workoutParser';
+
+describe('safeHttpUrl (share-target XSS guard)', () => {
+  it('passes http and https URLs through', () => {
+    expect(safeHttpUrl('https://youtube.com/x')).toBe('https://youtube.com/x');
+    expect(safeHttpUrl('http://example.com')).toBe('http://example.com');
+  });
+  it('rejects javascript: and data: schemes', () => {
+    expect(safeHttpUrl('javascript:alert(1)')).toBe('');
+    expect(safeHttpUrl('data:text/html,<script>')).toBe('');
+    expect(safeHttpUrl('vbscript:msgbox')).toBe('');
+  });
+  it('rejects empty/nullish and caps length', () => {
+    expect(safeHttpUrl('')).toBe('');
+    expect(safeHttpUrl(null)).toBe('');
+    expect(safeHttpUrl('https://x.com/' + 'a'.repeat(5000)).length).toBeLessThanOrEqual(2048);
+  });
+});
 
 describe('detectSource', () => {
   it('identifies platforms from a url', () => {

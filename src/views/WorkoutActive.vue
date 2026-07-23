@@ -2052,6 +2052,8 @@ const finishWorkoutAndSave = async () => {
           actualReps: s.actualReps,
           status: s.status,
         })),
+        // Render the why-this-weight explanation in the user's unit (kg/lbs).
+        (lbs) => `${toDisplay(lbs, settings.value.weightUnit)} ${displayUnit(settings.value.weightUnit)}`,
       );
 
       const newProgressUpdate: Partial<ExerciseProgress> = {
@@ -2309,16 +2311,22 @@ const applyEditAllFutureSets = async () => {
     const progressKey = currentExercise.value.exerciseName.toLowerCase().replace(/\s+/g, '_');
     const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
     
+    // Manual override: replace the stale auto-progression explanation so the
+    // "why this weight" line does not keep claiming the app set this weight.
+    const manualReason = `You set this to ${editedWeight.value} ${displayUnit(settings.value.weightUnit)} manually.`;
+
     await updateDoc(progressDocRef, {
       currentWeightToAttempt: weightInLbs,
-      repsToAttemptNext: editedReps.value
+      repsToAttemptNext: editedReps.value,
+      lastProgressionReason: manualReason
     });
-    
+
     // Update the initialExerciseProgressData cache
     const currentProgress = initialExerciseProgressData.get(progressKey);
     if (currentProgress) {
       currentProgress.currentWeightToAttempt = weightInLbs;
       currentProgress.repsToAttemptNext = editedReps.value;
+      currentProgress.lastProgressionReason = manualReason;
     }
     
     // Update ALL exercises in sessionExercises that match this exercise ID

@@ -7,7 +7,8 @@
           :class="{
             'completed-done': index < completedSetsCount && getSetStatus(index) === 'done',
             'completed-failed': index < completedSetsCount && getSetStatus(index) === 'failed',
-            'active': index === completedSetsCount, 
+            'completed-skipped': index < completedSetsCount && getSetStatus(index) === 'skipped',
+            'active': index === completedSetsCount,
             'tooltip-active': activeTooltipIndex === index,
             'connected-dot': set.isConnectedToNext
           }"
@@ -55,7 +56,10 @@ const formatSetInfo = (set: TimelineSetInfo, index: number): string => {
   
   let setDetail = '';
   if (loggedSet) {
-    const statusText = loggedSet.status === 'done' ? '✓ Logged' : '⚠️ Skipped';
+    const statusText =
+      loggedSet.status === 'done' ? '✓ Logged'
+      : loggedSet.status === 'failed' ? '✗ Failed'
+      : '⤼ Skipped';
     setDetail = `: ${loggedSet.actualReps} ${loggedSet.isTimed ? 'sec' : 'reps'} @ ${loggedSet.actualWeight} ${unit} (${statusText})`;
   } else if (typeof set.prescribedReps === 'number') {
     setDetail = `: ${set.prescribedReps} ${set.isTimed ? 'sec' : 'reps'} @ ${set.prescribedWeight ?? 0} ${unit}`;
@@ -108,6 +112,10 @@ const toggleTooltip = (index: number, set: TimelineSetInfo) => {
 }
 .progress-dot.completed-failed {
   background-color: var(--color-warning, #ffc107);
+}
+.progress-dot.completed-skipped {
+  background-color: transparent;
+  border: 2px solid var(--color-warning, #ffc107);
 }
 .progress-dot.active {
   background-color: var(--color-primary, #007bff);

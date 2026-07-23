@@ -72,6 +72,9 @@ export function computeNextPrescription(
   config: ProgressionConfig,
   current: ProgressionState,
   performedSets: PerformedSet[],
+  // Optional: render weights in the caller's unit (e.g. kg) so the reason
+  // string never shows lbs numbers to a kg user. Defaults to lbs.
+  formatWeight: (weightLbs: number) => string = fmtWeight,
 ): ProgressionResult {
   const hold = (reason: string, bumpStreak: boolean): ProgressionResult => ({
     outcome: 'hold',
@@ -131,20 +134,20 @@ export function computeNextPrescription(
     const loweredWeight = counted.some((s) => s.actualWeight < weight);
     if (!completedEnough) {
       return hold(
-        `Only ${counted.length} of ${config.targetSets} sets logged, holding at ${fmtWeight(weight)}.`,
+        `Only ${counted.length} of ${config.targetSets} sets logged, holding at ${formatWeight(weight)}.`,
         true,
       );
     }
     if (loweredWeight) {
       return hold(
-        `Logged below the prescribed ${fmtWeight(weight)}, so holding there next time.`,
+        `Logged below the prescribed ${formatWeight(weight)}, so holding there next time.`,
         true,
       );
     }
     return hold(
       config.isToFailure
-        ? `Did not beat ${config.maxReps} reps on every set, holding at ${fmtWeight(weight)}.`
-        : `Missed the ${target}-rep target, holding at ${fmtWeight(weight)} to try again.`,
+        ? `Did not beat ${config.maxReps} reps on every set, holding at ${formatWeight(weight)}.`
+        : `Missed the ${target}-rep target, holding at ${formatWeight(weight)} to try again.`,
       true,
     );
   }
@@ -157,8 +160,8 @@ export function computeNextPrescription(
     return {
       outcome: 'weight-up',
       reason: config.isToFailure
-        ? `Beat ${config.maxReps} reps on every set, so +${fmtWeight(config.weightIncrement)} to ${fmtWeight(nextWeight)}.`
-        : `Hit ${config.targetSets}x${target} at the top of the range, so +${fmtWeight(config.weightIncrement)} to ${fmtWeight(nextWeight)}.`,
+        ? `Beat ${config.maxReps} reps on every set, so +${formatWeight(config.weightIncrement)} to ${formatWeight(nextWeight)}.`
+        : `Hit ${config.targetSets}x${target} at the top of the range, so +${formatWeight(config.weightIncrement)} to ${formatWeight(nextWeight)}.`,
       next: {
         currentWeightToAttempt: nextWeight,
         repsToAttemptNext: config.minReps || 1,
@@ -171,7 +174,7 @@ export function computeNextPrescription(
   const nextReps = Math.min(target + config.repOverloadStep, config.maxReps);
   return {
     outcome: 'reps-up',
-    reason: `Hit all sets, so target reps ${target} -> ${nextReps} at ${fmtWeight(weight)}.`,
+    reason: `Hit all sets, so target reps ${target} -> ${nextReps} at ${formatWeight(weight)}.`,
     next: {
       currentWeightToAttempt: weight,
       repsToAttemptNext: nextReps,

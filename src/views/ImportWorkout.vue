@@ -29,7 +29,9 @@
     <section class="selection-list">
       <h2 class="section-title">Selection list <span v-if="items.length" class="count">({{ items.length }})</span></h2>
 
-      <p v-if="items.length === 0" class="empty-state">
+      <div v-if="error" class="load-error" role="alert">{{ error }}</div>
+
+      <p v-if="items.length === 0 && !error" class="empty-state">
         Nothing here yet. Share a video to LiftLogic or paste a routine above and it will
         appear here, ready to add to a routine.
       </p>
@@ -40,7 +42,7 @@
           <span class="item-title">{{ item.routineName || 'Imported workout' }}</span>
           <button class="icon-btn" title="Remove" @click="remove(item.id)">✕</button>
         </div>
-        <a v-if="item.sourceUrl" :href="item.sourceUrl" target="_blank" rel="noopener" class="source-link">{{ item.sourceUrl }}</a>
+        <a v-if="safeHttpUrl(item.sourceUrl)" :href="safeHttpUrl(item.sourceUrl)" target="_blank" rel="noopener noreferrer" class="source-link">{{ safeHttpUrl(item.sourceUrl) }}</a>
 
         <!-- Needs a description/transcript -->
         <div v-if="item.status === 'needs_text'" class="needs-text">
@@ -96,7 +98,7 @@
       </article>
     </section>
 
-    <div v-if="toast" class="import-toast" role="status">{{ toast }}</div>
+    <div v-if="toast" class="import-toast" role="alert" aria-live="assertive">{{ toast }}</div>
   </div>
 </template>
 
@@ -105,12 +107,12 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import useWorkoutImport, { type ImportItem, type AddTarget } from '../composables/useWorkoutImport';
 import useTrainingProgram from '../composables/useTrainingProgram';
-import type { WorkoutSourceType } from '../utils/workoutParser';
+import { safeHttpUrl, type WorkoutSourceType } from '../utils/workoutParser';
 import type { WorkoutDay } from '@/types';
 
 const route = useRoute();
 const router = useRouter();
-const { items, subscribe, stageFromShare, analyzeText, updateItem, removeItem, addToRoutine } = useWorkoutImport();
+const { items, error, subscribe, stageFromShare, analyzeText, updateItem, removeItem, addToRoutine } = useWorkoutImport();
 const { allPrograms: programs, fetchAllPrograms } = useTrainingProgram();
 
 const pasteText = ref('');
@@ -171,16 +173,33 @@ const addFromPaste = async () => {
 const reanalyze = async (item: ImportItem) => {
   const text = itemText[item.id];
   if (!text?.trim()) return;
-  await analyzeText(item.id, text);
-  itemText[item.id] = '';
+  try {
+    await analyzeText(item.id, text);
+    itemText[item.id] = '';
+  } catch (e) {
+    console.error(e);
+    flash('Could not analyze that text.');
+  }
 };
 
-const toggleExercise = (item: ImportItem, index: number) => {
+const toggleExercise = async (item: ImportItem, index: number) => {
   const next = item.exercises.map((e, i) => (i === index ? { ...e, selected: !e.selected } : e));
-  updateItem(item.id, { exercises: next });
+  try {
+    await updateItem(item.id, { exercises: next });
+  } catch (e) {
+    console.error(e);
+    flash('Could not update the selection.');
+  }
 };
 
-const remove = (id: string) => removeItem(id);
+const remove = async (id: string) => {
+  try {
+    await removeItem(id);
+  } catch (e) {
+    console.error(e);
+    flash('Could not remove that item.');
+  }
+};
 
 const openPicker = (item: ImportItem) => {
   openPickerId.value = item.id;
@@ -278,6 +297,7 @@ const flash = (msg: string) => {
 .section-title { font-size: var(--text-lg); color: var(--color-heading); margin: 0 0 var(--space-3); }
 .count { opacity: 0.6; font-weight: 400; }
 .empty-state { color: var(--color-text); opacity: 0.7; font-size: var(--text-sm); line-height: var(--leading-normal); }
+.load-error { background: var(--color-danger-bg); color: var(--color-danger-fg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); font-size: var(--text-sm); margin-bottom: var(--space-3); }
 .import-item { display: flex; flex-direction: column; gap: var(--space-3); margin-bottom: var(--space-4); }
 .item-head { display: flex; align-items: center; gap: var(--space-3); }
 .item-title { font-weight: 600; color: var(--color-card-heading); flex: 1; }

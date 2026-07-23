@@ -21,6 +21,14 @@ export interface ParsedExercise {
   maxReps: number;
 }
 
+/** Return the url only if it is a safe http(s) URL, capped in length; else ''.
+ *  Blocks javascript:/data:/other schemes from untrusted shared payloads. */
+export function safeHttpUrl(url?: string | null): string {
+  if (!url) return '';
+  const trimmed = url.trim().slice(0, 2048);
+  return /^https?:\/\//i.test(trimmed) ? trimmed : '';
+}
+
 export function detectSource(url?: string | null): WorkoutSourceType {
   if (!url) return 'manual';
   const u = url.toLowerCase();

@@ -33,7 +33,7 @@
         <!-- Render each workout day in the active program -->
         <template v-if="activeProgram.workoutDays && activeProgram.workoutDays.length > 0">
           <div class="legend-item" v-for="day in activeProgram.workoutDays" :key="day.id">
-            <span class="legend-color-box" :style="{ backgroundColor: day.color || daySequenceColorPalette[(day.order - 1) % daySequenceColorPalette.length] || '#10B981' }"></span>
+            <span class="legend-color-box" :style="{ backgroundColor: colorForDay(day.order, day.color) }"></span>
             <span>{{ day.dayName }}</span>
           </div>
         </template>
@@ -311,7 +311,7 @@
 import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
 import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase.js';
-import { DAY_COLOR_PALETTE, DEFAULT_DAY_COLOR } from '../design/dayPalette';
+import { DAY_COLOR_PALETTE, DEFAULT_DAY_COLOR, colorForDay } from '../design/dayPalette';
 import useAuth from '../composables/useAuth';
 import useSettings from '../composables/useSettings';
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
@@ -567,7 +567,7 @@ const getDayColorForProgramAndName = (dayName?: string, programId?: string, expl
     if (exactMatch) {
       if (exactMatch.color) return exactMatch.color;
       if (typeof exactMatch.order === 'number' && exactMatch.order > 0) {
-        return daySequenceColorPalette[(exactMatch.order - 1) % daySequenceColorPalette.length];
+        return colorForDay(exactMatch.order, exactMatch.color);
       }
     }
 
@@ -580,7 +580,7 @@ const getDayColorForProgramAndName = (dayName?: string, programId?: string, expl
     if (partialMatch) {
       if (partialMatch.color) return partialMatch.color;
       if (typeof partialMatch.order === 'number' && partialMatch.order > 0) {
-        return daySequenceColorPalette[(partialMatch.order - 1) % daySequenceColorPalette.length];
+        return colorForDay(partialMatch.order, partialMatch.color);
       }
     }
   }

@@ -46,7 +46,7 @@
 |---|---|---|
 | Font fix | Inter (declared as body font, never loaded) now loads; paired with Montserrat display. Verified in-browser. | `index.html` |
 | Token system | 4px spacing, radii, rem type scale, motion, elevation, per-theme status tokens, 44px tap floor | `src/assets/tokens.css` |
-| Day palette (#73) | One shared `src/design/dayPalette.ts` + deterministic `colorForDay`; Routines + History import it instead of divergent copies (5 tests) | `dayPalette.ts`, `Routines.vue`, `WorkoutHistory.vue` |
+| Day palette (#73) | One shared `src/design/dayPalette.ts`; all display-time color reads in Routines + History now route through `colorForDay(order, storedColor)` so a given day resolves identically on every screen (5 tests). Note: History's fallback for deleted/renamed day names (no stored color, not in the active program) still uses a separate encounter-order path. | `dayPalette.ts`, `Routines.vue`, `WorkoutHistory.vue` |
 | Lint enforcement | stylelint with `color-no-hex` (warning) + Vue SFC support; `npm run lint:css`. Baseline 362 raw hex to migrate. | `package.json` |
 
 ### Phase 3 - Interaction

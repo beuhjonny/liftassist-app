@@ -138,7 +138,10 @@ const handleSignInWithGoogle = async () => {
 // before the guard fully redirects.
 watch(user, (currentUser) => {
   if (currentUser && router.currentRoute.value.name === 'Login') {
-    router.push('/'); // Redirect to home if user logs in while on login page
+    // Honor a ?redirect= set by the auth guard (e.g. a shared /import/share)
+    // so the user lands where they were headed, not always Home.
+    const redirect = router.currentRoute.value.query.redirect;
+    router.push(typeof redirect === 'string' ? redirect : '/');
   }
 }, { immediate: false }); // immediate: false to avoid redirect on initial load if already handled by guard
 

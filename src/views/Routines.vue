@@ -527,7 +527,7 @@ REQUIRED JSON STRUCTURE:
                         <span 
                           v-if="!(isInOverallEditMode && editingDayNameId === day.id)" 
                           class="day-color-badge" 
-                          :style="{ backgroundColor: day.color || daySequenceColorPalette[(day.order - 1) % daySequenceColorPalette.length] || '#10B981' }" 
+                          :style="{ backgroundColor: colorForDay(day.order, day.color) }"
                           style="width: 15px; height: 15px; border-radius: 3px; margin-right: 8px; display: inline-block; flex-shrink: 0; border: 1px solid var(--color-card-border);"
                           title="Workout Day Color"
                         ></span>
@@ -1032,7 +1032,7 @@ import { ref, reactive, onMounted, onUnmounted, watch, computed, nextTick } from
 import { useRouter } from 'vue-router';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, deleteDoc, addDoc, Timestamp, type DocumentData } from 'firebase/firestore';
 import { db } from '../firebase.js';
-import { DAY_COLOR_PALETTE } from '../design/dayPalette';
+import { DAY_COLOR_PALETTE, colorForDay } from '../design/dayPalette';
 import useAuth from '../composables/useAuth';
 import useSettings, { type WeightUnitOption } from '../composables/useSettings';
 import useTrainingProgram from '../composables/useTrainingProgram';
@@ -2751,7 +2751,7 @@ const startEditWorkoutDayName = (day: WorkoutDay) => {
   cancelAddOrEditExercise(); 
   editingDayNameId.value = day.id; 
   editableDayName.value = day.dayName;
-  editableDayColor.value = day.color || daySequenceColorPalette[(day.order - 1) % daySequenceColorPalette.length] || '#10B981';
+  editableDayColor.value = colorForDay(day.order, day.color);
 };
 const cancelEditWorkoutDayName = () => { 
   editingDayNameId.value = null; 

@@ -139,9 +139,12 @@ router.beforeEach(async (to, from, next) => {
   const user = await getCurrentUser(); // Make sure this function is robust
 
   if (requiresAuth && !user) {
-    next({ name: 'Login' });
+    // Preserve where the user was headed (e.g. a shared /import/share?url=...)
+    // so it is not lost across the sign-in bounce.
+    next({ name: 'Login', query: { redirect: to.fullPath } });
   } else if (to.name === 'Login' && user) {
-    next({ name: 'Home' });
+    const redirect = typeof to.query.redirect === 'string' ? to.query.redirect : null;
+    next(redirect || { name: 'Home' });
   } else if (user && to.name === 'Home') {
     try {
       // Check for the known active program ID
