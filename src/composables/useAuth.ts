@@ -8,9 +8,10 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  connectAuthEmulator,
   type User
 } from 'firebase/auth';
-import { app } from '../firebase.js';
+import { app, USE_EMULATOR } from '../firebase.js';
 
 let auth;
 let provider;
@@ -19,6 +20,10 @@ let unsubscribe: (() => void) | null = null;
 try {
   if (app) {
     auth = getAuth(app);
+    if (USE_EMULATOR) {
+      connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+      console.info('🔧 Auth connected to local emulator (127.0.0.1:9099)');
+    }
     provider = new GoogleAuthProvider();
   } else {
     console.warn('⚠️ Firebase Auth not available - authentication features disabled');

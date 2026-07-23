@@ -22,6 +22,20 @@ export default defineConfig({
         background_color: '#181818',
         display: 'standalone',
         start_url: '/',
+        // Web Share Target: once LiftLogic is installed, it appears in the OS
+        // share sheet. Sharing a YouTube/Instagram/TikTok video opens the app
+        // at /import/share with the shared url/text, which we analyze into a
+        // workout. (Android + installed PWAs; iOS needs the native wrapper's
+        // share extension.)
+        share_target: {
+          action: '/import/share',
+          method: 'GET',
+          params: {
+            title: 'title',
+            text: 'text',
+            url: 'url'
+          }
+        },
         icons: [
           {
             src: 'robot-arm-icon.svg',

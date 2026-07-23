@@ -6,3 +6,4 @@ import { Functions } from 'firebase/functions';
 export const app: FirebaseApp;
 export const db: Firestore;
 export const functions: Functions;
+export const USE_EMULATOR: boolean;

@@ -1,8 +1,12 @@
 // firebase.js
 import { initializeApp } from 'firebase/app';
 // 1. Import initializeFirestore and persistentLocalCache
-import { initializeFirestore, persistentLocalCache, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
+import { initializeFirestore, persistentLocalCache, CACHE_SIZE_UNLIMITED, connectFirestoreEmulator } from 'firebase/firestore';
 import { getFunctions } from 'firebase/functions';
+
+// Local design/dev mode: point at the Firebase emulator suite instead of a real
+// project. Enabled only when VITE_USE_EMULATOR=true (never in production).
+export const USE_EMULATOR = import.meta.env.VITE_USE_EMULATOR === 'true';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -50,6 +54,10 @@ try {
       localCache: persistentLocalCache({ cacheSizeBytes: CACHE_SIZE_UNLIMITED }) // Using unlimited cache size as an example
       // You can also configure cache size explicitly, e.g., { cacheSizeBytes: 100 * 1024 * 1024 } for 100MB
     });
+    if (USE_EMULATOR) {
+      connectFirestoreEmulator(db, '127.0.0.1', 8080);
+      console.info('🔧 Firestore connected to local emulator (127.0.0.1:8080)');
+    }
   } else {
     console.warn('⚠️ Firestore not initialized due to Firebase configuration error');
     db = null;
