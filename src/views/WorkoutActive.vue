@@ -112,10 +112,15 @@
         />
       </div>
       <h2>RESTING...</h2>
-      <TimerDisplay 
-        :timeText="formattedRestTime" 
-        :progress="timerProgressPercentage" 
+      <TimerDisplay
+        :timeText="formattedRestTime"
+        :progress="timerProgressPercentage"
       />
+      <div class="rest-adjust-row">
+        <button type="button" class="rest-adjust-btn" @click="adjustRest(-15)" aria-label="Subtract 15 seconds">-15s</button>
+        <span v-if="restTimerFinished" class="rest-done-label">Rest complete</span>
+        <button type="button" class="rest-adjust-btn" @click="adjustRest(30)" aria-label="Add 30 seconds">+30s</button>
+      </div>
       <ActualRepsLogger 
         :show="showActualRepsInput" 
         :items="setsRequiringRepInput" 
@@ -476,6 +481,10 @@ const currentSetNumber = ref(1);
 const DEFAULT_REST_SECONDS = computed(() => activeProgramDefaultRest.value || settings.value.defaultRestTimer || 90);
 const restDurationToUse = ref(DEFAULT_REST_SECONDS.value);
 const restCountdown = ref(DEFAULT_REST_SECONDS.value);
+// Wall-clock anchor: the rest timer is driven by an absolute end time, not by
+// counting setInterval ticks, so a locked or backgrounded phone stays accurate.
+const restEndsAt = ref<number | null>(null);
+const restTimerFinished = ref(false);
 
 const lastLoggedSetIndex = ref<number | null>(null);
 let timerInterval: number | undefined = undefined;
@@ -1106,11 +1115,16 @@ const releaseWakeLock = async () => {
 };
 
 const handleVisibilityChange = async () => {
-  if (!wakeLockSentinel.value &&
-      document.visibilityState === 'visible' &&
-      (workoutPhase.value === 'activeSet' || workoutPhase.value === 'resting')) {
-    console.log('Document became visible and workout is active, attempting to re-acquire wake lock.');
-    await requestWakeLock();
+  if (document.visibilityState === 'visible') {
+    // Resync the rest timer from the wall clock: while backgrounded the
+    // interval was throttled, so catch the countdown up immediately.
+    if (restEndsAt.value !== null && !restTimerFinished.value) {
+      tickRestTimer();
+    }
+    if (!wakeLockSentinel.value &&
+        (workoutPhase.value === 'activeSet' || workoutPhase.value === 'resting')) {
+      await requestWakeLock();
+    }
   }
 };
 
@@ -1199,11 +1213,22 @@ const beginActiveWorkout = async () => {
     workoutPhase.value = 'overview'; return;
   }
   workoutStartTime.value = new Date();
-  workoutPhase.value = 'activeSet'; 
+  workoutPhase.value = 'activeSet';
   startActivitySetTimer();
-  
+  requestRestNotificationPermission();
+
   // Create initial draft workout
   await saveDraftWorkout();
+};
+
+// Ask once, on a real user gesture (starting the workout), so locked-screen
+// rest alerts can fire later. Silently ignored where unsupported.
+const requestRestNotificationPermission = () => {
+  try {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
+  } catch { /* notifications unavailable */ }
 };
 
 // Generate short sounds programmatically (very short to minimize interruption)
@@ -1280,17 +1305,51 @@ const startRestTimer = () => {
   }
 
   if (timerInterval) clearInterval(timerInterval);
-  if (timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if (restCountdown.value > 0) {
-      restCountdown.value--;
-    } else {
-      clearInterval(timerInterval);
-      timerInterval = undefined;
-      playTimerSound();
-      proceedToNextSet();
+  restTimerFinished.value = false;
+  // Anchor to an absolute end time so backgrounding never desyncs the count.
+  restEndsAt.value = Date.now() + restCountdown.value * 1000;
+  timerInterval = setInterval(tickRestTimer, 250);
+};
+
+// Recompute the countdown from the wall clock every tick. When it reaches
+// zero we STOP and alert, but never auto-advance: force-advancing here used to
+// wipe in-progress rep entries and skip the set.
+const tickRestTimer = () => {
+  if (restEndsAt.value === null) return;
+  const remaining = Math.max(0, Math.round((restEndsAt.value - Date.now()) / 1000));
+  restCountdown.value = remaining;
+  if (remaining <= 0 && !restTimerFinished.value) {
+    restTimerFinished.value = true;
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = undefined; }
+    fireRestCompleteAlert();
+  }
+};
+
+// Adjust an in-progress rest by shifting the end time (+30s / -15s buttons).
+const adjustRest = (deltaSeconds: number) => {
+  if (restEndsAt.value === null) return;
+  restEndsAt.value = Math.max(Date.now(), restEndsAt.value + deltaSeconds * 1000);
+  restTimerFinished.value = false;
+  if (!timerInterval) timerInterval = setInterval(tickRestTimer, 250);
+  tickRestTimer();
+};
+
+// Fire every available "rest is over" channel: audible tone, haptic buzz, and
+// a native notification when the phone is locked or the tab is backgrounded.
+const fireRestCompleteAlert = () => {
+  playTimerSound();
+  try { navigator.vibrate?.([120, 60, 120]); } catch { /* not supported */ }
+  try {
+    if (typeof Notification !== 'undefined'
+        && Notification.permission === 'granted'
+        && document.visibilityState !== 'visible') {
+      new Notification('Rest complete', {
+        body: 'Time for your next set.',
+        tag: 'liftlogic-rest',
+        silent: false,
+      });
     }
-  }, 1000);
+  } catch { /* notifications unavailable */ }
 };
 
 const logSet = async (status: 'done' | 'failed') => {
@@ -1718,7 +1777,9 @@ const discardDraft = async () => {
 
 const proceedToNextSet = async () => {
   if (timerInterval) clearInterval(timerInterval); timerInterval = undefined;
-  
+  restEndsAt.value = null;
+  restTimerFinished.value = false;
+
   if (showActualRepsInput.value) {
       // Check for rep inputs from the map
       setsRequiringRepInput.value.forEach(item => {
@@ -2414,6 +2475,10 @@ const saveEditedWorkout = () => {
 .actual-reps-input-section { margin: 20px 0; }
 .actual-reps-input-section label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--color-card-text); }
 .actual-reps-input-section input[type="number"] { padding: 8px; width: 80px; text-align: center; font-size: 1em; border: 1px solid var(--color-card-border); border-radius: 4px; background-color: var(--color-card-bg); color: var(--color-card-text); }
+.rest-adjust-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 14px; }
+.rest-adjust-btn { min-width: 64px; min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text); font-size: 1em; font-weight: 600; cursor: pointer; }
+.rest-adjust-btn:active { transform: scale(0.96); }
+.rest-done-label { font-weight: 700; color: var(--color-accent, #2f9e44); letter-spacing: 0.02em; }
 .next-up-info { margin: 25px 0; text-align: center;}
 .next-up-info h4 { margin-top: 0; color: var(--color-card-heading); font-size: 1.2em; }
 .start-next-set-button { width: auto; padding: 12px 30px; font-size: 1.1em; display: block; margin-left: auto; margin-right: auto;}
