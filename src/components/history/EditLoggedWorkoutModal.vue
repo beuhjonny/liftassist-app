@@ -79,10 +79,12 @@
               <div v-for="(set, setIdx) in ex.sets" :key="setIdx" class="set-edit-row">
                 <span class="set-num-label">#{{ set.setNumber }}</span>
                 
-                <input 
-                  v-model.number="set.actualWeight" 
-                  type="number" 
-                  step="0.5" 
+                <input
+                  :value="setWeightDisplay(set)"
+                  @input="onSetWeightInput(set, ($event.target as HTMLInputElement).value)"
+                  type="number"
+                  inputmode="decimal"
+                  step="0.5"
                   class="form-input mini-input"
                 />
                 
@@ -96,6 +98,7 @@
                 <select v-model="set.status" class="form-select mini-select">
                   <option value="done">Done</option>
                   <option value="failed">Failed</option>
+                  <option value="skipped">Skipped</option>
                 </select>
 
                 <button @click="removeSet(ex, setIdx)" class="icon-btn-remove-set" title="Remove Set">&times;</button>
@@ -139,6 +142,7 @@
 import { ref, watch } from 'vue';
 import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
 import useSettings from '@/composables/useSettings';
+import { toDisplay, fromInput } from '@/utils/weight';
 
 const props = defineProps<{
   show: boolean;
@@ -153,6 +157,14 @@ const emit = defineEmits<{
 
 const { settings } = useSettings();
 const weightUnit = ref(settings.value?.weightUnit || 'lbs');
+
+// Set weight is stored internally in lbs. Show it in the user's unit and
+// convert back on input so a kg user never silently saves lbs-scale numbers.
+const setWeightDisplay = (set: LoggedSetData): number =>
+  toDisplay(set.actualWeight, weightUnit.value as 'lbs' | 'kg');
+const onSetWeightInput = (set: LoggedSetData, raw: string) => {
+  set.actualWeight = fromInput(raw === '' ? 0 : Number(raw), weightUnit.value as 'lbs' | 'kg');
+};
 
 const editableWorkout = ref<LoggedWorkout | null>(null);
 const showDeleteConfirm = ref(false);

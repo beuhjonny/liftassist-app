@@ -15,7 +15,7 @@
         />
       </div>
       <div class="form-group">
-        <label for="editWeight">Weight (lbs):</label>
+        <label for="editWeight">Weight ({{ weightUnit || 'lbs' }}):</label>
         <input 
           type="number" 
           id="editWeight" 
@@ -39,6 +39,9 @@ defineProps<{
   isTimed?: boolean;
   reps: number | null;
   weight: number | null;
+  // Display unit for the label only; the bound `weight` is already in this unit
+  // (the parent converts with toDisplay/fromInput).
+  weightUnit?: string;
 }>();
 
 defineEmits<{

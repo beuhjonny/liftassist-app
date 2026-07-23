@@ -1,5 +1,6 @@
 <template>
-  <div v-if="show" class="modal-overlay draft-prompt-overlay" @click.self="$emit('discard')">
+  <!-- Backdrop is intentionally inert: a stray tap must never delete the draft. -->
+  <div v-if="show" class="modal-overlay draft-prompt-overlay">
     <div class="modal-content draft-prompt-card card">
       <div class="draft-icon">🏋️‍♂️</div>
       <h2>Resume Workout?</h2>
@@ -13,7 +14,7 @@
         <button @click="$emit('resume')" class="button-primary full-width">
           ▶️ Resume Workout
         </button>
-        <button @click="$emit('discard')" class="button-secondary full-width">
+        <button @click="confirmDiscard" class="button-secondary full-width">
           🗑️ Discard & Start Fresh
         </button>
       </div>
@@ -27,10 +28,17 @@ defineProps<{
   isLoading?: boolean;
 }>();
 
-defineEmits<{
+const emit = defineEmits<{
   (e: 'resume'): void;
   (e: 'discard'): void;
 }>();
+
+// Discarding permanently deletes the in-progress draft, so confirm first.
+const confirmDiscard = () => {
+  if (window.confirm('Discard your unfinished workout and start fresh? This cannot be undone.')) {
+    emit('discard');
+  }
+};
 </script>
 
 <style scoped>

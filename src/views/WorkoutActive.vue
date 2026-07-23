@@ -17,6 +17,13 @@
       <router-link to="/" class="button-secondary">Back to Home</router-link>
     </div>
 
+    <!-- Transient action errors (e.g. a failed save) show as a dismissible
+         banner and never tear down the in-progress workout below. -->
+    <div v-if="actionError" class="action-error-toast" role="alert">
+      <span>{{ actionError }}</span>
+      <button type="button" class="action-error-dismiss" @click="actionError = null" aria-label="Dismiss">✕</button>
+    </div>
+
     <div v-if="workoutPhase === 'overview' && !isLoading && !error && currentWorkoutDayDetails" class="workout-overview-content card">
       <h1>{{ currentWorkoutDayDetails.dayName }} - Get Ready!</h1>
       <p v-if="activeProgramName" class="routine-name">Routine: {{ activeProgramName }}</p>
@@ -297,13 +304,14 @@
     </div>
 
     <!-- Edit Prescription Modal -->
-    <EditPrescriptionModal 
-      :show="showEditPrescriptionModal" 
-      :isTimed="currentExercise?.isTimed" 
-      v-model:reps="editedReps" 
-      v-model:weight="editedWeight" 
-      @close="closeEditPrescriptionModal" 
-      @save="saveEditedPrescription" 
+    <EditPrescriptionModal
+      :show="showEditPrescriptionModal"
+      :isTimed="currentExercise?.isTimed"
+      :weightUnit="displayUnit(settings.weightUnit)"
+      v-model:reps="editedReps"
+      v-model:weight="editedWeight"
+      @close="closeEditPrescriptionModal"
+      @save="saveEditedPrescription"
     />
 
     <!-- Edit Choice Modal (This Set Only vs All Future Sets) -->
@@ -374,7 +382,7 @@ import { ref, reactive, onMounted, watch, onUnmounted, computed } from 'vue';
 import { doc, getDoc, setDoc, updateDoc, collection, writeBatch, serverTimestamp, deleteDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase.js'; 
 import useAuth from '../composables/useAuth'; 
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router';
 import useSettings from '../composables/useSettings'; 
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import useHistoryIndex from '../composables/useHistoryIndex';
@@ -444,6 +452,9 @@ const { user } = useAuth();
 const router = useRouter();
 const route = useRoute();
 const isLoading = ref(true);
+// Transient, recoverable errors (failed save, etc). Kept separate from the
+// fatal `error` ref so they surface as a banner without unmounting the workout.
+const actionError = ref<string | null>(null);
 const { settings } = useSettings();
 const { loggedWorkouts, fetchLoggedWorkouts, invalidateCache } = useLoggedWorkouts();
 const isSaving = ref(false);
@@ -2075,7 +2086,12 @@ const finishWorkoutAndSave = async () => {
 
     showSetDetailsInSummary.value = false; 
     router.push('/');
-  } catch (e: any) { console.error("Error finishing workout:", e); error.value = "Failed to save. " + e.message; }
+  } catch (e: any) {
+    console.error("Error finishing workout:", e);
+    // Transient: keep the completed workout on screen so the user can retry
+    // Finish rather than dropping them onto a dead-end error card.
+    actionError.value = "Could not save your workout. Check your connection and tap Finish again. (" + e.message + ")";
+  }
   finally { isSaving.value = false; }
 };
 
@@ -2083,10 +2099,37 @@ const finishWorkoutAndSave = async () => {
 let userWatcherUnsubscribe: (() => void) | null = null;
 const previousUserRef = ref<typeof user.value | null>(null);
 
+// A workout is "in progress" once sets are logged and we are mid-session.
+// Finishing sets isSaving and empties workoutLog before navigating, so the
+// legitimate finish path never trips the guard.
+const hasUnsavedWorkout = computed(() =>
+  !isSaving.value &&
+  workoutLog.length > 0 &&
+  (workoutPhase.value === 'activeSet' || workoutPhase.value === 'resting'));
+
+onBeforeRouteLeave((_to, _from, next) => {
+  if (hasUnsavedWorkout.value) {
+    const ok = window.confirm(
+      'Leave this workout? Your progress is kept as a draft you can resume, but you will exit the active session.',
+    );
+    next(ok);
+  } else {
+    next();
+  }
+});
+
+const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
+  if (hasUnsavedWorkout.value) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+};
+
 onMounted(async () => {
   isLoading.value = true;
   error.value = null; // Clear any existing errors
-  
+  window.addEventListener('beforeunload', beforeUnloadHandler);
+
   // Fetch history to support "Last Performance" display
   fetchLoggedWorkouts();
   
@@ -2148,8 +2191,9 @@ onUnmounted(() => {
   if (userWatcherUnsubscribe) userWatcherUnsubscribe();
   if (timerInterval) clearInterval(timerInterval);
   if (activeSetTimerInterval) clearInterval(activeSetTimerInterval);
-  releaseWakeLock(); 
+  releaseWakeLock();
   document.removeEventListener('visibilitychange', handleVisibilityChange);
+  window.removeEventListener('beforeunload', beforeUnloadHandler);
 });
 
 // Watch route params to check for draft when navigating to workout
@@ -2475,6 +2519,8 @@ const saveEditedWorkout = () => {
 .actual-reps-input-section { margin: 20px 0; }
 .actual-reps-input-section label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--color-card-text); }
 .actual-reps-input-section input[type="number"] { padding: 8px; width: 80px; text-align: center; font-size: 1em; border: 1px solid var(--color-card-border); border-radius: 4px; background-color: var(--color-card-bg); color: var(--color-card-text); }
+.action-error-toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 1300; display: flex; align-items: center; gap: 14px; max-width: 92%; padding: 12px 16px; border-radius: 10px; background: var(--color-danger, #dc3545); color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.35); font-size: 0.92em; }
+.action-error-dismiss { background: transparent; border: none; color: #fff; font-size: 1.1em; line-height: 1; min-width: 44px; min-height: 44px; cursor: pointer; }
 .rest-adjust-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 14px; }
 .rest-adjust-btn { min-width: 64px; min-height: 44px; padding: 0 16px; border-radius: 8px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text); font-size: 1em; font-weight: 600; cursor: pointer; }
 .rest-adjust-btn:active { transform: scale(0.96); }
