@@ -310,7 +310,8 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
 import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
-import { db } from '../firebase.js'; 
+import { db } from '../firebase.js';
+import { DAY_COLOR_PALETTE, DEFAULT_DAY_COLOR } from '../design/dayPalette';
 import useAuth from '../composables/useAuth';
 import useSettings from '../composables/useSettings';
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
@@ -545,16 +546,9 @@ const tooltipStyle = computed(() => {
   };
 });
 
-// Palette for workout day sequence (up to 6 days, then default) - Vibrant, saturated colors
-const daySequenceColorPalette = [
-  '#FF5252', // Vibrant Red - Day 1 type
-  '#2ECC71', // Vibrant Green - Day 2 type
-  '#2979FF', // Vibrant Blue - Day 3 type
-  '#FFD600', // Vibrant Gold/Yellow - Day 4 type
-  '#9C27B0', // Vibrant Purple - Day 5 type
-  '#FF9100', // Vibrant Orange - Day 6 type
-];
-const defaultWorkoutColor = '#10B981'; // Vibrant Vue/emerald green
+// Shared single source of truth so day colors match across every screen (#73).
+const daySequenceColorPalette = DAY_COLOR_PALETTE;
+const defaultWorkoutColor = DEFAULT_DAY_COLOR;
 
 const programDayTypeEncounterOrder: Record<string, Record<string, number>> = {};
 const programNextAvailableColorIndex: Record<string, number> = {};

@@ -1032,6 +1032,7 @@ import { ref, reactive, onMounted, onUnmounted, watch, computed, nextTick } from
 import { useRouter } from 'vue-router';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, deleteDoc, addDoc, Timestamp, type DocumentData } from 'firebase/firestore';
 import { db } from '../firebase.js';
+import { DAY_COLOR_PALETTE } from '../design/dayPalette';
 import useAuth from '../composables/useAuth';
 import useSettings, { type WeightUnitOption } from '../composables/useSettings';
 import useTrainingProgram from '../composables/useTrainingProgram';
@@ -1062,14 +1063,8 @@ import {
   type IntensityLevel
 } from '../data/routineBank';
 
-const daySequenceColorPalette = [
-  '#FF5252', // Vibrant Red
-  '#2ECC71', // Vibrant Green
-  '#2979FF', // Vibrant Blue
-  '#FFD600', // Vibrant Gold/Yellow
-  '#9C27B0', // Vibrant Purple
-  '#FF9100', // Vibrant Orange
-];
+// Shared single source of truth so day colors match across every screen (#73).
+const daySequenceColorPalette = DAY_COLOR_PALETTE;
 
 // --- Core State ---
 const router = useRouter();

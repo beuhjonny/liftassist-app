@@ -14,6 +14,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "lint:check": "eslint .",
+    "lint:css": "stylelint \"src/**/*.{css,vue}\"",
     "deploy:prod": "npm run build && firebase deploy --only hosting",
     "deploy:preview": "npm run build && firebase hosting:channel:deploy v1.1-test --expires 30d"
   },
@@ -42,6 +43,7 @@
     "jiti": "^2.4.2",
     "jsdom": "^29.1.1",
     "npm-run-all2": "^7.0.2",
+    "postcss-html": "^1.8.1",
     "prettier": "3.5.3",
     "stylelint": "^17.14.1",
     "stylelint-config-standard": "^40.0.0",
@@ -51,5 +53,31 @@
     "vite-plugin-vue-devtools": "^7.7.2",
     "vitest": "^4.1.10",
     "vue-tsc": "^2.2.8"
+  },
+  "stylelint": {
+    "extends": "stylelint-config-standard",
+    "overrides": [
+      { "files": ["**/*.vue"], "customSyntax": "postcss-html" }
+    ],
+    "rules": {
+      "color-no-hex": [true, {
+        "severity": "warning",
+        "message": "Use a design token (var(--color-*) / var(--space-*)) instead of a raw hex color. See src/assets/tokens.css."
+      }],
+      "declaration-property-value-no-unknown": null,
+      "custom-property-pattern": null,
+      "selector-class-pattern": null,
+      "no-descending-specificity": null,
+      "comment-empty-line-before": null,
+      "declaration-empty-line-before": null,
+      "value-keyword-case": null,
+      "alpha-value-notation": null,
+      "color-function-notation": null,
+      "shorthand-property-no-redundant-values": null,
+      "rule-empty-line-before": null,
+      "media-feature-range-notation": null,
+      "keyframes-name-pattern": null,
+      "number-max-precision": null
+    }
   }
 }
