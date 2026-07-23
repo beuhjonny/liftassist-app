@@ -9,8 +9,9 @@
       <template v-if="user">
   <router-link to="/history" data-emoji="📈">Progress</router-link>
   <router-link to="/routines" data-emoji="📋">Routines</router-link>
+  <router-link to="/import" data-emoji="📥">Import</router-link>
   <router-link to="/profile" data-emoji="👤">Profile</router-link>
-        
+
         </template>
 
       <template v-if="!user">
