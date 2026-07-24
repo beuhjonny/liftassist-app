@@ -10,8 +10,8 @@
 
       <!-- Demo Media Container -->
       <div class="demo-media-container card-inset">
-        <!-- 1. Dedicated YouTube HD Form Motion Player (When YouTube ID available) -->
-        <div v-if="demoInfo.youtubeId" class="motion-player video-aspect">
+        <!-- 1. Dedicated Verified YouTube Player (Only when oEmbed 200 OK verified) -->
+        <div v-if="demoInfo.youtubeId && isEmbedVerified" class="motion-player video-aspect">
           <iframe 
             :src="`https://www.youtube.com/embed/${demoInfo.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${demoInfo.youtubeId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1`"
             title="Form Demonstration Video"
@@ -22,18 +22,18 @@
           ></iframe>
         </div>
 
-        <!-- 2. Clean Custom Exercise Form Cues Card + YouTube Search Fallback -->
+        <!-- 2. Clean Form Guide Card + Plain YouTube Search Fallback -->
         <div v-else class="unknown-exercise-card card-inset">
-          <p class="unknown-title">Custom Exercise Form Guide</p>
+          <p class="unknown-title">Exercise Form Guide</p>
           <p class="unknown-subtitle">
-            Follow the key form cues below or search Unbroken Fitness Solutions for video demonstrations.
+            Follow the key form cues below or search YouTube for community video demonstrations.
           </p>
           <a 
             :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' form tutorial')}`" 
             target="_blank" 
             rel="noopener noreferrer"
             class="button-secondary small-yt-btn"
-            style="margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.85em; font-weight: 600; text-decoration: none;"
+            style="margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 0.88em; font-weight: 600; text-decoration: none;"
           >
             <span>▶️</span> Search YouTube for "{{ exerciseName || demoInfo.name }}"
           </a>
@@ -41,7 +41,7 @@
       </div>
 
       <!-- Direct Plain Search Fallback Button -->
-      <div style="text-align: right; margin-top: 6px; padding-right: 4px;">
+      <div v-if="demoInfo.youtubeId && isEmbedVerified" style="text-align: right; margin-top: 6px; padding-right: 4px;">
         <a 
           :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' form tutorial')}`" 
           target="_blank" 
@@ -80,8 +80,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { getExerciseDemo, type ExerciseDemoInfo } from '@/utils/exerciseDemos';
+import { verifyYoutubeEmbed } from '@/utils/exerciseMatching';
 
 const props = defineProps<{
   show: boolean;
@@ -95,6 +96,28 @@ defineEmits<{
 const demoInfo = computed<ExerciseDemoInfo>(() => {
   return getExerciseDemo(props.exerciseName);
 });
+
+const isEmbedVerified = ref<boolean>(false);
+const isVerifying = ref<boolean>(false);
+
+watch(
+  () => [props.show, props.exerciseName],
+  async ([show, name]) => {
+    if (!show || !name) {
+      isEmbedVerified.value = false;
+      return;
+    }
+    const info = getExerciseDemo(name as string);
+    if (info.youtubeId) {
+      isVerifying.value = true;
+      isEmbedVerified.value = await verifyYoutubeEmbed(info.youtubeId);
+      isVerifying.value = false;
+    } else {
+      isEmbedVerified.value = false;
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped>

@@ -371,3 +371,35 @@ function getFallbackTaxonomy(name: string): ExerciseTaxonomy {
     keywords: []
   };
 }
+
+/**
+ * Pre-flight verification utility for YouTube embed availability.
+ * Queries YouTube's official oEmbed service to ensure the video exists and external site embedding is allowed.
+ * Returns true if video is 100% embeddable (200 OK), or false if blocked/unavailable (401/403/404).
+ */
+export async function verifyYoutubeEmbed(youtubeId?: string): Promise<boolean> {
+  if (!youtubeId || !youtubeId.trim()) return false;
+
+  try {
+    const targetUrl = encodeURIComponent(`https://www.youtube.com/watch?v=${youtubeId}`);
+    const oembedUrl = `https://www.youtube.com/oembed?url=${targetUrl}&format=json`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 1200); // 1.2s max latency budget
+
+    const res = await fetch(oembedUrl, {
+      method: 'GET',
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      return !!data && !!data.title;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
