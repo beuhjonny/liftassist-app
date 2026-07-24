@@ -13,7 +13,7 @@
         <!-- 1. Dedicated YouTube HD Form Motion Player (When YouTube ID available) -->
         <div v-if="demoInfo.youtubeId" class="motion-player video-aspect">
           <iframe 
-            :src="`https://www.youtube-nocookie.com/embed/${demoInfo.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${demoInfo.youtubeId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1`"
+            :src="`https://www.youtube.com/embed/${demoInfo.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${demoInfo.youtubeId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1`"
             title="Form Demonstration Video"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -29,21 +29,21 @@
             Follow the key form cues below or search Unbroken Fitness Solutions for video demonstrations.
           </p>
           <a 
-            :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' Unbroken Fitness Solutions')}`" 
+            :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' form tutorial')}`" 
             target="_blank" 
             rel="noopener noreferrer"
             class="button-secondary small-yt-btn"
             style="margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.85em; font-weight: 600; text-decoration: none;"
           >
-            <span>▶️</span> Search Unbroken Fitness Solutions for "{{ exerciseName || demoInfo.name }}"
+            <span>▶️</span> Search YouTube for "{{ exerciseName || demoInfo.name }}"
           </a>
         </div>
       </div>
 
-      <!-- Direct Search Fallback Button -->
+      <!-- Direct Plain Search Fallback Button -->
       <div style="text-align: right; margin-top: 6px; padding-right: 4px;">
         <a 
-          :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' Unbroken Fitness Solutions form')}`" 
+          :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' form tutorial')}`" 
           target="_blank" 
           rel="noopener noreferrer" 
           style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; text-decoration: underline;"
