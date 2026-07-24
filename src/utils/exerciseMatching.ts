@@ -110,7 +110,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Lead with your elbows as you raise the dumbbells out to the sides.',
       'Raise to shoulder height, avoiding shrugging your neck or swinging.'
     ],
-    youtubeId: 'PzsMitRjIy0',
+    youtubeId: '3VcKaXpzqRo', // OPEX Dumbbell Lateral Raise (0% Scott Herman, 100% Embeddable)
     keywords: ['lateral raise', 'side raise', 'delt raise', 'dumbbell raise', 'cable lateral raise', 'lateral']
   },
   {

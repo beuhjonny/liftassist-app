@@ -10,16 +10,33 @@
 
       <!-- Demo Media Container -->
       <div class="demo-media-container card-inset">
-        <!-- Dynamic YouTube Real-Time Form Motion Player (Loads top active video for any exercise) -->
-        <div class="motion-player video-aspect">
+        <!-- 1. Dedicated HD Form Motion Player (When YouTube ID is mapped) -->
+        <div v-if="demoInfo.youtubeId" class="motion-player video-aspect">
           <iframe 
-            :src="`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent((exerciseName || demoInfo.name) + ' form tutorial')}&autoplay=1&controls=1&rel=0&playsinline=1`"
+            :src="`https://www.youtube.com/embed/${demoInfo.youtubeId}?autoplay=1&controls=1&rel=0&playsinline=1`"
             title="Form Demonstration Video"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen
             class="demo-iframe"
           ></iframe>
+        </div>
+
+        <!-- 2. Clean Form Guide Card + Plain YouTube Search Fallback (Only for custom/unmapped exercises) -->
+        <div v-else class="unknown-exercise-card card-inset">
+          <p class="unknown-title">Exercise Form Guide</p>
+          <p class="unknown-subtitle">
+            Follow the key form cues below or search YouTube for community video demonstrations.
+          </p>
+          <a 
+            :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' form tutorial')}`" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="button-secondary small-yt-btn"
+            style="margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 0.88em; font-weight: 600; text-decoration: none;"
+          >
+            <span>▶️</span> Search YouTube for "{{ exerciseName || demoInfo.name }}"
+          </a>
         </div>
       </div>
 
