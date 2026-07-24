@@ -26,29 +26,33 @@
         <div v-else class="unknown-exercise-card card-inset">
           <p class="unknown-title">Custom Exercise Form Guide</p>
           <p class="unknown-subtitle">
-            Follow the key form cues below or search for community video demonstrations.
+            Follow the key form cues below or search Unbroken Fitness Solutions for video demonstrations.
           </p>
           <a 
-            :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' form tutorial')}`" 
+            :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' Unbroken Fitness Solutions')}`" 
             target="_blank" 
             rel="noopener noreferrer"
             class="button-secondary small-yt-btn"
             style="margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.85em; font-weight: 600; text-decoration: none;"
           >
-            <span>▶️</span> Search YouTube for "{{ exerciseName || demoInfo.name }}"
+            <span>▶️</span> Search Unbroken Fitness Solutions for "{{ exerciseName || demoInfo.name }}"
           </a>
         </div>
       </div>
 
-      <!-- Quick External Video Link Fallback (If embedded video is blocked by network/region) -->
-      <div v-if="demoInfo.youtubeId" style="text-align: right; margin-top: 6px; padding-right: 4px;">
+      <!-- Preferred Source Badge & Direct Video Link -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding: 0 4px;">
+        <span style="font-size: 0.75em; color: var(--color-card-text); opacity: 0.65;">
+          Preferred Library: <strong>Unbroken Fitness Solutions</strong>
+        </span>
         <a 
+          v-if="demoInfo.youtubeId"
           :href="`https://www.youtube.com/watch?v=${demoInfo.youtubeId}`" 
           target="_blank" 
           rel="noopener noreferrer" 
           style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; text-decoration: underline;"
         >
-          ▶️ Open clip directly on YouTube
+          ▶️ Open on YouTube
         </a>
       </div>
 
