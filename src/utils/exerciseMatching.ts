@@ -212,6 +212,20 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
     keywords: ['hammer curl', 'neutral curl', 'rope curl']
   },
   {
+    id: 'skullcrusher',
+    name: 'Dumbbell / Barbell Skullcrusher',
+    category: 'Triceps',
+    primaryMuscles: ['Triceps'],
+    secondaryMuscles: [],
+    formCues: [
+      'Lie flat on bench holding dumbbells or EZ bar directly over your chest.',
+      'Bend only at the elbows to lower weights under control toward your temples/forehead.',
+      'Drive triceps forcefully to extend arms back up without flaring elbows.'
+    ],
+    youtubeId: 'Gk7p5l7k83g', // MuscleWiki Dumbbell Skullcrusher (0% Scott Herman)
+    keywords: ['skullcrusher', 'skull crusher', 'db skullcrusher', 'french press', 'overhead extension', 'tricep extension']
+  },
+  {
     id: 'tricep_pushdown',
     name: 'Tricep Rope Pushdown',
     category: 'Triceps',
@@ -222,8 +236,8 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Push attachment straight down, locking out elbows completely.',
       'Spread rope apart at the bottom to maximize tricep contraction.'
     ],
-    youtubeId: '2-LAMcpzODU',
-    keywords: ['tricep pushdown', 'pushdown', 'tricep extension', 'skullcrusher', 'french press', 'dip', 'dips']
+    youtubeId: '6SS6K3lAwZ8',
+    keywords: ['tricep pushdown', 'pushdown', 'rope pushdown', 'cable pushdown', 'dip', 'dips']
   },
   {
     id: 'shrugs',
@@ -291,7 +305,7 @@ export function findBestExerciseMatch(rawName: string): ExerciseTaxonomy {
     for (const kw of item.keywords) {
       if (cleanName.includes(kw)) {
         // High-specificity keywords get massive bonus
-        if (['rdl', 'romanian deadlift', 'incline press', 'incline bench', 'incline db', 'lateral raise', 'hammer curl'].includes(kw)) {
+        if (['rdl', 'romanian deadlift', 'skullcrusher', 'skull crusher', 'incline press', 'incline bench', 'incline db', 'lateral raise', 'hammer curl'].includes(kw)) {
           score += 20;
         } else {
           score += 10;
