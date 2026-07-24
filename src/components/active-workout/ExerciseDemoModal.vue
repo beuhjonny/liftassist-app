@@ -109,8 +109,11 @@ watch(
     }
     const info = getExerciseDemo(name as string);
     if (info.youtubeId) {
+      // Optimistically show iframe for curated taxonomy video IDs
+      isEmbedVerified.value = true;
       isVerifying.value = true;
-      isEmbedVerified.value = await verifyYoutubeEmbed(info.youtubeId);
+      const verified = await verifyYoutubeEmbed(info.youtubeId);
+      isEmbedVerified.value = verified;
       isVerifying.value = false;
     } else {
       isEmbedVerified.value = false;
