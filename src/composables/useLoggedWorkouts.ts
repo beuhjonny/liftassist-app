@@ -17,7 +17,38 @@ import useAuth from './useAuth';
 import type { LoggedWorkout } from '@/types';
 
 // Global state outside the function (shared across all component instances)
-const globalLoggedWorkouts = reactive<LoggedWorkout[]>([]);
+const LOCAL_STORAGE_KEY = 'liftlogic_logged_workouts_cache';
+
+const loadCacheFromLocalStorage = (): LoggedWorkout[] => {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.map((item: any) => ({
+          ...item,
+          date: item.date ? new Date(item.date) : new Date()
+        }));
+      }
+    }
+  } catch (e) {}
+  return [];
+};
+
+const saveCacheToLocalStorage = (workouts: LoggedWorkout[]) => {
+  try {
+    const clean = workouts.slice(0, 100).map(w => ({
+      ...w,
+      date: typeof (w.date as any)?.toDate === 'function' 
+        ? (w.date as any).toDate().toISOString()
+        : (w.date instanceof Date ? w.date.toISOString() : w.date)
+    }));
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(clean));
+  } catch (e) {}
+};
+
+const cachedInitialWorkouts = loadCacheFromLocalStorage();
+const globalLoggedWorkouts = reactive<LoggedWorkout[]>(cachedInitialWorkouts);
 const isLoaded = ref(false);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
@@ -26,7 +57,8 @@ const lastFetchTime = ref<number | null>(null);
 // Pagination State
 const lastVisibleDoc = ref<QueryDocumentSnapshot<DocumentData> | null>(null);
 const hasMoreDocs = ref(true);
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 50;
+const INITIAL_FETCH_LIMIT = 100;
 
 export default function useLoggedWorkouts() {
     const { user } = useAuth();
@@ -34,7 +66,7 @@ export default function useLoggedWorkouts() {
     /**
      * Helper to process snapshots and append to list
      */
-    const processQuerySnapshot = (querySnapshot: any, append: boolean) => {
+    const processQuerySnapshot = (querySnapshot: any, append: boolean, expectedLimit: number) => {
         const newWorkouts: LoggedWorkout[] = [];
         querySnapshot.forEach((docSnap: any) => {
             newWorkouts.push({ id: docSnap.id, ...docSnap.data() } as LoggedWorkout);
@@ -49,23 +81,26 @@ export default function useLoggedWorkouts() {
             globalLoggedWorkouts.splice(0, globalLoggedWorkouts.length, ...newWorkouts);
         }
 
+        saveCacheToLocalStorage(globalLoggedWorkouts);
+
         // Update cursor
         const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
         if (lastDoc) {
             lastVisibleDoc.value = lastDoc;
         }
 
-        // Check if we hit the limit, if we got fewer than PAGE_SIZE, we are done
-        hasMoreDocs.value = querySnapshot.docs.length === PAGE_SIZE;
+        // Check if we hit the limit, if we got fewer than expectedLimit, we are done
+        hasMoreDocs.value = querySnapshot.docs.length === expectedLimit;
     };
 
     /**
      * Fetches the initial batch of workouts.
-     * @param forceRefresh - If true, resets the list and fetches fresh data (read cost = PAGE_SIZE)
+     * @param forceRefresh - If true, resets the list and fetches fresh data
      */
     const fetchLoggedWorkouts = async (forceRefresh = false) => {
         if (!user.value || !user.value.uid) {
             globalLoggedWorkouts.length = 0;
+            try { localStorage.removeItem(LOCAL_STORAGE_KEY); } catch (e) {}
             return;
         }
 
@@ -78,10 +113,10 @@ export default function useLoggedWorkouts() {
 
         try {
             const historyCollectionRef = collection(db, 'users', user.value.uid, 'loggedWorkouts');
-            const q = query(historyCollectionRef, orderBy('date', 'desc'), limit(PAGE_SIZE));
+            const q = query(historyCollectionRef, orderBy('date', 'desc'), limit(INITIAL_FETCH_LIMIT));
 
             const querySnapshot = await getDocs(q);
-            processQuerySnapshot(querySnapshot, false);
+            processQuerySnapshot(querySnapshot, false, INITIAL_FETCH_LIMIT);
 
             isLoaded.value = true;
             lastFetchTime.value = Date.now();
@@ -114,7 +149,7 @@ export default function useLoggedWorkouts() {
             );
 
             const querySnapshot = await getDocs(q);
-            processQuerySnapshot(querySnapshot, true);
+            processQuerySnapshot(querySnapshot, true, PAGE_SIZE);
         } catch (e: any) {
             console.error("Error fetching more workouts:", e);
             error.value = e.message;
@@ -140,6 +175,7 @@ export default function useLoggedWorkouts() {
             if (idx !== -1) {
                 globalLoggedWorkouts[idx] = { ...globalLoggedWorkouts[idx], ...updatedData };
             }
+            saveCacheToLocalStorage(globalLoggedWorkouts);
         } catch (e: any) {
             console.error("Error updating logged workout:", e);
             throw e;
@@ -163,6 +199,7 @@ export default function useLoggedWorkouts() {
             if (idx !== -1) {
                 globalLoggedWorkouts.splice(idx, 1);
             }
+            saveCacheToLocalStorage(globalLoggedWorkouts);
         } catch (e: any) {
             console.error("Error deleting logged workout:", e);
             throw e;
@@ -177,6 +214,7 @@ export default function useLoggedWorkouts() {
         lastVisibleDoc.value = null;
         hasMoreDocs.value = true;
         globalLoggedWorkouts.length = 0;
+        try { localStorage.removeItem(LOCAL_STORAGE_KEY); } catch (e) {}
     };
 
     const hasData = computed(() => globalLoggedWorkouts.length > 0);
