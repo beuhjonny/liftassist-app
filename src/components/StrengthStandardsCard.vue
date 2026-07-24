@@ -36,6 +36,11 @@
       </div>
     </div>
 
+    <!-- Explicit Comparison Baseline Description Callout -->
+    <div style="margin-bottom: 12px; padding: 8px 12px; background: var(--color-card-bg); border-radius: 6px; border: 1px solid var(--color-card-border); font-size: 0.82em; color: var(--color-card-text); line-height: 1.45;">
+      📊 <strong>Comparison Baseline:</strong> Evaluated against verified population strength standards (ExRx / StrengthLevel dataset) for <strong>{{ ageBracket }} year old lifters</strong> at <strong>{{ bodyweight }} {{ weightUnit }} bodyweight</strong>.
+    </div>
+
     <!-- Matched Overview Cards Grid -->
     <div v-if="liftEvaluations.length > 0" style="display: flex; flex-direction: column; gap: 10px;">
       <div 

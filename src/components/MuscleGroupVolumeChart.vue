@@ -24,6 +24,7 @@
       <div class="control-group">
         <label class="control-label">Time Window</label>
         <select v-model="timeWindow" class="chart-select">
+          <option value="2w">Last 2 Weeks (Hypertrophy Guideline)</option>
           <option value="4w">Last 4 Weeks</option>
           <option value="8w">Last 8 Weeks</option>
           <option value="12w">Last 12 Weeks</option>
@@ -238,7 +239,10 @@ const filteredWorkouts = computed(() => {
   const now = new Date();
   let cutoffDate: Date | null = null;
 
-  if (timeWindow.value === '4w') {
+  if (timeWindow.value === '2w') {
+    cutoffDate = new Date();
+    cutoffDate.setDate(now.getDate() - (2 * 7));
+  } else if (timeWindow.value === '4w') {
     cutoffDate = new Date();
     cutoffDate.setDate(now.getDate() - (4 * 7));
   } else if (timeWindow.value === '8w') {
@@ -265,6 +269,7 @@ const filteredWorkouts = computed(() => {
 const calculatedWeeksSpan = computed(() => {
   if (filteredWorkouts.value.length === 0) return 1;
 
+  if (timeWindow.value === '2w') return 2;
   if (timeWindow.value === '4w') return 4;
   if (timeWindow.value === '8w') return 8;
   if (timeWindow.value === '12w') return 12;
