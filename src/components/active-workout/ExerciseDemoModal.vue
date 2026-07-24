@@ -13,7 +13,7 @@
         <!-- 1. Dedicated HD Form Motion Player (When YouTube ID is mapped) -->
         <div v-if="demoInfo.youtubeId" class="motion-player video-aspect">
           <iframe 
-            :src="`https://www.youtube.com/embed/${demoInfo.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${demoInfo.youtubeId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1`"
+            :src="`https://www.youtube.com/embed/${demoInfo.youtubeId}?autoplay=1&mute=1&playsinline=1`"
             title="Form Demonstration Video"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"

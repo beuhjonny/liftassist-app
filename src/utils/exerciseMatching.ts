@@ -40,7 +40,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Keep wrists stacked directly over your elbows at the bottom.',
       'Press dumbbells up smoothly without banging them together at the top.'
     ],
-    youtubeId: 'kYJj1s25F3E', // Muscle & Strength Incline Dumbbell Press (0% Scott Herman)
+    youtubeId: '8iPEnn-ltC8', // OPEX Incline Dumbbell Bench Press (0% Scott Herman, 100% Embeddable)
     keywords: ['incline bench', 'incline press', 'incline dumbbell', 'incline db', 'incline chest', 'incline']
   },
   {
