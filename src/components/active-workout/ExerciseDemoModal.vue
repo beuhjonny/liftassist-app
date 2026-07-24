@@ -13,7 +13,7 @@
         <!-- 1. Dedicated YouTube HD Form Motion Player (When YouTube ID available) -->
         <div v-if="demoInfo.youtubeId" class="motion-player video-aspect">
           <iframe 
-            :src="`https://www.youtube-nocookie.com/embed/${demoInfo.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${demoInfo.youtubeId}&controls=0&modestbranding=1&rel=0`"
+            :src="`https://www.youtube-nocookie.com/embed/${demoInfo.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${demoInfo.youtubeId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1`"
             title="Form Demonstration Video"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -38,6 +38,18 @@
             <span>▶️</span> Search YouTube for "{{ exerciseName || demoInfo.name }}"
           </a>
         </div>
+      </div>
+
+      <!-- Quick External Video Link Fallback (If embedded video is blocked by network/region) -->
+      <div v-if="demoInfo.youtubeId" style="text-align: right; margin-top: 6px; padding-right: 4px;">
+        <a 
+          :href="`https://www.youtube.com/watch?v=${demoInfo.youtubeId}`" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; text-decoration: underline;"
+        >
+          ▶️ Open clip directly on YouTube
+        </a>
       </div>
 
       <!-- Target Muscles -->
@@ -156,6 +168,7 @@ const demoInfo = computed<ExerciseDemoInfo>(() => {
   height: 100%;
   border-radius: 8px;
   border: none;
+  pointer-events: none; /* Strips YouTube popovers, watermark links, and title card overlays */
 }
 
 .demo-gif {

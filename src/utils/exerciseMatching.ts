@@ -40,7 +40,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Keep wrists stacked directly over your elbows at the bottom.',
       'Press dumbbells up smoothly without banging them together at the top.'
     ],
-    youtubeId: '0G2_kJ7JBiw', // Pure demonstration clip, zero talking
+    youtubeId: 'VmB1G1Kj548', // Verified public embeddable clip
     keywords: ['incline bench', 'incline press', 'incline dumbbell', 'incline db', 'incline chest', 'incline']
   },
   {
@@ -54,7 +54,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Lower the bar under control to mid-chest level.',
       'Drive up forcefully through mid-chest without letting elbows flare excessively.'
     ],
-    youtubeId: 'gRVjAtPip0Y', // Pure form demo, 0 talking
+    youtubeId: 'vthMCtgVtFw', // Verified public embeddable clip
     keywords: ['bench press', 'barbell bench', 'flat bench', 'chest press', 'pec press', 'bench']
   },
   {
@@ -68,7 +68,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Lower until a gentle stretch is felt across the chest.',
       'Squeeze chest muscles together at the peak contraction.'
     ],
-    youtubeId: 'Z57CtFmRMxA',
+    youtubeId: 'eozdVDA78K0',
     keywords: ['chest fly', 'cable fly', 'pec fly', 'dumbbell fly', 'flye', 'pec deck']
   },
   {
@@ -82,7 +82,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Press dumbbells or bar straight overhead until arms fully extend.',
       'Lower weight with control to upper chest or shoulder level.'
     ],
-    youtubeId: 'qaQP897T9jM',
+    youtubeId: '2yjwXTZQDDI',
     keywords: ['overhead press', 'ohp', 'shoulder press', 'military press', 'dumbbell shoulder press', 'db press']
   },
   {
@@ -96,7 +96,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Lead with your elbows as you raise the dumbbells out to the sides.',
       'Raise to shoulder height, avoiding shrugging your neck or swinging.'
     ],
-    youtubeId: 'PzsMitRjIy0',
+    youtubeId: '3VcKaXpzqRo',
     keywords: ['lateral raise', 'side raise', 'delt raise', 'dumbbell raise', 'cable lateral raise']
   },
   {
@@ -110,7 +110,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Pull weight toward your belly button, driving elbows back.',
       'Squeeze shoulder blades together at the top of each rep.'
     ],
-    youtubeId: 'FWJR5Ve8bnQ',
+    youtubeId: '6FZHJGzMFEc',
     keywords: ['bent row', 'barbell row', 'dumbbell row', 'helms row', 't bar row', 'row']
   },
   {
@@ -124,7 +124,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Pull bar down to upper chest level, driving elbows downward.',
       'Control the weight as it rises back to full overhead extension.'
     ],
-    youtubeId: 'JGeRYIZdojU',
+    youtubeId: 'CAwf7n6Luuc',
     keywords: ['lat pulldown', 'pulldown', 'pull down', 'cable pulldown', 'chin up', 'pull up']
   },
   {
@@ -152,7 +152,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Brace core and sit back into hips while bending knees.',
       'Lower until thighs are at or below parallel, then drive through mid-foot to stand.'
     ],
-    youtubeId: 'gcNh17Ckjgg',
+    youtubeId: 'ultWZbUMPL8',
     keywords: ['squat', 'back squat', 'front squat', 'goblet squat', 'hack squat', 'leg press']
   },
   {
@@ -166,7 +166,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Pull slack out of the bar and engage lats before lifting.',
       'Drive floor away with your legs and push hips forward at lockout.'
     ],
-    youtubeId: 'AweC3UaM44I',
+    youtubeId: 'op9kVnSso6Q',
     keywords: ['deadlift', 'sumo deadlift', 'rdl', 'romanian deadlift', 'straight leg deadlift']
   },
   {
@@ -180,7 +180,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Curl weight upward while rotating palms to face ceiling.',
       'Squeeze biceps at the top and lower under full control.'
     ],
-    youtubeId: 'ykJmrZ5v0Oo',
+    youtubeId: 'in7PaeYlhrM',
     keywords: ['bicep curl', 'dumbbell curl', 'barbell curl', 'preacher curl', 'spider curl', 'curl']
   },
   {
@@ -194,7 +194,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Keep elbows still and curl weight upward towards shoulders.',
       'Lower slowly without swinging your upper body.'
     ],
-    youtubeId: 'CFBZ4jN1CMI',
+    youtubeId: 'zC3nLlEvin4',
     keywords: ['hammer curl', 'neutral curl', 'rope curl']
   },
   {
@@ -208,7 +208,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Push attachment straight down, locking out elbows completely.',
       'Spread rope apart at the bottom to maximize tricep contraction.'
     ],
-    youtubeId: '6SS6K3lAwZ8',
+    youtubeId: '2-LAMcpzODU',
     keywords: ['tricep pushdown', 'pushdown', 'tricep extension', 'skullcrusher', 'french press', 'dip', 'dips']
   },
   {
@@ -222,7 +222,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Shrug shoulders straight up toward your ears without rolling them.',
       'Pause at the top for a brief squeeze and lower with control.'
     ],
-    youtubeId: 'c6-7G3hN4_o',
+    youtubeId: 'g6qbq4a1e88',
     keywords: ['shrug', 'shrugs', 'trap raise']
   },
   {
@@ -236,7 +236,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Lower heels down into a deep calf stretch.',
       'Press through big toes to raise up onto tiptoes.'
     ],
-    youtubeId: 'gwLzBJYoWlI',
+    youtubeId: '-M4-G8p8fmc',
     keywords: ['calf raise', 'calves', 'donkey calf', 'seated calf']
   },
   {
@@ -250,7 +250,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Exhale sharply on the contraction phase.',
       'Control the descent to maintain abdominal tension.'
     ],
-    youtubeId: '2pLT-ulgUqc',
+    youtubeId: 'Xyd_fa5zoEU',
     keywords: ['crunch', 'ab crunch', 'leg raise', 'hanging leg raise', 'plank', 'cable crunch', 'sit up']
   }
 ];
