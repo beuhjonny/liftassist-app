@@ -40,19 +40,15 @@
         </div>
       </div>
 
-      <!-- Preferred Source Badge & Direct Video Link -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; padding: 0 4px;">
-        <span style="font-size: 0.75em; color: var(--color-card-text); opacity: 0.65;">
-          Preferred Library: <strong>Unbroken Fitness Solutions</strong>
-        </span>
+      <!-- Direct Search Fallback Button -->
+      <div style="text-align: right; margin-top: 6px; padding-right: 4px;">
         <a 
-          v-if="demoInfo.youtubeId"
-          :href="`https://www.youtube.com/watch?v=${demoInfo.youtubeId}`" 
+          :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' Unbroken Fitness Solutions form')}`" 
           target="_blank" 
           rel="noopener noreferrer" 
           style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; text-decoration: underline;"
         >
-          ▶️ Open on YouTube
+          Wrong video? Search YouTube for yourself ▶️
         </a>
       </div>
 

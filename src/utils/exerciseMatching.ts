@@ -40,7 +40,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Keep wrists stacked directly over your elbows at the bottom.',
       'Press dumbbells up smoothly without banging them together at the top.'
     ],
-    youtubeId: 'VmB1G1Kj548', // Verified public embeddable clip
+    youtubeId: 'VmB1G1Kj548',
     keywords: ['incline bench', 'incline press', 'incline dumbbell', 'incline db', 'incline chest', 'incline']
   },
   {
@@ -54,7 +54,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Lower the bar under control to mid-chest level.',
       'Drive up forcefully through mid-chest without letting elbows flare excessively.'
     ],
-    youtubeId: 'vthMCtgVtFw', // Verified public embeddable clip
+    youtubeId: 'vthMCtgVtFw',
     keywords: ['bench press', 'barbell bench', 'flat bench', 'chest press', 'pec press', 'bench']
   },
   {
@@ -96,8 +96,8 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Lead with your elbows as you raise the dumbbells out to the sides.',
       'Raise to shoulder height, avoiding shrugging your neck or swinging.'
     ],
-    youtubeId: '3VcKaXpzqRo',
-    keywords: ['lateral raise', 'side raise', 'delt raise', 'dumbbell raise', 'cable lateral raise']
+    youtubeId: 'PzsMitRjIy0',
+    keywords: ['lateral raise', 'side raise', 'delt raise', 'dumbbell raise', 'cable lateral raise', 'lateral']
   },
   {
     id: 'barbell_row',
@@ -156,6 +156,20 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
     keywords: ['squat', 'back squat', 'front squat', 'goblet squat', 'hack squat', 'leg press']
   },
   {
+    id: 'romanian_deadlift',
+    name: 'Dumbbell / Barbell RDL (Romanian Deadlift)',
+    category: 'Hamstrings & Glutes',
+    primaryMuscles: ['Hamstrings & Glutes'],
+    secondaryMuscles: ['Back'],
+    formCues: [
+      'Keep knees soft (slightly bent) and hinge backward at the hips.',
+      'Lower dumbbells along your shins until a deep stretch is felt in hamstrings.',
+      'Squeeze glutes and drive hips forward to return to standing.'
+    ],
+    youtubeId: 'JmtYQIQlhdQ',
+    keywords: ['rdl', 'romanian deadlift', 'dumbbell rdl', 'db rdl', 'barbell rdl', 'romanian']
+  },
+  {
     id: 'deadlift',
     name: 'Barbell Conventional Deadlift',
     category: 'Hamstrings & Glutes',
@@ -167,7 +181,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Drive floor away with your legs and push hips forward at lockout.'
     ],
     youtubeId: 'op9kVnSso6Q',
-    keywords: ['deadlift', 'sumo deadlift', 'rdl', 'romanian deadlift', 'straight leg deadlift']
+    keywords: ['deadlift', 'sumo deadlift', 'conventional deadlift']
   },
   {
     id: 'bicep_curl',
@@ -257,7 +271,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
 
 /**
  * Weighted token fuzzy matching algorithm.
- * Breaks exercise name into tokens and weights specific variation modifiers higher than generic root words.
+ * Evaluates ALL database entries, ranking matches by exact phrase matches and weighted keyword tokens.
  */
 export function findBestExerciseMatch(rawName: string): ExerciseTaxonomy {
   if (!rawName || !rawName.trim()) {
@@ -265,33 +279,37 @@ export function findBestExerciseMatch(rawName: string): ExerciseTaxonomy {
   }
 
   const cleanName = rawName.toLowerCase().replace(/[^a-z0-9\s]+/g, ' ').trim();
-
-  // 1. Direct Keyword / Synonym Check (exact phrase match)
-  for (const item of EXERCISE_TAXONOMY_DATABASE) {
-    if (item.keywords.some(k => cleanName.includes(k))) {
-      return item;
-    }
-  }
-
-  // 2. Token Matching with Modifier Weighting
-  const tokens = cleanName.split(/\s+/).filter(t => t.length > 1);
+  const tokens = cleanName.split(/\s+/).filter(t => t.length > 0);
 
   let bestMatch: ExerciseTaxonomy | null = null;
-  let highestScore = 0;
+  let highestScore = -1;
 
   for (const item of EXERCISE_TAXONOMY_DATABASE) {
     let score = 0;
 
+    // Check exact keyword containment (e.g. "incline press", "rdl", "lateral raise")
+    for (const kw of item.keywords) {
+      if (cleanName.includes(kw)) {
+        // High-specificity keywords get massive bonus
+        if (['rdl', 'romanian deadlift', 'incline press', 'incline bench', 'incline db', 'lateral raise', 'hammer curl'].includes(kw)) {
+          score += 20;
+        } else {
+          score += 10;
+        }
+      }
+    }
+
+    // Token-by-token weighting
     tokens.forEach(token => {
-      // High-priority modifiers
+      // Specific variation modifiers (+10)
       if (['incline', 'decline', 'hammer', 'lateral', 'lat', 'overhead', 'romanian', 'rdl', 'face'].includes(token)) {
-        if (item.keywords.some(k => k.includes(token))) score += 4;
+        if (item.keywords.some(k => k.includes(token))) score += 10;
       }
-      // Equipment modifiers
+      // Equipment terms (+3)
       else if (['dumbbell', 'db', 'barbell', 'cable', 'machine', 'smith'].includes(token)) {
-        if (item.keywords.some(k => k.includes(token))) score += 2;
+        if (item.keywords.some(k => k.includes(token))) score += 3;
       }
-      // Generic movement terms
+      // Generic movement terms (+1)
       else if (['press', 'curl', 'squat', 'row', 'fly', 'raise', 'extension', 'pushdown', 'deadlift'].includes(token)) {
         if (item.keywords.some(k => k.includes(token))) score += 1;
       }
@@ -303,25 +321,8 @@ export function findBestExerciseMatch(rawName: string): ExerciseTaxonomy {
     }
   }
 
-  if (bestMatch && highestScore >= 2) {
+  if (bestMatch && highestScore > 0) {
     return bestMatch;
-  }
-
-  // 3. Fallback based on basic keyword containment
-  if (cleanName.includes('chest') || cleanName.includes('bench') || cleanName.includes('press')) {
-    return { ...EXERCISE_TAXONOMY_DATABASE.find(e => e.id === 'flat_bench_press')!, name: rawName };
-  }
-  if (cleanName.includes('back') || cleanName.includes('pull')) {
-    return { ...EXERCISE_TAXONOMY_DATABASE.find(e => e.id === 'barbell_row')!, name: rawName };
-  }
-  if (cleanName.includes('shoulder') || cleanName.includes('delt')) {
-    return { ...EXERCISE_TAXONOMY_DATABASE.find(e => e.id === 'overhead_press')!, name: rawName };
-  }
-  if (cleanName.includes('leg') || cleanName.includes('quad')) {
-    return { ...EXERCISE_TAXONOMY_DATABASE.find(e => e.id === 'squat')!, name: rawName };
-  }
-  if (cleanName.includes('arm') || cleanName.includes('bicep') || cleanName.includes('tricep')) {
-    return { ...EXERCISE_TAXONOMY_DATABASE.find(e => e.id === 'bicep_curl')!, name: rawName };
   }
 
   return getFallbackTaxonomy(rawName);
