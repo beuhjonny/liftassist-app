@@ -13,7 +13,7 @@
         <!-- 1. Dedicated HD Form Motion Player (When YouTube ID is mapped) -->
         <div v-if="demoInfo.youtubeId" class="motion-player video-aspect">
           <iframe 
-            :src="`https://www.youtube.com/embed/${demoInfo.youtubeId}?autoplay=1&mute=1&playsinline=1`"
+            :src="`https://www.youtube.com/embed/${demoInfo.youtubeId}?autoplay=1&controls=1&rel=0&playsinline=1`"
             title="Form Demonstration Video"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -168,7 +168,7 @@ const demoInfo = computed<ExerciseDemoInfo>(() => {
   height: 100%;
   border-radius: 8px;
   border: none;
-  pointer-events: none; /* Strips YouTube popovers, watermark links, and title card overlays */
+  /* Allow full user interaction with player controls */
 }
 
 .demo-gif {
