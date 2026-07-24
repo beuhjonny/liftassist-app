@@ -72,6 +72,20 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
     keywords: ['chest fly', 'cable fly', 'pec fly', 'dumbbell fly', 'flye', 'pec deck']
   },
   {
+    id: 'seated_dumbbell_shoulder_press',
+    name: 'Seated Dumbbell Shoulder Press',
+    category: 'Shoulders',
+    primaryMuscles: ['Shoulders'],
+    secondaryMuscles: ['Triceps'],
+    formCues: [
+      'Sit on an upright bench with back support, holding dumbbells at shoulder height.',
+      'Keep core braced and wrists stacked directly over your elbows.',
+      'Press dumbbells straight up until arms extend overhead, avoiding arching your lower back.'
+    ],
+    youtubeId: 'qEwKCR5JCog', // OPEX Seated Dumbbell Press (0% Scott Herman, 100% Seated DBs)
+    keywords: ['seated shoulder press', 'seated db press', 'db seated shoulder press', 'seated dumbbell press', 'seated press', 'arnold press']
+  },
+  {
     id: 'overhead_press',
     name: 'Overhead / Shoulder Press',
     category: 'Shoulders',
@@ -82,7 +96,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Press dumbbells or bar straight overhead until arms fully extend.',
       'Lower weight with control to upper chest or shoulder level.'
     ],
-    youtubeId: '2yjwXTZQDDI',
+    youtubeId: 'qaQP897T9jM', // Standing Dumbbell / Barbell Press
     keywords: ['overhead press', 'ohp', 'shoulder press', 'military press', 'dumbbell shoulder press', 'db press']
   },
   {
@@ -305,7 +319,7 @@ export function findBestExerciseMatch(rawName: string): ExerciseTaxonomy {
     for (const kw of item.keywords) {
       if (cleanName.includes(kw)) {
         // High-specificity keywords get massive bonus
-        if (['rdl', 'romanian deadlift', 'skullcrusher', 'skull crusher', 'incline press', 'incline bench', 'incline db', 'lateral raise', 'hammer curl'].includes(kw)) {
+        if (['rdl', 'romanian deadlift', 'skullcrusher', 'skull crusher', 'seated shoulder press', 'seated db press', 'db seated', 'seated press', 'incline press', 'incline bench', 'incline db', 'lateral raise', 'hammer curl'].includes(kw)) {
           score += 20;
         } else {
           score += 10;
