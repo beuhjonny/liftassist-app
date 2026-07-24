@@ -1,7 +1,7 @@
 <template>
   <div class="strength-standards-container card-inset" style="padding: 14px 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 10px;">
     <div style="font-size: 0.8em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.75; color: var(--color-card-text); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-      <span>🎖️ Comparative Strength Standards ("How Do I Compare?")</span>
+      <span>🎖️ Comparative Strength Standards</span>
       
       <!-- Bodyweight & Age Setting Inputs -->
       <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
@@ -34,11 +34,6 @@
           </select>
         </div>
       </div>
-    </div>
-
-    <!-- Explicit Comparison Baseline Description Callout -->
-    <div style="margin-bottom: 12px; padding: 8px 12px; background: var(--color-card-bg); border-radius: 6px; border: 1px solid var(--color-card-border); font-size: 0.82em; color: var(--color-card-text); line-height: 1.45;">
-      📊 <strong>Comparison Baseline:</strong> Evaluated against verified population strength standards (ExRx / StrengthLevel dataset) for <strong>{{ ageBracket }} year old lifters</strong> at <strong>{{ bodyweight }} {{ weightUnit }} bodyweight</strong>.
     </div>
 
     <!-- Matched Overview Cards Grid -->
@@ -75,13 +70,16 @@
           </div>
         </div>
 
-        <!-- Row 2: Stats & Equipment Tag -->
+        <!-- Row 2: Stats, Equipment Tag, and Core Lift Comparison -->
         <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85em; margin-bottom: 8px; flex-wrap: wrap;">
           <span style="font-size: 0.85em; opacity: 0.75; background: var(--color-card-mute); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--color-card-border); font-weight: 500;">
             {{ lift.equipment === 'dumbbell' ? '🤹 DB per hand' : '🏋️ Barbell total' }}
           </span>
           <span style="font-weight: 600; color: var(--color-card-text);">
             Est. 1RM: {{ lift.bestWeight }} {{ weightUnit }} <small style="opacity: 0.75;">({{ lift.bwRatio }}x BW)</small>
+          </span>
+          <span style="font-size: 0.82em; opacity: 0.8; font-weight: 600; color: var(--color-primary, #007bff);">
+            (Compared to {{ lift.matchedStandardName }})
           </span>
         </div>
 

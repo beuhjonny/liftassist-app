@@ -24,7 +24,7 @@
       <div class="control-group">
         <label class="control-label">Time Window</label>
         <select v-model="timeWindow" class="chart-select">
-          <option value="2w">Last 2 Weeks (Hypertrophy Guideline)</option>
+          <option value="2w">Last 2 Weeks</option>
           <option value="4w">Last 4 Weeks</option>
           <option value="8w">Last 8 Weeks</option>
           <option value="12w">Last 12 Weeks</option>
