@@ -10,36 +10,33 @@
 
       <!-- Demo Media Container -->
       <div class="demo-media-container card-inset">
-        <!-- 1. Primary High-Res GIF (If Available & Loading Successfully) -->
-        <div v-if="demoInfo.primaryGifUrl && !primaryGifError" class="motion-player">
-          <img 
-            :src="demoInfo.primaryGifUrl" 
-            :alt="demoInfo.name + ' animation'" 
-            class="demo-gif"
-            @error="primaryGifError = true"
-          />
+        <!-- 1. Dedicated YouTube HD Form Motion Player (When YouTube ID available) -->
+        <div v-if="demoInfo.youtubeId" class="motion-player video-aspect">
+          <iframe 
+            :src="`https://www.youtube-nocookie.com/embed/${demoInfo.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${demoInfo.youtubeId}&controls=0&modestbranding=1&rel=0`"
+            title="Form Demonstration Video"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+            class="demo-iframe"
+          ></iframe>
         </div>
 
-        <!-- 2. Bundled Keyframe Motion Loop Player (Fallback) -->
-        <div v-else-if="demoInfo.frames && demoInfo.frames.length > 0 && !imageError" class="motion-player">
-          <img 
-            :src="currentFrameUrl" 
-            :alt="demoInfo.name + ' motion frame'" 
-            class="demo-gif"
-            @error="handleImageError"
-          />
-          <div class="motion-indicator">
-            <span class="pulse-dot"></span>
-            <span class="motion-label">Form Motion Loop</span>
-          </div>
-        </div>
-
-        <!-- 3. Clean Unknown Exercise Fallback -->
+        <!-- 2. Clean Custom Exercise Form Cues Card + YouTube Search Fallback -->
         <div v-else class="unknown-exercise-card card-inset">
-          <p class="unknown-title">No matching exercise demo found</p>
+          <p class="unknown-title">Custom Exercise Form Guide</p>
           <p class="unknown-subtitle">
-            Form cues and demonstrations are available for standard strength training lifts.
+            Follow the key form cues below or search for community video demonstrations.
           </p>
+          <a 
+            :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' form tutorial')}`" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            class="button-secondary small-yt-btn"
+            style="margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.85em; font-weight: 600; text-decoration: none;"
+          >
+            <span>▶️</span> Search YouTube for "{{ exerciseName || demoInfo.name }}"
+          </a>
         </div>
       </div>
 
@@ -71,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue';
+import { computed } from 'vue';
 import { getExerciseDemo, type ExerciseDemoInfo } from '@/utils/exerciseDemos';
 
 const props = defineProps<{
@@ -83,65 +80,8 @@ defineEmits<{
   (e: 'close'): void;
 }>();
 
-const primaryGifError = ref(false);
-const imageError = ref(false);
-const activeFrameIdx = ref(0);
-let animationTimer: ReturnType<typeof setInterval> | null = null;
-
 const demoInfo = computed<ExerciseDemoInfo>(() => {
   return getExerciseDemo(props.exerciseName);
-});
-
-const currentFrameUrl = computed(() => {
-  if (!demoInfo.value.frames || demoInfo.value.frames.length === 0) return '';
-  return demoInfo.value.frames[activeFrameIdx.value % demoInfo.value.frames.length];
-});
-
-function startAnimationLoop() {
-  stopAnimationLoop();
-  primaryGifError.value = false;
-  imageError.value = false;
-  activeFrameIdx.value = 0;
-
-  if (demoInfo.value.frames && demoInfo.value.frames.length > 1) {
-    animationTimer = setInterval(() => {
-      activeFrameIdx.value = (activeFrameIdx.value + 1) % demoInfo.value.frames!.length;
-    }, 1000);
-  }
-}
-
-function stopAnimationLoop() {
-  if (animationTimer) {
-    clearInterval(animationTimer);
-    animationTimer = null;
-  }
-}
-
-function handleImageError() {
-  if (activeFrameIdx.value > 0) {
-    stopAnimationLoop();
-    activeFrameIdx.value = 0;
-  } else {
-    imageError.value = true;
-  }
-}
-
-watch(() => props.show, (newShow) => {
-  if (newShow) {
-    startAnimationLoop();
-  } else {
-    stopAnimationLoop();
-  }
-}, { immediate: true });
-
-watch(() => props.exerciseName, () => {
-  if (props.show) {
-    startAnimationLoop();
-  }
-});
-
-onUnmounted(() => {
-  stopAnimationLoop();
 });
 </script>
 
@@ -203,6 +143,19 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.video-aspect {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  position: relative;
+}
+
+.demo-iframe {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  border: none;
 }
 
 .demo-gif {

@@ -170,6 +170,7 @@ import {
 } from 'chart.js';
 import type { LoggedWorkout } from '@/types';
 import { getExerciseDemo } from '@/utils/exerciseDemos';
+import { findBestExerciseMatch } from '@/utils/exerciseMatching';
 import useMuscleMappings, { type ExerciseMuscleMapping } from '@/composables/useMuscleMappings';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
@@ -429,106 +430,18 @@ async function saveMapping() {
 function categorizeExerciseMuscles(rawName: string): { primary: string[]; secondary: string[] } {
   if (!rawName) return { primary: ['Chest'], secondary: [] };
 
-  // Check user custom mapping first!
+  // 1. Check user custom mapping override first!
   const userOverride = getCustomMapping(rawName);
   if (userOverride) {
     return userOverride;
   }
 
-  const norm = rawName.toLowerCase().replace(/[-_]/g, ' ').trim();
-  const demo = getExerciseDemo(rawName);
-
-  const primary: string[] = [];
-  const secondary: string[] = [];
-
-  // Face Pull Check
-  if (norm.includes('face pull') || norm.includes('facepull')) {
-    primary.push('Shoulders', 'Back');
-    secondary.push('Traps');
-    return { primary, secondary };
-  }
-
-  // Wrist / Forearm Check
-  if (norm.includes('wrist') || norm.includes('forearm')) {
-    primary.push('Forearms');
-    return { primary, secondary };
-  }
-
-  // Shrugs / Traps
-  if (norm.includes('shrug') || norm.includes('trap')) {
-    primary.push('Traps');
-    secondary.push('Shoulders');
-    return { primary, secondary };
-  }
-
-  // Chest Movements
-  if (norm.includes('bench') || norm.includes('chest press') || norm.includes('push up') || norm.includes('flye') || norm.includes('pec') || norm.includes('chest')) {
-    primary.push('Chest');
-    secondary.push('Triceps', 'Shoulders');
-  } else if (norm.includes('incline')) {
-    primary.push('Chest', 'Shoulders');
-    secondary.push('Triceps');
-  } 
-  // Shoulder Movements
-  else if (norm.includes('overhead') || norm.includes('military') || norm.includes('shoulder press') || norm.includes('lateral raise') || norm.includes('delt') || norm.includes('shoulder') || norm.includes('arnold')) {
-    primary.push('Shoulders');
-    secondary.push('Triceps');
-  } 
-  // Back Movements
-  else if (norm.includes('row') || norm.includes('pulldown') || norm.includes('pull up') || norm.includes('chin') || norm.includes('lat') || norm.includes('back')) {
-    primary.push('Back');
-    secondary.push('Biceps', 'Shoulders');
-  } 
-  // Leg / Quad Movements
-  else if (norm.includes('squat') || norm.includes('leg press') || norm.includes('leg extension') || norm.includes('quad extension') || norm.includes('lunge') || norm.includes('quad')) {
-    primary.push('Quads');
-    secondary.push('Hamstrings & Glutes');
-  } 
-  // Hamstring / Glute Movements
-  else if (norm.includes('deadlift') || norm.includes('rdl') || norm.includes('leg curl') || norm.includes('hip thrust') || norm.includes('glute') || norm.includes('hamstring')) {
-    primary.push('Hamstrings & Glutes');
-    secondary.push('Back');
-  } 
-  // Bicep Movements
-  else if (norm.includes('curl') || norm.includes('bicep') || norm.includes('hammer')) {
-    primary.push('Biceps');
-    secondary.push('Forearms');
-  } 
-  // Tricep Movements
-  else if (norm.includes('tricep') || norm.includes('pushdown') || norm.includes('skullcrusher') || norm.includes('dip')) {
-    primary.push('Triceps');
-    secondary.push('Chest');
-  } 
-  // Abs & Core
-  else if (norm.includes('crunch') || norm.includes('leg raise') || norm.includes('plank') || norm.includes('ab')) {
-    primary.push('Abs & Core');
-  } 
-  // Calves
-  else if (norm.includes('calf') || norm.includes('calves')) {
-    primary.push('Calves');
-  } 
-  else {
-    // Fallback using exerciseDemos category
-    if (demo.category === 'Chest') {
-      primary.push('Chest');
-      secondary.push('Triceps');
-    } else if (demo.category === 'Back') {
-      primary.push('Back');
-      secondary.push('Biceps');
-    } else if (demo.category === 'Shoulders') {
-      primary.push('Shoulders');
-      secondary.push('Triceps');
-    } else if (demo.category === 'Legs') {
-      primary.push('Quads');
-      secondary.push('Hamstrings & Glutes');
-    } else if (demo.category === 'Arms') {
-      primary.push('Biceps', 'Triceps');
-    } else {
-      primary.push('Chest');
-    }
-  }
-
-  return { primary, secondary };
+  // 2. Fall back to Unified Exercise Matching Engine
+  const match = findBestExerciseMatch(rawName);
+  return {
+    primary: match.primaryMuscles,
+    secondary: match.secondaryMuscles
+  };
 }
 
 const chartOptions = computed<ChartOptions<'bar'>>(() => {
