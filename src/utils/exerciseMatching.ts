@@ -236,7 +236,7 @@ export const EXERCISE_TAXONOMY_DATABASE: ExerciseTaxonomy[] = [
       'Bend only at the elbows to lower weights under control toward your temples/forehead.',
       'Drive triceps forcefully to extend arms back up without flaring elbows.'
     ],
-    youtubeId: 'Gk7p5l7k83g', // MuscleWiki Dumbbell Skullcrusher (0% Scott Herman)
+    youtubeId: 'W-LhRz0e8nU', // Catalyst Athletics Dumbbell Skullcrusher (0% Scott Herman, 100% Embeddable)
     keywords: ['skullcrusher', 'skull crusher', 'db skullcrusher', 'french press', 'overhead extension', 'tricep extension']
   },
   {
