@@ -281,4 +281,27 @@ const demoInfo = computed<ExerciseDemoInfo>(() => {
 .form-cues-list li {
   margin-bottom: 6px;
 }
+
+.button-primary {
+  background: var(--color-primary, #007bff);
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.button-primary:hover {
+  background: var(--color-primary-hover, #0056b3);
+  transform: translateY(-1px);
+}
+
+.full-width {
+  width: 100%;
+  display: block;
+}
 </style>
