@@ -10,8 +10,8 @@
 
       <!-- Demo Media Container -->
       <div class="demo-media-container card-inset">
-        <!-- 1. Dedicated Verified YouTube Player (Only when oEmbed 200 OK verified) -->
-        <div v-if="demoInfo.youtubeId && isEmbedVerified" class="motion-player video-aspect">
+        <!-- 1. Dedicated HD Form Motion Player (When YouTube ID is mapped) -->
+        <div v-if="demoInfo.youtubeId" class="motion-player video-aspect">
           <iframe 
             :src="`https://www.youtube.com/embed/${demoInfo.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${demoInfo.youtubeId}&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1`"
             title="Form Demonstration Video"
@@ -22,7 +22,7 @@
           ></iframe>
         </div>
 
-        <!-- 2. Clean Form Guide Card + Plain YouTube Search Fallback -->
+        <!-- 2. Clean Form Guide Card + Plain YouTube Search Fallback (Only for custom/unmapped exercises) -->
         <div v-else class="unknown-exercise-card card-inset">
           <p class="unknown-title">Exercise Form Guide</p>
           <p class="unknown-subtitle">
@@ -41,7 +41,7 @@
       </div>
 
       <!-- Direct Plain Search Fallback Button -->
-      <div v-if="demoInfo.youtubeId && isEmbedVerified" style="text-align: right; margin-top: 6px; padding-right: 4px;">
+      <div v-if="demoInfo.youtubeId" style="text-align: right; margin-top: 6px; padding-right: 4px;">
         <a 
           :href="`https://www.youtube.com/results?search_query=${encodeURIComponent((exerciseName || demoInfo.name) + ' form tutorial')}`" 
           target="_blank" 
@@ -80,9 +80,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { getExerciseDemo, type ExerciseDemoInfo } from '@/utils/exerciseDemos';
-import { verifyYoutubeEmbed } from '@/utils/exerciseMatching';
 
 const props = defineProps<{
   show: boolean;
@@ -96,31 +95,6 @@ defineEmits<{
 const demoInfo = computed<ExerciseDemoInfo>(() => {
   return getExerciseDemo(props.exerciseName);
 });
-
-const isEmbedVerified = ref<boolean>(false);
-const isVerifying = ref<boolean>(false);
-
-watch(
-  () => [props.show, props.exerciseName],
-  async ([show, name]) => {
-    if (!show || !name) {
-      isEmbedVerified.value = false;
-      return;
-    }
-    const info = getExerciseDemo(name as string);
-    if (info.youtubeId) {
-      // Optimistically show iframe for curated taxonomy video IDs
-      isEmbedVerified.value = true;
-      isVerifying.value = true;
-      const verified = await verifyYoutubeEmbed(info.youtubeId);
-      isEmbedVerified.value = verified;
-      isVerifying.value = false;
-    } else {
-      isEmbedVerified.value = false;
-    }
-  },
-  { immediate: true }
-);
 </script>
 
 <style scoped>
