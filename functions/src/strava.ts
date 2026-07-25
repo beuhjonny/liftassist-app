@@ -156,6 +156,23 @@ export const syncStravaActivities = onCall(async (request) => {
         const batch = db.batch();
 
         for (const act of activities) {
+            const actType = String(act.type || '').toLowerCase();
+            const sportType = String(act.sport_type || '').toLowerCase();
+            const actName = String(act.name || '').toLowerCase();
+            const actDesc = String(act.description || '').toLowerCase();
+
+            // Skip weight training / strength workouts or LiftLogic-originating workouts from being imported as external activities
+            if (
+                actType === 'weighttraining' ||
+                actType === 'workout' ||
+                sportType === 'weighttraining' ||
+                actName.includes('liftlogic') ||
+                actDesc.includes('liftlogic')
+            ) {
+                logger.info(`Skipping LiftLogic / WeightTraining Strava activity import: ${act.id} (${act.name})`);
+                continue;
+            }
+
             const docId = `strava_${act.id}`;
             const docRef = extRef.doc(docId);
 

@@ -179,6 +179,15 @@ export default function useHistoryIndex() {
                 const extSnapshot = await getDocs(externalCollectionRef);
                 extSnapshot.forEach(docSnap => {
                     const data = docSnap.data();
+                    const type = (data.type || '').toLowerCase();
+                    const name = (data.name || '').toLowerCase();
+                    const notes = (data.notes || '').toLowerCase();
+
+                    // Skip duplicate weight training entries synced from Strava
+                    if (type === 'weighttraining' || type === 'weight training' || name.includes('liftlogic') || notes.includes('liftlogic')) {
+                        return;
+                    }
+
                     const dateKey = getLocalDateKey(data.date) || getLocalDateKey(data.startDate);
 
                     if (dateKey) {

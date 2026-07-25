@@ -58,9 +58,36 @@ const isLoaded = ref(false);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 
+export const isWeightTrainingDuplicate = (act: ExternalActivity): boolean => {
+  if (!act) return false;
+  const type = (act.type || '').toLowerCase();
+  const name = (act.name || '').toLowerCase();
+  const notes = (act.notes || '').toLowerCase();
+
+  if (type === 'weighttraining' || type === 'weight training') return true;
+  if (name.includes('liftlogic')) return true;
+  if (notes.includes('liftlogic')) return true;
+  return false;
+};
+
 export default function useExternalActivities() {
   const { user } = useAuth();
   const { fetchCalendarIndex } = useHistoryIndex();
+
+  const purgeWeightTrainingDuplicates = async (duplicates: ExternalActivity[]) => {
+    if (!user.value || !user.value.uid || duplicates.length === 0) return;
+    for (const dup of duplicates) {
+      if (dup.id) {
+        try {
+          const docRef = doc(db, 'users', user.value.uid, 'externalActivities', dup.id);
+          await deleteDoc(docRef);
+          console.log(`Auto-purged duplicate Strava weight training session: ${dup.id}`);
+        } catch (e) {
+          console.warn(`Failed to delete duplicate activity ${dup.id}:`, e);
+        }
+      }
+    }
+  };
 
   const fetchExternalActivities = async (forceRefresh = false) => {
     if (!user.value || !user.value.uid) {
@@ -77,17 +104,31 @@ export default function useExternalActivities() {
 
     try {
       const colRef = collection(db, 'users', user.value.uid, 'externalActivities');
-      const q = query(colRef, orderBy('date', 'desc'), limit(50));
+      const q = query(colRef, orderBy('date', 'desc'), limit(100));
       const snap = await getDocs(q);
 
       const items: ExternalActivity[] = [];
+      const duplicatesToDelete: ExternalActivity[] = [];
+
       snap.forEach(docSnap => {
-        items.push({ id: docSnap.id, ...docSnap.data() } as ExternalActivity);
+        const item = { id: docSnap.id, ...docSnap.data() } as ExternalActivity;
+        if (isWeightTrainingDuplicate(item)) {
+          duplicatesToDelete.push(item);
+        } else {
+          items.push(item);
+        }
       });
 
       externalActivities.splice(0, externalActivities.length, ...items);
       saveCacheToLocalStorage(items);
       isLoaded.value = true;
+
+      // Asynchronously purge duplicate docs in background if found
+      if (duplicatesToDelete.length > 0) {
+        purgeWeightTrainingDuplicates(duplicatesToDelete).then(() => {
+          fetchCalendarIndex(true);
+        });
+      }
     } catch (e: any) {
       console.error('Error fetching external activities:', e);
       error.value = e.message;
