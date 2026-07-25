@@ -27,6 +27,8 @@
     <div v-if="envLabel" class="env-banner">
       {{ envLabel }}
     </div>
+
+    <ToastHost />
   </div>
 </template>
 
@@ -35,6 +37,7 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import useAuth from './composables/useAuth';
 import useSettings from './composables/useSettings'; // Make sure this path is correct
+import ToastHost from './components/base/ToastHost.vue';
 
 const { user } = useAuth();
 // Init settings (will auto-load when user is set due to watcher in composable)

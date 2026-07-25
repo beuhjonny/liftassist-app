@@ -125,6 +125,12 @@ const routes = [
     name: 'ImportShare',
     component: () => import('../views/ImportWorkout.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    // Dev-only gallery to QA design-system primitives without an authed screen.
+    path: '/base',
+    name: 'BaseGallery',
+    component: () => import('../views/BaseGallery.vue')
   }
 ];
 
