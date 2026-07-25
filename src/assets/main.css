@@ -124,6 +124,18 @@ a,
   border-radius: inherit;
 }
 
+/* ---- Route transition (arrives softly, leaves quickly) ---- */
+.route-enter-active {
+  transition: opacity var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out);
+}
+.route-leave-active {
+  transition: opacity var(--duration-fast) var(--ease-in),
+    transform var(--duration-fast) var(--ease-in);
+}
+.route-enter-from { opacity: 0; transform: translateY(8px); }
+.route-leave-to { opacity: 0; transform: translateY(-4px); }
+
 /* ---- Global reduced-motion contract (WCAG 2.3.3) ---- */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -134,4 +146,6 @@ a,
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+  .route-enter-from,
+  .route-leave-to { transform: none; }
 }

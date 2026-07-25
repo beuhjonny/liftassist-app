@@ -1,7 +1,7 @@
 <template>
   <div class="legal-view-container">
+    <AppHeader back title="Privacy Policy" />
     <div class="card legal-card">
-      <router-link to="/" class="back-link">← Back to Home</router-link>
       <h1>Privacy Policy</h1>
       <p class="effective-date">Effective Date: June 15, 2026</p>
 
@@ -63,6 +63,7 @@
 
 <script setup lang="ts">
 // Static legal page view
+import AppHeader from '@/components/base/AppHeader.vue';
 </script>
 
 <style scoped>

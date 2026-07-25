@@ -1,7 +1,11 @@
 <template>
   <div id="app-container" :class="{ 'has-tab-bar': showTabBar }">
     <main class="main-content">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <Transition name="route" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </router-view>
     </main>
 
     <div v-if="envLabel" class="env-banner" :class="{ 'above-tab-bar': showTabBar }">
