@@ -89,6 +89,15 @@
     </section>
 
     <section>
+      <h2>Readiness dial (flagship)</h2>
+      <div class="grid">
+        <ReadinessCard :readiness="computeReadiness({ daysSinceLastWorkout: 2, weeklyStreak: 3, workoutsThisWeek: 1, targetPerWeek: 4, overloadRate: 60, recentFailRate: 0 })" />
+        <ReadinessCard :readiness="computeReadiness({ daysSinceLastWorkout: 1, weeklyStreak: 0, workoutsThisWeek: 1, targetPerWeek: 4, overloadRate: 10, recentFailRate: 0 })" />
+        <ReadinessCard :readiness="computeReadiness({ daysSinceLastWorkout: 0, weeklyStreak: 2, workoutsThisWeek: 4, targetPerWeek: 4, overloadRate: 40, recentFailRate: 0.6 })" />
+      </div>
+    </section>
+
+    <section>
       <h2>Overlays & Toasts</h2>
       <div class="row">
         <BaseButton @click="modal = true">Open modal</BaseButton>
@@ -123,6 +132,8 @@ import BaseEmptyState from '../components/base/BaseEmptyState.vue';
 import BaseListRow from '../components/base/BaseListRow.vue';
 import BaseModal from '../components/base/BaseModal.vue';
 import BaseSheet from '../components/base/BaseSheet.vue';
+import ReadinessCard from '../components/ReadinessCard.vue';
+import { computeReadiness } from '../utils/readiness';
 import { useToast } from '../composables/useToast';
 
 const text = ref(''); const num = ref(100); const bad = ref(''); const sel = ref('a');

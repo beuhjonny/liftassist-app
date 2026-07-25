@@ -65,6 +65,8 @@
             </BaseButton>
           </section>
 
+          <ReadinessCard v-if="readiness" :readiness="readiness" />
+
           <section v-if="consistencyStats" class="consistency card">
             <span class="strip-eyebrow"><Flame :size="14" /> THIS WEEK</span>
             <div class="strip-row">
@@ -148,7 +150,9 @@ import BaseButton from '@/components/base/BaseButton.vue';
 import BaseBadge from '@/components/base/BaseBadge.vue';
 import BaseModal from '@/components/base/BaseModal.vue';
 import AppHeader from '@/components/base/AppHeader.vue';
+import ReadinessCard from '@/components/ReadinessCard.vue';
 import { colorForDay } from '@/design/dayPalette';
+import { computeReadiness } from '@/utils/readiness';
 import { Dumbbell, History, ChevronRight, ArrowRight, AlertTriangle, Trash2, Check, Flame } from 'lucide-vue-next';
 import type { WorkoutDay, EnhancedWorkoutDay, LoggedWorkout } from '@/types';
 
@@ -187,6 +191,22 @@ const otherDays = computed<EnhancedWorkoutDay[]>(() =>
   enhancedWorkoutDays.value.filter((d) => d.id !== heroDay.value?.id),
 );
 const exerciseCount = (day: EnhancedWorkoutDay | null): number => day?.exercises?.length ?? 0;
+
+// Flagship: compose the readiness verdict from signals we already track.
+const readiness = computed(() => {
+  const cs = consistencyStats.value;
+  if (!cs) return null;
+  const lastDate = lastDoneDayOverallDisplay.value?.date ?? null;
+  const days = lastDate ? Math.floor((Date.now() - lastDate.getTime()) / 86400000) : null;
+  return computeReadiness({
+    daysSinceLastWorkout: days,
+    weeklyStreak: cs.weeklyStreak,
+    workoutsThisWeek: cs.workoutsThisWeek,
+    targetPerWeek: cs.targetPerWeek,
+    overloadRate: cs.overloadRate,
+    recentFailRate: 0,
+  });
+});
 
 const consistencyStats = computed(() => {
   const historyList: LoggedWorkout[] = (allLoggedWorkouts && (allLoggedWorkouts as any).length > 0)
