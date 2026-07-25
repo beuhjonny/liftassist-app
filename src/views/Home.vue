@@ -83,6 +83,10 @@
                   <span style="font-weight: 800; font-size: 1.1em; color: var(--color-card-heading); letter-spacing: -0.2px;">
                     {{ consistencyStats.weeklyStreak }} {{ consistencyStats.weeklyStreak === 1 ? 'Week' : 'Weeks' }} Streak
                   </span>
+                  <span 
+                    title="Streak weeks are defined as calendar weeks (Monday 00:00 to Sunday 23:59). Log your target workouts between Monday and Sunday to maintain your streak!"
+                    style="cursor: help; opacity: 0.75; font-size: 0.85em;"
+                  >ℹ️</span>
                 </div>
                 <span style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; font-weight: 500;">
                   {{ consistencyStats.workoutsThisWeek }}/{{ consistencyStats.targetPerWeek }} workouts logged this week

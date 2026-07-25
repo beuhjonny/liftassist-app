@@ -22,15 +22,21 @@
       </div>
 
       <div class="control-group">
-        <label class="control-label">Time Window</label>
-        <select v-model="timeWindow" class="chart-select">
-          <option value="2w">Last 2 Weeks</option>
-          <option value="4w">Last 4 Weeks</option>
-          <option value="8w">Last 8 Weeks</option>
-          <option value="12w">Last 12 Weeks</option>
-          <option value="6m">Last 6 Months</option>
-          <option value="1y">Last 1 Year</option>
-          <option value="all">All Time</option>
+        <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
+          <label class="control-label" style="margin-bottom: 0;">Time Window</label>
+          <span 
+            title="Volume time windows use a rolling trailing period (e.g. Last 2 Weeks = trailing 14 days from today). Streak weeks on the Home dashboard run Monday–Sunday."
+            style="cursor: help; opacity: 0.75; font-size: 0.85em;"
+          >ℹ️</span>
+        </div>
+        <select v-model="timeWindow" class="chart-select" title="Rolling trailing timeframe starting from today. Streak weeks on Home dashboard run Monday–Sunday.">
+          <option value="2w" title="Trailing 14 days from today">Last 2 Weeks</option>
+          <option value="4w" title="Trailing 28 days from today">Last 4 Weeks</option>
+          <option value="8w" title="Trailing 56 days from today">Last 8 Weeks</option>
+          <option value="12w" title="Trailing 84 days from today">Last 12 Weeks</option>
+          <option value="6m" title="Trailing 6 months from today">Last 6 Months</option>
+          <option value="1y" title="Trailing 1 year from today">Last 1 Year</option>
+          <option value="all" title="All recorded workout history">All Time</option>
         </select>
       </div>
     </div>
