@@ -1,0 +1,36 @@
+<!-- @dsCard group="Components" name="Buttons" subtitle="Primary / secondary / ghost / danger + DONE-FAIL pair" -->
+<!doctype html><html><head><meta charset="utf-8"><title>Buttons</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet"><style>
+  :root {
+    --surface-base:#121212; --surface-raised:#1e1e1e; --surface-overlay:#242424; --surface-sunken:#171717;
+    --text-primary:rgba(255,255,255,0.95); --text-secondary:rgba(255,255,255,0.70); --text-tertiary:rgba(255,255,255,0.52);
+    --color-accent:#2563eb; --color-accent-contrast:#fff; --color-accent-strong:#1d4ed8; --color-accent-quiet:rgba(37,99,235,0.12); --color-accent-line:#4c8dff;
+    --color-success-bg:#12271b; --color-success-fg:#6ee7a0; --color-success-line:rgba(110,231,160,0.28);
+    --color-warning-bg:#2a2205; --color-warning-fg:#f5c451; --color-warning-line:rgba(245,196,81,0.28);
+    --color-danger-bg:#2a1315; --color-danger-fg:#ff8a90; --color-danger-line:rgba(255,138,144,0.28);
+    --color-hairline:rgba(255,255,255,0.08);
+    --shadow-1:0 1px 2px rgba(0,0,0,0.5); --shadow-2:0 4px 14px rgba(0,0,0,0.55),0 1px 3px rgba(0,0,0,0.4);
+    --radius-xs:4px; --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-full:999px;
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
+    --tap-min:44px;
+    --day-1:#4f6d8f; --day-2:#2f8f83; --day-3:#4d5bb5; --day-4:#c07a1e; --day-5:#8e5a86; --day-6:#a9603f;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--surface-base); color: var(--text-secondary); font-family: Inter, system-ui, sans-serif; font-size: 16px; line-height: 1.5; padding: 24px; }
+  h1,h2,h3 { font-family: Montserrat, Inter, sans-serif; color: var(--text-primary); }
+  .card { background: var(--surface-raised); border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: var(--space-5); }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .label { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin: 20px 0 8px; }
+</style></head><body>
+  <div class="label">Variants (48px default)</div>
+  <div class="row">
+    <button style="min-height:48px;padding:0 16px;border-radius:12px;border:1px solid transparent;font-weight:600;font-size:16px;cursor:pointer;background:var(--color-accent-strong);color:#fff;">Primary</button>
+    <button style="min-height:48px;padding:0 16px;border-radius:12px;border:1px solid transparent;font-weight:600;font-size:16px;cursor:pointer;background:transparent;color:var(--text-secondary);border-color:var(--color-hairline)">Secondary</button>
+    <button style="min-height:48px;padding:0 16px;border-radius:12px;border:1px solid transparent;font-weight:600;font-size:16px;cursor:pointer;background:transparent;color:var(--text-secondary);">Ghost</button>
+    <button style="min-height:48px;padding:0 16px;border-radius:12px;border:1px solid transparent;font-weight:600;font-size:16px;cursor:pointer;background:var(--color-danger-bg);color:var(--color-danger-fg);border-color:var(--color-danger-line)">Danger</button>
+    <button style="min-height:48px;padding:0 16px;border-radius:12px;border:1px solid transparent;font-weight:600;font-size:16px;cursor:pointer;background:var(--color-accent-strong);color:#fff;opacity:.5">Disabled</button>
+  </div>
+  <div class="label">The in-gym commit pair: DONE dominant, FAIL demoted</div>
+  <div style="max-width:400px;display:flex;flex-direction:column;gap:8px">
+    <button style="min-height:64px;width:100%;border-radius:12px;border:none;background:var(--color-success-fg);color:#0b1a10;font-weight:700;font-size:20px;cursor:pointer">Done &#10003;</button>
+    <button style="min-height:44px;align-self:center;padding:0 16px;border-radius:12px;background:transparent;border:1px solid var(--color-danger-line);color:var(--color-danger-fg);font-size:16px;cursor:pointer">Failed this set</button>
+  </div></body></html>

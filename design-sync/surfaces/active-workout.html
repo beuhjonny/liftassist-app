@@ -1,0 +1,48 @@
+<!-- @dsCard group="Surfaces" name="Active workout - prescription hero" subtitle="One dominant number, DONE/FAIL, why-this-weight" -->
+<!doctype html><html><head><meta charset="utf-8"><title>Active workout</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet"><style>
+  :root {
+    --surface-base:#121212; --surface-raised:#1e1e1e; --surface-overlay:#242424; --surface-sunken:#171717;
+    --text-primary:rgba(255,255,255,0.95); --text-secondary:rgba(255,255,255,0.70); --text-tertiary:rgba(255,255,255,0.52);
+    --color-accent:#2563eb; --color-accent-contrast:#fff; --color-accent-strong:#1d4ed8; --color-accent-quiet:rgba(37,99,235,0.12); --color-accent-line:#4c8dff;
+    --color-success-bg:#12271b; --color-success-fg:#6ee7a0; --color-success-line:rgba(110,231,160,0.28);
+    --color-warning-bg:#2a2205; --color-warning-fg:#f5c451; --color-warning-line:rgba(245,196,81,0.28);
+    --color-danger-bg:#2a1315; --color-danger-fg:#ff8a90; --color-danger-line:rgba(255,138,144,0.28);
+    --color-hairline:rgba(255,255,255,0.08);
+    --shadow-1:0 1px 2px rgba(0,0,0,0.5); --shadow-2:0 4px 14px rgba(0,0,0,0.55),0 1px 3px rgba(0,0,0,0.4);
+    --radius-xs:4px; --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-full:999px;
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
+    --tap-min:44px;
+    --day-1:#4f6d8f; --day-2:#2f8f83; --day-3:#4d5bb5; --day-4:#c07a1e; --day-5:#8e5a86; --day-6:#a9603f;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--surface-base); color: var(--text-secondary); font-family: Inter, system-ui, sans-serif; font-size: 16px; line-height: 1.5; padding: 24px; }
+  h1,h2,h3 { font-family: Montserrat, Inter, sans-serif; color: var(--text-primary); }
+  .card { background: var(--surface-raised); border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: var(--space-5); }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .label { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin: 20px 0 8px; }
+</style></head><body>
+  <div style="max-width:420px" class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--color-hairline);padding-bottom:12px;margin-bottom:16px">
+      <h2 style="font-family:Montserrat;font-size:24px;font-weight:700">Bench Press</h2>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+        <span style="font-size:12px;font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-primary);background:var(--surface-sunken);border-radius:999px;padding:2px 8px"><span style="opacity:.6;font-weight:400">Total</span> 24:31</span>
+        <span style="font-size:12px;font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-primary);background:var(--surface-sunken);border-radius:999px;padding:2px 8px"><span style="opacity:.6;font-weight:400">Set</span> 0:42</span>
+      </div>
+    </div>
+    <div style="background:var(--surface-sunken);border:1px solid var(--color-hairline);border-radius:12px;padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:8px">
+      <div style="display:flex;justify-content:space-between;width:100%">
+        <span style="font-size:14px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-tertiary)">SET 2 OF 4</span>
+        <span style="color:var(--text-tertiary)">&#9998; &#9197;</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px;color:var(--text-primary)">
+        <span style="font-size:56px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums">185</span>
+        <span style="font-size:20px;font-weight:600;opacity:.6">lbs</span>
+      </div>
+      <div style="font-size:20px;color:var(--text-secondary)">x 8 reps</div>
+      <p style="font-size:14px;color:var(--text-secondary);margin-top:8px">&#8599; Hit 4x8 last session, so +5 to 185.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px">
+      <button style="min-height:64px;width:100%;border:none;border-radius:12px;background:var(--color-success-fg);color:#0b1a10;font-weight:700;font-size:20px;cursor:pointer">Done &#10003;</button>
+      <button style="min-height:44px;align-self:center;padding:0 16px;border-radius:12px;background:transparent;border:1px solid var(--color-danger-line);color:var(--color-danger-fg);font-size:16px;cursor:pointer">Failed this set</button>
+    </div>
+  </div></body></html>

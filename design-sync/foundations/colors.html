@@ -1,0 +1,39 @@
+<!-- @dsCard group="Foundations" name="Color system" subtitle="Surface ladder, single accent, status triads, day palette" -->
+<!doctype html><html><head><meta charset="utf-8"><title>Colors</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet"><style>
+  :root {
+    --surface-base:#121212; --surface-raised:#1e1e1e; --surface-overlay:#242424; --surface-sunken:#171717;
+    --text-primary:rgba(255,255,255,0.95); --text-secondary:rgba(255,255,255,0.70); --text-tertiary:rgba(255,255,255,0.52);
+    --color-accent:#2563eb; --color-accent-contrast:#fff; --color-accent-strong:#1d4ed8; --color-accent-quiet:rgba(37,99,235,0.12); --color-accent-line:#4c8dff;
+    --color-success-bg:#12271b; --color-success-fg:#6ee7a0; --color-success-line:rgba(110,231,160,0.28);
+    --color-warning-bg:#2a2205; --color-warning-fg:#f5c451; --color-warning-line:rgba(245,196,81,0.28);
+    --color-danger-bg:#2a1315; --color-danger-fg:#ff8a90; --color-danger-line:rgba(255,138,144,0.28);
+    --color-hairline:rgba(255,255,255,0.08);
+    --shadow-1:0 1px 2px rgba(0,0,0,0.5); --shadow-2:0 4px 14px rgba(0,0,0,0.55),0 1px 3px rgba(0,0,0,0.4);
+    --radius-xs:4px; --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-full:999px;
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
+    --tap-min:44px;
+    --day-1:#4f6d8f; --day-2:#2f8f83; --day-3:#4d5bb5; --day-4:#c07a1e; --day-5:#8e5a86; --day-6:#a9603f;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--surface-base); color: var(--text-secondary); font-family: Inter, system-ui, sans-serif; font-size: 16px; line-height: 1.5; padding: 24px; }
+  h1,h2,h3 { font-family: Montserrat, Inter, sans-serif; color: var(--text-primary); }
+  .card { background: var(--surface-raised); border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: var(--space-5); }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .label { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin: 20px 0 8px; }
+</style></head><body>
+  <div class="label">Surface elevation ladder (dark)</div>
+  <div class="row">
+    <div style="width:130px"><div style="height:64px;background:#121212;border:1px solid var(--color-hairline);border-radius:8px"></div><div style="font-size:12px;margin-top:6px">base<br><span style="color:var(--text-tertiary)">#121212</span></div></div><div style="width:130px"><div style="height:64px;background:#1e1e1e;border:1px solid var(--color-hairline);border-radius:8px"></div><div style="font-size:12px;margin-top:6px">raised<br><span style="color:var(--text-tertiary)">#1e1e1e</span></div></div><div style="width:130px"><div style="height:64px;background:#242424;border:1px solid var(--color-hairline);border-radius:8px"></div><div style="font-size:12px;margin-top:6px">overlay<br><span style="color:var(--text-tertiary)">#242424</span></div></div><div style="width:130px"><div style="height:64px;background:#171717;border:1px solid var(--color-hairline);border-radius:8px"></div><div style="font-size:12px;margin-top:6px">sunken<br><span style="color:var(--text-tertiary)">#171717</span></div></div>
+  </div>
+  <div class="label">Accent (one accent, disciplined)</div>
+  <div class="row">
+    <div style="width:130px"><div style="height:48px;background:#2563eb;border-radius:8px"></div><div style="font-size:12px;margin-top:6px">accent<br><span style="color:var(--text-tertiary)">#2563eb</span></div></div><div style="width:130px"><div style="height:48px;background:#1d4ed8;border-radius:8px"></div><div style="font-size:12px;margin-top:6px">strong<br><span style="color:var(--text-tertiary)">#1d4ed8</span></div></div><div style="width:130px"><div style="height:48px;background:#4c8dff;border-radius:8px"></div><div style="font-size:12px;margin-top:6px">line<br><span style="color:var(--text-tertiary)">#4c8dff</span></div></div>
+  </div>
+  <div class="label">Status triads (bg / fg / line)</div>
+  <div class="row">
+    <span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--color-success-bg);color:var(--color-success-fg);border:1px solid var(--color-success-line)">success</span><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--color-warning-bg);color:var(--color-warning-fg);border:1px solid var(--color-warning-line)">warning</span><span style="display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--color-danger-bg);color:var(--color-danger-fg);border:1px solid var(--color-danger-line)">danger</span>
+  </div>
+  <div class="label">Day palette (muted, AA on card)</div>
+  <div class="row">
+    <div style="width:56px;height:32px;background:var(--day-1);border-radius:8px"></div><div style="width:56px;height:32px;background:var(--day-2);border-radius:8px"></div><div style="width:56px;height:32px;background:var(--day-3);border-radius:8px"></div><div style="width:56px;height:32px;background:var(--day-4);border-radius:8px"></div><div style="width:56px;height:32px;background:var(--day-5);border-radius:8px"></div><div style="width:56px;height:32px;background:var(--day-6);border-radius:8px"></div>
+  </div></body></html>

@@ -1,0 +1,41 @@
+<!-- @dsCard group="Surfaces" name="Share-to-import selection list" subtitle="Video share staging basket" -->
+<!doctype html><html><head><meta charset="utf-8"><title>Import</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet"><style>
+  :root {
+    --surface-base:#121212; --surface-raised:#1e1e1e; --surface-overlay:#242424; --surface-sunken:#171717;
+    --text-primary:rgba(255,255,255,0.95); --text-secondary:rgba(255,255,255,0.70); --text-tertiary:rgba(255,255,255,0.52);
+    --color-accent:#2563eb; --color-accent-contrast:#fff; --color-accent-strong:#1d4ed8; --color-accent-quiet:rgba(37,99,235,0.12); --color-accent-line:#4c8dff;
+    --color-success-bg:#12271b; --color-success-fg:#6ee7a0; --color-success-line:rgba(110,231,160,0.28);
+    --color-warning-bg:#2a2205; --color-warning-fg:#f5c451; --color-warning-line:rgba(245,196,81,0.28);
+    --color-danger-bg:#2a1315; --color-danger-fg:#ff8a90; --color-danger-line:rgba(255,138,144,0.28);
+    --color-hairline:rgba(255,255,255,0.08);
+    --shadow-1:0 1px 2px rgba(0,0,0,0.5); --shadow-2:0 4px 14px rgba(0,0,0,0.55),0 1px 3px rgba(0,0,0,0.4);
+    --radius-xs:4px; --radius-sm:8px; --radius-md:12px; --radius-lg:16px; --radius-full:999px;
+    --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px;
+    --tap-min:44px;
+    --day-1:#4f6d8f; --day-2:#2f8f83; --day-3:#4d5bb5; --day-4:#c07a1e; --day-5:#8e5a86; --day-6:#a9603f;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--surface-base); color: var(--text-secondary); font-family: Inter, system-ui, sans-serif; font-size: 16px; line-height: 1.5; padding: 24px; }
+  h1,h2,h3 { font-family: Montserrat, Inter, sans-serif; color: var(--text-primary); }
+  .card { background: var(--surface-raised); border: 1px solid var(--color-hairline); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: var(--space-5); }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .label { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin: 20px 0 8px; }
+</style></head><body>
+  <div style="max-width:420px" class="card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <span style="height:20px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:700;background:var(--surface-sunken);border:1px solid var(--color-hairline);display:inline-flex;align-items:center">YouTube</span>
+      <strong style="flex:1;color:var(--text-primary)">Push Day</strong>
+      <span style="color:var(--text-tertiary)">&#10005;</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--color-hairline)">
+        <label style="display:flex;align-items:center;gap:12px"><input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--color-accent)"> <span>Bench Press</span></label>
+        <span style="font-variant-numeric:tabular-nums;font-size:14px;color:var(--text-tertiary)">4 x 8-12</span>
+      </div><div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--color-hairline)">
+        <label style="display:flex;align-items:center;gap:12px"><input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--color-accent)"> <span>Incline Dumbbell Press</span></label>
+        <span style="font-variant-numeric:tabular-nums;font-size:14px;color:var(--text-tertiary)">3 x 10</span>
+      </div><div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--color-hairline)">
+        <label style="display:flex;align-items:center;gap:12px"><input type="checkbox" checked style="width:20px;height:20px;accent-color:var(--color-accent)"> <span>Tricep Pushdown</span></label>
+        <span style="font-variant-numeric:tabular-nums;font-size:14px;color:var(--text-tertiary)">3 x 15</span>
+      </div>
+    <button style="min-height:48px;width:100%;margin-top:16px;border:none;border-radius:12px;background:var(--color-accent-strong);color:#fff;font-weight:600;cursor:pointer">Add to routine</button>
+  </div></body></html>
