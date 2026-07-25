@@ -22,6 +22,8 @@ export interface ReadinessInputs {
   overloadRate: number;
   /** Fraction 0-1 of recent exercises that were held/failed (fatigue proxy). */
   recentFailRate: number;
+  /** Signed weekly tonnage trend, -1..1 (from trainingSignals). Optional. */
+  weeklyVolumeTrend?: number;
 }
 
 export interface Readiness {
@@ -68,6 +70,9 @@ export function computeReadiness(input: ReadinessInputs): Readiness {
   else if (days >= 6) score -= 6; // drifting toward detrain
   score -= recentFailRate * 30; // fatigue penalty
   if (overreaching) score -= 10;
+  // Bounded momentum term from the weekly tonnage slope (max +/-8 points).
+  const trend = clamp(input.weeklyVolumeTrend ?? 0, -1, 1);
+  score += clamp(trend * 16, -8, 8);
   score = Math.round(clamp(score, 0, 100));
 
   // Verdict.

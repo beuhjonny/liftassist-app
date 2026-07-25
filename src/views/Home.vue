@@ -153,6 +153,7 @@ import AppHeader from '@/components/base/AppHeader.vue';
 import ReadinessCard from '@/components/ReadinessCard.vue';
 import { colorForDay } from '@/design/dayPalette';
 import { computeReadiness } from '@/utils/readiness';
+import { computeRecentFailRate, computeWeeklyVolumeTrend } from '@/utils/trainingSignals';
 import { Dumbbell, History, ChevronRight, ArrowRight, AlertTriangle, Trash2, Check, Flame } from 'lucide-vue-next';
 import type { WorkoutDay, EnhancedWorkoutDay, LoggedWorkout } from '@/types';
 
@@ -193,6 +194,25 @@ const otherDays = computed<EnhancedWorkoutDay[]>(() =>
 const exerciseCount = (day: EnhancedWorkoutDay | null): number => day?.exercises?.length ?? 0;
 
 // Flagship: compose the readiness verdict from signals we already track.
+const toDateSafe = (raw: unknown): Date => {
+  const r = raw as { toDate?: () => Date; seconds?: number } | Date | string | number | null;
+  if (!r) return new Date(0);
+  if (r instanceof Date) return r;
+  if (typeof (r as { toDate?: () => Date }).toDate === 'function') return (r as { toDate: () => Date }).toDate();
+  if (typeof (r as { seconds?: number }).seconds === 'number') return new Date((r as { seconds: number }).seconds * 1000);
+  const d = new Date(r as string | number);
+  return isNaN(d.getTime()) ? new Date(0) : d;
+};
+
+// Flatten logged workouts into the pure-signal shape (date + set statuses).
+const signalWorkouts = computed(() => {
+  const list = (allLoggedWorkouts as unknown as LoggedWorkout[]) || [];
+  return list.map((lw) => ({
+    date: toDateSafe(lw.date),
+    sets: (lw.performedExercises || []).flatMap((ex) => ex.sets || []),
+  }));
+});
+
 const readiness = computed(() => {
   const cs = consistencyStats.value;
   if (!cs) return null;
@@ -204,7 +224,8 @@ const readiness = computed(() => {
     workoutsThisWeek: cs.workoutsThisWeek,
     targetPerWeek: cs.targetPerWeek,
     overloadRate: cs.overloadRate,
-    recentFailRate: 0,
+    recentFailRate: computeRecentFailRate(signalWorkouts.value),
+    weeklyVolumeTrend: computeWeeklyVolumeTrend(signalWorkouts.value),
   });
 });
 
