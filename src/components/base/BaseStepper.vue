@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Plus, Minus } from 'lucide-vue-next';
+import { haptics } from '@/utils/haptics';
 
 const props = withDefaults(
   defineProps<{
@@ -35,7 +36,7 @@ const bump = (dir: number) => {
   const next = Math.min(props.max, Math.max(props.min, props.modelValue + dir * props.step));
   if (next !== props.modelValue) {
     emit('update:modelValue', next);
-    try { navigator.vibrate?.(15); } catch { /* ignore */ }
+    haptics.tick();
   }
 };
 </script>

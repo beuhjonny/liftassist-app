@@ -36,6 +36,13 @@ export default defineConfig({
             url: 'url'
           }
         },
+        // Long-press the installed app icon to jump straight to a task
+        // (Tide Guide / Home-screen "save a step" pattern).
+        shortcuts: [
+          { name: 'Start next workout', short_name: 'Start', url: '/?action=start' },
+          { name: 'Import a workout', short_name: 'Import', url: '/import' },
+          { name: 'Progress', short_name: 'Progress', url: '/history' }
+        ],
         icons: [
           {
             src: 'robot-arm-icon.svg',

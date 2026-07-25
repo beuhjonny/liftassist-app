@@ -90,6 +90,7 @@ import type { SessionExercise, LoggedSetData } from '@/types';
 import { toDisplay, displayUnit } from '@/utils/weight';
 import { Info, Pencil, SkipForward, Check, TrendingUp } from 'lucide-vue-next';
 import BaseButton from '@/components/base/BaseButton.vue';
+import { haptics } from '@/utils/haptics';
 
 defineProps<{
   exercise: SessionExercise;
@@ -119,7 +120,8 @@ const emit = defineEmits<{
 }>();
 
 const onLog = (status: 'done' | 'failed') => {
-  try { navigator.vibrate?.(status === 'done' ? 30 : 15); } catch { /* ignore */ }
+  if (status === 'done') haptics.logDone();
+  else haptics.logFail();
   emit('logSet', status);
 };
 </script>
