@@ -59,26 +59,27 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/Home.vue') // Dynamic import
+    component: () => import('../views/Home.vue'), // Dynamic import
+    meta: { tab: 'home' }
   },
   {
     path: '/routines',
     name: 'Routines',
     component: () => import('../views/Routines.vue'), // Dynamic import
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, tab: 'routines' }
   },
   {
     path: '/workout-active/:programId/:dayId',
     name: 'WorkoutActive',
     component: () => import('../views/WorkoutActive.vue'), // Dynamic import
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, tab: 'home', hideTabBar: true },
     props: true
   },
   {
     path: '/history',
     name: 'History',
     component: () => import('../views/WorkoutHistory.vue'), // Dynamic import
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, tab: 'progress' }
   },
   {
     path: '/version-history',
@@ -89,7 +90,7 @@ const routes = [
     path: '/profile',
     name: 'Profile',
     component: () => import('../views/Profile.vue'), // Dynamic import
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, tab: 'profile' }
   },
   {
     path: '/login',
@@ -117,7 +118,7 @@ const routes = [
     path: '/import',
     name: 'ImportWorkout',
     component: () => import('../views/ImportWorkout.vue'),
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, tab: 'routines' }
   },
   {
     // PWA share-target lands here with ?url=&text=&title= from the OS share sheet.
