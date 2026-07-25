@@ -58,8 +58,30 @@ import {
 } from 'chart.js';
 import type { LoggedWorkout } from '@/types';
 import { displayUnit } from '@/utils/weight';
+import { useChartTheme } from '@/composables/useChartTheme';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, Filler);
+
+const { theme } = useChartTheme();
+
+/** Alpha helper for hex or rgb() token values (no color-mix dependency). */
+const withAlpha = (color: string, alpha: number): string => {
+  if (color.startsWith('#') && (color.length === 7 || color.length === 4)) {
+    const hex = color.length === 4
+      ? color.slice(1).split('').map((c) => c + c).join('')
+      : color.slice(1);
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  const m = color.match(/rgba?\(([^)]+)\)/);
+  if (m) {
+    const [r, g, b] = m[1].split(',').map((s) => parseFloat(s));
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return color;
+};
 
 const props = withDefaults(
   defineProps<{
@@ -256,20 +278,20 @@ const chartData = computed(() => {
       {
         label: metricLabel,
         data: finalValues,
-        borderColor: '#10b981',
+        borderColor: theme.value.series1,
         backgroundColor: (context: any) => {
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-          gradient.addColorStop(0, 'rgba(16, 185, 129, 0.35)');
-          gradient.addColorStop(1, 'rgba(16, 185, 129, 0.01)');
+          gradient.addColorStop(0, withAlpha(theme.value.series1, 0.22));
+          gradient.addColorStop(1, withAlpha(theme.value.series1, 0.01));
           return gradient;
         },
         fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#10b981',
-        pointBorderColor: '#ffffff',
-        pointRadius: 4,
-        pointHoverRadius: 7
+        tension: 0.35,
+        pointBackgroundColor: theme.value.series1,
+        pointBorderColor: theme.value.cardBg,
+        pointRadius: finalValues.length <= 16 ? 3 : 0,
+        pointHoverRadius: 5
       }
     ]
   };
@@ -291,11 +313,12 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
         display: false
       },
       tooltip: {
-        backgroundColor: '#1a1f29',
-        titleColor: '#ffffff',
-        bodyColor: '#10b981',
-        borderColor: 'rgba(255, 255, 255, 0.15)',
+        backgroundColor: theme.value.tooltipBg,
+        titleColor: theme.value.tooltipFg,
+        bodyColor: theme.value.tooltipMuted,
+        borderColor: theme.value.hairline,
         borderWidth: 1,
+        cornerRadius: 10,
         padding: 12,
         callbacks: {
           label: (context) => {
@@ -304,23 +327,28 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
         }
       }
     },
+    interaction: { mode: 'index', intersect: false },
     scales: {
       x: {
-        grid: {
-          color: 'rgba(255, 255, 255, 0.08)'
-        },
+        grid: { display: false },
         ticks: {
-          color: '#a0aec0',
-          font: { size: 11, weight: 'bold' }
+          color: theme.value.axis,
+          font: { size: 11, weight: 500 }
         }
       },
       y: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.08)'
+          color: theme.value.grid,
+          drawTicks: false
         },
         ticks: {
-          color: '#a0aec0',
-          font: { size: 11, weight: 'bold' }
+          color: theme.value.axis,
+          font: { size: 11, weight: 500 },
+          maxTicksLimit: 5,
+          callback: (v) => {
+            const n = Number(v);
+            return n >= 1000 ? `${Math.round(n / 100) / 10}k` : n;
+          }
         },
         beginAtZero: true
       }
@@ -361,10 +389,10 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
 .toggle-buttons {
   display: flex;
   gap: 6px;
-  background-color: var(--color-card-mute, #1a1a1a);
+  background-color: var(--surface-sunken);
   padding: 3px;
-  border-radius: 8px;
-  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-hairline);
 }
 
 .toggle-btn {
@@ -381,17 +409,18 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
 }
 
 .toggle-btn.active {
-  background-color: #10b981;
-  color: #ffffff;
+  background-color: var(--color-accent);
+  color: var(--color-accent-contrast);
   opacity: 1;
 }
 
 .chart-select {
+  min-height: var(--tap-min);
   padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid var(--color-card-border);
-  background-color: var(--color-card-mute, #1a1a1a);
-  color: var(--color-card-text, #ffffff);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-hairline);
+  background-color: var(--surface-sunken);
+  color: var(--color-card-text);
   font-size: 0.85em;
   font-weight: 600;
 }

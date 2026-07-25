@@ -49,8 +49,22 @@ import {
 } from 'chart.js';
 import type { LoggedWorkout } from '@/types';
 import { displayUnit } from '@/utils/weight';
+import { useChartTheme } from '@/composables/useChartTheme';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, Filler);
+
+const { theme } = useChartTheme();
+
+const withAlpha = (color: string, alpha: number): string => {
+  if (color.startsWith('#') && (color.length === 7 || color.length === 4)) {
+    const hex = color.length === 4 ? color.slice(1).split('').map((c: string) => c + c).join('') : color.slice(1);
+    const r = parseInt(hex.slice(0, 2), 16); const g = parseInt(hex.slice(2, 4), 16); const b = parseInt(hex.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  const m = color.match(/rgba?(([^)]+))/);
+  if (m) { const [r, g, b] = m[1].split(',').map((x: string) => parseFloat(x)); return `rgba(${r}, ${g}, ${b}, ${alpha})`; }
+  return color;
+};
 
 const props = withDefaults(
   defineProps<{
@@ -171,20 +185,20 @@ const chartData = computed(() => {
       {
         label: `${props.exerciseName} (${getMetricUnitLabel()})`,
         data: dataPoints.map(d => d.value),
-        borderColor: '#007bff',
+        borderColor: theme.value.series1,
         backgroundColor: (context: any) => {
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-          gradient.addColorStop(0, 'rgba(0, 123, 255, 0.35)');
-          gradient.addColorStop(1, 'rgba(0, 123, 255, 0.01)');
+          gradient.addColorStop(0, withAlpha(theme.value.series1, 0.22));
+          gradient.addColorStop(1, withAlpha(theme.value.series1, 0.01));
           return gradient;
         },
         fill: true,
         tension: 0.35,
-        pointBackgroundColor: '#007bff',
-        pointBorderColor: '#ffffff',
-        pointHoverBackgroundColor: '#ffffff',
-        pointHoverBorderColor: '#007bff',
+        pointBackgroundColor: theme.value.series1,
+        pointBorderColor: theme.value.cardBg,
+        pointHoverBackgroundColor: theme.value.cardBg,
+        pointHoverBorderColor: theme.value.series1,
         pointRadius: 4,
         pointHoverRadius: 7
       }
@@ -206,10 +220,10 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
         display: false
       },
       tooltip: {
-        backgroundColor: '#1a1f29',
-        titleColor: '#ffffff',
-        bodyColor: '#007bff',
-        borderColor: 'rgba(255, 255, 255, 0.15)',
+        backgroundColor: theme.value.tooltipBg,
+        titleColor: theme.value.tooltipFg,
+        bodyColor: theme.value.tooltipMuted,
+        borderColor: theme.value.hairline,
         borderWidth: 1,
         padding: 12,
         callbacks: {
@@ -223,20 +237,20 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
     scales: {
       x: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.08)'
+          color: theme.value.grid
         },
         ticks: {
-          color: '#a0aec0',
-          font: { size: 11, weight: 'bold' }
+          color: theme.value.axis,
+          font: { size: 11, weight: 500 }
         }
       },
       y: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.08)'
+          color: theme.value.grid
         },
         ticks: {
-          color: '#a0aec0',
-          font: { size: 11, weight: 'bold' }
+          color: theme.value.axis,
+          font: { size: 11, weight: 500 }
         },
         beginAtZero: false
       }

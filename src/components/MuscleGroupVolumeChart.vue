@@ -158,6 +158,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { Bar } from 'vue-chartjs';
+import { useChartTheme } from '@/composables/useChartTheme';
 import { 
   Chart as ChartJS, 
   Title, 
@@ -173,6 +174,8 @@ import { getExerciseDemo } from '@/utils/exerciseDemos';
 import useMuscleMappings, { type ExerciseMuscleMapping } from '@/composables/useMuscleMappings';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+
+const { theme } = useChartTheme();
 
 const props = defineProps<{
   workouts: LoggedWorkout[];
@@ -541,10 +544,10 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
         display: false
       },
       tooltip: {
-        backgroundColor: '#1a1f29',
-        titleColor: '#ffffff',
-        bodyColor: '#10b981',
-        borderColor: 'rgba(255, 255, 255, 0.15)',
+        backgroundColor: theme.value.tooltipBg,
+        titleColor: theme.value.tooltipFg,
+        bodyColor: theme.value.tooltipMuted,
+        borderColor: theme.value.hairline,
         borderWidth: 1,
         padding: 12,
         callbacks: {
@@ -557,16 +560,16 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
     scales: {
       x: {
         grid: {
-          color: 'rgba(255, 255, 255, 0.08)'
+          color: theme.value.grid
         },
         ticks: {
-          color: '#a0aec0',
+          color: theme.value.axis,
           font: { size: 11, weight: 'bold' }
         },
         title: {
           display: true,
           text: `Avg Weekly Sets (${calculatedWeeksSpan.value} Wks Span)`,
-          color: '#a0aec0',
+          color: theme.value.axis,
           font: { size: 12, weight: 'bold' }
         },
         beginAtZero: true
@@ -576,7 +579,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => {
           display: false
         },
         ticks: {
-          color: '#cbd5e1',
+          color: theme.value.axis,
           font: { size: 12, weight: 'bold' }
         }
       }
