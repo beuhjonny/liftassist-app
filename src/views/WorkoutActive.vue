@@ -123,6 +123,7 @@
       <TimerDisplay
         :timeText="formattedRestTime"
         :progress="timerProgressPercentage"
+        :secondsLeft="restCountdown"
       />
       <div class="rest-adjust-row">
         <button type="button" class="rest-adjust-btn" @click="adjustRest(-15)" aria-label="Subtract 15 seconds">-15s</button>
