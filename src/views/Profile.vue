@@ -179,9 +179,9 @@
                 :key="num"
                 @click="updateStreakMinWorkouts(num)"
                 :style="{
-                  backgroundColor: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? 'var(--color-primary, #007bff)' : 'var(--color-card-mute)',
+                  backgroundColor: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? 'var(--color-accent)' : 'var(--color-card-mute)',
                   color: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? '#ffffff' : 'var(--color-card-text)',
-                  borderColor: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? 'var(--color-primary, #007bff)' : 'var(--color-card-border)'
+                  borderColor: (settings.streakMinWorkoutsPerWeek ?? 2) === num ? 'var(--color-accent)' : 'var(--color-card-border)'
                 }"
                 style="padding: 6px 12px; border-radius: 6px; font-size: 0.88em; border: 1px solid; cursor: pointer; transition: all 0.2s;"
               >
@@ -229,9 +229,9 @@
                 :key="d"
                 @click="updateOverloadTimeframe(d)"
                 :style="{
-                  backgroundColor: (settings.overloadTimeframeDays ?? 14) === d ? 'var(--color-primary, #007bff)' : 'var(--color-card-mute)',
+                  backgroundColor: (settings.overloadTimeframeDays ?? 14) === d ? 'var(--color-accent)' : 'var(--color-card-mute)',
                   color: (settings.overloadTimeframeDays ?? 14) === d ? '#ffffff' : 'var(--color-card-text)',
-                  borderColor: (settings.overloadTimeframeDays ?? 14) === d ? 'var(--color-primary, #007bff)' : 'var(--color-card-border)'
+                  borderColor: (settings.overloadTimeframeDays ?? 14) === d ? 'var(--color-accent)' : 'var(--color-card-border)'
                 }"
                 style="padding: 6px 12px; border-radius: 6px; font-size: 0.88em; border: 1px solid; cursor: pointer; transition: all 0.2s;"
               >
@@ -2327,14 +2327,14 @@ const handleDeleteAccount = async () => {
 }
 
 .card { /* General card styling */
-  background-color: var(--color-card-bg);
-  padding: 20px 25px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  background-color: var(--surface-raised);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1), var(--edge-highlight);
   text-align: left;
   width: 100%; /* Make cards take full width of .user-details-container */
   box-sizing: border-box;
-  border: 1px solid var(--color-card-border);
+  border: 1px solid var(--color-hairline);
 }
 
 .card h2 {
@@ -2379,23 +2379,24 @@ const handleDeleteAccount = async () => {
 
 /* Button Styles to match the rest of the app */
 .button-primary {
-  background-color: var(--color-primary, #007bff);
-  color: white;
+  background-color: var(--color-accent-strong);
+  color: var(--color-accent-contrast);
   border: none;
-  border-radius: 6px;
-  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  min-height: var(--tap-min);
+  padding: var(--space-2) var(--space-4);
   cursor: pointer;
   font-weight: 600;
   font-family: inherit;
   font-size: 0.95rem;
-  transition: background-color 0.2s, transform 0.1s;
+  transition: background-color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .button-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-dark, #0056b3);
+  background-color: var(--color-accent);
 }
 
 .button-primary:active:not(:disabled) {
@@ -2505,7 +2506,7 @@ const handleDeleteAccount = async () => {
   margin-right: 15px;
   min-width: 25px; /* Ensure alignment even if icon is small */
   text-align: center;
-  color: #007bff; /* Primary color for icons */
+  color: var(--color-accent-line);
 }
 
 .stat-label {
@@ -2586,7 +2587,7 @@ font-weight: bold;
 }
 
 .segmented-control button.active {
-    background: #007bff;
+    background: var(--color-accent);
     color: white;
     font-weight: bold;
     box-shadow: 0 1px 3px rgba(0,0,0,0.2);
@@ -2594,7 +2595,7 @@ font-weight: bold;
 
 input[type="range"] {
     width: 120px;
-    accent-color: #007bff;
+    accent-color: var(--color-accent);
 }
 
 select {
@@ -2731,11 +2732,11 @@ select {
 
 /* Toggle Switch Styles */
 .switch input:checked + .slider {
-  background-color: #2196F3;
+  background-color: var(--color-accent);
 }
 
 .switch input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
+  box-shadow: 0 0 1px var(--color-accent);
 }
 
 .stat-highlight {
@@ -2778,7 +2779,7 @@ select {
     color: var(--color-success, #28a745);
 }
 .strava-status.configured {
-    color: var(--color-primary, #007bff);
+    color: var(--color-accent);
 }
 .strava-control {
     display: flex;
