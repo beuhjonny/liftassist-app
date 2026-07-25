@@ -21,6 +21,13 @@
     </div>
     <p v-if="exercise.notesForExercise" class="exercise-notes"><em>{{ exercise.notesForExercise }}</em></p>
 
+    <!-- Spoken set flow: announce each new prescription to screen readers -->
+    <p class="sr-only" aria-live="polite">
+      Set {{ setNumber }} of {{ exercise.targetSets }}:
+      <template v-if="exercise.isToFailure">{{ displayWeight }} {{ displayUnit(weightUnit) }}, as many reps as possible.</template>
+      <template v-else>{{ displayWeight }} {{ displayUnit(weightUnit) }}, {{ effectiveReps }} {{ exercise.isTimed ? 'second hold' : 'reps' }}.</template>
+    </p>
+
     <!-- Prescription hero: one dominant number -->
     <div class="prescription-hero">
       <div class="set-line">
@@ -128,6 +135,11 @@ const onLog = (status: 'done' | 'failed') => {
 
 <style scoped>
 .current-exercise-block { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; padding: 0;
+}
 
 /* Header */
 .ex-header {
