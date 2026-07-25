@@ -15,187 +15,93 @@
     </div>
 
     <div v-if="user && activeProgram.id" class="authenticated-view">
-      <h1>Home Dashboard</h1>
-      
-      <!-- Confirmation Modal for Draft Discard -->
-      <div v-if="showDiscardDraftModal" class="manifesto-modal-overlay" @click.self="cancelDiscardDraft">
-        <div class="manifesto-modal-content card" style="max-width: 400px; text-align: center; padding-top: 25px;">
-           <button class="modal-close-button" @click="cancelDiscardDraft">×</button>
-           <h3 style="margin-top: 0; color: var(--color-card-heading);">Discard Draft?</h3>
-           <p style="margin: 15px 0; color: var(--color-card-text);">
-             Are you sure you want to delete this unfinished workout? This action cannot be undone.
-           </p>
-           <div class="modal-actions" style="display: flex; gap: 10px; margin-top: 20px;">
-             <button @click="cancelDiscardDraft" class="button-secondary" style="flex: 1;">Cancel</button>
-             <button @click="handleDiscardDraft" class="button-primary" style="flex: 1; background-color: #dc3545;">Delete Forever</button>
-           </div>
+      <AppHeader>
+        <template #title><span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span></template>
+      </AppHeader>
+
+      <div class="home-body">
+        <BaseModal :open="showDiscardDraftModal" title="Discard draft?" @close="cancelDiscardDraft">
+          <p>Delete this unfinished workout? This cannot be undone.</p>
+          <template #footer>
+            <BaseButton variant="secondary" @click="cancelDiscardDraft">Cancel</BaseButton>
+            <BaseButton variant="danger" @click="handleDiscardDraft">Delete forever</BaseButton>
+          </template>
+        </BaseModal>
+
+        <div v-if="isProgramLoading" class="hero-skeleton card">
+          <SkeletonLoader width="35%" height="0.9em" />
+          <SkeletonLoader width="70%" height="2em" />
+          <SkeletonLoader width="55%" height="0.9em" />
+          <SkeletonLoader width="100%" height="52px" borderRadius="12px" />
         </div>
-      </div>
 
-      <div v-if="isProgramLoading" class="active-program-display card skeleton-card">
-          <h2><SkeletonLoader width="60%" height="1.8em" /></h2>
-          <p class="routine-description skeleton-text-gap">
-            <SkeletonLoader width="40%" height="1em" />
-          </p>
+        <div v-else-if="programLoadingError" class="load-error" role="alert">Error loading program: {{ programLoadingError }}</div>
 
-          <!-- Skeleton Insights Area: Uses the real container style to match appearance -->
-          <div class="program-insights">
-             <p class="insight-item">
-               <SkeletonLoader width="30%" height="1em" /> <SkeletonLoader width="40%" height="1em" />
-             </p>
-             <p class="insight-item">
-               <SkeletonLoader width="20%" height="1em" /> <SkeletonLoader width="20%" height="1em" />
-             </p>
-          </div>
+        <template v-else>
+          <section v-if="activeDraft" class="next-hero is-draft">
+            <div class="hero-rail" aria-hidden="true"></div>
+            <span class="hero-eyebrow warn"><AlertTriangle :size="14" /> UNFINISHED WORKOUT</span>
+            <h1 class="hero-day">{{ activeDraft.dayName }}</h1>
+            <p class="hero-meta">{{ activeDraft.setsCount }} set{{ activeDraft.setsCount === 1 ? '' : 's' }} logged - pick up where you left off</p>
+            <BaseButton class="hero-cta" size="lg" block @click="resumeDraftWorkout">
+              Resume {{ activeDraft.dayName }}<template #trailing><ArrowRight :size="18" /></template>
+            </BaseButton>
+            <button type="button" class="hero-discard" @click="confirmDiscardDraft"><Trash2 :size="14" /> Discard draft</button>
+          </section>
 
-          <h3>Start a Workout:</h3>
-          <!-- Skeleton Buttons: Match the button-workout-day dimensions -->
-          <div class="workout-day-selection">
-             <div class="skeleton-button">
-                <SkeletonLoader width="100%" height="100%" borderRadius="6px" />
-             </div>
-             <div class="skeleton-button">
-                <SkeletonLoader width="100%" height="100%" borderRadius="6px" />
-             </div>
-             <div class="skeleton-button">
-                 <SkeletonLoader width="100%" height="100%" borderRadius="6px" />
-             </div>
-          </div>
-      </div>
-      <div v-if="programLoadingError && !isProgramLoading" class="error-message">
-        <p>Error loading program: {{ programLoadingError }}</p>
-      </div>
-
-      <div v-if="activeProgram.id && !isProgramLoading && !programLoadingError">
-        <div class="active-program-display card">
-
-          <!-- Consistency & Progress Momentum Bar (Above Routine Title) -->
-          <div v-if="consistencyStats" class="consistency-progress-card card-inset" style="margin-bottom: 20px; padding: 14px 16px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border);">
-            <div style="font-weight: 800; font-size: 0.8em; letter-spacing: 0.8px; text-transform: uppercase; color: var(--color-card-heading); margin-bottom: 10px;">
-              🔥 CONSISTENCY & PROGRESS
+          <section v-else-if="heroDay" class="next-hero">
+            <div class="hero-rail" aria-hidden="true"></div>
+            <div class="hero-eyebrow-row">
+              <span class="hero-eyebrow">{{ heroDay.lastCompletedThisDayDate ? 'NEXT WORKOUT' : 'START HERE' }}</span>
+              <BaseBadge tone="neutral">{{ activeProgram.programName }}</BaseBadge>
             </div>
+            <h1 class="hero-day">{{ heroDay.dayName }}</h1>
+            <p class="hero-meta">
+              <Dumbbell :size="14" /> {{ exerciseCount(heroDay) }} exercise{{ exerciseCount(heroDay) === 1 ? '' : 's' }}
+              <template v-if="heroDay.lastCompletedThisDayDate"><span class="meta-dot">&middot;</span><History :size="14" /> last {{ formatDate(heroDay.lastCompletedThisDayDate) }}</template>
+            </p>
+            <BaseButton class="hero-cta" size="lg" block @click="startWorkout(heroDay)" :aria-label="`Start ${heroDay.dayName} workout`">
+              Start {{ heroDay.dayName }}<template #trailing><ArrowRight :size="18" /></template>
+            </BaseButton>
+          </section>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
-              
-              <!-- Metric 1: Streak & Weekly Progress -->
-              <div style="display: flex; flex-direction: column; gap: 2px;">
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="font-weight: 800; font-size: 1.1em; color: var(--color-card-heading); letter-spacing: -0.2px;">
-                    {{ consistencyStats.weeklyStreak }} {{ consistencyStats.weeklyStreak === 1 ? 'Week' : 'Weeks' }} Streak
-                  </span>
-                </div>
-                <span style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; font-weight: 500;">
-                  {{ consistencyStats.workoutsThisWeek }}/{{ consistencyStats.targetPerWeek }} workouts logged this week
-                </span>
+          <section v-if="consistencyStats" class="consistency card">
+            <span class="strip-eyebrow"><Flame :size="14" /> THIS WEEK</span>
+            <div class="strip-row">
+              <div class="stat">
+                <span class="stat-value">{{ consistencyStats.weeklyStreak }}</span>
+                <span class="stat-label">week streak</span>
               </div>
-
-              <!-- Metric 2: Overload Rate & Timeframe -->
-              <div style="display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--color-card-border); padding-left: 14px;">
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="font-weight: 800; font-size: 1.1em; color: var(--color-card-heading); letter-spacing: -0.2px;">
-                    {{ consistencyStats.overloadRate }}% Overload Rate
-                  </span>
-                </div>
-                <span style="font-size: 0.78em; color: var(--color-card-text); opacity: 0.75; font-weight: 500;">
-                  {{ consistencyStats.overloadHits }}/{{ consistencyStats.overloadTotalExercises }} exercises hit target (last {{ consistencyStats.timeframeDays }} days)
-                </span>
+              <div class="stat">
+                <span class="stat-value">{{ consistencyStats.workoutsThisWeek }}/{{ consistencyStats.targetPerWeek }}</span>
+                <span class="stat-label">sessions</span>
               </div>
-
-            </div>
-          </div>
-
-          <h2>{{ activeProgram.programName }}</h2>
-          <p class="routine-description"><em>{{ activeProgram.description || 'Time to train!' }}</em></p>
-
-          <div v-if="isLoadingHistory" class="loading-message small-loading">
-            <p>Loading workout insights...</p>
-          </div>
-          <div v-else-if="historyError" class="error-message">
-             <p>Could not load workout insights: {{ historyError }}</p>
-          </div>
-          <div v-else class="program-insights">
-            <div v-if="activeDraft" class="draft-workout-alert card-inset" style="background-color: #fff3cd; border: 1px solid #ffc107; padding: 15px; margin-bottom: 15px; border-radius: 6px;">
-              <p style="margin: 0 0 10px 0; font-weight: 600; color: #856404;">
-                ⚠️ Unfinished Workout
-              </p>
-              <p style="margin: 0 0 10px 0; color: #856404;">
-                You have {{ activeDraft.setsCount }} set(s) logged for {{ activeDraft.dayName }}
-              </p>
-              <div class="draft-actions" style="display: flex; gap: 10px;">
-                <button 
-                  @click="resumeDraftWorkout" 
-                  class="button-primary"
-                  style="flex: 4;"
-                >
-                  Resume Workout
-                </button>
-                <button 
-                  @click="confirmDiscardDraft" 
-                  class="button-danger-icon"
-                  style="flex: 1; display: flex; align-items: center; justify-content: center; background-color: #dc3545; border: none; border-radius: 6px; cursor: pointer; color: white; padding: 10px; transition: background-color 0.2s;"
-                  title="Discard Draft"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                  </svg>
-                </button>
+              <div class="stat">
+                <span class="stat-value">{{ consistencyStats.overloadRate }}%</span>
+                <span class="stat-label">overload {{ consistencyStats.timeframeDays }}d</span>
               </div>
             </div>
-            <p v-if="lastDoneDayOverallDisplay" class="insight-item">
-              <span class="insight-label">Last Workout:</span>
-              <span class="insight-value">{{ lastDoneDayOverallDisplay.name }}
-                <span class="insight-date"> (on {{ formatDate(lastDoneDayOverallDisplay.date) }})</span>
+          </section>
+
+          <section v-if="otherDays.length" class="day-list">
+            <h2 class="list-eyebrow">{{ activeDraft ? 'CHOOSE ANOTHER DAY' : 'OTHER DAYS' }}</h2>
+            <button v-for="day in otherDays" :key="day.id" type="button" class="day-row" @click="startWorkout(day)">
+              <span class="day-dot" :style="{ background: colorForDay(day.order, day.color) }" aria-hidden="true"></span>
+              <span class="day-info">
+                <span class="day-name">{{ day.dayName }}</span>
+                <span class="day-sub">{{ exerciseCount(day) }} exercises<template v-if="day.lastCompletedThisDayDate"> &middot; last {{ formatDate(day.lastCompletedThisDayDate) }}</template></span>
               </span>
-            </p>
-            <p v-if="nextRecommendedDayObject" class="insight-item">
-              <span class="insight-label">Next Up:</span>
-              <button
-                v-if="nextRecommendedDayObject.dayName"
-                @click="startWorkout(nextRecommendedDayObject)"
-                class="clickable-next-up-text insight-value next-up-highlight"
-                :title="`Start ${nextRecommendedDayObject.dayName} workout`"
-              >
-                {{ nextRecommendedDayObject.dayName }}
-              </button>
-            </p>
-            <p v-else-if="nextRecommendedDayNameDisplay && !nextRecommendedDayObject" class="insight-item">
-                <span class="insight-label">Next Up:</span>
-                <span class="insight-value next-up-highlight">{{ nextRecommendedDayNameDisplay }}</span>
-            </p>
-            <p v-if="!lastDoneDayOverallDisplay && !isLoadingHistory && sortedWorkoutDays.length > 0 && !nextRecommendedDayObject" class="insight-item">
-              <span class="insight-label">Let's get started with your first session for this routine!</span>
-            </p>
-          </div>
-
-          <h3>Choose a Workout to Start:</h3>
-          <div v-if="enhancedWorkoutDays.length > 0" class="workout-day-selection">
-            <button
-              v-for="day in enhancedWorkoutDays"
-              :key="day.id"
-              @click="startWorkout(day)"
-              :class="[
-                'button-workout-day',
-                { 'is-recommended': day.isNextRecommended && !day.isLastDoneOverall },
-                { 'is-last-done': day.isLastDoneOverall },
-                { 'has-skips': settings?.enableSkipTracker !== false && day.skipIndicatorCount > 0 }
-              ]"
-            >
-              Start {{ day.dayName }}
-              <span v-if="day.isNextRecommended && !day.isLastDoneOverall" class="status-badge recommended-badge" title="Next Recommended Workout">🚀 Next</span>
-              <span v-if="day.isLastDoneOverall" class="status-badge last-done-badge" title="Last Workout Completed">✓ Done</span>
-              <span v-if="settings?.enableSkipTracker !== false && day.skipIndicatorCount > 0" class="status-badge skipped-badge" :title="`${day.skipIndicatorCount} time(s) this day was due and another workout was done instead`">
-                ⚠️ {{ day.skipIndicatorCount }}
-              </span>
+              <BaseBadge v-if="day.isNextRecommended && !day.isLastDoneOverall" tone="accent">Next</BaseBadge>
+              <BaseBadge v-else-if="day.isLastDoneOverall" tone="neutral"><Check :size="12" /> Done</BaseBadge>
+              <BaseBadge v-else-if="settings?.enableSkipTracker !== false && day.skipIndicatorCount > 0" tone="warning"><AlertTriangle :size="12" /> {{ day.skipIndicatorCount }}</BaseBadge>
+              <ChevronRight :size="18" class="day-chevron" />
             </button>
-          </div>
-          <p v-else-if="!isLoadingHistory && sortedWorkoutDays.length === 0 && activeProgram.id" class="no-items-message">
-            This routine has no workout days defined yet.
-            <router-link :to="{ name: 'Routines' }">Go to Routines to add them.</router-link>
+          </section>
+
+          <p v-if="enhancedWorkoutDays.length === 0 && sortedWorkoutDays.length === 0" class="no-items-message">
+            This routine has no workout days yet. <router-link :to="{ name: 'Routines' }">Add them in Routines.</router-link>
           </p>
-        </div>
+        </template>
       </div>
     </div>
 
@@ -238,6 +144,12 @@ import ManifestoComponent from '@/components/ManifestoComponent.vue';
 import SkeletonLoader from '@/components/SkeletonLoader.vue';
 import AboutModal from '@/components/AboutModal.vue';
 import CardioSectionCard from '@/components/CardioSectionCard.vue';
+import BaseButton from '@/components/base/BaseButton.vue';
+import BaseBadge from '@/components/base/BaseBadge.vue';
+import BaseModal from '@/components/base/BaseModal.vue';
+import AppHeader from '@/components/base/AppHeader.vue';
+import { colorForDay } from '@/design/dayPalette';
+import { Dumbbell, History, ChevronRight, ArrowRight, AlertTriangle, Trash2, Check, Flame } from 'lucide-vue-next';
 import type { WorkoutDay, EnhancedWorkoutDay, LoggedWorkout } from '@/types';
 
 const { user } = useAuth();
@@ -263,6 +175,18 @@ const {
 
 const { loggedWorkouts: allLoggedWorkouts } = useLoggedWorkouts();
 const { externalActivities } = useExternalActivities();
+
+// The hero centerpiece is the recommended next day (or the first day). The
+// day list below demotes everything else and excludes the hero to avoid a
+// duplicate CTA.
+const heroDay = computed<EnhancedWorkoutDay | null>(() => {
+  if (nextRecommendedDayObject.value) return nextRecommendedDayObject.value as EnhancedWorkoutDay;
+  return (enhancedWorkoutDays.value[0] as EnhancedWorkoutDay) || null;
+});
+const otherDays = computed<EnhancedWorkoutDay[]>(() =>
+  enhancedWorkoutDays.value.filter((d) => d.id !== heroDay.value?.id),
+);
+const exerciseCount = (day: EnhancedWorkoutDay | null): number => day?.exercises?.length ?? 0;
 
 const consistencyStats = computed(() => {
   const historyList: LoggedWorkout[] = (allLoggedWorkouts && (allLoggedWorkouts as any).length > 0)
@@ -655,4 +579,135 @@ const startWorkout = (day: WorkoutDay | EnhancedWorkoutDay) => {
   height: 56px; /* Match approximate height of real buttons */
   width: 100%;
 }
+</style>
+<style scoped>
+/* ---- Redesigned authenticated Home (design system) ---- */
+.home-body {
+  max-width: 640px;
+  margin-inline: auto;
+  padding: var(--space-5) var(--space-4) var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+@media (max-width: 600px) { .home-body { padding-inline: var(--space-3); } }
+
+.next-hero {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-raised);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2), var(--edge-highlight);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.hero-rail {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  background: var(--color-accent);
+}
+.is-draft .hero-rail { background: var(--color-warning-fg); }
+
+.hero-eyebrow-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  font-size: var(--text-xs); font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider); text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.hero-eyebrow.warn { color: var(--color-warning-fg); }
+
+.hero-day {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-black);
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-heading);
+  margin: 0;
+}
+.hero-meta {
+  display: flex; align-items: center; gap: var(--space-2);
+  flex-wrap: wrap;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+.hero-meta svg { opacity: 0.7; }
+.meta-dot { opacity: 0.5; }
+.hero-cta { margin-top: var(--space-2); }
+.hero-discard {
+  align-self: flex-end;
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  min-height: var(--tap-min);
+  background: none; border: none; cursor: pointer;
+  color: var(--color-danger-fg); font-size: var(--text-sm); font-weight: var(--weight-medium);
+}
+
+/* Consistency strip */
+.consistency {
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-1), var(--edge-highlight);
+  padding: var(--space-4);
+  display: flex; flex-direction: column; gap: var(--space-3);
+}
+.strip-eyebrow {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  font-size: var(--text-xs); font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider); text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.strip-row { display: flex; align-items: stretch; }
+.stat {
+  flex: 1; display: flex; flex-direction: column; gap: 2px;
+  padding-inline: var(--space-3);
+}
+.stat + .stat { border-left: 1px solid var(--color-hairline); }
+.stat:first-child { padding-left: 0; }
+.stat-value {
+  font-size: var(--text-xl); font-weight: var(--weight-bold);
+  color: var(--color-heading); font-variant-numeric: tabular-nums; line-height: 1;
+}
+.stat-label { font-size: var(--text-xs); color: var(--text-tertiary); }
+
+/* Day list */
+.day-list { display: flex; flex-direction: column; gap: var(--space-2); }
+.list-eyebrow {
+  font-size: var(--text-xs); font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider); text-transform: uppercase;
+  color: var(--text-tertiary); margin: 0 0 var(--space-1);
+}
+.day-row {
+  display: flex; align-items: center; gap: var(--space-3);
+  width: 100%; text-align: left;
+  min-height: 56px; padding: var(--space-3) var(--space-4);
+  background: var(--surface-sunken);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard);
+}
+.day-row:active { transform: scale(0.995); }
+@media (hover: hover) { .day-row:hover { border-color: var(--color-accent-line); } }
+.day-dot { width: 12px; height: 12px; border-radius: var(--radius-full); flex-shrink: 0; }
+.day-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.day-name { font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--color-card-heading); }
+.day-sub { font-size: var(--text-xs); color: var(--text-tertiary); }
+.day-chevron { color: var(--text-tertiary); flex-shrink: 0; }
+
+.hero-skeleton {
+  display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-5); border-radius: var(--radius-lg);
+}
+.load-error {
+  background: var(--color-danger-bg); color: var(--color-danger-fg);
+  border: 1px solid var(--color-danger-line);
+  padding: var(--space-3) var(--space-4); border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+.no-items-message { color: var(--text-secondary); font-size: var(--text-sm); }
 </style>
