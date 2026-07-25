@@ -1,60 +1,57 @@
 @import './base.css';
 @import './tokens.css';
 
+/* Mobile-first app frame. Surfaces own their max-width; no desktop centering. */
 #app {
-  max-width: 1200px;
-  /* Overall max width of your application */
-  margin: 0 auto;
-  /* Centers #app on the page */
-  padding: 0.75rem;
-  /* Default padding (approx 12px) for mobile screens */
-  font-weight: normal;
   width: 100%;
-  /* Ensures #app uses the available width */
+  margin: 0 auto;
+  padding: var(--space-3);
+  padding-bottom: calc(var(--space-3) + var(--safe-bottom));
+  font-weight: normal;
   box-sizing: border-box;
-  /* Includes padding and border in the element's total width and height */
 }
 
-a,
-.green {
+a {
   text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
+  color: var(--color-accent-line);
+  transition: background-color var(--duration-fast) var(--ease-standard);
   padding: 3px;
+  border-radius: var(--radius-xs);
 }
 
+/* Global card + modal shells (tokenized). */
 .card {
-  /* This would be a global default for all .card elements */
   background-color: var(--color-card-bg);
   color: var(--color-card-text);
-  border: 1px solid var(--color-card-border);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
 }
 
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  inset: 0;
+  background-color: var(--color-scrim);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  padding: 20px;
+  z-index: var(--z-modal);
+  padding: var(--space-4);
 }
 
 .modal-content {
-  background-color: var(--color-card-bg);
+  background-color: var(--surface-overlay);
   color: var(--color-card-text);
-  border: 1px solid var(--color-card-border);
-  border-radius: 12px;
-  padding: 24px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
   max-width: 500px;
   width: 100%;
+  max-height: 90dvh;
+  overflow-y: auto;
   position: relative;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  box-shadow: var(--shadow-3);
   text-align: left;
 }
 
@@ -68,22 +65,26 @@ a,
 .modal-content textarea {
   background-color: var(--color-card-mute);
   color: var(--color-card-text);
-  border: 1px solid var(--color-card-border);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm);
+  font-size: max(16px, 1em); /* prevent iOS focus-zoom */
 }
 
 .modal-close-button {
   position: absolute;
-  top: 12px;
-  right: 16px;
+  top: var(--space-2);
+  right: var(--space-2);
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   line-height: 1;
   color: var(--color-card-text);
   opacity: 0.6;
   cursor: pointer;
-  padding: 4px;
-  transition: opacity 0.2s;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border-radius: var(--radius-full);
+  transition: opacity var(--duration-fast) var(--ease-standard);
 }
 
 .modal-close-button:hover {
@@ -92,23 +93,45 @@ a,
 
 @media (hover: hover) {
   a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+    background-color: var(--color-accent-quiet);
   }
 }
 
 @media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-    /* Vertically centers #app if body has sufficient height (e.g., min-height: 100vh) */
-  }
-
   #app {
-    padding: 2rem;
-    /* Larger padding (approx 32px) for desktop screens */
-    /* display: grid; */
-    /* Keep commented unless specifically needed */
-    /* grid-template-columns: 1fr 1fr; */
-    /* Keep commented unless specifically needed */
+    padding: var(--space-6);
+  }
+}
+
+/* ---- Global interaction hygiene ---- */
+button,
+[role='button'],
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+button,
+a,
+[role='button'] {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* ---- Global reduced-motion contract (WCAG 2.3.3) ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

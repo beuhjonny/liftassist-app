@@ -91,9 +91,9 @@ const envLabel = computed(() => {
 
 /* Styles for App.vue navigation */
 
-/* This container might set a base font and color for the whole app. */
+/* Body font (Inter) and smoothing come from base.css; no per-container
+   font override so the loaded pairing actually applies. */
 #app-container {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -141,7 +141,7 @@ const envLabel = computed(() => {
 }
 
 .app-nav a.router-link-exact-active {
-  color: #007bff;
+  color: var(--color-accent-line);
 }
 
 /* Hover effect for non-active links */
