@@ -180,7 +180,14 @@
             <div style="display: flex; flex-direction: column; gap: 12px; padding-left: 4px;">
               <!-- Weekly Workout Target -->
               <div class="setting-item">
-                <label style="font-weight: 500; font-size: 0.9em; color: var(--color-card-heading);">Weekly Workout Target</label>
+                <label style="font-weight: 500; font-size: 0.9em; color: var(--color-card-heading); display: flex; align-items: center; gap: 6px;">
+                  Weekly Workout Target
+                  <span 
+                    @click.stop.prevent="showTooltipAlert('Streak weeks are defined as calendar weeks running Monday (00:00) to Sunday (23:59). Log your target workouts between Monday and Sunday to maintain your streak!')"
+                    style="font-size: 0.95em; cursor: pointer; opacity: 0.8;" 
+                    title="Streak weeks are defined as calendar weeks running Monday (00:00) to Sunday (23:59). Log your target workouts between Monday and Sunday to maintain your streak!"
+                  >ℹ️</span>
+                </label>
                 <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                   <button 
                     v-for="num in [1, 2, 3, 4, 5]" 
