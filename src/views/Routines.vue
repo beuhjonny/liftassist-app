@@ -18,40 +18,38 @@
         <h2>Choose how you want to build your routine</h2>
         <p class="choice-subtitle">Select a preset routine, generate with AI, import existing data, or build from scratch.</p>
         
-        <div class="choice-grid-primary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 24px;">
-          
-          <button @click="creationMode = 'library'" class="choice-card hero-choice" style="border-left: 4px solid #3b82f6; text-align: left; padding: 20px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
-            <div class="choice-icon" style="font-size: 2rem; margin-bottom: 8px;">📚</div>
+        <div class="choice-grid-primary">
+          <button @click="creationMode = 'library'" type="button" class="choice-card">
+            <LibraryBig :size="24" class="choice-icon" />
             <div class="choice-content">
-              <h3 style="margin: 0 0 6px 0; font-size: 1.1em; color: var(--color-card-heading);">Browse Routine Library</h3>
-              <p style="margin: 0; font-size: 0.85em; opacity: 0.8; color: var(--color-card-text); line-height: 1.4;">Select from 24+ popular splits (PPL, Upper/Lower, Full Body) with preset Light/Med/Heavy starting weights.</p>
+              <h3>Browse Routine Library</h3>
+              <p>Select from proven splits (PPL, Upper/Lower, Full Body) with preset Light/Med/Heavy starting weights.</p>
             </div>
           </button>
 
-          <button @click="creationMode = 'ai'" class="choice-card ai-choice" style="border-left: 4px solid #8b5cf6; text-align: left; padding: 20px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
-            <div class="choice-icon" style="font-size: 2rem; margin-bottom: 8px;">✨</div>
+          <button @click="creationMode = 'ai'" type="button" class="choice-card">
+            <Sparkles :size="24" class="choice-icon" />
             <div class="choice-content">
-              <h3 style="margin: 0 0 6px 0; font-size: 1.1em; color: var(--color-card-heading);">AI Assisted Setup</h3>
-              <p style="margin: 0; font-size: 0.85em; opacity: 0.8; color: var(--color-card-text); line-height: 1.4;">Copy guided prompts for ChatGPT, Claude, or Gemini to build a custom routine.</p>
+              <h3>AI Assisted Setup</h3>
+              <p>Copy guided prompts for ChatGPT, Claude, or Gemini to build a custom routine.</p>
             </div>
           </button>
 
-          <button @click="creationMode = 'import'" class="choice-card import-choice" style="border-left: 4px solid #10b981; text-align: left; padding: 20px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
-            <div class="choice-icon" style="font-size: 2rem; margin-bottom: 8px;">📥</div>
+          <button @click="creationMode = 'import'" type="button" class="choice-card">
+            <Download :size="24" class="choice-icon" />
             <div class="choice-content">
-              <h3 style="margin: 0 0 6px 0; font-size: 1.1em; color: var(--color-card-heading);">Import Routine</h3>
-              <p style="margin: 0; font-size: 0.85em; opacity: 0.8; color: var(--color-card-text); line-height: 1.4;">Import from FitNotes backups (.fitnotes / .db) or paste a raw routine JSON code block.</p>
+              <h3>Import Routine</h3>
+              <p>Import from FitNotes backups, a shared video, or a raw routine code block.</p>
             </div>
           </button>
 
-          <button @click="quickStartManualRoutine" class="choice-card manual-choice" style="border-left: 4px solid #f59e0b; text-align: left; padding: 20px; border-radius: 10px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); cursor: pointer; transition: transform 0.2s, border-color 0.2s;">
-            <div class="choice-icon" style="font-size: 2rem; margin-bottom: 8px;">✍️</div>
+          <button @click="quickStartManualRoutine" type="button" class="choice-card">
+            <PenLine :size="24" class="choice-icon" />
             <div class="choice-content">
-              <h3 style="margin: 0 0 6px 0; font-size: 1.1em; color: var(--color-card-heading);">Build from Scratch</h3>
-              <p style="margin: 0; font-size: 0.85em; opacity: 0.8; color: var(--color-card-text); line-height: 1.4;">Start with a clean slate and manually add your custom exercises and sessions.</p>
+              <h3>Build from Scratch</h3>
+              <p>Start with a clean slate and manually add your custom exercises and sessions.</p>
             </div>
           </button>
-
         </div>
       </div>
 
@@ -1043,6 +1041,7 @@ import useHistoryIndex from '../composables/useHistoryIndex';
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import useExternalActivities from '../composables/useExternalActivities';
 import { toDisplay, fromInput, displayUnit } from '../utils/weight';
+import { LibraryBig, Sparkles, Download, PenLine } from 'lucide-vue-next';
 import {
   type ExerciseProgress,
   type ExerciseConfig,
@@ -3180,52 +3179,47 @@ onUnmounted(() => {
   gap: 20px;
   margin-top: 20px;
 }
+.choice-grid-primary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-5);
+}
 .choice-card {
-  background: var(--color-card-mute);
-  border: 1px solid var(--color-card-border);
-  border-radius: 12px;
-  padding: 30px 20px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
+  align-items: flex-start;
+  gap: var(--space-3);
+  text-align: left;
+  padding: var(--space-5);
+  background: var(--surface-sunken);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
 }
-.choice-card:hover {
-  transform: translateY(-5px);
-  border-color: #007bff;
-  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
-  background: var(--color-card-bg);
+.choice-card:active { transform: scale(0.995); }
+@media (hover: hover) {
+  .choice-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-accent-line);
+    box-shadow: var(--shadow-2);
+  }
 }
-.choice-icon {
-  font-size: 3em;
-  line-height: 1;
-}
+.choice-icon { color: var(--color-accent-line); flex-shrink: 0; margin-top: 2px; }
 .choice-content h3 {
-  margin: 0 0 8px 0;
-  font-size: 1.3em;
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
   color: var(--color-card-heading);
 }
 .choice-content p {
   margin: 0;
-  font-size: 0.9em;
-  opacity: 0.8;
-  line-height: 1.4;
-}
-.choice-arrow {
-  font-size: 1.5em;
-  color: #007bff;
-  opacity: 0;
-  transition: all 0.3s;
-  margin-top: 10px;
-}
-.choice-card:hover .choice-arrow {
-  opacity: 1;
-  transform: translateX(5px);
+  font-size: var(--text-sm);
+  color: var(--color-card-text);
+  opacity: 0.85;
+  line-height: var(--leading-normal);
 }
 
 /* AI Creation Flow Specifics */
@@ -3438,17 +3432,17 @@ onUnmounted(() => {
   padding-bottom: 15px; 
   border-bottom: 1px solid var(--color-card-border);
 }
-.card { 
-  background-color: var(--color-card-bg);   
-  padding: 20px 25px;
-  border-radius: 8px; /* Standardize with Home */
-  margin-bottom: 20px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08); /* Standardize with Home */
+.card {
+  background-color: var(--surface-raised);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-1), var(--edge-highlight);
   text-align: left;
-  border: 1px solid var(--color-card-border); 
-  color: var(--color-card-text);  
+  border: 1px solid var(--color-hairline);
+  color: var(--color-card-text);
 }
-.card-inset { background-color: var(--color-card-mute); color: var(--color-card-text); padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom:15px; border: 1px solid var(--color-card-border);}
+.card-inset { background-color: var(--surface-sunken); color: var(--color-card-text); padding: var(--space-4); border-radius: var(--radius-md); margin-top: var(--space-3); margin-bottom: var(--space-3); border: 1px solid var(--color-hairline);}
 .active-routine-display h2, .active-routine-display h3, .active-routine-display h4, .active-routine-display h5 { text-align:left; margin-bottom: 0.5em; color: var(--color-card-heading); }
 .active-routine-display h3 { margin-top: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--color-card-border); }
 .routine-description { margin-top: 5px; margin-bottom: 15px; color: var(--color-card-text); font-style: italic; font-size: 0.95em; text-align:left;}
@@ -3459,15 +3453,15 @@ onUnmounted(() => {
 label { display: block; margin-bottom: 5px; font-weight: 500; font-size:0.9em; color: var(--color-card-text); }
 input[type="text"], input[type="number"], textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--color-card-border); border-radius: 4px; box-sizing: border-box; font-size: 0.95rem; background-color: var(--color-card-bg); color: var(--color-card-text); }
 textarea { min-height: 70px; resize: vertical; }
-.button-primary { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background-color 0.2s; }
-.button-primary:hover:not(:disabled) { background-color: #0056b3; }
-.button-primary.small, .button-secondary.small { padding: 6px 10px; font-size: 0.85em; border: 1px solid transparent; }
+.button-primary { min-height: var(--tap-min); padding: var(--space-2) var(--space-4); background-color: var(--color-accent-strong); color: var(--color-accent-contrast); border: none; border-radius: var(--radius-sm); cursor: pointer; font-size: 1rem; font-weight: var(--weight-semibold); transition: background-color var(--duration-fast) var(--ease-standard); }
+.button-primary:hover:not(:disabled) { background-color: var(--color-accent); }
+.button-primary.small, .button-secondary.small { padding: 6px 10px; font-size: 0.85em; border: 1px solid transparent; min-height: 0; }
 .button-primary-outline.small { padding: 6px 10px; font-size: 0.85em; margin-top: 0; }
-.button-primary-outline { padding: 8px 12px; background-color: transparent; color: #007bff; border: 1px solid #007bff; border-radius: 4px; cursor: pointer; font-size: 0.9em; transition: background-color 0.2s, color 0.2s; margin-top:10px; }
-.button-primary-outline:hover:not(:disabled) { background-color: #007bff; color:white; }
-.button-secondary { background-color: #6c757d; color:white; border:none; border-radius:4px; padding:10px 15px; cursor:pointer; font-size: 0.95rem; transition: background-color 0.2s;}
-.button-secondary:hover:not(:disabled) { background-color: #545b62; }
-button:disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; border-color: #ced4da !important; }
+.button-primary-outline { padding: var(--space-2) var(--space-3); background-color: transparent; color: var(--color-accent-line); border: 1px solid var(--color-accent-line); border-radius: var(--radius-sm); cursor: pointer; font-size: 0.9em; transition: background-color var(--duration-fast), color var(--duration-fast); margin-top: var(--space-2); }
+.button-primary-outline:hover:not(:disabled) { background-color: var(--color-accent); color: var(--color-accent-contrast); }
+.button-secondary { min-height: var(--tap-min); background-color: transparent; color: var(--color-card-text); border: 1px solid var(--color-hairline); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-4); cursor: pointer; font-size: 0.95rem; font-weight: var(--weight-medium); transition: background-color var(--duration-fast) var(--ease-standard);}
+.button-secondary:hover:not(:disabled) { background-color: var(--color-accent-quiet); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 .workout-day-entry { margin-bottom: 15px; text-align:left; }
 .workout-day-entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .day-name-display { font-weight: 600; font-size: 1.1em; color: var(--color-card-heading); flex-grow: 1; margin: 0; }
