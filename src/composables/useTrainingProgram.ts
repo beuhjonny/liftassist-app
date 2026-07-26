@@ -156,6 +156,8 @@ export default function useTrainingProgram() {
                             // Populate the display fields
                             ex.currentPrescribedWeight = prog.currentWeightToAttempt;
                             ex.currentPrescribedReps = prog.repsToAttemptNext;
+                            // Fail streak feeds deload detection (utils/deload.ts).
+                            ex.currentFailStreak = prog.consecutiveFailedWorkoutsAtCurrentWeightAndReps ?? 0;
                         } else {
                             // If no progress found, likely defaults (which might be 0 or undefined).
                             // Leave as is or set defaults? Default to 0/minReps if undefined to avoid "undefined" in UI?

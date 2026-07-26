@@ -34,6 +34,8 @@ export interface ExerciseConfig {
 export interface ExerciseConfigForDisplay extends ExerciseConfig {
   currentPrescribedWeight?: number;
   currentPrescribedReps?: number;
+  /** Consecutive fail streak from exerciseProgress (feeds deload detection). */
+  currentFailStreak?: number;
 }
 
 export interface WorkoutDay {

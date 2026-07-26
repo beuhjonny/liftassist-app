@@ -24,6 +24,8 @@ export interface ReadinessInputs {
   recentFailRate: number;
   /** Signed weekly tonnage trend, -1..1 (from trainingSignals). Optional. */
   weeklyVolumeTrend?: number;
+  /** Coach line from deload detection; non-null pins the verdict to recover. */
+  deloadLine?: string | null;
 }
 
 export interface Readiness {
@@ -74,6 +76,18 @@ export function computeReadiness(input: ReadinessInputs): Readiness {
   const trend = clamp(input.weeklyVolumeTrend ?? 0, -1, 1);
   score += clamp(trend * 16, -8, 8);
   score = Math.round(clamp(score, 0, 100));
+
+  // Deload pin: when multiple lifts are stalling, the honest call is a lighter
+  // week regardless of how good consistency looks. The specific line names the
+  // stalled lifts (deload.ts).
+  if (input.deloadLine) {
+    return {
+      level: 'recover',
+      score: Math.min(score, 42),
+      headline: 'Deload due',
+      guidance: input.deloadLine,
+    };
+  }
 
   // Verdict.
   let level: ReadinessLevel;

@@ -154,6 +154,7 @@ import ReadinessCard from '@/components/ReadinessCard.vue';
 import { colorForDay } from '@/design/dayPalette';
 import { computeReadiness } from '@/utils/readiness';
 import { computeRecentFailRate, computeWeeklyVolumeTrend } from '@/utils/trainingSignals';
+import { detectDeload } from '@/utils/deload';
 import { Dumbbell, History, ChevronRight, ArrowRight, AlertTriangle, Trash2, Check, Flame } from 'lucide-vue-next';
 import type { WorkoutDay, EnhancedWorkoutDay, LoggedWorkout } from '@/types';
 
@@ -214,6 +215,19 @@ const signalWorkouts = computed(() => {
   }));
 });
 
+// Deload check across every lift in the active program (streaks stamped by
+// hydrateProgramWithProgress).
+const deloadVerdict = computed(() =>
+  detectDeload(
+    activeProgram.workoutDays.flatMap((d) =>
+      (d.exercises || []).map((ex) => ({
+        exerciseName: ex.exerciseName,
+        consecutiveFailedWorkoutsAtCurrentWeightAndReps: ex.currentFailStreak,
+      })),
+    ),
+  ),
+);
+
 const readiness = computed(() => {
   const cs = consistencyStats.value;
   if (!cs) return null;
@@ -227,6 +241,7 @@ const readiness = computed(() => {
     overloadRate: cs.overloadRate,
     recentFailRate: computeRecentFailRate(signalWorkouts.value),
     weeklyVolumeTrend: computeWeeklyVolumeTrend(signalWorkouts.value),
+    deloadLine: deloadVerdict.value.line,
   });
 });
 
