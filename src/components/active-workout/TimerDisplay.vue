@@ -1,5 +1,8 @@
 <template>
-  <div class="timer-ring" role="timer" aria-live="polite">
+  <!-- No aria-live here: it would re-read the whole ring every tick and flood
+       the screen reader. The numeral is decorative to AT; milestones (start /
+       10s / complete) are announced once by the parent. -->
+  <div class="timer-ring" role="timer" :aria-label="`Rest timer, ${timeText} remaining`">
     <svg :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" class="ring-svg" aria-hidden="true">
       <circle
         class="ring-track"

@@ -1,6 +1,9 @@
 <template>
   <div class="workout-active-view">
 
+    <!-- Polite SR region for timer milestones (start / 10s / complete only) -->
+    <p class="sr-only" aria-live="polite">{{ srAnnounce }}</p>
+
     <!-- Draft Workout Prompt -->
     <DraftPromptOverlay 
       :show="showDraftPrompt" 
@@ -514,6 +517,8 @@ const restCountdown = ref(DEFAULT_REST_SECONDS.value);
 // counting setInterval ticks, so a locked or backgrounded phone stays accurate.
 const restEndsAt = ref<number | null>(null);
 const restTimerFinished = ref(false);
+// One polite live region for timer milestones (never per-tick - a11y flood fix).
+const srAnnounce = ref('');
 
 const lastLoggedSetIndex = ref<number | null>(null);
 let timerInterval: number | undefined = undefined;
@@ -1337,6 +1342,7 @@ const startRestTimer = () => {
   restTimerFinished.value = false;
   // Anchor to an absolute end time so backgrounding never desyncs the count.
   restEndsAt.value = Date.now() + restCountdown.value * 1000;
+  srAnnounce.value = `Resting ${restCountdown.value} seconds.`;
   timerInterval = setInterval(tickRestTimer, 250);
 };
 
@@ -1346,9 +1352,13 @@ const startRestTimer = () => {
 const tickRestTimer = () => {
   if (restEndsAt.value === null) return;
   const remaining = Math.max(0, Math.round((restEndsAt.value - Date.now()) / 1000));
+  const prev = restCountdown.value;
   restCountdown.value = remaining;
+  // Screen-reader milestones only (never every tick): the 10s warning + expiry.
+  if (prev > 10 && remaining <= 10 && remaining > 0) srAnnounce.value = '10 seconds of rest left.';
   if (remaining <= 0 && !restTimerFinished.value) {
     restTimerFinished.value = true;
+    srAnnounce.value = 'Rest complete. Ready for your next set.';
     if (timerInterval) { clearInterval(timerInterval); timerInterval = undefined; }
     fireRestCompleteAlert();
   }
