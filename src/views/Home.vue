@@ -699,14 +699,16 @@ watch(
   font-weight: var(--weight-black);
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
-  color: var(--color-heading);
+  /* Card-scoped heading: page-level --color-heading is LIGHT in the 'original'
+     theme and rendered the day name invisible on the white card. */
+  color: var(--color-card-heading);
   margin: 0;
 }
 .hero-meta {
   display: flex; align-items: center; gap: var(--space-2);
   flex-wrap: wrap;
   font-size: var(--text-sm);
-  color: var(--text-secondary);
+  color: var(--color-card-text);
   margin: 0;
 }
 .hero-meta svg { opacity: 0.7; }

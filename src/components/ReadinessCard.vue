@@ -2,7 +2,10 @@
   <section class="readiness card" :class="`level-${readiness.level}`" role="status" :aria-label="`Readiness ${readiness.headline}, ${readiness.score} out of 100. ${readiness.guidance}`">
     <div class="gauge" aria-hidden="true">
       <svg :width="size" :height="size / 2 + 8" :viewBox="`0 0 ${size} ${size / 2 + 8}`">
-        <path :d="arcPath" fill="none" stroke="var(--color-hairline)" :stroke-width="stroke" stroke-linecap="round" />
+        <!-- Track uses a dedicated tone, never the theme hairline: in the
+             'original' theme the hairline is white-on-white and the gauge
+             looked like a floating brushstroke. -->
+        <path :d="arcPath" fill="none" class="gauge-track" :stroke-width="stroke" stroke-linecap="round" />
         <path :d="arcPath" fill="none" class="gauge-fill" :stroke-width="stroke" stroke-linecap="round"
           :stroke-dasharray="arcLen" :stroke-dashoffset="dashOffset"
           :style="{ '--arc-len': arcLen + 'px' }" />
@@ -51,6 +54,7 @@ const dashOffset = computed(() => arcLen * (1 - clamp(props.readiness.score) / 1
 }
 .gauge { position: relative; flex-shrink: 0; }
 .gauge svg { display: block; }
+.gauge-track { stroke: color-mix(in srgb, currentColor 14%, transparent); color: var(--color-card-text); }
 .gauge-fill {
   stroke: var(--gauge-color);
   animation: gauge-fill var(--duration-slow) var(--ease-out) both;
@@ -83,8 +87,8 @@ const dashOffset = computed(() => arcLen * (1 - clamp(props.readiness.score) / 1
   font-weight: var(--weight-bold); color: var(--gauge-color); line-height: var(--leading-tight);
 }
 .guidance { margin: 0; font-size: var(--text-sm); color: var(--color-card-text); line-height: var(--leading-normal); }
-@media (max-width: 380px) {
-  .readiness { flex-direction: column; text-align: center; }
+@media (max-width: 480px) {
+  .readiness { flex-direction: column; text-align: center; gap: var(--space-3); }
   .verdict { align-items: center; }
 }
 </style>

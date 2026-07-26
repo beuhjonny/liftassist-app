@@ -36,6 +36,15 @@
           <strong>
             <span v-if="exercise.isSupersetWithPrevious" style="margin-right: 5px;" title="Superset linked to previous">🔗</span>
             {{ index + 1 }}. {{ exercise.exerciseName }}
+            <button
+              v-if="settings.enableVideoDemos !== false"
+              type="button"
+              class="preview-move-btn"
+              :aria-label="`Preview ${exercise.exerciseName} movement`"
+              @click="openDemoModal(exercise.exerciseName)"
+            >
+              <PlayCircle :size="18" /> Preview
+            </button>
           </strong>
           <span class="overview-details">
             <template v-if="exercise.isToFailure">
@@ -409,6 +418,7 @@ import { playTone } from '../utils/audio';
 import { computeNextPrescription, type ProgressionConfig, type ProgressionState } from '../utils/progression';
 import { bestPrior1RM, detectSetPR } from '../utils/prDetection';
 import { haptics } from '../utils/haptics';
+import { PlayCircle } from 'lucide-vue-next';
 import { getProgressKey } from '../utils/progressKey';
 import type { LoggedSetData, PerformedExerciseInLog, ExerciseProgress, SessionExercise, TimelineSetInfo } from '@/types';
 import WorkoutTimeline from '../components/active-workout/WorkoutTimeline.vue';
@@ -2641,6 +2651,20 @@ const saveEditedWorkout = () => {
 .actual-reps-input-section { margin: 20px 0; }
 .actual-reps-input-section label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--color-card-text); }
 .actual-reps-input-section input[type="number"] { padding: 8px; width: 80px; text-align: center; font-size: 1em; border: 1px solid var(--color-card-border); border-radius: 4px; background-color: var(--color-card-bg); color: var(--color-card-text); }
+/* Movement preview affordance in the overview plan list */
+.preview-move-btn {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  margin-left: var(--space-2);
+  min-height: 32px; padding: 2px var(--space-2);
+  border: 1px solid var(--color-hairline); border-radius: var(--radius-full);
+  background: var(--color-card-mute); color: var(--color-accent-line);
+  font-size: var(--text-xs); font-weight: var(--weight-semibold);
+  cursor: pointer; vertical-align: middle;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+.preview-move-btn:active { transform: scale(0.96); }
+@media (hover: hover) { .preview-move-btn:hover { background: var(--color-accent-quiet); } }
+
 /* Completion seal (2.10) */
 .seal-header { display: flex; align-items: center; justify-content: space-between; }
 .seal-eyebrow {

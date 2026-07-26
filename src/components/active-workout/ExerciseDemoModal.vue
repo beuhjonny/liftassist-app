@@ -12,10 +12,16 @@
       <div class="demo-media-container card-inset">
         <!-- 1. Primary High-Res GIF (If Available & Loading Successfully) -->
         <div v-if="demoInfo.primaryGifUrl && !primaryGifError" class="motion-player">
-          <img 
-            :src="demoInfo.primaryGifUrl" 
-            :alt="demoInfo.name + ' animation'" 
+          <div v-if="!primaryGifLoaded" class="media-loading">
+            <span class="media-spinner" aria-hidden="true"></span>
+            <span class="media-loading-label">Loading demonstration...</span>
+          </div>
+          <img
+            :src="demoInfo.primaryGifUrl"
+            :alt="demoInfo.name + ' animation'"
             class="demo-gif"
+            :class="{ 'is-loading': !primaryGifLoaded }"
+            @load="primaryGifLoaded = true"
             @error="primaryGifError = true"
           />
         </div>
@@ -48,7 +54,7 @@
         <h4>Target Muscles</h4>
         <div class="muscle-tags">
           <span v-for="muscle in demoInfo.targetMuscles" :key="muscle" class="muscle-tag">
-            💪 {{ muscle }}
+            {{ muscle }}
           </span>
         </div>
       </div>
@@ -64,7 +70,7 @@
       </div>
 
       <button @click="$emit('close')" class="button-primary full-width" style="margin-top: 15px;">
-        Got it! Return to Workout
+        Got it
       </button>
     </div>
   </div>
@@ -84,6 +90,7 @@ defineEmits<{
 }>();
 
 const primaryGifError = ref(false);
+const primaryGifLoaded = ref(false);
 const imageError = ref(false);
 const activeFrameIdx = ref(0);
 let animationTimer: ReturnType<typeof setInterval> | null = null;
@@ -100,6 +107,7 @@ const currentFrameUrl = computed(() => {
 function startAnimationLoop() {
   stopAnimationLoop();
   primaryGifError.value = false;
+  primaryGifLoaded.value = false;
   imageError.value = false;
   activeFrameIdx.value = 0;
 
@@ -175,25 +183,29 @@ onUnmounted(() => {
 .category-badge {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 0.75em;
-  font-weight: 700;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
   text-transform: uppercase;
-  background-color: var(--color-primary-mute, #007bff22);
-  color: #007bff;
-  letter-spacing: 0.5px;
+  background-color: var(--color-accent-quiet);
+  color: var(--color-accent-line);
+  letter-spacing: var(--tracking-wide);
 }
 
 .demo-media-container {
   display: flex;
   justify-content: center;
   align-items: center;
+  /* Deliberately white in every theme: the demo GIFs are drawn on white and
+     recoloring them is not possible. The hairline + radius frame it as a
+     deliberate media panel rather than a theme leak. */
   background-color: #ffffff;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: 16px;
   min-height: 240px;
-  border: 1px solid var(--color-card-border);
+  border: 1px solid var(--color-hairline);
+  box-shadow: var(--shadow-1);
   position: relative;
 }
 
@@ -211,8 +223,22 @@ onUnmounted(() => {
   object-fit: contain;
   border-radius: 8px;
   background-color: #ffffff;
-  transition: opacity 0.2s ease-in-out;
+  transition: opacity var(--duration-base) var(--ease-out);
 }
+.demo-gif.is-loading { opacity: 0; height: 240px; }
+.media-loading {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-3);
+  color: #6b7280;
+}
+.media-spinner {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 3px solid rgba(0,0,0,0.1); border-top-color: var(--color-accent);
+  animation: media-spin 0.8s linear infinite;
+}
+.media-loading-label { font-size: var(--text-sm); font-weight: var(--weight-medium); }
+@keyframes media-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .media-spinner { animation-duration: 2s; } }
 
 .motion-indicator {
   position: absolute;
@@ -232,9 +258,12 @@ onUnmounted(() => {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background-color: #007bff;
-  box-shadow: 0 0 8px #007bff;
+  background-color: var(--color-accent-line);
+  box-shadow: 0 0 8px var(--color-accent-line);
   animation: pulseDot 1.2s infinite ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot { animation: none; }
 }
 
 @keyframes pulseDot {

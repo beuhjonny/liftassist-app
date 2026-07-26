@@ -32,7 +32,10 @@ const activeTab = computed(() => (route.meta.tab as string) || 'home');
 .tab-item {
   flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: var(--space-1); min-height: var(--tap-min); padding: var(--space-2) 0;
-  color: var(--color-text); opacity: 0.62; font-weight: var(--weight-medium);
+  /* Card-scoped text: the bar sits on --surface-raised, which the 'original'
+     theme renders WHITE while --color-text stays light - page-level text here
+     made the inactive tabs invisible. */
+  color: var(--color-card-text); opacity: 0.62; font-weight: var(--weight-medium);
   text-decoration: none; position: relative;
   transition: opacity var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
 }
