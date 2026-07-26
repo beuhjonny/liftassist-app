@@ -69,6 +69,8 @@
   --text-2xl: 2rem;
   --text-3xl: 2.5rem;
   --text-display: 3.5rem;
+  /* The one dominant instrument numeral (in-workout weight, timer). */
+  --text-hero: clamp(4rem, 22vw, 7rem);
 
   /* ---- 2.6 Radius (4-8-12-16) ---- */
   --radius-xs: 4px;
@@ -82,9 +84,12 @@
   --shadow-2: 0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
   --shadow-3: 0 12px 32px rgba(0, 0, 0, 0.14), 0 4px 8px rgba(0, 0, 0, 0.08);
   --color-hairline: rgba(0, 0, 0, 0.08);
-  --edge-highlight: inset 0 0 0 0 transparent;
+  /* Two-part material rim: top light-catch + bottom recess (masterplan 1.6). */
+  --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.04);
   --focus-ring-width: 2px;
   --ring-focus: 0 0 0 2px var(--surface-base), 0 0 0 4px var(--color-accent-line);
+  /* Accent-tinted elevation for the ONE live action per screen (1.7). */
+  --shadow-accent: 0 4px 14px rgba(37, 99, 235, 0.25), 0 1px 3px rgba(37, 99, 235, 0.18);
 
   /* ---- 2.8 Spacing, tap floor, control heights, z, scrim, safe area ---- */
   --space-1: 0.25rem;
@@ -198,7 +203,8 @@
     --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4);
     --shadow-3: 0 16px 40px rgba(0, 0, 0, 0.6), 0 4px 10px rgba(0, 0, 0, 0.45);
     --color-hairline: rgba(255, 255, 255, 0.08);
-    --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+    --shadow-accent: 0 4px 16px rgba(76, 141, 255, 0.28), 0 1px 3px rgba(76, 141, 255, 0.2);
     --color-scrim: rgba(0, 0, 0, 0.7);
 
     --chart-grid: rgba(235, 235, 235, 0.09);
@@ -235,7 +241,8 @@
   --shadow-2: 0 4px 14px rgba(0, 0, 0, 0.55), 0 1px 3px rgba(0, 0, 0, 0.4);
   --shadow-3: 0 16px 40px rgba(0, 0, 0, 0.6), 0 4px 10px rgba(0, 0, 0, 0.45);
   --color-hairline: rgba(255, 255, 255, 0.08);
-  --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --edge-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+    --shadow-accent: 0 4px 16px rgba(76, 141, 255, 0.28), 0 1px 3px rgba(76, 141, 255, 0.2);
   --color-scrim: rgba(0, 0, 0, 0.7);
 
   --chart-grid: rgba(235, 235, 235, 0.09);

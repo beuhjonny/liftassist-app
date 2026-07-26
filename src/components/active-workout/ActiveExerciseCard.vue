@@ -152,20 +152,23 @@ const onLog = (status: 'done' | 'failed') => {
   color: var(--color-card-heading); line-height: var(--leading-snug);
 }
 .ex-timers { display: flex; flex-direction: column; gap: var(--space-1); align-items: flex-end; flex-shrink: 0; }
+/* Demoted peers: timers whisper so the hero numeral is the only loud thing (1.9) */
 .timer-chip {
-  font-size: var(--text-xs); font-variant-numeric: tabular-nums; font-weight: var(--weight-semibold);
-  color: var(--color-card-heading); background: var(--color-card-mute); border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-feature-settings: 'tnum' 1, 'lnum' 1; font-variant-numeric: tabular-nums; font-weight: var(--weight-medium);
+  color: var(--text-tertiary); background: var(--color-card-mute); border-radius: var(--radius-full);
   padding: 2px var(--space-2); white-space: nowrap;
 }
-.timer-chip .t-label { color: var(--color-card-text); opacity: 0.7; font-weight: var(--weight-regular); margin-right: 4px; }
+.timer-chip .t-label { color: var(--text-tertiary); font-weight: var(--weight-regular); margin-right: 4px; }
 .exercise-notes { margin: 0; font-size: var(--text-sm); color: var(--color-card-text); opacity: 0.8; text-align: center; }
 
-/* Prescription hero */
+/* Prescription hero: the 96px instrument numeral owns the screen (1.8) */
 .prescription-hero {
-  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-2);
   padding: var(--space-5) var(--space-4);
+  min-height: 34dvh;
   background: var(--surface-sunken); border: 1px solid var(--color-hairline);
   border-radius: var(--radius-md);
+  box-shadow: var(--edge-highlight);
 }
 .set-line { display: flex; align-items: center; justify-content: space-between; width: 100%; }
 .set-eyebrow {
@@ -190,8 +193,16 @@ const onLog = (status: 'done' | 'failed') => {
   color: var(--color-card-heading);
 }
 .hero-number.failed { color: var(--color-danger-fg); }
-.hero-weight { font-size: var(--text-display); font-weight: var(--weight-bold); line-height: var(--leading-none); font-variant-numeric: tabular-nums; }
-.hero-unit { font-size: var(--text-lg); font-weight: var(--weight-semibold); opacity: 0.6; }
+.hero-weight {
+  font-family: var(--font-display);
+  font-size: var(--text-hero);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-none);
+  letter-spacing: var(--tracking-tight);
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.hero-unit { font-size: var(--text-xl); font-weight: var(--weight-semibold); opacity: 0.6; }
 .to-failure { font-size: var(--text-2xl); font-weight: var(--weight-bold); }
 .hero-reps { font-size: var(--text-lg); color: var(--color-card-text); font-variant-numeric: tabular-nums; }
 .hero-reps.failed { color: var(--color-danger-fg); }

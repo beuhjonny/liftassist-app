@@ -59,7 +59,8 @@ withDefaults(
 .size-xl { min-height: var(--control-h-xl); font-size: var(--text-xl); }
 .is-block { width: 100%; }
 
-.variant-primary { background: var(--color-accent-strong); color: var(--color-accent-contrast); }
+.variant-primary { background: var(--color-accent-strong); color: var(--color-accent-contrast); box-shadow: var(--shadow-accent); }
+.variant-primary:not(:disabled):active { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25); }
 .variant-secondary { background: transparent; color: var(--color-card-text); border-color: var(--color-hairline); }
 .variant-ghost { background: transparent; color: var(--color-card-text); }
 .variant-danger { background: var(--color-danger-bg); color: var(--color-danger-fg); border-color: var(--color-danger-line); }
