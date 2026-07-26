@@ -1,7 +1,7 @@
 <template>
   <div class="manifesto-content">
     <p style="margin-top: 0;">
-      Lift Logic is your no-nonsense digital training partner, built on the science that steady, methodical overload is the true key to consistent growth and hypertrophy. We cut through the clutter to provide a streamlined tool that manages your progression so you can focus entirely on the effort.
+      Lift Logic makes today's call for you and shows its work. Built on the science that steady, methodical overload is the true key to consistent growth, it reads your own training and tells you, in plain words, whether to push, hold, or recover, then prescribes the exact next set and explains why. No black box, no guesswork, no wearable required. Just the honest math, done for you.
     </p>
 
     <h3>What is Lift Logic?</h3>

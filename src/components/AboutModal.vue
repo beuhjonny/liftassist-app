@@ -22,7 +22,7 @@
              <h1 class="welcome-title" style="font-size: 2.2em; margin-top: 0; margin-bottom: 5px; display: flex; justify-content: center; align-items: center;">
                <span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span>
              </h1>
-             <p class="welcome-subtitle" style="margin-bottom: 15px;">Get Stronger Progressively.</p>
+             <p class="welcome-subtitle" style="margin-bottom: 15px;">Makes the call. Shows its work.</p>
 
              <!-- Version History / What's New Card -->
              <div style="margin: 15px 0; padding: 12px 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
