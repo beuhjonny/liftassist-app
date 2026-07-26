@@ -563,6 +563,7 @@
 </template>
 
 <script setup lang="ts">
+import { getProgressKey } from '@/utils/progressKey';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { collection, query, getDoc, getDocs, orderBy, Timestamp, setDoc, doc, serverTimestamp, writeBatch } from 'firebase/firestore';
@@ -1402,7 +1403,7 @@ const importFromFitNotesFile = async (file: File) => {
         lastWorkoutAllSetsSuccessfulAtCurrentWeight = true;
       }
       
-      const exerciseProgressKey = exDetails.name.toLowerCase().replace(/\s+/g, '_');
+      const exerciseProgressKey = getProgressKey(exDetails.name);
       const progressRef = doc(db, 'users', uid, 'exerciseProgress', exerciseProgressKey);
       
       progressDocsToSet.push({
@@ -1725,7 +1726,7 @@ const handleRollback = async () => {
           });
           
           if (maxWeight > 0) {
-            progressBuilder.set(perfEx.exerciseName.toLowerCase().replace(/\s+/g, '_'), {
+            progressBuilder.set(getProgressKey(perfEx.exerciseName), {
               exerciseName: perfEx.exerciseName,
               maxWeight,
               minRepsAtMaxWeight,
@@ -1747,7 +1748,7 @@ const handleRollback = async () => {
       activeProgramDoc.workoutDays.forEach((day: any) => {
         if (day.exercises) {
           day.exercises.forEach((ex: any) => {
-            exerciseConfigsMap.set(ex.exerciseName.toLowerCase().replace(/\s+/g, '_'), ex);
+            exerciseConfigsMap.set(getProgressKey(ex.exerciseName), ex);
           });
         }
       });

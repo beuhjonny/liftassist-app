@@ -3,6 +3,7 @@ import { doc, getDoc, collection, query, getDocs, orderBy, Timestamp } from 'fir
 import { db } from '../firebase';
 import useAuth from './useAuth';
 import useSettings from './useSettings';
+import { getProgressKey } from '../utils/progressKey';
 import type { TrainingProgram, LoggedWorkout, WorkoutDay, EnhancedWorkoutDay } from '@/types';
 
 export default function useTrainingProgram() {
@@ -120,7 +121,7 @@ export default function useTrainingProgram() {
             activeProgram.workoutDays.forEach(day => {
                 day.exercises.forEach(ex => {
                     if (ex.exerciseName) {
-                        const key = ex.exerciseName.toLowerCase().replace(/\s+/g, '_');
+                        const key = getProgressKey(ex.exerciseName);
                         exercisesToFetch.push({ dayId: day.id, exId: ex.id, name: ex.exerciseName, key });
                     }
                 });
@@ -150,7 +151,7 @@ export default function useTrainingProgram() {
             activeProgram.workoutDays.forEach(day => {
                 day.exercises.forEach(ex => {
                     if (ex.exerciseName) {
-                        const key = ex.exerciseName.toLowerCase().replace(/\s+/g, '_');
+                        const key = getProgressKey(ex.exerciseName);
                         const prog = progressMap.get(key);
                         if (prog) {
                             // Populate the display fields

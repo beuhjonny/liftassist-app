@@ -406,6 +406,7 @@ import { playTone } from '../utils/audio';
 import { computeNextPrescription, type ProgressionConfig, type ProgressionState } from '../utils/progression';
 import { bestPrior1RM, detectSetPR } from '../utils/prDetection';
 import { haptics } from '../utils/haptics';
+import { getProgressKey } from '../utils/progressKey';
 import type { LoggedSetData, PerformedExerciseInLog, ExerciseProgress, SessionExercise, TimelineSetInfo } from '@/types';
 import WorkoutTimeline from '../components/active-workout/WorkoutTimeline.vue';
 import TimerDisplay from '../components/active-workout/TimerDisplay.vue';
@@ -743,7 +744,7 @@ const currentExercise = computed<SessionExercise | null>(() => (sessionExercises
 // NEW: Computed property for current exercise's progress data
 const currentExerciseProgress = computed<ExerciseProgress | undefined>(() => {
   if (currentExercise.value) {
-    const progressKey = currentExercise.value.exerciseName.toLowerCase().replace(/\s+/g, '_');
+    const progressKey = getProgressKey(currentExercise.value.exerciseName);
     return initialExerciseProgressData.get(progressKey);
   }
   return undefined;
@@ -1027,7 +1028,7 @@ const completedPerformedExercisesSummary = computed<PerformedExerciseInLog[]>(()
       if (setsForThisEx.length === 0) return null; 
 
       let isExercisePR = false;
-      const exKey = exConfig.exerciseName.toLowerCase().replace(/\s+/g, '_');
+      const exKey = getProgressKey(exConfig.exerciseName);
       const initialProg = initialExerciseProgressData.get(exKey);
       const doneSetsCount = setsForThisEx.filter(s => s.status === 'done').length;
       const targetSets = exConfig.targetSets || 0;
@@ -1204,7 +1205,7 @@ const fetchWorkoutData = async () => {
 
     if (workoutDay.exercises && workoutDay.exercises.length > 0) {
       for (const exConfig of workoutDay.exercises) { 
-        const exProgressKey = exConfig.exerciseName.toLowerCase().replace(/\s+/g, '_');
+        const exProgressKey = getProgressKey(exConfig.exerciseName);
         const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', exProgressKey);
         const progressSnap = await getDoc(progressDocRef);
         let pWeight = exConfig.startingWeight ?? 0;
@@ -1804,7 +1805,7 @@ const resumeDraft = async () => {
       // Load exercise progress data if user exists
       if (user.value?.uid) {
         const progressPromises = draft.sessionExercises.map(async (sessionEx) => {
-          const progressKey = sessionEx.exerciseName.toLowerCase().replace(/\s+/g, '_');
+          const progressKey = getProgressKey(sessionEx.exerciseName);
           const progressRef = doc(db, 'users', user.value!.uid, 'exerciseProgress', progressKey);
           const progressSnap = await getDoc(progressRef);
           if (progressSnap.exists()) {
@@ -2102,7 +2103,7 @@ const finishWorkoutAndSave = async () => {
       if (!exConfigFromRoutine) { console.warn(`Config for ${performedEx.exerciseName} not found. Skipping prog.`); continue; }
       if (exConfigFromRoutine.enableProgression === false) { console.log(`Progression disabled for ${exConfigFromRoutine.exerciseName}.`); continue; }
 
-      const progressKey = performedEx.exerciseName.toLowerCase().replace(/\s+/g, '_');
+      const progressKey = getProgressKey(performedEx.exerciseName);
       const currentProgress = initialExerciseProgressData.get(progressKey); 
 
       if (!currentProgress) { console.warn(`No initial progress found for ${performedEx.exerciseName} during save's progression update. Skipping.`); continue; }
@@ -2393,7 +2394,7 @@ const applyEditAllFutureSets = async () => {
     const weightInLbs = fromInput(editedWeight.value, settings.value.weightUnit);
     
     // Update the ExerciseProgress document in Firestore
-    const progressKey = currentExercise.value.exerciseName.toLowerCase().replace(/\s+/g, '_');
+    const progressKey = getProgressKey(currentExercise.value.exerciseName);
     const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
     
     // Manual override: replace the stale auto-progression explanation so the

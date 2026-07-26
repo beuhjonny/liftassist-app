@@ -1031,6 +1031,7 @@ import { useRouter } from 'vue-router';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, writeBatch, deleteDoc, addDoc, Timestamp, type DocumentData } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { DAY_COLOR_PALETTE, colorForDay } from '../design/dayPalette';
+import { getProgressKey } from '../utils/progressKey';
 import useAuth from '../composables/useAuth';
 import useSettings, { type WeightUnitOption } from '../composables/useSettings';
 import useTrainingProgram from '../composables/useTrainingProgram';
@@ -1676,7 +1677,7 @@ const importPastedRoutine = async () => {
         for (const ex of day.exercises) {
             // Check if we have a starting weight to save
             if (ex.startingWeight !== undefined && ex.startingWeight !== null) {
-                 const exerciseProgressKey = ex.exerciseName.toLowerCase().replace(/\s+/g, '_');
+                 const exerciseProgressKey = getProgressKey(ex.exerciseName);
                  const exerciseProgressRef = doc(db, 'users', user.value.uid, 'exerciseProgress', exerciseProgressKey);
                  
                  // We use set with merge:true or just set?
@@ -1732,7 +1733,7 @@ const importPastedRoutine = async () => {
         for (const ex of day.exercises) {
              if (ex.startingWeight !== undefined && ex.startingWeight !== null) {
                  progressPromises.push((async () => {
-                     const exerciseProgressKey = ex.exerciseName.toLowerCase().replace(/\s+/g, '_');
+                     const exerciseProgressKey = getProgressKey(ex.exerciseName);
                      const exerciseProgressRef = doc(db, 'users', uid, 'exerciseProgress', exerciseProgressKey);
                      const snap = await getDoc(exerciseProgressRef);
                      
@@ -2466,7 +2467,7 @@ const performFitNotesImport = async () => {
         lastWorkoutAllSetsSuccessfulAtCurrentWeight = true;
       }
       
-      const exerciseProgressKey = exDetails.name.toLowerCase().replace(/\s+/g, '_');
+      const exerciseProgressKey = getProgressKey(exDetails.name);
       const progressRef = doc(db, 'users', uid, 'exerciseProgress', exerciseProgressKey);
       
       progressDocsToSet.push({
@@ -2840,7 +2841,7 @@ const startEditExercise = async (dayId: string, exerciseToEdit: ExerciseConfigFo
     // Fallback for fetching progress data if not available on exerciseToEdit or needs refresh
     if ((editingExercise.currentWeightToDisplayOrEdit === undefined || editingExercise.currentRepsToDisplayOrEdit === undefined) &&
         user.value && user.value.uid && exerciseToEdit.exerciseName) {
-      const progressKey = exerciseToEdit.exerciseName.toLowerCase().replace(/\s+/g, '_');
+      const progressKey = getProgressKey(exerciseToEdit.exerciseName);
       const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
       try {
         const progressSnap = await getDoc(progressDocRef);
@@ -3010,7 +3011,7 @@ const addOrUpdateExercise = async (dayId: string) => {
   const programDocRef = doc(db, 'users', user.value.uid, 'trainingPrograms', activeProgram.id);
   batch.update(programDocRef, { workoutDays: workoutDaysToSaveForFirestore, updatedAt: serverTimestamp() });
 
-  const exerciseProgressKey = exerciseDataToSaveForRoutine.exerciseName.toLowerCase().replace(/\s+/g, '_');
+  const exerciseProgressKey = getProgressKey(exerciseDataToSaveForRoutine.exerciseName);
   const exerciseProgressRef = doc(db, 'users', user.value.uid, 'exerciseProgress', exerciseProgressKey);
 
   if (!editingExercise.id) {
