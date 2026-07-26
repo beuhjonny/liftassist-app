@@ -26,7 +26,10 @@ export interface UserSettings {
 }
 
 const defaultSettings: UserSettings = {
-    theme: 'original', // Default to original (user preference)
+    // Dark-first is the designed identity: near-black surfaces, hairline rims,
+    // one accent. The legacy 'original' theme (white cards) neutralized the
+    // whole visual system, so it is now opt-in rather than the default.
+    theme: 'dark',
     timerSound: 'bell', // Default to bell (file)
     timerVolume: 0.6,
     weightUnit: 'lbs',
