@@ -301,15 +301,32 @@
       @save="saveEditedPrescription" 
     />
 
-    <!-- Edit Choice Modal (This Set Only vs All Future Sets) -->
+    <!-- Edit Choice Modal (This Set Only vs All Sets Today vs Permanently) -->
     <div v-if="showEditChoiceModal" class="modal-overlay" @click.self="closeEditChoiceModal">
-      <div class="modal-content edit-choice-modal">
-        <h3>Apply Edit</h3>
-        <p>How would you like to apply this change?</p>
-        <div class="edit-choice-actions">
-          <button @click="updateOnlyThisSetPrescription" class="button-primary">Edit for This Set Only</button>
-          <button @click="applyEditAllFutureSets" class="button-primary">Edit for All Future Sets</button>
-          <button @click="closeEditChoiceModal" class="button-secondary">Cancel</button>
+      <div class="modal-content edit-choice-modal" style="max-width: 420px; padding: 24px;">
+        <h3 style="margin-top: 0; margin-bottom: 8px;">Apply Weight & Rep Edit</h3>
+        <p style="margin-bottom: 18px; opacity: 0.85; font-size: 0.9em; line-height: 1.4;">How would you like to apply this adjustment?</p>
+        
+        <div class="edit-choice-actions" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Choice 1: This Set Only -->
+          <button @click="updateOnlyThisSetPrescription" class="button-choice-card">
+            <span class="choice-title">1️⃣ Edit This Set Only</span>
+            <span class="choice-subtext">Applies to Set {{ currentSetNumber }} only. Remaining sets today and future workouts keep original target.</span>
+          </button>
+
+          <!-- Choice 2: All Sets Today -->
+          <button @click="updateAllSetsToday" class="button-choice-card">
+            <span class="choice-title">2️⃣ Edit All Sets Today</span>
+            <span class="choice-subtext">Applies to all sets in today's workout, but keeps next week's baseline target unchanged.</span>
+          </button>
+
+          <!-- Choice 3: Permanently (Today & Future Workouts) -->
+          <button @click="applyEditAllFutureSets" class="button-choice-card primary-choice">
+            <span class="choice-title">3️⃣ Permanently (Today & Future Workouts)</span>
+            <span class="choice-subtext">Updates all sets today AND saves as your new baseline target prescription for all future workouts.</span>
+          </button>
+
+          <button @click="closeEditChoiceModal" class="button-secondary" style="margin-top: 6px; padding: 8px 16px;">Cancel</button>
         </div>
       </div>
     </div>
@@ -2250,6 +2267,27 @@ const updateOnlyThisSetPrescription = () => {
   editedWeight.value = null;
 };
 
+const updateAllSetsToday = () => {
+  if (!currentExercise.value || editedReps.value === null || editedWeight.value === null) return;
+  
+  const weightInLbs = fromInput(editedWeight.value, settings.value.weightUnit);
+
+  // Update ALL exercises in sessionExercises for today's session only
+  sessionExercises.forEach(ex => {
+    if (ex.id === currentExercise.value!.id || ex.exerciseName === currentExercise.value!.exerciseName) {
+      ex.prescribedWeight = weightInLbs;
+      ex.prescribedReps = editedReps.value!;
+    }
+  });
+
+  overriddenRepsForCurrentSet.value = null;
+  overriddenWeightForCurrentSet.value = null;
+
+  showEditChoiceModal.value = false;
+  editedReps.value = null;
+  editedWeight.value = null;
+};
+
 const applyEditAllFutureSets = async () => {
   if (!currentExercise.value || editedReps.value === null || editedWeight.value === null) {
     return;
@@ -2263,14 +2301,16 @@ const applyEditAllFutureSets = async () => {
   try {
     const weightInLbs = fromInput(editedWeight.value, settings.value.weightUnit);
     
-    // Update the ExerciseProgress document in Firestore
+    // Update the ExerciseProgress document in Firestore using setDoc with merge
     const progressKey = currentExercise.value.exerciseName.toLowerCase().replace(/\s+/g, '_');
     const progressDocRef = doc(db, 'users', user.value.uid, 'exerciseProgress', progressKey);
     
-    await updateDoc(progressDocRef, {
+    await setDoc(progressDocRef, {
+      exerciseName: currentExercise.value.exerciseName,
       currentWeightToAttempt: weightInLbs,
-      repsToAttemptNext: editedReps.value
-    });
+      repsToAttemptNext: editedReps.value,
+      lastPerformedDate: serverTimestamp()
+    }, { merge: true });
     
     // Update the initialExerciseProgressData cache
     const currentProgress = initialExerciseProgressData.get(progressKey);
@@ -2279,10 +2319,9 @@ const applyEditAllFutureSets = async () => {
       currentProgress.repsToAttemptNext = editedReps.value;
     }
     
-    // Update ALL exercises in sessionExercises that match this exercise ID
-    // This ensures that if the same exercise appears multiple times in a routine, all future instances are updated
+    // Update ALL exercises in sessionExercises for today and future sets
     sessionExercises.forEach(ex => {
-      if (ex.id === currentExercise.value!.id) {
+      if (ex.id === currentExercise.value!.id || ex.exerciseName === currentExercise.value!.exerciseName) {
         ex.prescribedWeight = weightInLbs;
         ex.prescribedReps = editedReps.value!;
       }
@@ -2990,6 +3029,44 @@ const saveEditedWorkout = () => {
 
 .btn-confirm-reps.confirmed {
   background-color: var(--color-success);
+}
+
+/* Choice Card Buttons for Edit Modal */
+.button-choice-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-card-border);
+  background-color: var(--color-card-mute);
+  color: var(--color-card-text);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.button-choice-card:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-card-bg);
+}
+
+.button-choice-card.primary-choice {
+  border-color: var(--color-primary);
+  background-color: rgba(0, 123, 255, 0.08);
+}
+
+.choice-title {
+  font-weight: 700;
+  font-size: 0.95em;
+  color: var(--color-card-heading);
+}
+
+.choice-subtext {
+  font-size: 0.8em;
+  opacity: 0.75;
+  line-height: 1.35;
 }
 
 /* Embiggened Buttons */
