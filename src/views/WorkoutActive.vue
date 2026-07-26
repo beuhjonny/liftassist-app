@@ -56,6 +56,13 @@
     </div>
 
     <div v-if="workoutPhase === 'activeSet' && !isLoading && !error && currentExercise && !allExercisesComplete" class="workout-content card">
+      <!-- The one sanctioned flourish: fires only on a genuine PR set. -->
+      <Transition name="pr-beat">
+        <div v-if="prBeat" class="pr-beat" role="status" aria-live="assertive">
+          <span class="pr-beat-pill">NEW PR</span>
+          <span class="pr-beat-line">Earned. {{ prBeat.exerciseName }} - est. 1RM {{ toDisplay(prBeat.e1rm, settings.weightUnit) }} {{ displayUnit(settings.weightUnit) }}.</span>
+        </div>
+      </Transition>
       <h1 class="workout-day-title">{{ currentWorkoutDayDetails?.dayName }}</h1>
       <div v-if="totalSessionSets > 0" class="workout-progress-indicator">
         <WorkoutTimeline 
@@ -391,6 +398,8 @@ import useHistoryIndex from '../composables/useHistoryIndex';
 import { toDisplay, fromInput, displayUnit } from '../utils/weight';
 import { playTone } from '../utils/audio';
 import { computeNextPrescription, type ProgressionConfig, type ProgressionState } from '../utils/progression';
+import { bestPrior1RM, detectSetPR } from '../utils/prDetection';
+import { haptics } from '../utils/haptics';
 import type { LoggedSetData, PerformedExerciseInLog, ExerciseProgress, SessionExercise, TimelineSetInfo } from '@/types';
 import WorkoutTimeline from '../components/active-workout/WorkoutTimeline.vue';
 import TimerDisplay from '../components/active-workout/TimerDisplay.vue';
@@ -1365,6 +1374,39 @@ const fireRestCompleteAlert = () => {
   } catch { /* notifications unavailable */ }
 };
 
+// --- PR beat (masterplan 2.8): rare, honest, the one expensive moment ---
+const prBeat = ref<{ exerciseName: string; e1rm: number } | null>(null);
+let prBeatTimer: ReturnType<typeof setTimeout> | undefined;
+
+const firePrBeatIfEarned = (justLogged: LoggedSetData) => {
+  try {
+    // Prior best = every done set of this exercise across fetched history
+    // plus earlier sets logged in THIS session (excluding the one just pushed).
+    const name = justLogged.exerciseName;
+    const historySets = (loggedWorkouts || []).flatMap((w) =>
+      (w.performedExercises || [])
+        .filter((ex) => ex.exerciseName === name)
+        .flatMap((ex) => ex.sets || []),
+    );
+    const sessionPrior = workoutLog.slice(0, -1).filter((s) => s.exerciseName === name);
+    const prior = bestPrior1RM([...historySets, ...sessionPrior]);
+    const verdict = detectSetPR(justLogged, prior);
+
+    if (verdict.isPR) {
+      haptics.pr();
+      prBeat.value = { exerciseName: name, e1rm: Math.round(verdict.e1rm) };
+      clearTimeout(prBeatTimer);
+      prBeatTimer = setTimeout(() => (prBeat.value = null), 2800);
+    } else {
+      haptics.logDone();
+    }
+  } catch (e) {
+    // The beat must never break logging.
+    console.warn('PR detection skipped:', e);
+    haptics.logDone();
+  }
+};
+
 const logSet = async (status: 'done' | 'failed') => {
   stopActivitySetTimer();
   if (!currentExercise.value) return;
@@ -1392,7 +1434,16 @@ const logSet = async (status: 'done' | 'failed') => {
   
   workoutLog.push(loggedSet);
   lastLoggedSetIndex.value = workoutLog.length - 1;
-  
+
+  // The one sanctioned flourish: fire the PR beat on the DONE that earns it.
+  if (status === 'done' && !currentExercise.value.isTimed) {
+    firePrBeatIfEarned(loggedSet);
+  } else if (status === 'done') {
+    haptics.logDone();
+  } else {
+    haptics.logFail();
+  }
+
   // Clear overrides after logging the set (they only apply to one set)
   overriddenRepsForCurrentSet.value = null;
   overriddenWeightForCurrentSet.value = null;
@@ -2529,6 +2580,43 @@ const saveEditedWorkout = () => {
 .actual-reps-input-section { margin: 20px 0; }
 .actual-reps-input-section label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--color-card-text); }
 .actual-reps-input-section input[type="number"] { padding: 8px; width: 80px; text-align: center; font-size: 1em; border: 1px solid var(--color-card-border); border-radius: 4px; background-color: var(--color-card-bg); color: var(--color-card-text); }
+.pr-beat {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-3);
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-line);
+  border-radius: var(--radius-md);
+}
+.pr-beat-pill {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-success-fg);
+  color: var(--color-success-bg);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider);
+  white-space: nowrap;
+}
+.pr-beat-line {
+  color: var(--color-success-fg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pr-beat-enter-active { transition: transform var(--duration-slower) var(--ease-pr), opacity var(--duration-base) var(--ease-out); }
+  .pr-beat-leave-active { transition: opacity var(--duration-fast) var(--ease-in); }
+  .pr-beat-enter-from { transform: scale(0.9); opacity: 0; }
+  .pr-beat-leave-to { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pr-beat-enter-active, .pr-beat-leave-active { transition: opacity 0.01ms; }
+}
+
 .action-error-toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 1300; display: flex; align-items: center; gap: 14px; max-width: 92%; padding: 12px 16px; border-radius: 10px; background: var(--color-danger, #dc3545); color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.35); font-size: 0.92em; }
 .action-error-dismiss { background: transparent; border: none; color: #fff; font-size: 1.1em; line-height: 1; min-width: 44px; min-height: 44px; cursor: pointer; }
 .rest-adjust-row { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 14px; }
