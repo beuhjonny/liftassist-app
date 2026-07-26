@@ -70,6 +70,8 @@ export interface LoggedSetData {
   actualWeight: number;
   actualReps: number;
   status: 'done' | 'failed' | 'skipped';
+  /** True when the user explicitly captured actualReps at log time (on-card stepper). */
+  repsConfirmed?: boolean;
   timestamp: Date | Timestamp;
   isTimed?: boolean;
 }

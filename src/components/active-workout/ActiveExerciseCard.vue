@@ -75,6 +75,21 @@
       </template>
     </div>
 
+    <!-- On-card rep capture: DONE logs the actual reps in 2 taps, no keyboard.
+         Prefilled to the prescription, so an untouched DONE behaves as before. -->
+    <div v-if="!exercise.isTimed" class="rep-capture">
+      <span class="rep-capture-label">Reps completed</span>
+      <BaseStepper
+        v-model="repsInput"
+        :min="0"
+        :max="99"
+        aria-label="Reps completed"
+      />
+      <span v-if="repDelta !== 0" class="rep-delta" :class="repDelta > 0 ? 'over' : 'under'">
+        {{ repDelta > 0 ? '+' + repDelta + ' over target' : repDelta + ' vs target' }}
+      </span>
+    </div>
+
     <!-- DONE / FAIL asymmetry: DONE dominant, FAIL demoted -->
     <div class="set-actions" v-if="!exercise.isTimed || !isHoldTimerRunning">
       <BaseButton
@@ -93,13 +108,15 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, watch } from 'vue';
 import type { SessionExercise, LoggedSetData } from '@/types';
 import { toDisplay, displayUnit } from '@/utils/weight';
 import { Info, Pencil, SkipForward, Check, TrendingUp } from 'lucide-vue-next';
 import BaseButton from '@/components/base/BaseButton.vue';
+import BaseStepper from '@/components/base/BaseStepper.vue';
 import { haptics } from '@/utils/haptics';
 
-defineProps<{
+const props = defineProps<{
   exercise: SessionExercise;
   setNumber: number;
   activeSetTime: string;
@@ -121,15 +138,24 @@ const emit = defineEmits<{
   (e: 'openEdit'): void;
   (e: 'startHold'): void;
   (e: 'cancelHold'): void;
-  (e: 'logSet', status: 'done' | 'failed'): void;
+  (e: 'logSet', status: 'done' | 'failed', actualReps: number): void;
   (e: 'openDemo', name: string): void;
   (e: 'skipExercise'): void;
 }>();
 
+// Rep capture prefilled to the prescription; reset whenever the set changes.
+const repsInput = ref(props.effectiveReps);
+watch(
+  () => [props.setNumber, props.exercise.exerciseName, props.effectiveReps],
+  () => { repsInput.value = props.effectiveReps; },
+);
+const repDelta = computed(() => repsInput.value - props.effectiveReps);
+
 const onLog = (status: 'done' | 'failed') => {
   if (status === 'done') haptics.logDone();
   else haptics.logFail();
-  emit('logSet', status);
+  // FAIL passes 0; DONE passes the captured rep count.
+  emit('logSet', status, status === 'failed' ? 0 : repsInput.value);
 };
 </script>
 
@@ -214,6 +240,23 @@ const onLog = (status: 'done' | 'failed') => {
   color: var(--color-card-text); text-align: center;
 }
 .why-reason svg { opacity: 0.7; flex-shrink: 0; }
+
+/* On-card rep capture (2.12) */
+.rep-capture {
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-2);
+}
+.rep-capture-label {
+  font-size: var(--text-xs); font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide); text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.rep-delta {
+  font-size: var(--text-sm); font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  padding: 2px var(--space-3); border-radius: var(--radius-full);
+}
+.rep-delta.over { background: var(--color-success-bg); color: var(--color-success-fg); border: 1px solid var(--color-success-line); }
+.rep-delta.under { background: var(--color-warning-bg); color: var(--color-warning-fg); border: 1px solid var(--color-warning-line); }
 
 /* History / failure */
 .history-context-block { text-align: center; font-size: var(--text-sm); color: var(--color-card-text); }

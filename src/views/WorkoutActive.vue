@@ -694,8 +694,9 @@ const setsRequiringRepInput = computed(() => {
       
       // Require input if:
       // 1. Status is FAILED (always need reps for failure)
-      // 2. OR isToFailure is TRUE (always want to capture reps even if "Done")
-      return item.set.status === 'failed' || isToFailure;
+      // 2. OR isToFailure is TRUE and reps were NOT already captured on-card
+      //    (the stepper marks repsConfirmed, so we never double-ask)
+      return item.set.status === 'failed' || (isToFailure && !item.set.repsConfirmed);
   });
 });
 
@@ -1457,25 +1458,33 @@ const firePrBeatIfEarned = (justLogged: LoggedSetData) => {
   }
 };
 
-const logSet = async (status: 'done' | 'failed') => {
+const logSet = async (status: 'done' | 'failed', capturedReps?: number) => {
   stopActivitySetTimer();
   if (!currentExercise.value) return;
-  
+
   // Use effective prescribed values (from overrides if set, otherwise from exercise)
   const effectiveWeight = getEffectivePrescribedWeight.value;
   const effectiveReps = getEffectivePrescribedReps.value;
-  
+
+  // On-card stepper (2.12): a DONE on a non-timed exercise carries the reps the
+  // user actually captured, so extra reps are recordable without a keyboard.
+  const isTimed = currentExercise.value.isTimed || false;
+  const capturedDone = status === 'done' && !isTimed && typeof capturedReps === 'number';
+
   const loggedSet: LoggedSetData = {
-    exerciseId: currentExercise.value.id, 
-    exerciseName: currentExercise.value.exerciseName, 
-    setNumber: currentSetNumber.value, 
-    prescribedWeight: effectiveWeight, 
-    prescribedReps: effectiveReps,     
-    actualWeight: effectiveWeight, 
-    actualReps: status === 'done' ? (currentExercise.value.isTimed ? effectiveReps : effectiveReps) : (currentExercise.value.isTimed ? (effectiveReps - holdCountdown.value) : 0),
-    status: status, 
+    exerciseId: currentExercise.value.id,
+    exerciseName: currentExercise.value.exerciseName,
+    setNumber: currentSetNumber.value,
+    prescribedWeight: effectiveWeight,
+    prescribedReps: effectiveReps,
+    actualWeight: effectiveWeight,
+    actualReps: status === 'done'
+      ? (isTimed ? effectiveReps : (capturedDone ? capturedReps! : effectiveReps))
+      : (isTimed ? (effectiveReps - holdCountdown.value) : 0),
+    status: status,
+    repsConfirmed: capturedDone,
     timestamp: new Date(),
-    isTimed: currentExercise.value.isTimed || false,
+    isTimed,
   };
 
   if (currentExercise.value.isTimed && isHoldTimerRunning.value) {
