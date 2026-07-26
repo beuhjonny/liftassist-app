@@ -135,13 +135,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import useAuth from '../composables/useAuth';
 import useSettings from '../composables/useSettings';
 import useTrainingProgram from '../composables/useTrainingProgram';
 import useLoggedWorkouts from '../composables/useLoggedWorkouts';
 import useExternalActivities from '../composables/useExternalActivities';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import ManifestoComponent from '@/components/ManifestoComponent.vue';
 import SkeletonLoader from '@/components/SkeletonLoader.vue';
 import AboutModal from '@/components/AboutModal.vue';
@@ -160,6 +160,7 @@ import type { WorkoutDay, EnhancedWorkoutDay, LoggedWorkout } from '@/types';
 const { user } = useAuth();
 const { settings } = useSettings();
 const router = useRouter();
+const route = useRoute();
 
 const {
   isProgramLoading,
@@ -407,14 +408,29 @@ const resumeDraftWorkout = () => {
 
 const startWorkout = (day: WorkoutDay | EnhancedWorkoutDay) => {
   if (!activeProgram.id || !day.id) {
-    // We can't set programLoadingError from here directly as it's readonly from composable usually, 
-    // but ref is mutable. 
+    // We can't set programLoadingError from here directly as it's readonly from composable usually,
+    // but ref is mutable.
     // Ideally we'd use a setter or just log it/alert.
     console.error("Cannot start workout: Program or Day ID is missing.");
     return;
   }
   router.push({ name: 'WorkoutActive', params: { programId: activeProgram.id, dayId: day.id } });
 };
+
+// PWA icon shortcut: /?action=start deep-links into the recommended session
+// as soon as the program has loaded (one tap from the Home Screen to a live set).
+const pendingShortcutStart = ref(route.query.action === 'start');
+watch(
+  [heroDay, pendingShortcutStart],
+  ([day, pending]) => {
+    if (pending && day && activeProgram.id) {
+      pendingShortcutStart.value = false;
+      router.replace({ query: {} });
+      startWorkout(day);
+    }
+  },
+  { immediate: false },
+);
 
 </script>
 

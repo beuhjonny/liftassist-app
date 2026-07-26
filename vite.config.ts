@@ -18,8 +18,8 @@ export default defineConfig({
         name: 'Lift Logic',
         short_name: 'LiftLogic',
         description: 'Progressive Strength Training Tracker',
-        theme_color: '#181818',
-        background_color: '#181818',
+        theme_color: '#121212',
+        background_color: '#121212',
         display: 'standalone',
         start_url: '/',
         // Web Share Target: once LiftLogic is installed, it appears in the OS
