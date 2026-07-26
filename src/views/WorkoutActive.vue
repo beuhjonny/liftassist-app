@@ -1407,6 +1407,14 @@ const runSealCountUp = () => {
     if (p < 1) sealRaf = requestAnimationFrame(tick);
   };
   sealRaf = requestAnimationFrame(tick);
+  // rAF never fires in a backgrounded/hidden tab - guarantee the final value
+  // so the seal can never sit at 0.
+  setTimeout(() => {
+    if (sealVolumeShown.value !== target) {
+      cancelAnimationFrame(sealRaf);
+      sealVolumeShown.value = target;
+    }
+  }, DUR + 150);
 };
 
 const firePrBeatIfEarned = (justLogged: LoggedSetData) => {
