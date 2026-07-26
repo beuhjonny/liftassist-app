@@ -90,6 +90,22 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Split the heavyweight vendors out of the entry chunk so first paint
+        // ships app code only (masterplan 1.10 / metric M9).
+        manualChunks(id: string) {
+          if (id.includes('node_modules')) {
+            if (id.includes('firebase')) return 'vendor-firebase';
+            if (id.includes('chart.js') || id.includes('vue-chartjs')) return 'vendor-charts';
+            if (id.includes('/vue') || id.includes('@vue') || id.includes('pinia')) return 'vendor-vue';
+          }
+          return undefined;
+        },
+      },
+    },
+  },
   server: { // <-- Add this 'server' configuration block here
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',

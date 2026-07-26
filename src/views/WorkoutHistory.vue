@@ -308,7 +308,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, watch, computed, defineAsyncComponent } from 'vue';
 import { collection, query, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase.js';
 import { DAY_COLOR_PALETTE, DEFAULT_DAY_COLOR, colorForDay } from '../design/dayPalette';
@@ -322,9 +322,11 @@ import useTrainingProgram from '../composables/useTrainingProgram';
 import { toDisplay, displayUnit } from '../utils/weight';
 import type { LoggedWorkout, PerformedExerciseInLog, LoggedSetData } from '@/types';
 
-import WeeklyVolumeChart from '../components/WeeklyVolumeChart.vue';
-import ExerciseProgressChart from '../components/ExerciseProgressChart.vue';
-import MuscleGroupVolumeChart from '../components/MuscleGroupVolumeChart.vue';
+// Async so the chart.js vendor chunk loads only when the analytics drawer
+// actually opens, not on first History paint (masterplan 1.10).
+const WeeklyVolumeChart = defineAsyncComponent(() => import('../components/WeeklyVolumeChart.vue'));
+const ExerciseProgressChart = defineAsyncComponent(() => import('../components/ExerciseProgressChart.vue'));
+const MuscleGroupVolumeChart = defineAsyncComponent(() => import('../components/MuscleGroupVolumeChart.vue'));
 import EditLoggedWorkoutModal from '../components/history/EditLoggedWorkoutModal.vue';
 import ShareWorkoutModal from '../components/history/ShareWorkoutModal.vue';
 import LogCardioModal from '../components/history/LogCardioModal.vue';
