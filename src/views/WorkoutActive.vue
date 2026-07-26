@@ -199,22 +199,33 @@
     </div>
 
     <div v-if="workoutPhase === 'complete'" class="workout-content card">
-        <div class="workout-complete-header">
-          <h2>Workout Complete!</h2>
-          <button 
-            @click="toggleEditMode" 
-            class="button-icon edit-mode-toggle" 
+        <!-- The completion seal: one dominant number, staged (2.10) -->
+        <div class="seal-header">
+          <span class="seal-eyebrow">SESSION COMPLETE</span>
+          <button
+            @click="toggleEditMode"
+            class="button-icon edit-mode-toggle"
             :class="{ 'edit-mode-active': isEditModeActive }"
+            aria-label="Toggle edit mode"
             title="Toggle Edit Mode">
             ✏️
           </button>
         </div>
-        <p>Great job finishing your {{ currentWorkoutDayDetails?.dayName }} workout!</p>
+        <h1 class="seal-day-name">{{ currentWorkoutDayDetails?.dayName }}</h1>
+        <div class="seal-hero" aria-label="Total volume">
+          <span class="seal-volume num-display">{{ sealVolumeShown.toLocaleString() }}</span>
+          <span class="seal-unit">{{ displayUnit(settings.weightUnit) }} total volume</span>
+        </div>
+        <div class="seal-chips">
+          <span class="seal-chip num-display">{{ displayDurationForCompletedWorkout }}</span>
+          <span class="seal-chip num-display">{{ displayConsolidatedSetsInfo }}</span>
+          <span v-if="sessionPrCount > 0" class="seal-chip seal-chip-pr num-display">{{ sessionPrCount }} PR{{ sessionPrCount > 1 ? 's' : '' }}</span>
+        </div>
 
         <!-- Prominent Facelifted Rep Input Section at the top of the screen -->
         <div v-if="setsRequiringRepInput.length > 0" class="actual-reps-input-section card-inset warning-highlight">
           <h3 class="input-section-title">
-            <span class="warning-icon">⚠️</span> Action Required: Log Actual Reps
+            {{ setsRequiringRepInput.length }} set{{ setsRequiringRepInput.length > 1 ? 's' : '' }} to confirm before we seal this.
           </h3>
 
           <div v-for="item in setsRequiringRepInput" :key="item.index" class="rep-input-row-item" :class="{ 'is-confirmed-row': confirmedRepsMap[item.index] }">
@@ -253,11 +264,6 @@
         </div>
 
         <div class="workout-summary card-inset">
-          <h4>Session Summary:</h4>
-          <p><strong>Workout Time:</strong> {{ displayDurationForCompletedWorkout }}</p>
-          <p><strong>Total Volume:</strong> {{ totalWorkoutVolume.toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</p>
-          <p><strong>Total Sets:</strong> {{ displayConsolidatedSetsInfo }}</p>
-
           <div class="exercise-breakdown-header" v-if="completedPerformedExercisesSummary.length > 0">
             <h5>Exercise Breakdown:</h5>
             <button @click="toggleSetDetailsInSummary" class="button-link">
@@ -1377,6 +1383,30 @@ const fireRestCompleteAlert = () => {
 // --- PR beat (masterplan 2.8): rare, honest, the one expensive moment ---
 const prBeat = ref<{ exerciseName: string; e1rm: number } | null>(null);
 let prBeatTimer: ReturnType<typeof setTimeout> | undefined;
+const sessionPrCount = ref(0);
+
+// --- Completion seal (masterplan 2.10): one dominant number, staged ---
+const sealVolumeShown = ref(0);
+let sealRaf = 0;
+const runSealCountUp = () => {
+  cancelAnimationFrame(sealRaf);
+  const target = totalWorkoutVolume.value;
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (reduced || target <= 0) {
+    sealVolumeShown.value = target;
+    return;
+  }
+  sealVolumeShown.value = 0;
+  const t0 = performance.now();
+  const DUR = 700;
+  const tick = (now: number) => {
+    const p = Math.min(1, (now - t0) / DUR);
+    const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+    sealVolumeShown.value = Math.round(target * eased);
+    if (p < 1) sealRaf = requestAnimationFrame(tick);
+  };
+  sealRaf = requestAnimationFrame(tick);
+};
 
 const firePrBeatIfEarned = (justLogged: LoggedSetData) => {
   try {
@@ -1394,6 +1424,7 @@ const firePrBeatIfEarned = (justLogged: LoggedSetData) => {
 
     if (verdict.isPR) {
       haptics.pr();
+      sessionPrCount.value++;
       prBeat.value = { exerciseName: name, e1rm: Math.round(verdict.e1rm) };
       clearTimeout(prBeatTimer);
       prBeatTimer = setTimeout(() => (prBeat.value = null), 2800);
@@ -2278,8 +2309,10 @@ watch(workoutPhase, async (newPhase, oldPhase) => {
   if (oldPhase === 'complete' && newPhase !== 'complete') {
     // showActualRepsInputForFail is computed, nothing to reset
   }
-  if (newPhase === 'complete') { 
+  if (newPhase === 'complete') {
       if (!workoutEndTime.value) workoutEndTime.value = new Date();
+      haptics.sessionSeal();
+      runSealCountUp();
   }
 
   if (newPhase === 'activeSet' || newPhase === 'resting') {
@@ -2580,6 +2613,34 @@ const saveEditedWorkout = () => {
 .actual-reps-input-section { margin: 20px 0; }
 .actual-reps-input-section label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--color-card-text); }
 .actual-reps-input-section input[type="number"] { padding: 8px; width: 80px; text-align: center; font-size: 1em; border: 1px solid var(--color-card-border); border-radius: 4px; background-color: var(--color-card-bg); color: var(--color-card-text); }
+/* Completion seal (2.10) */
+.seal-header { display: flex; align-items: center; justify-content: space-between; }
+.seal-eyebrow {
+  font-size: var(--text-xs); font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wider); text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+.seal-day-name {
+  margin: var(--space-1) 0 var(--space-4);
+  font-family: var(--font-display); font-size: var(--text-2xl);
+  font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight);
+  color: var(--color-card-heading); line-height: var(--leading-tight);
+}
+.seal-hero { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); margin: var(--space-4) 0; }
+.seal-volume {
+  font-family: var(--font-display); font-size: var(--text-display);
+  font-weight: var(--weight-bold); line-height: var(--leading-none);
+  letter-spacing: var(--tracking-tight); color: var(--color-card-heading);
+}
+.seal-unit { font-size: var(--text-sm); color: var(--text-tertiary); }
+.seal-chips { display: flex; justify-content: center; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4); }
+.seal-chip {
+  padding: var(--space-1) var(--space-3); border-radius: var(--radius-full);
+  background: var(--color-card-mute); border: 1px solid var(--color-hairline);
+  font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-card-text);
+}
+.seal-chip-pr { background: var(--color-success-bg); border-color: var(--color-success-line); color: var(--color-success-fg); }
+
 .pr-beat {
   display: flex;
   align-items: center;

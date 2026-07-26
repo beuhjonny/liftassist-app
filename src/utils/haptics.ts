@@ -30,6 +30,8 @@ export const haptics = {
   pr: () => buzz([12, 40, 12, 40, 24]),
   /** Generic confirm (add to routine, save). */
   confirm: () => buzz(20),
+  /** The session seal - workout complete. */
+  sessionSeal: () => buzz([20, 80, 20]),
 };
 
 export default haptics;
