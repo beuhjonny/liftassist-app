@@ -245,7 +245,7 @@
             <div class="rep-input-meta">
               <span class="exercise-name">{{ item.set.exerciseName }}</span>
               <span class="prescribed-details">
-                Prescribed: Set {{ item.set.setNumber }} — {{ item.set.prescribedReps }} reps @ {{ item.set.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}
+                Prescribed: Set {{ item.set.setNumber }} - {{ item.set.prescribedReps }} reps @ {{ item.set.prescribedWeight }} {{ displayUnit(settings.weightUnit) }}
                 <span v-if="item.set.status === 'failed'" class="status-textfailed">(Failed Attempt)</span>
                 <span v-else class="status-textfailure">(To Failure)</span>
               </span>

@@ -342,4 +342,46 @@ watch(user, (currentUser) => {
   text-align: center;
   color: var(--text-secondary);
 }
+
+/* Desktop splits rather than stacks. Stacked, the crown becomes a ~5:1
+   letterbox and object-fit: cover crops the plate to a squashed band with no
+   composition left. A full-height left panel is close to the aspect the plate
+   was actually cut for, so the canyon survives. */
+/* 64rem matches where main.css raises #app's padding to --space-6, so the
+   breakout below can use that same token instead of a magic number. */
+@media (min-width: 64rem) {
+  .login-view {
+    flex-direction: row;
+    /* Sign-in is the one full-bleed screen; escape the global app gutter so
+       the plate reaches the viewport edge instead of floating in a margin. */
+    margin: calc(var(--space-6) * -1);
+    width: calc(100% + var(--space-6) * 2);
+  }
+
+  .login-crown {
+    flex: 1 1 46%;
+    min-height: 100dvh;
+    padding: var(--space-8) clamp(2rem, 4vw, 4rem);
+    /* Copy sits low in a tall panel, so the scrim holds off far longer. */
+    --vista-scrim-start: 64%;
+  }
+
+  .login-body {
+    flex: 1 1 54%;
+    justify-content: center;
+    max-width: 34rem;
+    padding: var(--space-8) clamp(2rem, 5vw, 5rem);
+  }
+
+  .wordmark { font-size: clamp(2.6rem, 3.4vw, 3.4rem); }
+  .crown-line { font-size: 1.15rem; max-width: 20ch; }
+}
+
+/* Past ~1760px a 46% panel is wide enough that cover crops the plate back into
+   a letterbox band. Cap both panels and centre the pair instead of stretching. */
+@media (min-width: 110rem) {
+  .login-view { justify-content: center; }
+  .login-crown { flex: 0 1 48rem; }
+  .login-body { flex: 0 1 34rem; max-width: 34rem; }
+}
 </style>

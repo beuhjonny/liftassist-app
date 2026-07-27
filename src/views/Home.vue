@@ -1,7 +1,8 @@
 <template>
   <div class="home-view">
     <div v-if="!user" class="unauthenticated-view card">
-      <div class="cta-container top-cta">
+      <div class="cta-container top-cta has-landing-vista">
+        <Vista band="push" plate="whitepass" />
         <h1 class="welcome-title">
           <span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span>
         </h1>
@@ -520,7 +521,23 @@ watch(
 /* Unauthenticated View */
 .unauthenticated-view.card {
   text-align: center; padding: 30px 25px;
+  overflow: hidden;
 }
+/* The marketing crown. Bleeds to the card edge, so it cancels the card's own
+   30px/25px padding and restores it inside. Height is capped rather than left
+   to the content, otherwise the plate's aspect swings wildly between a 350px
+   phone and a 900px desktop card and cover crops it to a band. */
+/* Two classes, because `.cta-container { margin: 25px 0 }` is declared later
+   and would otherwise cancel the negative margin that produces the bleed. */
+.cta-container.has-landing-vista {
+  --vista-scrim-start: 44%;
+  position: relative;
+  margin: -30px -25px 30px;
+  padding: clamp(8rem, 26vw, 13rem) 25px 28px;
+  overflow: hidden;
+}
+.has-landing-vista > *:not(.vista) { position: relative; z-index: 1; }
+.has-landing-vista .welcome-title { margin-bottom: var(--space-2); }
 
 @media (max-width: 600px) {
   .home-view {

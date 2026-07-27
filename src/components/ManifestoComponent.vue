@@ -7,7 +7,7 @@
     <h3>What is Lift Logic?</h3>
     <ul>
       <li><strong>Customizable.</strong> Define your own splits, exercises, rep ranges, and progression steps to fit your specific goals. Or get an AI to help you import your favorite routine.</li>
-      <li><strong>Prepared.</strong> Your workout pre-populates with exact targets based on previous performance—no guesswork, just clear goals.</li>
+      <li><strong>Prepared.</strong> Your workout pre-populates with exact targets based on previous performance - no guesswork, just clear goals.</li>
       <li><strong>Automated.</strong> The engine handles double progression math instantly: hit your targets, and the app automatically increases reps or load for the next session.</li>
       <li><strong>Focused.</strong> Integrated rest timers and a distraction-free interface keep you on track between sets without the noise.</li>
     </ul>
@@ -26,7 +26,7 @@
     
     <div class="manifesto-actions">
         <router-link to="/version-history" class="button-history">
-            📜 View Version History & Changelog
+            View version history and changelog
         </router-link>
     </div>
   </div>

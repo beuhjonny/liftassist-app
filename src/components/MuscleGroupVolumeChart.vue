@@ -90,7 +90,7 @@
                 </td>
                 <td>
                   <span v-if="ex.secondary.length > 0" class="muscle-chip secondary-chip">{{ ex.secondary.join(', ') }}</span>
-                  <span v-else class="text-muted">—</span>
+                  <span v-else class="text-muted">-</span>
                 </td>
                 <td class="sets-cell">
                   <strong>{{ ex.setsCount }}</strong> sets

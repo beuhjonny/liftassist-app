@@ -179,7 +179,7 @@
             </div>
             <p><strong>The Chalk Board.</strong></p>
             <p>
-                Before the algorithms, there was just dust and friction. Double progression was manual—erasing yesterday's numbers and rewriting today's targets. 
+                Before the algorithms, there was just dust and friction. Double progression was manual - erasing yesterday's numbers and rewriting today's targets. 
                 It was effective, primitive, and honest. But it was missing a timer.
             </p>
             <button @click="openImageModal('/stone-age-chalkboard.jpg', 'The original LiftLogic workout routine, handwritten on the chalkboard.')" class="button-pic">
