@@ -34,6 +34,8 @@ export interface Readiness {
   score: number;
   headline: string;
   guidance: string;
+  /** Plain-language inputs behind the verdict ("Show the work"). */
+  factors: string[];
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
@@ -55,8 +57,18 @@ export function computeReadiness(input: ReadinessInputs): Readiness {
       score: 60,
       headline: 'Ready when you are',
       guidance: 'Log your first session to start building your readiness.',
+      factors: ['No sessions logged yet'],
     };
   }
+
+  // Plain-language inputs behind the verdict ("Show the work").
+  const factors: string[] = [];
+  factors.push(days === 0 ? 'Trained today' : `${days} day${days === 1 ? '' : 's'} since last session`);
+  if (targetPerWeek > 0) factors.push(`${workoutsThisWeek} of ${targetPerWeek} sessions this week`);
+  if (weeklyStreak > 0) factors.push(`${weeklyStreak}-week streak`);
+  if (recentFailRate > 0) factors.push(`${Math.round(recentFailRate * 100)}% of recent sets missed`);
+  const trendIn = clamp(input.weeklyVolumeTrend ?? 0, -1, 1);
+  if (Math.abs(trendIn) >= 0.05) factors.push(trendIn > 0 ? 'Weekly volume rising' : 'Weekly volume falling');
 
   const trainedToday = days === 0;
   const rested = days >= 2;
@@ -86,6 +98,7 @@ export function computeReadiness(input: ReadinessInputs): Readiness {
       score: Math.min(score, 42),
       headline: 'Deload due',
       guidance: input.deloadLine,
+      factors: [...factors, 'Multiple lifts stalled'],
     };
   }
 
@@ -116,5 +129,5 @@ export function computeReadiness(input: ReadinessInputs): Readiness {
     },
   };
 
-  return { level, score, ...copy[level] };
+  return { level, score, ...copy[level], factors };
 }
