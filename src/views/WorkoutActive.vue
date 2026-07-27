@@ -702,11 +702,12 @@ const setsRequiringRepInput = computed(() => {
       const config = sessionExercises.find(ex => ex.id === item.set.exerciseId);
       const isToFailure = config?.isToFailure || false;
       
-      // Require input if:
-      // 1. Status is FAILED (always need reps for failure)
-      // 2. OR isToFailure is TRUE and reps were NOT already captured on-card
-      //    (the stepper marks repsConfirmed, so we never double-ask)
-      return item.set.status === 'failed' || (isToFailure && !item.set.repsConfirmed);
+      // Require input only when reps were NOT already captured on-card
+      // (the stepper marks repsConfirmed, so we never double-ask):
+      // 1. FAILED sets without a captured partial count
+      // 2. To-failure sets without a captured AMRAP count
+      return (item.set.status === 'failed' && !item.set.repsConfirmed)
+        || (isToFailure && !item.set.repsConfirmed);
   });
 });
 
@@ -1476,10 +1477,10 @@ const logSet = async (status: 'done' | 'failed', capturedReps?: number) => {
   const effectiveWeight = getEffectivePrescribedWeight.value;
   const effectiveReps = getEffectivePrescribedReps.value;
 
-  // On-card stepper (2.12): a DONE on a non-timed exercise carries the reps the
-  // user actually captured, so extra reps are recordable without a keyboard.
+  // On-card stepper (2.12): a non-timed set carries the reps the user actually
+  // captured - extra reps on DONE, partial reps on FAIL - without a keyboard.
   const isTimed = currentExercise.value.isTimed || false;
-  const capturedDone = status === 'done' && !isTimed && typeof capturedReps === 'number';
+  const captured = !isTimed && typeof capturedReps === 'number';
 
   const loggedSet: LoggedSetData = {
     exerciseId: currentExercise.value.id,
@@ -1489,10 +1490,10 @@ const logSet = async (status: 'done' | 'failed', capturedReps?: number) => {
     prescribedReps: effectiveReps,
     actualWeight: effectiveWeight,
     actualReps: status === 'done'
-      ? (isTimed ? effectiveReps : (capturedDone ? capturedReps! : effectiveReps))
-      : (isTimed ? (effectiveReps - holdCountdown.value) : 0),
+      ? (isTimed ? effectiveReps : (captured ? capturedReps! : effectiveReps))
+      : (isTimed ? (effectiveReps - holdCountdown.value) : (captured ? capturedReps! : 0)),
     status: status,
-    repsConfirmed: capturedDone,
+    repsConfirmed: captured,
     timestamp: new Date(),
     isTimed,
   };

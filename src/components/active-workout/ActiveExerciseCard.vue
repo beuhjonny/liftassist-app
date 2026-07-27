@@ -138,24 +138,29 @@ const emit = defineEmits<{
   (e: 'openEdit'): void;
   (e: 'startHold'): void;
   (e: 'cancelHold'): void;
-  (e: 'logSet', status: 'done' | 'failed', actualReps: number): void;
+  (e: 'logSet', status: 'done' | 'failed', actualReps?: number): void;
   (e: 'openDemo', name: string): void;
   (e: 'skipExercise'): void;
 }>();
 
 // Rep capture prefilled to the prescription; reset whenever the set changes.
 const repsInput = ref(props.effectiveReps);
+const repsTouched = ref(false);
 watch(
   () => [props.setNumber, props.exercise.exerciseName, props.effectiveReps],
-  () => { repsInput.value = props.effectiveReps; },
+  () => { repsInput.value = props.effectiveReps; repsTouched.value = false; },
 );
+watch(repsInput, (v) => { if (v !== props.effectiveReps) repsTouched.value = true; });
 const repDelta = computed(() => repsInput.value - props.effectiveReps);
 
 const onLog = (status: 'done' | 'failed') => {
   if (status === 'done') haptics.logDone();
   else haptics.logFail();
-  // FAIL passes 0; DONE passes the captured rep count.
-  emit('logSet', status, status === 'failed' ? 0 : repsInput.value);
+  // DONE always carries the captured count. FAIL carries it only when the
+  // user actually adjusted the stepper (an untouched FAIL at prescribed reps
+  // would be a contradiction - the post-hoc prompt handles that case).
+  if (status === 'done') emit('logSet', status, repsInput.value);
+  else emit('logSet', status, repsTouched.value ? repsInput.value : undefined);
 };
 </script>
 

@@ -68,7 +68,12 @@
           <ReadinessCard v-if="readiness" :readiness="readiness" />
 
           <section v-if="consistencyStats" class="consistency card">
-            <span class="strip-eyebrow"><Flame :size="14" /> THIS WEEK</span>
+            <div class="strip-head">
+              <span class="strip-eyebrow"><Flame :size="14" /> THIS WEEK</span>
+              <span v-if="consistencyStats.restPassArmed" class="rest-pass-chip" title="Earned by hitting last week. If a week slips, it covers you - automatically.">
+                Rest pass ready
+              </span>
+            </div>
             <div class="strip-row">
               <div class="stat">
                 <span class="stat-value">{{ consistencyStats.weeklyStreak }}</span>
@@ -83,6 +88,8 @@
                 <span class="stat-label">overload {{ consistencyStats.timeframeDays }}d</span>
               </div>
             </div>
+            <!-- Settled rule: the strip earns its place only by ending in a verdict. -->
+            <p class="strip-verdict" :class="weekVerdict.tone">{{ weekVerdict.line }}</p>
           </section>
 
           <section v-if="otherDays.length" class="day-list">
@@ -245,6 +252,24 @@ const readiness = computed(() => {
   });
 });
 
+// The week strip must end in a verdict (settled rule): on plan / target met /
+// tight, judged against the sessions still possible this ISO week (Mon start).
+const weekVerdict = computed(() => {
+  const cs = consistencyStats.value;
+  if (!cs) return { line: '', tone: 'ok' };
+  const done = cs.workoutsThisWeek;
+  const target = cs.targetPerWeek;
+  if (target <= 0) return { line: `${done} session${done === 1 ? '' : 's'} this week.`, tone: 'ok' };
+  if (done >= target) return { line: `${done} of ${target} - target met.`, tone: 'ok' };
+  const day = new Date().getDay();
+  const isoDay = day === 0 ? 7 : day;
+  const slotsLeft = 7 - isoDay + 1; // today still counts
+  const need = target - done;
+  return need <= slotsLeft
+    ? { line: `${done} of ${target} - on plan.`, tone: 'ok' }
+    : { line: `${done} of ${target} - ${need} to go, week is tight.`, tone: 'warn' };
+});
+
 const consistencyStats = computed(() => {
   const historyList: LoggedWorkout[] = (allLoggedWorkouts && (allLoggedWorkouts as any).length > 0)
     ? (allLoggedWorkouts as LoggedWorkout[])
@@ -359,21 +384,40 @@ const consistencyStats = computed(() => {
     });
   }
 
-  // Calculate Active Weekly Streak
+  // Calculate Active Weekly Streak - with the REST PASS (streak-freeze,
+  // masterplan 2.6). A single missed week does not break the streak when the
+  // week before it met target: that met week banked one pass (cap 1 held),
+  // and the pass covers the miss automatically. Two misses in a row still
+  // break. Honest forgiveness, not a loophole.
   let streak = 0;
+  let restPassUsed = false;
   if ((eventsByWeek.get(currentWeekStart) || 0) >= minWorkoutsTarget) {
     streak++;
   }
 
   let checkWeek = currentWeekStart - oneWeekMs;
+  let justCovered = false;
   while (true) {
-    if ((eventsByWeek.get(checkWeek) || 0) >= minWorkoutsTarget) {
+    const met = (eventsByWeek.get(checkWeek) || 0) >= minWorkoutsTarget;
+    if (met) {
       streak++;
+      justCovered = false;
       checkWeek -= oneWeekMs;
-    } else {
-      break;
+      continue;
     }
+    const olderWeekMet = (eventsByWeek.get(checkWeek - oneWeekMs) || 0) >= minWorkoutsTarget;
+    if (olderWeekMet && !justCovered) {
+      // Pass consumes the miss; earned by the adjacent older met week.
+      restPassUsed = true;
+      justCovered = true;
+      checkWeek -= oneWeekMs;
+      continue;
+    }
+    break;
   }
+
+  // A pass is banked ("armed") when the last completed week met its target.
+  const restPassArmed = (eventsByWeek.get(currentWeekStart - oneWeekMs) || 0) >= minWorkoutsTarget;
 
   const overloadRate = overloadTotalExercises > 0 
     ? Math.round((overloadHits / overloadTotalExercises) * 100) 
@@ -386,7 +430,9 @@ const consistencyStats = computed(() => {
     overloadHits,
     overloadTotalExercises,
     overloadRate,
-    timeframeDays
+    timeframeDays,
+    restPassArmed,
+    restPassUsed
   };
 });
 
@@ -747,6 +793,24 @@ watch(
   color: var(--color-heading); font-variant-numeric: tabular-nums; line-height: 1;
 }
 .stat-label { font-size: var(--text-xs); color: var(--text-tertiary); }
+.strip-verdict {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--color-card-text);
+}
+.strip-verdict.warn { color: var(--color-warning-fg); }
+.strip-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.rest-pass-chip {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-line);
+  color: var(--color-success-fg);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
 
 /* Day list */
 .day-list { display: flex; flex-direction: column; gap: var(--space-2); }
