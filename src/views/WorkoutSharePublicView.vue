@@ -1,40 +1,45 @@
 <template>
   <div class="public-share-view">
     <div class="public-share-card card">
-      <div class="brand-header">
-        <span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span>
+      <!-- The crown is what a stranger sees first, and what gets screenshotted
+           and re-shared, so it carries the plate and the identity. -->
+      <div class="share-crown">
+        <Vista band="push" plate="palisade" />
+        <div class="brand-header">
+          <span class="brand-lift">LIFT</span> <span class="brand-logic">LOGIC</span>
+        </div>
+        <div v-if="shareData" class="workout-meta-header">
+          <span class="shared-badge">Shared session</span>
+          <h2>{{ shareData.workoutDayName }}</h2>
+          <p class="workout-date">{{ shareData.dateStr }}</p>
+          <p v-if="shareData.programName" class="program-tag">{{ shareData.programName }}</p>
+        </div>
       </div>
 
       <div v-if="isLoading" class="loading-state">
-        <p>Loading shared workout...</p>
+        <p>Loading shared workout&hellip;</p>
       </div>
 
       <div v-else-if="error" class="error-state">
-        <p class="error-text">⚠️ {{ error }}</p>
+        <p class="error-text">{{ error }}</p>
         <router-link to="/" class="button-primary style-cta-btn">Go to LiftLogic Home</router-link>
       </div>
 
       <div v-else-if="shareData" class="share-content">
-        <div class="workout-meta-header">
-          <span class="shared-badge">Shared Workout Session</span>
-          <h2>{{ shareData.workoutDayName }}</h2>
-          <p class="workout-date">{{ shareData.dateStr }}</p>
-          <p v-if="shareData.programName" class="program-tag">Routine: {{ shareData.programName }}</p>
-        </div>
-
         <!-- Summary Stats Grid -->
         <div class="stats-grid card-inset">
           <div class="stat-box">
-            <span class="stat-label">⏱️ Duration</span>
+            <span class="stat-label">Duration</span>
             <span class="stat-value">{{ shareData.durationMinutes ? shareData.durationMinutes + 'm' : 'N/A' }}</span>
           </div>
           <div class="stat-box">
-            <span class="stat-label">🏋️ Total Volume</span>
-            <span class="stat-value">{{ shareData.totalVolume.toLocaleString() }} lbs</span>
+            <span class="stat-label">Volume</span>
+            <span class="stat-value">{{ shareData.totalVolume.toLocaleString() }}</span>
+            <span class="stat-unit">lbs</span>
           </div>
           <div class="stat-box">
-            <span class="stat-label">📊 Total Sets</span>
-            <span class="stat-value">{{ shareData.totalSets }} sets</span>
+            <span class="stat-label">Sets</span>
+            <span class="stat-value">{{ shareData.totalSets }}</span>
           </div>
         </div>
 
@@ -62,10 +67,10 @@
 
         <!-- CTA Banner -->
         <div class="cta-banner card-inset">
-          <h4>Crush your fitness goals with LiftLogic</h4>
-          <p>Track progressive overload, log sets, and visualize strength gains.</p>
+          <h4>Every session, decided for you</h4>
+          <p>LiftLogic reads your last set and sets the next one. Free to start.</p>
           <router-link to="/" class="button-primary style-cta-btn full-width">
-            🚀 Try LiftLogic Free
+            Open LiftLogic
           </router-link>
         </div>
       </div>
@@ -77,6 +82,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import usePublicShare, { type PublicWorkoutShareData } from '@/composables/usePublicShare';
+import Vista from '@/components/Vista.vue';
 
 const route = useRoute();
 const { fetchPublicWorkoutShare, isLoading, error } = usePublicShare();
@@ -103,17 +109,30 @@ onMounted(async () => {
 .public-share-card {
   padding: 28px 24px;
   border-radius: 16px;
+  overflow: hidden;
 }
+
+/* Bleeds to the card edge, so it cancels the card's own padding. The wordmark
+   starts at a measured 39% of the crown, so the scrim bites just above it. */
+.share-crown {
+  --vista-scrim-start: 32%;
+  position: relative;
+  margin: -28px -24px 24px;
+  padding: 9rem 24px 20px;
+  overflow: hidden;
+}
+.share-crown > *:not(.vista) { position: relative; z-index: 1; }
 
 .brand-header {
   font-family: 'Montserrat', sans-serif;
   font-size: 1.6em;
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .brand-lift { font-weight: 900; }
-.brand-logic { font-weight: 400; color: #007bff; }
+/* Matches the wordmark everywhere else in the app; it was blue only here. */
+.brand-logic { font-weight: 400; }
 
 .shared-badge {
   display: inline-block;
@@ -159,19 +178,31 @@ onMounted(async () => {
   text-align: center;
 }
 
+/* Three columns in a 297px card leaves ~66px each, so labels and values must
+   both fit on one line or the grid reads as broken. */
 .stat-label {
   display: block;
   font-size: 0.75em;
   font-weight: 700;
   opacity: 0.7;
   text-transform: uppercase;
+  white-space: nowrap;
   margin-bottom: 4px;
 }
-
 .stat-value {
-  font-size: 1.15em;
+  display: block;
+  font-size: 1.05em;
   font-weight: 800;
+  white-space: nowrap;
   color: var(--color-card-heading);
+}
+.stat-unit {
+  display: block;
+  font-size: 0.7em;
+  font-weight: 600;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
 .exercise-section h3 {
