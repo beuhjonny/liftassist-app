@@ -792,6 +792,10 @@ watch(
   padding: var(--space-4);
   display: flex; flex-direction: column; gap: var(--space-3);
 }
+/* A vista was tried here and removed. The card is 171px tall, so the band
+   above the stats is ~35px - too short for any photograph to read as one. It
+   looked like a gradient artifact, not imagery. Don't re-add it without
+   making the card substantially taller first. */
 .strip-eyebrow {
   display: inline-flex; align-items: center; gap: var(--space-1);
   font-size: var(--text-xs); font-weight: var(--weight-bold);
