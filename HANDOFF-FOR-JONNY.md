@@ -1,6 +1,10 @@
 # LiftLogic PRO - Handoff for Review
 **Branch:** `liftlogic-pro` (48 commits ahead of your `main`) · 80 unit tests (was 0) · type-check + build clean · nothing in your repo or Firebase project was touched (we never held credentials; verify: zero pushes, zero IAM changes)
 
+## See it without installing anything
+
+**[docs/REVIEW-SCREENS.md](docs/REVIEW-SCREENS.md)** - every screen as a real screenshot, mobile and desktop, including the two surfaces that were built and killed. Renders inline on GitHub; no clone, no npm, no emulator.
+
 ## How to run
 ```bash
 git checkout liftlogic-pro
