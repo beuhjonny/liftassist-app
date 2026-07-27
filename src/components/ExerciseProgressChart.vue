@@ -48,7 +48,7 @@ import {
   type ChartOptions 
 } from 'chart.js';
 import type { LoggedWorkout } from '@/types';
-import { displayUnit } from '@/utils/weight';
+import { toDisplay, displayUnit } from '@/utils/weight';
 
 ChartJS.register(Title, Tooltip, Legend, LineElement, PointElement, CategoryScale, LinearScale, Filler);
 
@@ -158,9 +158,13 @@ const chartData = computed(() => {
     if (dayValue > 0) {
       const d = getObjDate(w.date);
       const label = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const displayVal = selectedMetric.value === 'maxReps'
+        ? Math.round(dayValue)
+        : toDisplay(dayValue, props.weightUnit);
+
       dataPoints.push({
         label,
-        value: Math.round(dayValue)
+        value: displayVal
       });
     }
   });

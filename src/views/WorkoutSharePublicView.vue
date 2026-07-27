@@ -30,7 +30,7 @@
           </div>
           <div class="stat-box">
             <span class="stat-label">🏋️ Total Volume</span>
-            <span class="stat-value">{{ shareData.totalVolume.toLocaleString() }} lbs</span>
+            <span class="stat-value">{{ toDisplay(shareData.totalVolume, shareData.weightUnit || 'lbs').toLocaleString() }} {{ displayUnit(shareData.weightUnit || 'lbs') }}</span>
           </div>
           <div class="stat-box">
             <span class="stat-label">📊 Total Sets</span>
@@ -54,7 +54,7 @@
 
             <ul v-if="ex.sets && ex.sets.length > 0" class="set-list">
               <li v-for="(set, sIdx) in ex.sets" :key="sIdx">
-                Set {{ set.setNumber }}: <strong>{{ set.actualWeight }} lbs</strong> × {{ set.actualReps }} reps
+                Set {{ set.setNumber }}: <strong>{{ toDisplay(set.actualWeight, shareData.weightUnit || 'lbs') }} {{ displayUnit(shareData.weightUnit || 'lbs') }}</strong> × {{ set.actualReps }} reps
               </li>
             </ul>
           </div>
@@ -77,6 +77,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import usePublicShare, { type PublicWorkoutShareData } from '@/composables/usePublicShare';
+import { toDisplay, displayUnit } from '@/utils/weight';
 
 const route = useRoute();
 const { fetchPublicWorkoutShare, isLoading, error } = usePublicShare();

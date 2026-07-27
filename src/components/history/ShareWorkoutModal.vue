@@ -141,7 +141,8 @@ async function handleCopyLink() {
 
   try {
     if (!publicShareUrl.value) {
-      publicShareUrl.value = await createPublicWorkoutShare(props.workout);
+      const weightUnit = settings.value?.weightUnit || 'lbs';
+      publicShareUrl.value = await createPublicWorkoutShare(props.workout, weightUnit);
     }
 
     if (navigator.clipboard && window.isSecureContext) {

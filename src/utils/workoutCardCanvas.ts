@@ -97,8 +97,8 @@ export async function generateWorkoutCardBlob(workout: LoggedWorkout, weightUnit
 
   const stats = [
     { label: 'WORKOUT TIME', val: duration, icon: '⏱️' },
-    { label: 'TOTAL VOLUME', val: `${totalVolume.toLocaleString()} ${displayUnit(weightUnit)}`, icon: '🏋️' },
-    { label: 'TOTAL SETS', val: `${totalSets} sets`, icon: '📊' }
+    { label: 'TOTAL VOLUME', val: `${toDisplay(totalVolume, weightUnit).toLocaleString()} ${displayUnit(weightUnit)}`, icon: '🏋️' },
+    { label: 'TOTAL SETS', val: `${totalSets}`, icon: '📊' }
   ];
 
   stats.forEach((s, idx) => {
@@ -250,7 +250,7 @@ function getExerciseSummaryLine(ex: any, weightUnit: 'lbs' | 'kg'): string {
   if (!ex.sets || ex.sets.length === 0) return '0 sets';
   const numSets = ex.sets.length;
   const firstSet = ex.sets[0];
-  const weight = firstSet ? firstSet.actualWeight : 0;
+  const weight = firstSet ? toDisplay(firstSet.actualWeight, weightUnit) : 0;
   const reps = firstSet ? firstSet.actualReps : 0;
   return `${numSets} sets × ${reps} reps @ ${weight} ${displayUnit(weightUnit)}`;
 }

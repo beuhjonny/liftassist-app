@@ -184,6 +184,7 @@
 import { ref, computed, watch } from 'vue';
 import type { LoggedWorkout } from '@/types';
 import useSettings from '../composables/useSettings';
+import { toDisplay, displayUnit } from '../utils/weight';
 
 const props = defineProps<{
   workouts: LoggedWorkout[];
@@ -447,7 +448,9 @@ const getTierBadge = (ratio: number, config: any, equipment: 'barbell' | 'dumbbe
 // Process all exercises from workout history
 const processedExercises = computed(() => {
   if (!props.workouts || props.workouts.length === 0) return { matched: [], unmatched: [] };
-  const bw = bodyweight.value || 180;
+  const currentUnit = (props.weightUnit || settings.value?.weightUnit || 'lbs') as 'lbs' | 'kg';
+  const bwInput = bodyweight.value || (currentUnit === 'kg' ? 80 : 180);
+  const bwInLbs = currentUnit === 'kg' ? bwInput * 2.20462 : bwInput;
   const userOverrides = settings.value.standardsOverrides || {};
 
   const exerciseMaxes = new Map<string, number>();
@@ -480,8 +483,8 @@ const processedExercises = computed(() => {
     : Array.from(exerciseMaxes.keys());
 
   exercisesToEvaluate.forEach(exName => {
-    const bestWeight = exerciseMaxes.get(exName) || 0;
-    if (bestWeight > 0) {
+    const bestWeightLbs = exerciseMaxes.get(exName) || 0;
+    if (bestWeightLbs > 0) {
       const override = userOverrides[exName];
       
       let category: any = null;
@@ -497,9 +500,10 @@ const processedExercises = computed(() => {
 
       if (category) {
         const equipment: 'barbell' | 'dumbbell' = override?.equipment || detectEquipmentType(exName);
-        const ratio = Math.round((bestWeight / bw) * 100) / 100;
+        const ratio = Math.round((bestWeightLbs / bwInLbs) * 100) / 100;
         const { badge, nextTier, progressPercent } = getTierBadge(ratio, category, equipment);
-        const lbsNeeded = nextTier ? Math.max(1, nextTier.weight - bestWeight) : 0;
+        const lbsNeeded = nextTier ? Math.max(1, nextTier.weight - Math.round(bestWeightLbs / bwInLbs * (bodyweight.value || 180))) : 0;
+        const displayBestWeight = toDisplay(bestWeightLbs, currentUnit);
 
         matched.push({
           exerciseName: exName,
@@ -507,7 +511,7 @@ const processedExercises = computed(() => {
           matchedStandardName: category.name,
           equipment,
           icon: category.icon,
-          bestWeight,
+          bestWeight: displayBestWeight,
           bwRatio: ratio,
           tierBadge: badge,
           nextTier,
@@ -517,7 +521,7 @@ const processedExercises = computed(() => {
       } else {
         unmatched.push({
           exerciseName: exName,
-          bestWeight
+          bestWeight: toDisplay(bestWeightLbs, currentUnit)
         });
       }
     }

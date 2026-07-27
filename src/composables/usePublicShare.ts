@@ -13,6 +13,7 @@ export interface PublicWorkoutShareData {
   performedExercises: any[];
   totalVolume: number;
   totalSets: number;
+  weightUnit?: 'lbs' | 'kg';
   createdAt: any;
 }
 
@@ -24,7 +25,7 @@ export default function usePublicShare() {
    * Creates a public workout share document in Firestore `public_workouts/{shareId}`.
    * Returns the full share URL string.
    */
-  const createPublicWorkoutShare = async (workout: LoggedWorkout): Promise<string> => {
+  const createPublicWorkoutShare = async (workout: LoggedWorkout, weightUnit: 'lbs' | 'kg' = 'lbs'): Promise<string> => {
     isLoading.value = true;
     error.value = null;
 
@@ -53,6 +54,7 @@ export default function usePublicShare() {
         performedExercises: workout.performedExercises || [],
         totalVolume,
         totalSets,
+        weightUnit,
         createdAt: serverTimestamp()
       };
 

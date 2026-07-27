@@ -406,3 +406,17 @@ export async function verifyYoutubeEmbed(youtubeId?: string): Promise<boolean> {
     return true;
   }
 }
+
+/**
+ * Generates a Firestore-safe document ID key for exercise progress tracking.
+ * Safely replaces slashes and special characters so Firestore paths never break.
+ */
+export function getExerciseProgressKey(name: string): string {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[\/\s]+/g, '_')
+    .replace(/[^a-z0-9_]/g, '');
+}
+
