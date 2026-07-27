@@ -118,9 +118,9 @@
     <CardioSectionCard v-if="user && settings?.showCardioOnHome === true" />
 
     <div v-if="!activeProgram.id && !isProgramLoading && !programLoadingError && user" class="no-program-message card setup-nudge">
-      <h2 style="text-align: center;">Welcome, {{ user.displayName || 'Fitness Enthusiast' }}! 🏋️</h2>
+      <h2 style="text-align: center;">Welcome{{ user.displayName ? ", " + user.displayName : "" }}.</h2>
       <div class="cta-container top-cta" style="margin-top: 20px;">
-        <router-link to="/routines" class="button-primary button-large">✨ GET STARTED WITH A ROUTINE</router-link>
+        <router-link to="/routines" class="button-primary button-large">Set up your first routine</router-link>
       </div>
       
       <ManifestoComponent />

@@ -28,13 +28,13 @@
     </div>
 
     <div v-if="workoutPhase === 'overview' && !isLoading && !error && currentWorkoutDayDetails" class="workout-overview-content card">
-      <h1>{{ currentWorkoutDayDetails.dayName }} - Get Ready!</h1>
-      <p v-if="activeProgramName" class="routine-name">Routine: {{ activeProgramName }}</p>
-      <p class="overview-subtitle">Here's the plan for today:</p>
+      <span class="seal-eyebrow">TODAY'S SESSION</span>
+      <h1 class="seal-day-name">{{ currentWorkoutDayDetails.dayName }}</h1>
+      <p v-if="activeProgramName" class="routine-name">{{ activeProgramName }}</p>
       <ul v-if="sessionExercises.length > 0" class="exercise-overview-list">
         <li v-for="(exercise, index) in sessionExercises" :key="exercise.id" class="exercise-overview-item" :class="{ 'superset-child-item': exercise.isSupersetWithPrevious }">
           <strong>
-            <span v-if="exercise.isSupersetWithPrevious" style="margin-right: 5px;" title="Superset linked to previous">🔗</span>
+            <span v-if="exercise.isSupersetWithPrevious" class="superset-mark" title="Superset linked to previous" aria-label="Superset">SS</span>
             {{ index + 1 }}. {{ exercise.exerciseName }}
             <button
               v-if="settings.enableVideoDemos !== false"
@@ -138,7 +138,7 @@
           :weightUnit="settings.weightUnit"
         />
       </div>
-      <h2>RESTING...</h2>
+      
       <TimerDisplay
         :timeText="formattedRestTime"
         :progress="timerProgressPercentage"
@@ -179,7 +179,7 @@
           style="flex: 1; margin-top: 0; padding: 12px 10px; background-color: rgba(220, 53, 69, 0.12); border: 1px solid rgba(220, 53, 69, 0.3); color: var(--color-danger, #dc3545); font-weight: 600; white-space: nowrap; border-radius: 6px; cursor: pointer; min-width: 120px;"
           title="Skip all remaining sets for this exercise"
         >
-          ⏭️ Skip Exercise
+          Skip exercise
         </button>
       </div>
     </div>
@@ -187,7 +187,7 @@
     <!-- Skip Exercise Confirmation Modal -->
     <div v-if="showSkipExerciseConfirm" class="modal-overlay animate-fade-in" style="z-index: 2000;" @click.self="showSkipExerciseConfirm = false">
       <div class="modal-content card" style="max-width: 420px; text-align: center;">
-        <h3 style="margin-top: 0; color: var(--color-card-heading);">Skip Exercise? ⏭️</h3>
+        <h3 style="margin-top: 0; color: var(--color-card-heading);">Skip this exercise?</h3>
         <p style="font-size: 0.95em; opacity: 0.9; line-height: 1.5; margin-bottom: 20px; color: var(--color-card-text);">
           Are you sure you want to skip <strong>{{ currentExercise?.exerciseName }}</strong>? Remaining sets for this exercise will be logged as 0 reps.
         </p>
@@ -219,9 +219,7 @@
             class="button-icon edit-mode-toggle"
             :class="{ 'edit-mode-active': isEditModeActive }"
             aria-label="Toggle edit mode"
-            title="Toggle Edit Mode">
-            ✏️
-          </button>
+            title="Toggle Edit Mode">Edit</button>
         </div>
         <h1 class="seal-day-name">{{ currentWorkoutDayDetails?.dayName }}</h1>
         <div class="seal-hero" aria-label="Total volume">
@@ -295,9 +293,7 @@
                   v-if="isEditModeActive" 
                   @click="openEditWorkoutModal(ex)" 
                   class="button-icon extra-small" 
-                  title="Edit Sets">
-                  ✏️
-                </button>
+                  title="Edit Sets">Edit</button>
               </div>
               
               <ul v-if="showSetDetailsInSummary && ex.sets && ex.sets.length > 0" class="set-details-list">
@@ -2665,6 +2661,8 @@ const saveEditedWorkout = () => {
 }
 .preview-move-btn:active { transform: scale(0.96); }
 @media (hover: hover) { .preview-move-btn:hover { background: var(--color-accent-quiet); } }
+
+.superset-mark { font-size: var(--text-xs); font-weight: var(--weight-bold); letter-spacing: var(--tracking-wide); color: var(--color-accent-line); margin-right: 6px; }
 
 /* Completion seal (2.10) */
 .seal-header { display: flex; align-items: center; justify-content: space-between; }

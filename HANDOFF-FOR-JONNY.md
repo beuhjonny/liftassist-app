@@ -40,7 +40,6 @@ Sign up with any fake email. `VITE_USE_EMULATOR=true` gates all emulator wiring 
 Every commit gated on type-check + tests + build. Core loop E2E'd in the Firebase emulator (adopt routine -> log 9 sets -> seal 4,200 lbs -> save -> readiness updates). UI verified by Playwright screenshots at 390px. Two external multi-agent code reviews ran; all confirmed blockers fixed (incl. a share-URL XSS and a lost-share-on-login bug).
 
 ## Known gaps (honest)
-- Rest-screen header still legacy chrome (title wrap + "RESTING..." caps) - cosmetic, next on the list.
 - Google sign-in needs a real Firebase project (emulator build uses fake-picker/email).
 - Gated on accounts/wrapper: LLM import analysis, payments/entitlements, native haptics + iOS share extension, store builds.
 - Design docs in repo root: `LIFTLOGIC-STEPCHANGE-MASTERPLAN-*.md` (46-move roadmap), `LIFTLOGIC-PRO-BUILD-STATUS.md`, `FEATURE-SHARE-TO-IMPORT.md`.

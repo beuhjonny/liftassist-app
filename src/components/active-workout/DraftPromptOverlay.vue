@@ -2,7 +2,7 @@
   <!-- Backdrop is intentionally inert: a stray tap must never delete the draft. -->
   <div v-if="show" class="modal-overlay draft-prompt-overlay">
     <div class="modal-content draft-prompt-card card">
-      <div class="draft-icon">🏋️‍♂️</div>
+      
       <h2>Resume Workout?</h2>
       <p class="draft-description">You have an unfinished workout session in progress.</p>
       
@@ -12,10 +12,10 @@
       
       <div v-else class="draft-prompt-actions">
         <button @click="$emit('resume')" class="button-primary full-width">
-          ▶️ Resume Workout
+          Resume workout
         </button>
         <button @click="confirmDiscard" class="button-secondary full-width">
-          🗑️ Discard & Start Fresh
+          Discard and start fresh
         </button>
       </div>
     </div>
