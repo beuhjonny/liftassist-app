@@ -212,24 +212,27 @@
 
     <div v-if="workoutPhase === 'complete'" class="workout-content card">
         <!-- The completion seal: one dominant number, staged (2.10) -->
-        <div class="seal-header">
-          <span class="seal-eyebrow">SESSION COMPLETE</span>
-          <button
-            @click="toggleEditMode"
-            class="button-icon edit-mode-toggle"
-            :class="{ 'edit-mode-active': isEditModeActive }"
-            aria-label="Toggle edit mode"
-            title="Toggle Edit Mode">Edit</button>
-        </div>
-        <h1 class="seal-day-name">{{ currentWorkoutDayDetails?.dayName }}</h1>
-        <div class="seal-hero" aria-label="Total volume">
-          <span class="seal-volume num-display">{{ sealVolumeShown.toLocaleString() }}</span>
-          <span class="seal-unit">{{ displayUnit(settings.weightUnit) }} total volume</span>
-        </div>
-        <div class="seal-chips">
-          <span class="seal-chip num-display">{{ displayDurationForCompletedWorkout }}</span>
-          <span class="seal-chip num-display">{{ displayConsolidatedSetsInfo }}</span>
-          <span v-if="sessionPrCount > 0" class="seal-chip seal-chip-pr num-display">{{ sessionPrCount }} PR{{ sessionPrCount > 1 ? 's' : '' }}</span>
+        <div class="seal-crown">
+          <Vista :band="sessionPrCount > 0 ? 'summit' : 'push'" plate="winchell" />
+          <div class="seal-header">
+            <span class="seal-eyebrow">SESSION COMPLETE</span>
+            <button
+              @click="toggleEditMode"
+              class="button-icon edit-mode-toggle"
+              :class="{ 'edit-mode-active': isEditModeActive }"
+              aria-label="Toggle edit mode"
+              title="Toggle Edit Mode">Edit</button>
+          </div>
+          <h1 class="seal-day-name">{{ currentWorkoutDayDetails?.dayName }}</h1>
+          <div class="seal-hero" aria-label="Total volume">
+            <span class="seal-volume num-display">{{ sealVolumeShown.toLocaleString() }}</span>
+            <span class="seal-unit">{{ displayUnit(settings.weightUnit) }} total volume</span>
+          </div>
+          <div class="seal-chips">
+            <span class="seal-chip num-display">{{ displayDurationForCompletedWorkout }}</span>
+            <span class="seal-chip num-display">{{ displayConsolidatedSetsInfo }}</span>
+            <span v-if="sessionPrCount > 0" class="seal-chip seal-chip-pr num-display">{{ sessionPrCount }} PR{{ sessionPrCount > 1 ? 's' : '' }}</span>
+          </div>
         </div>
 
         <!-- Prominent Facelifted Rep Input Section at the top of the screen -->
@@ -286,7 +289,7 @@
               <div class="exercise-summary-header">
                 <div class="exercise-summary-info">
                   <strong>{{ ex.exerciseName }}</strong>
-                  <span v-if="ex.isPR" title="Personal Record!"> 🏅</span>
+                  <span v-if="ex.isPR" class="pr-tag" title="Personal record">PR</span>
                   <span>: {{ getExerciseStatusForDisplay(ex) }}{{ getExerciseLineSuffixForDisplay(ex) }}</span>
                 </div>
                 <button 
@@ -413,6 +416,7 @@ import { toDisplay, fromInput, displayUnit } from '../utils/weight';
 import { playTone } from '../utils/audio';
 import { computeNextPrescription, type ProgressionConfig, type ProgressionState } from '../utils/progression';
 import { bestPrior1RM, detectSetPR } from '../utils/prDetection';
+import Vista from '@/components/Vista.vue';
 import { haptics } from '../utils/haptics';
 import { PlayCircle } from 'lucide-vue-next';
 import { getProgressKey } from '../utils/progressKey';
@@ -2665,6 +2669,30 @@ const saveEditedWorkout = () => {
 .superset-mark { font-size: var(--text-xs); font-weight: var(--weight-bold); letter-spacing: var(--tracking-wide); color: var(--color-accent-line); margin-right: 6px; }
 
 /* Completion seal (2.10) */
+/* The seal earns the summit plate: photograph across the top, every figure
+   below it on flat surface. Bleeds to the card edge, so it cancels the card's
+   own padding and restores it inside. */
+.seal-crown {
+  position: relative;
+  /* Cancels .card's local 20px 25px so the plate reaches the card edge. */
+  margin: -20px -25px 0;
+  padding: 20px 25px;
+  padding-top: 11rem;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  overflow: hidden;
+}
+.seal-crown > *:not(.vista) { position: relative; z-index: 1; }
+/* Sitting on rock rather than flat surface, the toggle needs its own ground. */
+.seal-crown .edit-mode-toggle {
+  color: var(--text-primary);
+  background: rgba(18, 18, 18, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(6px);
+  padding: 4px 10px;
+  border-radius: var(--radius-full, 999px);
+}
+.seal-crown .edit-mode-toggle:hover { background: rgba(18, 18, 18, 0.82); }
+
 .seal-header { display: flex; align-items: center; justify-content: space-between; }
 .seal-eyebrow {
   font-size: var(--text-xs); font-weight: var(--weight-bold);
@@ -2691,6 +2719,20 @@ const saveEditedWorkout = () => {
   font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--color-card-text);
 }
 .seal-chip-pr { background: var(--color-success-bg); border-color: var(--color-success-line); color: var(--color-success-fg); }
+/* Same success language as the seal chip, sized to sit inline in a sentence. */
+.pr-tag {
+  display: inline-block;
+  margin-left: var(--space-1);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-line);
+  color: var(--color-success-fg);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-wide);
+  vertical-align: 1px;
+}
 
 .pr-beat {
   display: flex;

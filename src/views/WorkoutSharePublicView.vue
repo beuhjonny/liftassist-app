@@ -49,7 +49,7 @@
           >
             <div class="ex-header">
               <strong>{{ idx + 1 }}. {{ ex.exerciseName }}</strong>
-              <span v-if="ex.isPR" class="pr-badge">🏅 PR!</span>
+              <span v-if="ex.isPR" class="pr-badge">PR</span>
             </div>
 
             <ul v-if="ex.sets && ex.sets.length > 0" class="set-list">
