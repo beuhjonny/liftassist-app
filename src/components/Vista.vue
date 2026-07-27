@@ -125,16 +125,18 @@ const uid = Math.random().toString(36).slice(2, 8);
 }
 /* A photograph earns a band of its own: near-clear across the sky and peaks,
    then a hard fall-off so every word sits on flat colour, never on the image.
-   The 32% break is measured against where hero copy actually starts (~35%);
-   moving text in the hero means re-checking these stops. */
+   `--vista-scrim-start` is where the fall-off bites, and it MUST be set from
+   where that surface's topmost copy actually begins - measure it, don't guess.
+   Default 40% suits the Home hero, whose copy starts at ~35%. */
 .is-photo .vista-scrim {
+  --s: var(--vista-scrim-start, 40%);
   background: linear-gradient(
     to bottom,
     rgba(18, 18, 18, 0.08) 0%,
-    rgba(18, 18, 18, 0.16) 26%,
-    rgba(18, 18, 18, 0.72) 40%,
-    rgba(18, 18, 18, 0.94) 56%,
-    var(--surface-raised) 68%
+    rgba(18, 18, 18, 0.16) calc(var(--s) * 0.65),
+    rgba(18, 18, 18, 0.72) var(--s),
+    rgba(18, 18, 18, 0.94) calc(var(--s) + 16%),
+    var(--surface-raised) calc(var(--s) + 28%)
   );
 }
 
