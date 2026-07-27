@@ -1,5 +1,5 @@
 # LiftLogic PRO - Handoff for Review
-**Branch:** `liftlogic-pro` (42 commits ahead of your `main`) · 80 unit tests (was 0) · type-check + build clean · nothing in your repo or Firebase project was touched (we never held credentials; verify: zero pushes, zero IAM changes)
+**Branch:** `liftlogic-pro` (48 commits ahead of your `main`) · 80 unit tests (was 0) · type-check + build clean · nothing in your repo or Firebase project was touched (we never held credentials; verify: zero pushes, zero IAM changes)
 
 ## How to run
 ```bash
@@ -35,9 +35,44 @@ Sign up with any fake email. `VITE_USE_EMULATOR=true` gates all emulator wiring 
 15. **Share-to-import**: PWA share-target + paste box -> parses "Bench 3x8-12"-style text into a staged selection list -> add to any routine (transaction-safe, XSS-guarded). LLM transcript analysis is spec'd, gated on an API key.
 16. **A11y**: rest-timer screen-reader flood fixed (milestone announcements only), spoken set flow, 44px floors, reduced-motion contract.
 17. **Perf**: entry chunk 776KB -> 24KB (vendor split; chart.js defers to the analytics drawer).
+18. **Photographic vistas** (the one to argue about - see below): Home hero and the completion seal now sit under real photographs instead of the SVG ridgelines.
+
+## The vistas - your call, and easy to reverse
+
+You said you like Strava and Noom, so the app needed real imagery rather than gradients.
+Rather than generate something or license stock, the plates are **Ansel Adams' 1941-42
+National Park Service commission** (National Archives series 79-AA). Adams stated in a
+1942 letter that the photographs are US Government property, so NARA lists the whole series
+as public domain: no licence, no attribution requirement, no third-party rights, no cost.
+
+- **Home hero** - *The Tetons and the Snake River* (79-AA-G01), the frame NASA put on the
+  Voyager Golden Record.
+- **Completion seal** - *Mt. Winchell, Kings River Canyon* (79-AA-H09), warm-graded when the
+  session set a PR.
+
+The source plates are black-and-white, so **one 54KB download covers all four readiness
+states** - the band is a CSS colour grade, not four images. AVIF with WebP fallback, both
+inside a 40-80KB budget, lazy and never blocking first paint. Text never sits on the
+photograph: the scrim resolves to flat surface before any copy starts (measured 9.89:1 in
+the tightest spot). `scripts/make-vista.mjs` reproduces any plate from its source.
+
+**This is a taste, not a neutral default,** and it is the thing most likely to divide us.
+It reads heritage and reverent - further from Strava's contemporary colour energy than you
+might want. If you don't like it: **drop the `plate` prop** on `<Vista>` and the owned SVG
+ridgeline world comes back, one line per surface. `LIFTLOGIC-PUBLIC-DOMAIN-IMAGE-RANKING.md`
+(repo root of the Claude Projects folder) has the full ranked set and the four other plates
+already selected for share card, streak, and the steady/recover bands.
 
 ## Verification
 Every commit gated on type-check + tests + build. Core loop E2E'd in the Firebase emulator (adopt routine -> log 9 sets -> seal 4,200 lbs -> save -> readiness updates). UI verified by Playwright screenshots at 390px. Two external multi-agent code reviews ran; all confirmed blockers fixed (incl. a share-URL XSS and a lost-share-on-login bug).
+
+Contrast on the vista surfaces was checked by sampling composited pixels out of the
+screenshots rather than by reading the CSS, because the first two attempts at the scrim
+*looked* right in the gradient maths and failed on screen. Reduced-motion was checked by
+walking the compiled CSSOM in the browser: all three vista animations resolve inside a
+`prefers-reduced-motion: no-preference` block, zero unguarded. That verifies the guard
+survives the SFC compile; it is not the same as driving the app in a reduced-motion
+session, which the available tooling can't emulate.
 
 ## Known gaps (honest)
 - Google sign-in needs a real Firebase project (emulator build uses fake-picker/email).
