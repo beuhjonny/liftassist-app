@@ -49,7 +49,8 @@
             <button type="button" class="hero-discard" @click="confirmDiscardDraft"><Trash2 :size="14" /> Discard draft</button>
           </section>
 
-          <section v-else-if="heroDay" class="next-hero">
+          <section v-else-if="heroDay" class="next-hero has-vista">
+            <PaintedVista :band="vistaBand" />
             <div class="hero-rail" aria-hidden="true"></div>
             <div class="hero-eyebrow-row">
               <span class="hero-eyebrow">{{ heroDay.lastCompletedThisDayDate ? 'NEXT WORKOUT' : 'START HERE' }}</span>
@@ -162,6 +163,7 @@ import { colorForDay } from '@/design/dayPalette';
 import { computeReadiness } from '@/utils/readiness';
 import { computeRecentFailRate, computeWeeklyVolumeTrend } from '@/utils/trainingSignals';
 import { detectDeload } from '@/utils/deload';
+import PaintedVista from '@/components/PaintedVista.vue';
 import { Dumbbell, History, ChevronRight, ArrowRight, AlertTriangle, Trash2, Check, Flame } from 'lucide-vue-next';
 import type { WorkoutDay, EnhancedWorkoutDay, LoggedWorkout } from '@/types';
 
@@ -221,6 +223,9 @@ const signalWorkouts = computed(() => {
     sets: (lw.performedExercises || []).flatMap((ex) => ex.sets || []),
   }));
 });
+
+// The vista carries the verdict: same mountain, different light per band.
+const vistaBand = computed<'push' | 'steady' | 'recover'>(() => readiness.value?.level ?? 'steady');
 
 // Deload check across every lift in the active program (streaks stamped by
 // hydrateProgramWithProgress).
@@ -727,7 +732,12 @@ watch(
   top: 0; left: 0; bottom: 0;
   width: 3px;
   background: var(--color-accent);
+  z-index: 2;
 }
+/* Hero content always rides above the painted vista, with sky room above it. */
+.has-vista { padding-top: var(--space-8); }
+.has-vista > *:not(.vista) { position: relative; z-index: 1; }
+.has-vista .hero-eyebrow-row { flex-wrap: wrap; row-gap: var(--space-2); }
 .is-draft .hero-rail { background: var(--color-warning-fg); }
 
 .hero-eyebrow-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
