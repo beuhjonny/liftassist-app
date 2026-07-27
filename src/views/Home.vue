@@ -50,7 +50,7 @@
           </section>
 
           <section v-else-if="heroDay" class="next-hero has-vista">
-            <PaintedVista :band="vistaBand" />
+            <Vista :band="vistaBand" plate="tetons" />
             <div class="hero-rail" aria-hidden="true"></div>
             <div class="hero-eyebrow-row">
               <span class="hero-eyebrow">{{ heroDay.lastCompletedThisDayDate ? 'NEXT WORKOUT' : 'START HERE' }}</span>
@@ -163,7 +163,7 @@ import { colorForDay } from '@/design/dayPalette';
 import { computeReadiness } from '@/utils/readiness';
 import { computeRecentFailRate, computeWeeklyVolumeTrend } from '@/utils/trainingSignals';
 import { detectDeload } from '@/utils/deload';
-import PaintedVista from '@/components/PaintedVista.vue';
+import Vista from '@/components/Vista.vue';
 import { Dumbbell, History, ChevronRight, ArrowRight, AlertTriangle, Trash2, Check, Flame } from 'lucide-vue-next';
 import type { WorkoutDay, EnhancedWorkoutDay, LoggedWorkout } from '@/types';
 
@@ -734,10 +734,17 @@ watch(
   background: var(--color-accent);
   z-index: 2;
 }
-/* Hero content always rides above the painted vista, with sky room above it. */
-.has-vista { padding-top: var(--space-8); }
+/* The vista needs a band of its own to read as a photograph rather than a
+   texture, so the hero grows and every word is pushed below it. */
+.has-vista {
+  min-height: 26rem;
+  padding-top: var(--space-5);
+  justify-content: flex-end;
+}
 .has-vista > *:not(.vista) { position: relative; z-index: 1; }
 .has-vista .hero-eyebrow-row { flex-wrap: wrap; row-gap: var(--space-2); }
+/* Tertiary is 52% white - fine on flat surface, not against a lit sky. */
+.has-vista .hero-eyebrow { color: var(--text-secondary); }
 .is-draft .hero-rail { background: var(--color-warning-fg); }
 
 .hero-eyebrow-row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
