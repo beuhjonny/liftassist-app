@@ -6,10 +6,11 @@
 git checkout liftlogic-pro
 npm install
 npm test                                   # 80 pass
+cp .env.emulator .env.local                # fake keys; .env.local is gitignored
 firebase emulators:start --only auth,firestore --project demo-liftlogic
-npm run dev                                # .env.local ships demo keys -> emulator only
+npm run dev
 ```
-Sign up with any fake email. `VITE_USE_EMULATOR=true` gates all emulator wiring - production behavior is unchanged without it.
+Sign up with any fake email - the emulator accepts anything. `VITE_USE_EMULATOR=true` gates all emulator wiring, so production behavior is unchanged without it, and every value in `.env.emulator` is fake and reaches no real Firebase project.
 
 ## Changes, succinct (ranked by importance)
 
