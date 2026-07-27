@@ -2532,20 +2532,25 @@ const saveEditedWorkout = () => {
 /* Header Grid Layout */
 .card-header-grid {
     display: grid;
-    grid-template-columns: 1fr auto 1fr; /* Center takes content width, sides split remainder */
-    align-items: center; /* Vertically center items */
-    gap: 10px;
+    /* Sides size to their own content; the title takes what is left and may
+       shrink. Previously this was `1fr auto 1fr`, which sized the CENTRE to
+       its content - a long day name expanded it, squeezed both 1fr columns
+       below their minimum width, and the Undo and Total chips overflowed on
+       top of the title. */
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-2);
     border-bottom: 2px solid var(--color-primary, #007bff);
     padding-bottom: 15px;
     margin-bottom: 15px;
 }
 
 /* Spacer (Left) */
-.header-spacer { width: 100%; }
+.header-spacer { display: flex; justify-content: flex-start; }
 
 /* Content (Center) */
-.header-content { 
-    text-align: center; 
+.header-content {
+    text-align: center;
     min-width: 0;
 }
 
@@ -2621,6 +2626,28 @@ const saveEditedWorkout = () => {
   color: var(--color-card-text); }
 .card-inset { background-color: var(--color-card-mute); padding: 15px; border-radius: 6px; margin-top: 15px; margin-bottom: 15px; border: 1px solid var(--color-card-border); color: var(--color-card-text); }
 .workout-overview-content h1, .workout-content h1.workout-day-title, .rest-screen-content h1.workout-day-title { text-align: center; margin-bottom: 5px; font-size: 1.8em; color: var(--color-card-heading); }
+/* Needs `h1` to out-specify the shared rule above, which is (0,2,1). */
+.card-header-grid h1.workout-day-title {
+    font-size: clamp(1.15rem, 5vw, 1.8em);
+    line-height: 1.2;
+    text-wrap: balance;
+}
+
+/* On a phone the Undo and Total chips leave the centre column about 74px -
+   not enough for a day name, so "Express C" broke across two lines. Below
+   30rem the title takes a row of its own and the two chips sit beneath it. */
+@media (max-width: 30rem) {
+    .card-header-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            "title title"
+            "undo  timer";
+        row-gap: var(--space-2);
+    }
+    .header-content { grid-area: title; }
+    .header-spacer  { grid-area: undo; }
+    .header-timer   { grid-area: timer; }
+}
 .routine-name { text-align: center; margin-top: 0; margin-bottom: 25px; color: var(--color-card-text); opacity: 0.8; font-size: 0.9em; }
 .overview-subtitle { text-align: left; font-size: 1.2em; margin-bottom: 15px; color: var(--color-card-heading); font-weight: 500; }
 .exercise-overview-list { list-style-type: none; padding: 0; margin-bottom: 25px; }
