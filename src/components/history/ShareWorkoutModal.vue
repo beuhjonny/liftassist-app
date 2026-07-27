@@ -4,7 +4,7 @@
       <button @click="$emit('close')" class="modal-close-button" title="Close">&times;</button>
       
       <div class="modal-header">
-        <h2>📤 Share Workout</h2>
+        <h2>Share Workout</h2>
         <p class="header-subtitle">Download your graphic workout card or share a public link.</p>
       </div>
 
@@ -30,8 +30,7 @@
           @click="handleShareOrDownloadImage" 
           class="button-primary full-width action-btn"
           :disabled="isGenerating || !imageBlob"
-        >
-          📱 Share / Download Image
+        >Share / Download Image
         </button>
 
         <!-- 2. Copy Public Share Link -->
@@ -42,7 +41,7 @@
         >
           <span v-if="isCreatingLink">Generating Link...</span>
           <span v-else-if="linkCopied">✅ Copied Link to Clipboard!</span>
-          <span v-else>🔗 Copy Public Share Link</span>
+          <span v-else>Copy Public Share Link</span>
         </button>
       </div>
     </div>

@@ -60,7 +60,7 @@
           <h2 style="margin-top: 10px;">Routine Library</h2>
           <p style="font-size: 0.9em; opacity: 0.85; margin-top: 4px; color: var(--color-card-text);">Choose from 24 proven workout routines. All weights can be customized before or during your workouts.</p>
           <div style="margin-top: 10px; padding: 10px 14px; background: var(--color-card-bg); border-left: 4px solid var(--color-primary); border-radius: 6px; font-size: 0.85em; color: var(--color-card-text); border-top: 1px solid var(--color-card-border); border-right: 1px solid var(--color-card-border); border-bottom: 1px solid var(--color-card-border);">
-            💡 <strong>Note:</strong> No preselected routine is perfect for you. Choose the closest one, and then edit it to suit your specific needs.
+            <strong>Note:</strong> No preselected routine is perfect for you. Choose the closest one, and then edit it to suit your specific needs.
           </div>
         </header>
 
@@ -69,7 +69,7 @@
           <input 
             type="text" 
             v-model="bankSearchQuery" 
-            placeholder="🔍 Search routines by name, exercise, or goal (e.g. Bench, PPL, Dumbbells)..." 
+            placeholder="Search routines by name, exercise, or goal (e.g. Bench, PPL, Dumbbells)..." 
             style="width: 100%; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--color-card-border); background: var(--color-card-bg); color: var(--color-card-text); font-size: 0.95em;"
           />
         </div>
@@ -79,10 +79,10 @@
           <label style="font-size: 0.85em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; margin-bottom: 8px; display: block;">Equipment Access:</label>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button @click="selectedBankCategory = 'all'" :style="{ background: selectedBankCategory === 'all' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'all' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">All Equipment</button>
-            <button @click="selectedBankCategory = 'dumbbells'" :style="{ background: selectedBankCategory === 'dumbbells' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'dumbbells' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">🏋️ Dumbbells & Bench</button>
-            <button @click="selectedBankCategory = 'full_gym'" :style="{ background: selectedBankCategory === 'full_gym' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'full_gym' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">💪 Full Gym</button>
-            <button @click="selectedBankCategory = 'smith_machine'" :style="{ background: selectedBankCategory === 'smith_machine' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'smith_machine' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">⚙️ Smith / Machines</button>
-            <button @click="selectedBankCategory = 'bodyweight'" :style="{ background: selectedBankCategory === 'bodyweight' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'bodyweight' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">🤸 Bodyweight</button>
+            <button @click="selectedBankCategory = 'dumbbells'" :style="{ background: selectedBankCategory === 'dumbbells' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'dumbbells' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">Dumbbells & Bench</button>
+            <button @click="selectedBankCategory = 'full_gym'" :style="{ background: selectedBankCategory === 'full_gym' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'full_gym' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">Full Gym</button>
+            <button @click="selectedBankCategory = 'smith_machine'" :style="{ background: selectedBankCategory === 'smith_machine' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'smith_machine' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">Smith / Machines</button>
+            <button @click="selectedBankCategory = 'bodyweight'" :style="{ background: selectedBankCategory === 'bodyweight' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: selectedBankCategory === 'bodyweight' ? 'white' : 'var(--color-card-text)' }" style="padding: 6px 14px; border-radius: 20px; border: 1px solid var(--color-card-border); cursor: pointer; font-size: 0.85em; font-weight: 500;">Bodyweight</button>
           </div>
         </div>
 
@@ -125,8 +125,7 @@
               @click="selectedPresetRoutine = routine; selectedIntensity = 'medium'" 
               class="button-primary full-width" 
               style="padding: 10px; font-weight: 600; font-size: 0.9em; display: flex; align-items: center; justify-content: center; gap: 6px;"
-            >
-              👀 Inspect & Select Routine
+            >Inspect & Select Routine
             </button>
           </div>
         </div>
@@ -151,15 +150,13 @@
             @click="importTab = 'fitnotes'" 
             :style="{ background: importTab === 'fitnotes' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: importTab === 'fitnotes' ? 'white' : 'var(--color-card-text)' }"
             style="padding: 8px 16px; border-radius: 6px; border: 1px solid var(--color-card-border); cursor: pointer; font-weight: 600; font-size: 0.9em;"
-          >
-            📋 FitNotes Backup (.fitnotes)
+          >FitNotes Backup (.fitnotes)
           </button>
           <button 
             @click="importTab = 'json'" 
             :style="{ background: importTab === 'json' ? 'var(--color-primary)' : 'var(--color-card-mute)', color: importTab === 'json' ? 'white' : 'var(--color-card-text)' }"
             style="padding: 8px 16px; border-radius: 6px; border: 1px solid var(--color-card-border); cursor: pointer; font-weight: 600; font-size: 0.9em;"
-          >
-            📄 Raw JSON Paste
+          >Raw JSON Paste
           </button>
         </div>
 
@@ -179,13 +176,13 @@
             <div v-if="fitnotesParsedData" class="import-preview card-inset" style="margin-bottom: 20px; padding: 15px; background: var(--color-card-bg); border-radius: 6px; border: 1px solid var(--color-card-border); font-size: 0.95em;">
                <h5 style="margin-top:0; margin-bottom: 12px; font-weight: 600; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 8px;">Backup Contents:</h5>
                <ul style="list-style: none; padding-left: 0; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px;">
-                  <li style="display: flex; align-items: center; gap: 8px;">📅 <span><strong>Workout Days Logged:</strong> {{ fitnotesParsedData.workoutsCount }}</span></li>
-                  <li style="display: flex; align-items: center; gap: 8px;">🏋️ <span><strong>Unique Exercises:</strong> {{ fitnotesParsedData.exercisesCount }}</span></li>
+                  <li style="display: flex; align-items: center; gap: 8px;"><span><strong>Workout Days Logged:</strong> {{ fitnotesParsedData.workoutsCount }}</span></li>
+                  <li style="display: flex; align-items: center; gap: 8px;"><span><strong>Unique Exercises:</strong> {{ fitnotesParsedData.exercisesCount }}</span></li>
                </ul>
             </div>
 
             <button v-if="fitnotesParsedData" @click="performFitNotesImport" :disabled="isSaving" class="button-primary button-large full-width" style="padding: 12px; font-weight: 600;">
-              {{ isSaving ? importProgressStatus || 'Importing FitNotes...' : '🚀 Execute FitNotes Import' }}
+              {{ isSaving ? importProgressStatus || 'Importing FitNotes...' : 'Execute FitNotes Import' }}
             </button>
           </div>
         </div>
@@ -194,7 +191,7 @@
         <div v-if="importTab === 'json'" class="json-tab-content">
           <div class="import-routine-section card-inset" style="padding: 20px; background: var(--color-card-mute); border-radius: 8px; border: 1px solid var(--color-card-border);">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-              <span style="font-size: 1.2em;">📋</span>
+              <span style="font-size: 1.2em;"></span>
               <h4 style="margin: 0; font-weight: 600;">Paste Routine JSON Code Block</h4>
             </div>
             <p class="small-text" style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px; line-height: 1.4;">
@@ -211,7 +208,7 @@
                 ></textarea>
               </div>
               <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary button-large full-width" style="padding: 12px; font-weight: 600; font-size: 1em; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                {{ isSaving ? 'Importing Routine...' : '🚀 Import Routine JSON' }}
+                {{ isSaving ? 'Importing Routine...' : 'Import Routine JSON' }}
               </button>
             </form>
           </div>
@@ -234,7 +231,7 @@
             :style="{ borderColor: activeAiTab === 'existing' ? 'var(--color-primary)' : 'var(--color-card-border)', background: activeAiTab === 'existing' ? 'var(--color-card-bg)' : 'var(--color-card-mute)' }"
             style="padding: 16px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: flex-start; gap: 12px;"
           >
-            <div style="font-size: 1.8em;">📸</div>
+            <div style="font-size: 1.8em;"></div>
             <div style="display: flex; flex-direction: column; gap: 4px;">
               <strong style="color: var(--color-card-heading); font-size: 0.95em;">Import Existing Routine</strong>
               <span style="font-size: 0.8em; color: var(--color-card-text); opacity: 0.8;">Convert notes, screenshots, or text via AI prompt</span>
@@ -247,7 +244,7 @@
             :style="{ borderColor: activeAiTab === 'new' ? 'var(--color-primary)' : 'var(--color-card-border)', background: activeAiTab === 'new' ? 'var(--color-card-bg)' : 'var(--color-card-mute)' }"
             style="padding: 16px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: left; transition: all 0.2s ease; display: flex; align-items: flex-start; gap: 12px;"
           >
-            <div style="font-size: 1.8em;">🤖</div>
+            <div style="font-size: 1.8em;"></div>
             <div style="display: flex; flex-direction: column; gap: 4px;">
               <strong style="color: var(--color-card-heading); font-size: 0.95em;">Design New with AI</strong>
               <span style="font-size: 0.8em; color: var(--color-card-text); opacity: 0.8;">Let AI build a tailored plan based on your goals</span>
@@ -257,7 +254,7 @@
 
         <!-- Inline Instructions for Import Existing Routine -->
         <div v-if="activeAiTab === 'existing'" class="inline-ai-instructions card-inset" style="margin-bottom: 20px; padding: 20px; background: var(--color-card-bg); border-radius: 8px; border: 1px solid var(--color-card-border);">
-          <h4 style="margin-top: 0; margin-bottom: 16px; font-weight: 700; color: var(--color-card-heading); font-size: 1em; display: flex; align-items: center; gap: 6px;">📸 How to Import Any Existing Routine via AI</h4>
+          <h4 style="margin-top: 0; margin-bottom: 16px; font-weight: 700; color: var(--color-card-heading); font-size: 1em; display: flex; align-items: center; gap: 6px;">How to Import Any Existing Routine via AI</h4>
           
           <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.9em; line-height: 1.5; color: var(--color-card-text);">
             <div style="display: flex; gap: 12px; align-items: flex-start;">
@@ -319,8 +316,7 @@ REQUIRED JSON STRUCTURE:
                   @click="copyExistingRoutinePrompt" 
                   class="button-secondary small" 
                   style="margin-top: 10px; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; font-weight: 600;"
-                >
-                  📋 Copy Conversion Prompt
+                >Copy Conversion Prompt
                 </button>
               </div>
             </div>
@@ -334,7 +330,7 @@ REQUIRED JSON STRUCTURE:
 
         <!-- Inline Instructions for Design New with AI -->
         <div v-if="activeAiTab === 'new'" class="inline-ai-instructions card-inset" style="margin-bottom: 20px; padding: 20px; background: var(--color-card-bg); border-radius: 8px; border: 1px solid var(--color-card-border);">
-          <h4 style="margin-top: 0; margin-bottom: 16px; font-weight: 700; color: var(--color-card-heading); font-size: 1em; display: flex; align-items: center; gap: 6px;">🤖 How to Design a New Routine with AI</h4>
+          <h4 style="margin-top: 0; margin-bottom: 16px; font-weight: 700; color: var(--color-card-heading); font-size: 1em; display: flex; align-items: center; gap: 6px;">How to Design a New Routine with AI</h4>
           
           <div style="display: flex; flex-direction: column; gap: 14px; font-size: 0.9em; line-height: 1.5; color: var(--color-card-text);">
             <div style="display: flex; gap: 12px; align-items: flex-start;">
@@ -393,8 +389,7 @@ REQUIRED JSON STRUCTURE:
                   @click="copyNewRoutinePrompt" 
                   class="button-secondary small" 
                   style="margin-top: 10px; display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 6px; font-weight: 600;"
-                >
-                  📋 Copy Creation Prompt
+                >Copy Creation Prompt
                 </button>
               </div>
             </div>
@@ -409,7 +404,7 @@ REQUIRED JSON STRUCTURE:
         <!-- JSON Importer Input -->
         <div class="import-routine-section card-inset" style="padding: 20px; background: var(--color-card-mute); border-radius: 8px; border: 1px solid var(--color-card-border);">
           <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-            <span style="font-size: 1.2em;">📋</span>
+            <span style="font-size: 1.2em;"></span>
             <h4 style="margin: 0; font-weight: 600;">Paste Generated Routine JSON</h4>
           </div>
           <p class="small-text" style="font-size: 0.85em; opacity: 0.8; margin-bottom: 15px; line-height: 1.4;">
@@ -426,7 +421,7 @@ REQUIRED JSON STRUCTURE:
               ></textarea>
             </div>
             <button type="submit" :disabled="isSaving || !pastedRoutineJson.trim()" class="button-primary button-large full-width" style="padding: 12px; font-weight: 600; font-size: 1em; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
-              {{ isSaving ? 'Importing Routine...' : '🚀 Import Routine JSON' }}
+              {{ isSaving ? 'Importing Routine...' : 'Import Routine JSON' }}
             </button>
           </form>
         </div>
@@ -453,14 +448,14 @@ REQUIRED JSON STRUCTURE:
           <div v-if="fitnotesParsedData" class="import-preview card-inset" style="margin-bottom: 20px; padding: 15px; background: var(--color-card-bg); border-radius: 6px; border: 1px solid var(--color-card-border); font-size: 0.95em;">
              <h5 style="margin-top:0; margin-bottom: 12px; font-weight: 600; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 8px;">Backup Contents:</h5>
              <ul style="list-style: none; padding-left: 0; margin-bottom: 0; display: flex; flex-direction: column; gap: 8px;">
-                <li style="display: flex; align-items: center; gap: 8px;">📅 <span><strong>Workout Days Logged:</strong> {{ fitnotesParsedData.workoutsCount }}</span></li>
-                <li style="display: flex; align-items: center; gap: 8px;">🏋️ <span><strong>Unique Exercises:</strong> {{ fitnotesParsedData.exercisesCount }}</span></li>
-                <li style="display: flex; align-items: center; gap: 8px;">📋 <span><strong>Pre-defined Routines:</strong> {{ fitnotesParsedData.routinesCount }}</span></li>
+                <li style="display: flex; align-items: center; gap: 8px;"><span><strong>Workout Days Logged:</strong> {{ fitnotesParsedData.workoutsCount }}</span></li>
+                <li style="display: flex; align-items: center; gap: 8px;"><span><strong>Unique Exercises:</strong> {{ fitnotesParsedData.exercisesCount }}</span></li>
+                <li style="display: flex; align-items: center; gap: 8px;"><span><strong>Pre-defined Routines:</strong> {{ fitnotesParsedData.routinesCount }}</span></li>
              </ul>
           </div>
 
           <button @click="performFitNotesImport" :disabled="isSaving || !fitnotesFile" class="button-primary button-large full-width" style="padding: 12px; font-size: 1.1em; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; width: 100%;">
-            {{ isSaving ? 'Importing... ' + importProgressStatus : '🚀 Start Import' }}
+            {{ isSaving ? 'Importing... ' + importProgressStatus : 'Start Import' }}
           </button>
           
           <div v-if="isSaving && importProgressPercentage > 0" style="margin-top: 15px; width: 100%; background-color: var(--color-card-border); height: 10px; border-radius: 5px; overflow: hidden;">
@@ -533,13 +528,13 @@ REQUIRED JSON STRUCTURE:
                         <div v-if="isInOverallEditMode && editingDayNameId === day.id" class="day-name-edit-form">
                           <input type="text" v-model="editableDayName" @keyup.enter="saveWorkoutDayName(day.id)" @keyup.esc="cancelEditWorkoutDayName()" placeholder="Session Name"/>
                           <input type="color" v-model="editableDayColor" title="Choose Session Color" style="width: 40px; height: 38px; padding: 2px; border: 1px solid var(--color-card-border); border-radius: 4px; cursor: pointer; background: none; flex-shrink: 0; margin-right: 5px;" />
-                          <button @click="saveWorkoutDayName(day.id)" :disabled="isSaving" class="button-icon success small" title="Save Name">✔️</button>
+                          <button @click="saveWorkoutDayName(day.id)" :disabled="isSaving" class="button-icon success small" title="Save Name"></button>
                           <button @click="cancelEditWorkoutDayName()" class="button-icon danger small" title="Cancel Edit Name">❌</button>
                         </div>
                     </div>
                     
                     <div v-if="isInOverallEditMode" class="day-header-actions">
-                      <button v-if="editingDayNameId !== day.id" @click="startEditWorkoutDayName(day)" class="button-icon small" title="Edit Session Name">✏️</button>
+                      <button v-if="editingDayNameId !== day.id" @click="startEditWorkoutDayName(day)" class="button-icon small" title="Edit Session Name"></button>
                       <button @click="removeWorkoutDay(day.id)" :disabled="isSaving" class="button-icon small danger" title="Remove Session" style="display: inline-flex; align-items: center; justify-content: center;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                           <polyline points="3 6 5 6 21 6"></polyline>
@@ -569,7 +564,7 @@ REQUIRED JSON STRUCTURE:
                               <div class="exercise-item-display">
                                 <div class="exercise-info-text" style="display:flex; align-items:center;">
                                   <span v-if="isInOverallEditMode" class="drag-handle-exercise" style="cursor: grab; margin-right: 8px; color:#888;" title="Drag to reorder exercise">::</span>
-                                  <span v-if="exercise.isSupersetWithPrevious" class="superset-link-icon" title="Superset with previous">🔗</span>
+                                  <span v-if="exercise.isSupersetWithPrevious" class="superset-link-icon" title="Superset with previous"></span>
                                   <span class="ex-name">{{ exercise.exerciseName }}</span>
                                   <span class="ex-details">
                                     : {{ exercise.targetSets }} sets, 
@@ -582,7 +577,7 @@ REQUIRED JSON STRUCTURE:
                                   </span>
                                 </div>
                                 <div v-if="isInOverallEditMode" class="exercise-item-actions">
-                                  <button @click="startEditExercise(day.id!, exercise)" class="button-icon extra-small" title="Edit Exercise">✏️</button>
+                                  <button @click="startEditExercise(day.id!, exercise)" class="button-icon extra-small" title="Edit Exercise"></button>
 
                                   <button @click="removeExerciseFromDay(day.id!, exercise.id!)" :disabled="isSaving" class="button-icon extra-small danger" title="Remove Exercise" style="display: inline-flex; align-items: center; justify-content: center;">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -628,14 +623,13 @@ REQUIRED JSON STRUCTURE:
                                         style="background: none; border: none; cursor: pointer; font-size: 0.85em; display: flex; align-items: center; gap: 4px; color: var(--color-card-text); opacity: 0.9;"
                                         title="How Auto-Progression Works"
                                       >
-                                        <span style="font-weight: 600;">How it works</span> 💡
-                                      </button>
+                                        <span style="font-weight: 600;">How it works</span></button>
                                     </div>
 
                                     <!-- Inline Auto-Progression Help Box -->
                                     <div v-if="showAutoProgressionHelp" class="card-inset" style="padding: 10px 14px; margin-bottom: 12px; background: var(--color-card-bg); border: 1px solid var(--color-card-border); border-radius: 8px; font-size: 0.85em; line-height: 1.45; color: var(--color-card-text);">
                                       <div style="font-weight: 700; color: var(--color-card-heading); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-                                        💡 <span>How Auto-Progression Works</span>
+                                        <span>How Auto-Progression Works</span>
                                       </div>
                                       <p style="margin: 0;">
                                         Every time you succeed on your prescribed lift, your next session target reps will go up by the <strong>Rep Progression</strong> set below. Once you hit <strong>Max Reps</strong>, it resets to your <strong>Min Reps</strong> and increments by the <strong>Weight Progression</strong> set below.
@@ -663,9 +657,7 @@ REQUIRED JSON STRUCTURE:
                                             <div :style="editingExercise.isToFailure ? 'width: 100%' : ''">
                                                 <label>
                                                     {{ editingExercise.isToFailure ? (editingExercise.isTimed ? 'Progression Trigger (Max Hold sec):' : 'Progression Trigger (Max Reps):') : (editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:') }}
-                                                    <span v-if="editingExercise.isToFailure" @click.prevent="showFailureProgressionHelp = !showFailureProgressionHelp" style="cursor: pointer; margin-left: 5px;">
-                                                        💡
-                                                    </span>
+                                                    <span v-if="editingExercise.isToFailure" @click.prevent="showFailureProgressionHelp = !showFailureProgressionHelp" style="cursor: pointer; margin-left: 5px;"></span>
                                                 </label>
                                                 <input type="number" v-model.number="editingExercise.maxReps" min="1" required />
                                                 <div v-if="showFailureProgressionHelp && editingExercise.isToFailure" style="font-size: 0.85em; color: var(--color-card-text); background: var(--color-card-mute); padding: 8px; border-radius: 4px; margin-top: 5px; border: 1px solid var(--color-card-border);">
@@ -737,14 +729,13 @@ REQUIRED JSON STRUCTURE:
                                 style="background: none; border: none; cursor: pointer; font-size: 0.85em; display: flex; align-items: center; gap: 4px; color: var(--color-card-text); opacity: 0.9;"
                                 title="How Auto-Progression Works"
                               >
-                                <span style="font-weight: 600;">How it works</span> 💡
-                              </button>
+                                <span style="font-weight: 600;">How it works</span></button>
                             </div>
 
                             <!-- Inline Auto-Progression Help Box -->
                             <div v-if="showAutoProgressionHelp" class="card-inset" style="padding: 10px 14px; margin-bottom: 12px; background: var(--color-card-bg); border: 1px solid var(--color-card-border); border-radius: 8px; font-size: 0.85em; line-height: 1.45; color: var(--color-card-text);">
                               <div style="font-weight: 700; color: var(--color-card-heading); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-                                💡 <span>How Auto-Progression Works</span>
+                                <span>How Auto-Progression Works</span>
                               </div>
                               <p style="margin: 0;">
                                 Every time you succeed on your prescribed lift, your next session target reps will go up by the <strong>Rep Progression</strong> set below. Once you hit <strong>Max Reps</strong>, it resets to your <strong>Min Reps</strong> and increments by the <strong>Weight Progression</strong> set below.
@@ -766,9 +757,7 @@ REQUIRED JSON STRUCTURE:
                                     <div :style="editingExercise.isToFailure ? 'width: 100%' : ''">
                                         <label>
                                             {{ editingExercise.isToFailure ? (editingExercise.isTimed ? 'Progression Trigger (Max Hold sec):' : 'Progression Trigger (Max Reps):') : (editingExercise.isTimed ? 'Max Hold (sec):' : 'Max Reps:') }}
-                                            <span v-if="editingExercise.isToFailure" @click.prevent="showFailureProgressionHelp = !showFailureProgressionHelp" style="cursor: pointer; margin-left: 5px;">
-                                                💡
-                                            </span>
+                                            <span v-if="editingExercise.isToFailure" @click.prevent="showFailureProgressionHelp = !showFailureProgressionHelp" style="cursor: pointer; margin-left: 5px;"></span>
                                         </label>
                                         <input type="number" v-model.number="editingExercise.maxReps" min="1" required />
                                         <div v-if="showFailureProgressionHelp && editingExercise.isToFailure" style="font-size: 0.85em; color: var(--color-card-text); background: var(--color-card-mute); padding: 8px; border-radius: 4px; margin-top: 5px; border: 1px solid var(--color-card-border);">
@@ -845,8 +834,7 @@ REQUIRED JSON STRUCTURE:
       
        <!-- Bottom Save Button for UX -->
        <div v-if="isInOverallEditMode" class="bottom-save-bar" style="margin-top: 20px; text-align: center;">
-            <button @click="toggleOverallEditMode" class="button-primary full-width">
-                💾 Save Routine
+            <button @click="toggleOverallEditMode" class="button-primary full-width">Save Routine
             </button>
        </div>
       
@@ -866,9 +854,7 @@ REQUIRED JSON STRUCTURE:
     <div v-if="!isLoading && user" class="manage-routines-section card" style="margin-top: 40px;">
         <div class="header-with-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h3 style="margin: 0;">Manage Routines</h3>
-            <button @click="showProgressionHint = !showProgressionHint" class="button-icon" title="Progression Tip" style="font-size: 1.2rem; cursor: pointer; background: none; border: none;">
-                💡
-            </button>
+            <button @click="showProgressionHint = !showProgressionHint" class="button-icon" title="Progression Tip" style="font-size: 1.2rem; cursor: pointer; background: none; border: none;"></button>
         </div>
         
         <div v-if="showProgressionHint" class="info-hint-box animate-fade-in" style="background-color: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 10px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9em;">
@@ -960,7 +946,7 @@ REQUIRED JSON STRUCTURE:
               :style="{ borderColor: selectedIntensity === 'light' ? 'var(--color-primary)' : 'var(--color-card-border)', background: selectedIntensity === 'light' ? 'var(--color-card-bg)' : 'var(--color-card-mute)' }"
               style="padding: 12px 8px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: center;"
             >
-              <div style="font-size: 1.2em; margin-bottom: 4px;">🟢</div>
+              <div style="font-size: 1.2em; margin-bottom: 4px;"></div>
               <strong style="font-size: 0.85em; display: block; color: var(--color-card-text);">Light / Beginner</strong>
             </button>
 
@@ -970,7 +956,7 @@ REQUIRED JSON STRUCTURE:
               :style="{ borderColor: selectedIntensity === 'medium' ? 'var(--color-primary)' : 'var(--color-card-border)', background: selectedIntensity === 'medium' ? 'var(--color-card-bg)' : 'var(--color-card-mute)' }"
               style="padding: 12px 8px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: center;"
             >
-              <div style="font-size: 1.2em; margin-bottom: 4px;">🟡</div>
+              <div style="font-size: 1.2em; margin-bottom: 4px;"></div>
               <strong style="font-size: 0.85em; display: block; color: var(--color-card-text);">Medium / Interm.</strong>
             </button>
 
@@ -980,14 +966,14 @@ REQUIRED JSON STRUCTURE:
               :style="{ borderColor: selectedIntensity === 'heavy' ? 'var(--color-primary)' : 'var(--color-card-border)', background: selectedIntensity === 'heavy' ? 'var(--color-card-bg)' : 'var(--color-card-mute)' }"
               style="padding: 12px 8px; border-radius: 8px; border: 2px solid; cursor: pointer; text-align: center;"
             >
-              <div style="font-size: 1.2em; margin-bottom: 4px;">🔴</div>
+              <div style="font-size: 1.2em; margin-bottom: 4px;"></div>
               <strong style="font-size: 0.85em; display: block; color: var(--color-card-text);">Heavy / Advanced</strong>
             </button>
           </div>
 
           <!-- Adjust Weight Tip Notice -->
           <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.85em; color: var(--color-card-text); opacity: 0.9; background: var(--color-card-bg); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--color-card-border);">
-            <span style="font-size: 1.1em;">✏️</span>
+            <span style="font-size: 1.1em;"></span>
             <span><strong>Tip:</strong> Don't worry about getting exact weights now! You can adjust your actual weight for any exercise anytime during your workout using the <strong>✏️ pencil button</strong>.</span>
           </div>
         </div>
@@ -998,7 +984,7 @@ REQUIRED JSON STRUCTURE:
           class="button-primary button-large full-width" 
           style="padding: 14px; font-size: 1em; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;"
         >
-          {{ isSaving ? 'Adding Routine...' : `🚀 Adopt Routine (${selectedIntensity.toUpperCase()} Preset)` }}
+          {{ isSaving ? 'Adding Routine...' : `Adopt Routine (${selectedIntensity.toUpperCase()} Preset)` }}
         </button>
       </div>
     </div>

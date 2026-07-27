@@ -9,7 +9,7 @@
 
       <!-- Delete Confirmation State -->
       <div v-if="showDeleteConfirm" class="delete-confirmation-banner card-inset">
-        <h3 class="delete-confirm-title">⚠️ Delete Workout Session?</h3>
+        <h3 class="delete-confirm-title">Delete Workout Session?</h3>
         <p class="delete-confirm-text">
           Are you sure you want to permanently delete <strong>"{{ editableWorkout.workoutDayNameUsed || 'Workout' }}"</strong>? This action cannot be undone.
         </p>
@@ -122,8 +122,7 @@
 
         <!-- Danger Zone: Delete Button -->
         <div class="danger-zone">
-          <button @click="showDeleteConfirm = true" class="button-secondary btn-delete-workout full-width">
-            🗑️ Delete Workout
+          <button @click="showDeleteConfirm = true" class="button-secondary btn-delete-workout full-width">Delete Workout
           </button>
         </div>
       </div>
@@ -131,7 +130,7 @@
       <!-- Action Buttons -->
       <div v-if="!showDeleteConfirm" class="modal-footer">
         <button @click="saveChanges" class="button-primary full-width" :disabled="isSaving">
-          {{ isSaving ? 'Saving Changes...' : '💾 Save Changes' }}
+          {{ isSaving ? 'Saving Changes...' : 'Save Changes' }}
         </button>
       </div>
     </div>

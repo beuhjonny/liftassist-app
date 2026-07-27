@@ -5,7 +5,7 @@
       
       <!-- Account Card -->
       <div class="user-details card">
-        <h2>Account 👤</h2>
+        <h2>Account</h2>
         <div class="account-info">
           <img v-if="user.photoURL" :src="user.photoURL" alt="User Photo" class="user-photo" />
           <div class="account-details">
@@ -20,7 +20,7 @@
       <div v-if="showDeleteConfirm" class="delete-modal-overlay" @click.self="showDeleteConfirm = false">
         <div class="delete-modal-content card">
           <button @click="showDeleteConfirm = false" class="modal-close-button" aria-label="Close delete modal">&times;</button>
-          <h2 style="color: var(--color-danger, #dc3545);">Delete Account Permanently? ⚠️</h2>
+          <h2 style="color: var(--color-danger, #dc3545);">Delete Account Permanently?</h2>
           <p style="margin-bottom: 20px; line-height: 1.5; color: var(--color-card-text); text-align: left;">
             This action is irreversible. All your routines, settings, workout history, and third-party pairings (Strava/Garmin) will be permanently erased.
           </p>
@@ -38,7 +38,7 @@
 
       <!-- Settings Card -->
       <div class="settings-card card">
-        <h2>Settings ⚙️</h2>
+        <h2>Settings</h2>
         
         <div class="setting-item">
             <label>Theme</label>
@@ -54,15 +54,15 @@
             <label>Timer</label>
             <div class="timer-controls">
                 <select :value="settings.timerSound" @change="updateTimerSound($event)" class="sound-select">
-                    <option value="bell">🔔 Bell</option>
-                    <option value="beep">🤖 Beep</option>
-                    <option value="chime">✨ Chime</option>
-                    <option value="ding">🛎️ Ding</option>
-                    <option value="mute">🔕 Mute</option>
+                    <option value="bell">Bell</option>
+                    <option value="beep">Beep</option>
+                    <option value="chime">Chime</option>
+                    <option value="ding">Ding</option>
+                    <option value="mute">Mute</option>
                 </select>
                 
                 <div class="volume-control" v-if="settings.timerSound !== 'mute'" title="Volume">
-                    <span class="volume-icon">🔊</span>
+                    <span class="volume-icon"></span>
                     <input 
                         type="range" 
                         min="0" 
@@ -79,7 +79,7 @@
         </div>
 
         <div class="setting-item units-group-item" style="display: flex; flex-direction: column; gap: 10px; border-bottom: 1px dashed var(--color-card-border); padding-bottom: 12px; margin-bottom: 12px;">
-            <label style="font-weight: 700; color: var(--color-card-heading); width: 100%; margin-bottom: 2px;">Units 📏</label>
+            <label style="font-weight: 700; color: var(--color-card-heading); width: 100%; margin-bottom: 2px;">Units</label>
             
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                 <span style="font-size: 0.95em; color: var(--color-card-text);">Weight</span>
@@ -118,7 +118,7 @@
                       @click.stop.prevent="showTooltipAlert('Puts an info ℹ️ icon next to exercise names during active workouts and routine editing to watch video demos & form tips.')"
                       style="font-size: 0.95em; cursor: pointer; opacity: 0.8;" 
                       title="Puts an info ℹ️ icon next to exercise names during active workouts and routine editing to watch video demos & form tips."
-                    >💡</span>
+                    ></span>
                 </label>
                 <div style="display: flex; align-items: center;">
                     <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
@@ -139,7 +139,7 @@
                       @click.stop.prevent="showTooltipAlert('Shows warning badges (e.g. ⚠️ 1) on routine days when workouts are completed out of order (like skipping leg day). Turn off to hide skip shaming.')"
                       style="font-size: 0.95em; cursor: pointer; opacity: 0.8;" 
                       title="Shows warning badges (e.g. ⚠️ 1) on routine days when workouts are completed out of order (like skipping leg day). Turn off to hide skip shaming."
-                    >💡</span>
+                    ></span>
                 </label>
                 <div style="display: flex; align-items: center;">
                     <label class="switch" style="position: relative; display: inline-block; width: 40px; height: 24px;">
@@ -158,12 +158,12 @@
       <div class="consistency-settings-card card" style="margin-bottom: 20px;">
         <div @click="isConsistencyCardExpanded = !isConsistencyCardExpanded" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <h2 style="margin: 0;">Consistency & Progress 🎯</h2>
+              <h2 style="margin: 0;">Consistency & Progress</h2>
               <span 
                 @click.stop.prevent="showConsistencyInfoModal"
                 style="font-size: 1.1em; cursor: pointer; opacity: 0.9;" 
                 title="Consistency & Progression Manifesto Info"
-              >💡</span>
+              ></span>
             </div>
             <span style="font-size: 1.2em; transition: transform 0.2s;" :style="{ transform: isConsistencyCardExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }">▼</span>
         </div>
@@ -246,7 +246,7 @@
       <!-- Connections Card (Collapsible) -->
       <div class="connections-card card" style="margin-bottom: 20px;">
         <div @click="isConnectionsCardExpanded = !isConnectionsCardExpanded" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
-            <h2 style="margin: 0;">Connections 🔗</h2>
+            <h2 style="margin: 0;">Connections</h2>
             <span style="font-size: 1.2em; transition: transform 0.2s;" :style="{ transform: isConnectionsCardExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }">▼</span>
         </div>
         
@@ -259,7 +259,7 @@
                   @click.stop.prevent="showGarminHelpModal"
                   style="font-size: 0.95em; cursor: pointer; opacity: 0.8;" 
                   title="How Garmin Watch Sync works & Connect IQ app link"
-                >💡</span>
+                ></span>
               </label>
               <div class="pairing-control">
                   <input 
@@ -295,8 +295,7 @@
                   <template v-else>
                       <div style="display: flex; align-items: center; gap: 10px; justify-content: flex-end; width: 100%;">
                           <button @click="handleStravaConnect" class="button-primary small" :disabled="isStravaLoading || !isConfigured" style="background-color: #FC4C02; border-color: #FC4C02; color: white; display: inline-flex; align-items: center; gap: 5px;">
-                              Connect with Strava 🏃
-                          </button>
+                              Connect with Strava</button>
                       </div>
                   </template>
               </div>
@@ -354,7 +353,7 @@
       <!-- Backup & Account Card -->
       <div class="backup-card card" style="margin-bottom: 20px;">
         <div @click="isBackupCardExpanded = !isBackupCardExpanded" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;">
-            <h2 style="margin: 0;">Backup, Restore & Account 💾</h2>
+            <h2 style="margin: 0;">Backup, Restore & Account</h2>
             <span style="font-size: 1.2em; transition: transform 0.2s;" :style="{ transform: isBackupCardExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }">▼</span>
         </div>
 
@@ -392,8 +391,7 @@
                         </div>
                     </div>
 
-                    <p v-if="restoreMode === 'overwrite'" class="warning-text" style="color: var(--color-danger); font-size: 0.85em; font-weight: 600; line-height: 1.4; margin: 0;">
-                        ⚠️ WARNING: Overwrite mode will erase all your current routines, settings, and workout history before restoring!
+                    <p v-if="restoreMode === 'overwrite'" class="warning-text" style="color: var(--color-danger); font-size: 0.85em; font-weight: 600; line-height: 1.4; margin: 0;">WARNING: Overwrite mode will erase all your current routines, settings, and workout history before restoring!
                     </p>
 
                     <button @click="handleImportBackup" class="button-primary full-width" :class="{ 'button-danger': restoreMode === 'overwrite' }" :disabled="isImportingBackup" style="padding: 10px; border-radius: 6px; border: none; background-color: var(--color-primary); color: white; cursor: pointer; font-weight: 600; width: 100%;">
@@ -404,7 +402,7 @@
 
             <!-- Rollback Section -->
             <div class="setting-item" style="border-top: 1px dashed var(--color-card-border); padding-top: 15px; margin-top: 15px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; text-align: left;">
-                <label style="font-weight: 600; color: var(--color-danger);">Emergency Rollback 🚨</label>
+                <label style="font-weight: 600; color: var(--color-danger);">Emergency Rollback</label>
                 <p style="font-size: 0.85em; opacity: 0.8; margin: 0; line-height: 1.4;">
                     Accidentally imported into the wrong account? Click below to delete all routines and history imported within the last hour, and fully rehydrate your progress metrics from your original history.
                 </p>
@@ -418,7 +416,7 @@
 
             <!-- Danger Zone / Delete Account -->
             <div style="margin-top: 20px; border-top: 1px solid var(--color-card-border); padding-top: 15px; text-align: left;">
-                <h4 style="margin: 0 0 6px 0; color: var(--color-danger, #dc3545);">Delete Account ⚠️</h4>
+                <h4 style="margin: 0 0 6px 0; color: var(--color-danger, #dc3545);">Delete Account</h4>
                 <p style="font-size: 0.85em; opacity: 0.8; margin-bottom: 12px; line-height: 1.4;">
                   Permanently erase your account, logged workouts, routines, and third-party links.
                 </p>
@@ -436,55 +434,55 @@
         <p>Could not load stats: {{ statsError }}</p>
       </div>
       <div v-else-if="loggedWorkouts.length > 0" class="lifetime-stats-card card">
-        <h2>Lifetime Stats 💪</h2>
+        <h2>Lifetime Stats</h2>
         <ul>
           <!-- Consistency & History -->
           <li>
-            <span class="stat-icon">🗓️</span>
+            <span class="stat-icon"></span>
             <span class="stat-label">Workouts Completed:</span>
             <span class="stat-value">{{ lifetimeStats.totalWorkouts }}</span>
           </li>
           
           <li :class="{ 'stat-highlight': lifetimeStats.weeklyStreak > 1 }">
-            <span class="stat-icon">🔥</span>
+            <span class="stat-icon"></span>
             <span class="stat-label">Weekly Streak ({{ settings.streakMinWorkoutsPerWeek ?? 2 }}+/wk):</span>
             <span class="stat-value">{{ lifetimeStats.weeklyStreak }} {{ lifetimeStats.weeklyStreak === 1 ? 'Week' : 'Weeks' }} <small style="opacity: 0.8; font-size: 0.85em; font-weight: normal;">(Best: {{ lifetimeStats.bestWeeklyStreak }} Weeks)</small></span>
           </li>
 
           <li v-if="lifetimeStats.firstWorkoutDate">
-            <span class="stat-icon">🚀</span>
+            <span class="stat-icon"></span>
             <span class="stat-label">Lifting Since:</span>
             <span class="stat-value">{{ formatDateForDisplay(lifetimeStats.firstWorkoutDate) }}</span>
           </li>
 
           <!-- Progression & Strength -->
           <li style="border-top: 1px dashed var(--color-card-border); padding-top: 10px; margin-top: 4px;">
-            <span class="stat-icon">📈</span>
+            <span class="stat-icon"></span>
             <span class="stat-label">Overloads Triggered:</span>
             <span class="stat-value">{{ lifetimeStats.totalOverloads }}</span>
           </li>
 
           <li>
-            <span class="stat-icon">🎯</span>
+            <span class="stat-icon"></span>
             <span class="stat-label">Global Overload Rate:</span>
             <span class="stat-value">{{ lifetimeStats.globalOverloadRate }}% Success</span>
           </li>
 
           <li>
-            <span class="stat-icon">🦍</span>
+            <span class="stat-icon"></span>
             <span class="stat-label">Heaviest Lift Ever:</span>
             <span class="stat-value">{{ lifetimeStats.heaviestLift.toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</span>
           </li>
 
           <li>
-            <span class="stat-icon">🏋️</span>
+            <span class="stat-icon"></span>
             <span class="stat-label">Total Volume Lifted:</span>
             <span class="stat-value">{{ lifetimeStats.totalVolume.toLocaleString() }} {{ displayUnit(settings.weightUnit) }}</span>
           </li>
 
           <!-- Volume & Time -->
           <li style="border-top: 1px dashed var(--color-card-border); padding-top: 10px; margin-top: 4px;">
-            <span class="stat-icon">💪</span>
+            <span class="stat-icon"></span>
             <span class="stat-label">Total Sets & Reps:</span>
             <span class="stat-value">{{ lifetimeStats.totalSets.toLocaleString() }} Sets ({{ lifetimeStats.totalReps.toLocaleString() }} Reps)</span>
           </li>
@@ -498,16 +496,16 @@
           <!-- Cardio Stats (Manual & Strava) -->
           <template v-if="externalActivities.length > 0">
             <li style="border-top: 1px dashed var(--color-card-border); font-weight: 600; color: #FC4C02; justify-content: center; padding-top: 14px; margin-top: 8px;">
-              <span class="stat-icon" style="color: #FC4C02;">🏃</span>
+              <span class="stat-icon" style="color: #FC4C02;"></span>
               <span class="stat-label" style="color: #FC4C02; margin-right: 0;">Cardio Stats</span>
             </li>
             <li>
-              <span class="stat-icon" style="color: #FC4C02;">👟</span>
+              <span class="stat-icon" style="color: #FC4C02;"></span>
               <span class="stat-label">Total Runs:</span>
               <span class="stat-value" style="color: var(--color-card-text);">{{ lifetimeCardioStats.runsCount }}</span>
             </li>
             <li>
-              <span class="stat-icon" style="color: #FC4C02;">🗺️</span>
+              <span class="stat-icon" style="color: #FC4C02;"></span>
               <span class="stat-label">Lifetime Cardio Distance:</span>
               <span class="stat-value" style="color: var(--color-card-text);">{{ lifetimeCardioStats.formattedDistance }}</span>
             </li>
@@ -550,7 +548,7 @@
             rel="noopener noreferrer" 
             style="color: var(--color-primary); font-weight: 600; text-decoration: underline; font-size: 0.95em; display: inline-flex; align-items: center; gap: 4px;"
           >
-            {{ activeInfoModal.linkLabel || '📲 Open App Link' }} &rarr;
+            {{ activeInfoModal.linkLabel || 'Open App Link' }} &rarr;
           </a>
         </div>
 
@@ -617,7 +615,7 @@ const showConsistencyInfoModal = () => {
     title: 'Consistency & Progress 🎯',
     message: 'Consistency and progression are the two most important things. See manifesto.',
     linkUrl: 'https://lift-logic-app.web.app/version-history',
-    linkLabel: '📜 Read Manifesto & Updates'
+    linkLabel: 'Read Manifesto & Updates'
   };
 };
 
@@ -626,7 +624,7 @@ const showGarminHelpModal = () => {
     title: 'Garmin Watch Sync ⌚',
     message: `Pair LiftLogic with your Garmin watch to follow routines and log sets, reps, and weights straight from your wrist!\n\n1. Download the LiftLogic app from the Garmin Connect IQ Store.\n2. Open the app on your watch to view your 6-digit code.\n3. Enter your 6-digit code into the box above and click Link.`,
     linkUrl: 'https://apps.garmin.com/apps/cfa087b5-1beb-4c5a-bc82-5b7e51934f5f',
-    linkLabel: '📲 Download LiftLogic on Garmin Connect IQ Store'
+    linkLabel: 'Download LiftLogic on Garmin Connect IQ Store'
   };
 };
 

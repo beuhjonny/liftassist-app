@@ -66,7 +66,7 @@
         <!-- 1. Overall Training Trends -->
         <div class="chart-section card">
             <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
-                <h3 style="margin:0; line-height:1.2;">📈 Overall Training Trends</h3>
+                <h3 style="margin:0; line-height:1.2;">Overall Training Trends</h3>
                 <div style="display: flex; gap: 8px; align-items: center;">
                     <select v-model="volumeAggregation" class="history-select" style="max-width: 100px;">
                          <option value="weekly">Weekly</option>
@@ -96,8 +96,7 @@
             @click="showDetailedAnalytics = !showDetailedAnalytics" 
             style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; padding: 14px 16px; background: var(--color-card-bg);"
           >
-            <span style="font-weight: 700; font-size: 1.05em; color: var(--color-card-text); display: flex; align-items: center; gap: 8px;">
-              📊 Detailed Muscle & Exercise Analytics
+            <span style="font-weight: 700; font-size: 1.05em; color: var(--color-card-text); display: flex; align-items: center; gap: 8px;">Detailed Muscle & Exercise Analytics
             </span>
             <span style="font-size: 0.85em; font-weight: 700; color: var(--color-card-text); opacity: 0.7; transition: transform 0.2s;" :style="{ transform: showDetailedAnalytics ? 'rotate(180deg)' : 'rotate(0deg)' }">
               ▼
@@ -108,7 +107,7 @@
             <!-- 2. Weekly Sets per Muscle Group (Direct vs. Indirect) -->
             <div class="chart-section">
                 <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <h3 style="margin:0; font-size: 1.1em; color: var(--color-card-text);">💪 Muscle Group Sets per Week</h3>
+                    <h3 style="margin:0; font-size: 1.1em; color: var(--color-card-text);">Muscle Group Sets per Week</h3>
                 </div>
                 <MuscleGroupVolumeChart 
                     :workouts="loggedWorkouts" 
@@ -121,7 +120,7 @@
             <!-- 3. Exercise Strength & 1RM Progress -->
             <div class="chart-section">
                  <div class="chart-header-row" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap: wrap; gap: 10px;">
-                     <h3 style="margin:0; font-size: 1.1em; color: var(--color-card-text);">🎯 Exercise Strength & 1RM Progress</h3>
+                     <h3 style="margin:0; font-size: 1.1em; color: var(--color-card-text);">Exercise Strength & 1RM Progress</h3>
                      <select v-model="selectedExerciseForGraph" class="history-select" style="max-width: 220px; min-width: 150px;">
                          <option value="">Select Exercise</option>
                          <option v-for="ex in uniqueExercises" :key="ex" :value="ex">{{ ex }}</option>
@@ -152,15 +151,14 @@
       <p>No workouts or cardio sessions logged yet. Go crush a session!</p>
       <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
         <router-link to="/" class="button-primary">Start a Workout</router-link>
-        <button @click="showLogCardioModal = true" class="button-secondary">🏃 Log Cardio</button>
+        <button @click="showLogCardioModal = true" class="button-secondary">Log Cardio</button>
       </div>
     </div>
 
     <div v-if="!isLoading && !error && user && combinedHistoryItems.length > 0" class="history-list">
       <div style="display: flex; justify-content: space-between; align-items: center; margin: 30px 0 20px 0; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">
         <h3 style="margin: 0; font-size: 1.5em; color: var(--color-heading);">Recent Activity</h3>
-        <button @click="showLogCardioModal = true" class="button-secondary small" style="display: flex; align-items: center; gap: 6px;">
-          🏃 Log Cardio
+        <button @click="showLogCardioModal = true" class="button-secondary small" style="display: flex; align-items: center; gap: 6px;">Log Cardio
         </button>
       </div>
 
@@ -178,8 +176,8 @@
               </p>
             </div>
             <div style="display: flex; gap: 4px; align-items: center;">
-              <button @click.stop.prevent="openShareModal(item.workout)" class="icon-button share-btn" title="Share Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">📤</button>
-              <button @click.stop.prevent="openEditModal(item.workout)" class="icon-button edit-btn" title="Edit Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;">✏️</button>
+              <button @click.stop.prevent="openShareModal(item.workout)" class="icon-button share-btn" title="Share Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;"></button>
+              <button @click.stop.prevent="openEditModal(item.workout)" class="icon-button edit-btn" title="Edit Workout" style="background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 4px; border-radius: 6px;"></button>
             </div>
           </div>
 
@@ -199,7 +197,7 @@
             <ul class="exercise-summary-list" v-if="item.workout.performedExercises && item.workout.performedExercises.length > 0">
               <li v-for="ex in item.workout.performedExercises" :key="ex.exerciseId || ex.exerciseName">
                 <strong>{{ ex.exerciseName }}</strong>
-                <span v-if="ex.isPR" title="Personal Record!"> 🏅</span>
+                <span v-if="ex.isPR" title="Personal Record!"></span>
                 <span>: {{ getExerciseStatusForHistory(ex) }}{{ getExerciseLineSuffix(ex) }}</span>
                 
                 <ul v-if="allDetailsExpandedForWorkout[item.workout.id] && ex.sets && ex.sets.length > 0" class="set-details-list">
@@ -236,7 +234,7 @@
             </div>
 
             <div style="display: flex; gap: 4px; align-items: center;">
-              <button v-if="item.cardio.source === 'manual'" @click.stop.prevent="handleDeleteCardioSession(item.cardio.id)" class="icon-button delete-btn" title="Delete Cardio Log" style="background: none; border: none; font-size: 1.1em; cursor: pointer; padding: 4px; border-radius: 6px; opacity: 0.7;">🗑️</button>
+              <button v-if="item.cardio.source === 'manual'" @click.stop.prevent="handleDeleteCardioSession(item.cardio.id)" class="icon-button delete-btn" title="Delete Cardio Log" style="background: none; border: none; font-size: 1.1em; cursor: pointer; padding: 4px; border-radius: 6px; opacity: 0.7;"></button>
             </div>
           </div>
 

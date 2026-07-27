@@ -11,8 +11,7 @@
         class="changelog-indicator-badge" 
         title="Click to view new features & changelog!"
       >
-        see updates ✨
-      </span>
+        see updates</span>
     </button>
 
     <div v-if="isOpen" class="manifesto-modal-overlay" @click.self="closeModal">
@@ -27,8 +26,7 @@
              <!-- Version History / What's New Card -->
              <div style="margin: 15px 0; padding: 12px 16px; background: var(--color-card-mute); border: 1px solid var(--color-card-border); border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                 <div style="text-align: left;">
-                  <strong style="font-size: 0.95em; color: var(--color-card-heading); display: flex; align-items: center; gap: 6px;">
-                    🚀 What's New / Changelog
+                  <strong style="font-size: 0.95em; color: var(--color-card-heading); display: flex; align-items: center; gap: 6px;">What's New / Changelog
                     <span v-if="hasNewChangelog" style="background: var(--color-card-bg); color: var(--color-primary); border: 1px solid var(--color-card-border); font-size: 0.72em; font-weight: 600; padding: 2px 8px; border-radius: 10px;">see updates</span>
                   </strong>
                   <span style="font-size: 0.8em; opacity: 0.8; color: var(--color-card-text); display: block; margin-top: 2px;">View release history & recent features</span>
