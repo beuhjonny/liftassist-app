@@ -35,7 +35,8 @@ Sign up with any fake email. `VITE_USE_EMULATOR=true` gates all emulator wiring 
 15. **Share-to-import**: PWA share-target + paste box -> parses "Bench 3x8-12"-style text into a staged selection list -> add to any routine (transaction-safe, XSS-guarded). LLM transcript analysis is spec'd, gated on an API key.
 16. **A11y**: rest-timer screen-reader flood fixed (milestone announcements only), spoken set flow, 44px floors, reduced-motion contract.
 17. **Perf**: entry chunk 776KB -> 24KB (vendor split; chart.js defers to the analytics drawer).
-18. **Photographic vistas** (the one to argue about - see below): Home hero and the completion seal now sit under real photographs instead of the SVG ridgelines.
+18. **Photographic vistas** (the one to argue about - see below): Home hero, completion seal, login and share card now sit under real public-domain photographs instead of the SVG ridgelines.
+19. **Login rebuilt**: was the only un-migrated view (light cards in a dark app, no wordmark). Also fixed two real defects it was shipping - the Google mark was fetched from `upload.wikimedia.org` on every load, and Chrome's autofill styling turned the inputs white for anyone with saved credentials.
 
 ## The vistas - your call, and easy to reverse
 
@@ -49,6 +50,16 @@ as public domain: no licence, no attribution requirement, no third-party rights,
   Voyager Golden Record.
 - **Completion seal** - *Mt. Winchell, Kings River Canyon* (79-AA-H09), warm-graded when the
   session set a PR.
+- **Login / first run** - *Grand Canyon from the North Rim* (79-AA-F14). This view had never
+  been migrated to the design system at all: light cards in a dark app, a generic "Login"
+  heading, no wordmark. Rebuilt.
+- **Share card** - *North Palisade from Windy Point* (79-AA-H18), the only surface a stranger
+  sees.
+
+**Two more were built and killed**, because four mediocre placements are worse than four
+good ones: the week strip (171px card leaves a ~35px band - the photo read as a gradient
+artifact and competed with the hero) and the rest screen (a working instrument; ambience
+costs countdown legibility). Both are written up in the ranking doc.
 
 The source plates are black-and-white, so **one 54KB download covers all four readiness
 states** - the band is a CSS colour grade, not four images. AVIF with WebP fallback, both
