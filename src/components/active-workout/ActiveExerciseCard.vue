@@ -43,7 +43,7 @@
           <span class="to-failure">To Failure</span>
         </template>
         <template v-else>
-          <span class="hero-weight">{{ displayWeight }}</span>
+          <span class="hero-weight">{{ heroWeightShown }}</span>
           <span class="hero-unit">{{ displayUnit(weightUnit) }}</span>
         </template>
       </div>
@@ -108,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import type { SessionExercise, LoggedSetData } from '@/types';
 import { toDisplay, displayUnit } from '@/utils/weight';
 import { Info, Pencil, SkipForward, Check, TrendingUp } from 'lucide-vue-next';
@@ -152,6 +152,36 @@ watch(
 );
 watch(repsInput, (v) => { if (v !== props.effectiveReps) repsTouched.value = true; });
 const repDelta = computed(() => repsInput.value - props.effectiveReps);
+
+// Weight numeral tweens to its new value (motion 3c: numbers never teleport).
+const heroWeightShown = ref<number | string>(props.displayWeight);
+let weightRaf = 0;
+watch(
+  () => props.displayWeight,
+  (next, prev) => {
+    cancelAnimationFrame(weightRaf);
+    const from = typeof prev === 'number' ? prev : Number(prev);
+    const to = typeof next === 'number' ? next : Number(next);
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduced || Number.isNaN(from) || Number.isNaN(to)) {
+      heroWeightShown.value = next;
+      return;
+    }
+    const t0 = performance.now();
+    const DUR = 200;
+    const isInt = Number.isInteger(to);
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - t0) / DUR);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const v = from + (to - from) * eased;
+      heroWeightShown.value = isInt ? Math.round(v) : Math.round(v * 10) / 10;
+      if (p < 1) weightRaf = requestAnimationFrame(tick);
+      else heroWeightShown.value = next;
+    };
+    weightRaf = requestAnimationFrame(tick);
+  },
+);
+onUnmounted(() => cancelAnimationFrame(weightRaf));
 
 const onLog = (status: 'done' | 'failed') => {
   if (status === 'done') haptics.logDone();

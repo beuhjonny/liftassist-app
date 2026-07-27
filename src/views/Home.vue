@@ -94,7 +94,7 @@
 
           <section v-if="otherDays.length" class="day-list">
             <h2 class="list-eyebrow">{{ activeDraft ? 'CHOOSE ANOTHER DAY' : 'OTHER DAYS' }}</h2>
-            <button v-for="day in otherDays" :key="day.id" type="button" class="day-row" @click="startWorkout(day)">
+            <button v-for="(day, i) in otherDays" :key="day.id" type="button" class="day-row" :style="{ animationDelay: `${i * 30}ms` }" @click="startWorkout(day)">
               <span class="day-dot" :style="{ background: colorForDay(day.order, day.color) }" aria-hidden="true"></span>
               <span class="day-info">
                 <span class="day-name">{{ day.dayName }}</span>
@@ -831,6 +831,16 @@ watch(
 }
 .day-row:active { transform: scale(0.995); }
 @media (hover: hover) { .day-row:hover { border-color: var(--color-accent-line); } }
+/* Staggered entrance (motion 3c): one soft wave on first paint. */
+@media (prefers-reduced-motion: no-preference) {
+  .day-row {
+    animation: day-row-in var(--duration-base) var(--ease-out) both;
+  }
+  @keyframes day-row-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
 .day-dot { width: 12px; height: 12px; border-radius: var(--radius-full); flex-shrink: 0; }
 .day-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .day-name { font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--color-card-heading); }
